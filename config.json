@@ -246,6 +246,8 @@
         "showNotification": true,
         "showRecording": true,
         "showClockWeather": true,
+        "showBattery": true,
+        "showWorkspace": true,
         "notificationTimeoutMs": 4000,
         "actions": {
             "leftClick": "mediaControls",

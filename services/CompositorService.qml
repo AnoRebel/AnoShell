@@ -29,6 +29,20 @@ Singleton {
     property bool useNiriSorting: isNiri && NiriService
 
     // ═══════════════════════════════════════════════════════════════════════
+    // Active workspace abstraction (compositor-agnostic accessor)
+    // ═══════════════════════════════════════════════════════════════════════
+    readonly property int activeWorkspaceIndex: isNiri && NiriService
+        ? NiriService.focusedWorkspaceIndex
+        : (isHyprland && HyprlandData?.activeWorkspace
+            ? (HyprlandData.activeWorkspace.id ?? 0)
+            : 0)
+    readonly property string activeWorkspaceName: isNiri && NiriService
+        ? (NiriService.focusedWorkspaceId ?? "")
+        : (isHyprland && HyprlandData?.activeWorkspace
+            ? (HyprlandData.activeWorkspace.name ?? "")
+            : "")
+
+    // ═══════════════════════════════════════════════════════════════════════
     // Sorted toplevels (compositor-aware window list)
     // ═══════════════════════════════════════════════════════════════════════
     property var sortedToplevels: sortedToplevelsCache

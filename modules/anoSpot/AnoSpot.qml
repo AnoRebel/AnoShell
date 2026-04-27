@@ -31,6 +31,8 @@ Scope {
     readonly property bool showNotification: Config.options?.anoSpot?.showNotification ?? true
     readonly property bool showRecording: Config.options?.anoSpot?.showRecording ?? true
     readonly property bool showClockWeather: Config.options?.anoSpot?.showClockWeather ?? true
+    readonly property bool showBattery: Config.options?.anoSpot?.showBattery ?? true
+    readonly property bool showWorkspace: Config.options?.anoSpot?.showWorkspace ?? true
 
     readonly property var actions: Config.options?.anoSpot?.actions ?? ({})
 
@@ -106,10 +108,12 @@ Scope {
                     id: horizontalLayout
                     RowLayout {
                         spacing: 10
+                        AnoSpotWorkspace  { visible: root.showWorkspace }
                         AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
                         AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
                         AnoSpotNotification { Layout.fillWidth: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
                         AnoSpotClockWeather { visible: root.showClockWeather }
+                        AnoSpotBattery    { /* visible binding lives in the widget */ }
                     }
                 }
 
@@ -117,10 +121,12 @@ Scope {
                     id: verticalLayout
                     ColumnLayout {
                         spacing: 10
+                        AnoSpotWorkspace  { visible: root.showWorkspace }
                         AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
                         AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
                         AnoSpotNotification { Layout.fillHeight: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
                         AnoSpotClockWeather { visible: root.showClockWeather }
+                        AnoSpotBattery    { /* visible binding lives in the widget */ }
                     }
                 }
             }

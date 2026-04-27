@@ -147,5 +147,17 @@ ColumnLayout {
             checked: Config.options?.anoSpot?.showClockWeather ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showClockWeather", checked)
         }
+        ConfigSwitch {
+            label: "Workspace"
+            sublabel: "Active workspace number/name (click → overview)"
+            checked: Config.options?.anoSpot?.showWorkspace ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showWorkspace", checked)
+        }
+        ConfigSwitch {
+            label: "Battery"
+            sublabel: "Hidden automatically on desktops without a battery"
+            checked: Config.options?.anoSpot?.showBattery ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showBattery", checked)
+        }
     }
 }
