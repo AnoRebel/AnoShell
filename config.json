@@ -254,6 +254,11 @@
             "rightClick": "controlPanel",
             "middleClick": "anoview",
             "scrollOnMpris": "audio"
+        },
+        "eventBorder": {
+            "enable": true,
+            "holdMs": 1500,
+            "events": ["notification", "track", "recording", "workspace"]
         }
     },
 

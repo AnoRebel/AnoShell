@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
 import "root:"
@@ -46,6 +47,42 @@ Scope {
         }
     }
 
+    // ─── Event border ────────────────────────────────────────────────────
+    // Animated gradient halo behind the pill that pulses on configured
+    // events. The current renderer (per-screen child below) uses a
+    // ConicalGradient sweep as a placeholder; a Siri-style flowing-color
+    // shader is planned to replace it later. The borderPulse signal is the
+    // stable interface — swap the visual without touching this section.
+    readonly property var eventBorderCfg: Config.options?.anoSpot?.eventBorder ?? ({})
+    readonly property bool eventBorderEnabled: eventBorderCfg.enable ?? true
+    readonly property int eventBorderHoldMs: eventBorderCfg.holdMs ?? 1500
+    readonly property var eventBorderEvents: eventBorderCfg.events ?? ["notification", "track", "recording", "workspace"]
+
+    signal borderPulse()
+
+    function triggerBorder(eventType) {
+        if (!eventBorderEnabled) return;
+        if (eventBorderEvents.indexOf(eventType) < 0) return;
+        root.borderPulse();
+    }
+
+    Connections {
+        target: Notifications
+        function onNotify(_) { root.triggerBorder("notification") }
+    }
+    Connections {
+        target: MprisController
+        function onActiveTrackChanged() { root.triggerBorder("track") }
+    }
+    Connections {
+        target: RecorderStatus
+        function onIsRecordingChanged() { root.triggerBorder("recording") }
+    }
+    Connections {
+        target: CompositorService
+        function onActiveWorkspaceIndexChanged() { root.triggerBorder("workspace") }
+    }
+
     Variants {
         model: root.enabled ? Quickshell.screens : []
 
@@ -76,6 +113,55 @@ Scope {
                 bottom: root.position === "bottom" ? 6 : 0
                 left: root.position === "left" ? 6 : 0
                 right: root.position === "right" ? 6 : 0
+            }
+
+            // Animated gradient ring rendered behind the pill. When the
+            // border-pulse opacity is zero this is invisible and free.
+            // When it ramps up, the slightly-oversized conical-gradient
+            // rectangle peeks out from behind the pill as a colored halo
+            // whose hue rotates over the pulse cycle.
+            Item {
+                id: borderHalo
+                anchors.centerIn: parent
+                width: parent.width + 4
+                height: parent.height + 4
+                opacity: 0
+                visible: opacity > 0
+                z: -1
+
+                property real angle: 0
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Math.min(width, height) / 2
+                    layer.enabled: true
+                    layer.effect: ConicalGradient {
+                        angle: borderHalo.angle
+                        gradient: Gradient {
+                            GradientStop { position: 0.00; color: Appearance?.colors?.colPrimary    ?? "#a6e3a1" }
+                            GradientStop { position: 0.33; color: Appearance?.colors?.colSecondary  ?? "#cba6f7" }
+                            GradientStop { position: 0.66; color: Appearance?.colors?.colTertiary   ?? "#94e2d5" }
+                            GradientStop { position: 1.00; color: Appearance?.colors?.colPrimary    ?? "#a6e3a1" }
+                        }
+                    }
+                    color: "white"  // overwritten by the conical gradient layer effect
+                }
+
+                Connections {
+                    target: root
+                    function onBorderPulse() { borderAnim.restart() }
+                }
+
+                SequentialAnimation {
+                    id: borderAnim
+                    ParallelAnimation {
+                        NumberAnimation { target: borderHalo; property: "opacity"; to: 1; duration: 200; easing.type: Easing.OutCubic }
+                        RotationAnimation { target: borderHalo; property: "angle"; from: 0; to: 360
+                                            duration: 200 + root.eventBorderHoldMs + 400; easing.type: Easing.Linear }
+                    }
+                    PauseAnimation { duration: root.eventBorderHoldMs }
+                    NumberAnimation { target: borderHalo; property: "opacity"; to: 0; duration: 400; easing.type: Easing.InCubic }
+                }
             }
 
             Rectangle {

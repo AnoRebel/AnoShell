@@ -160,4 +160,69 @@ ColumnLayout {
             onCheckedChanged: Config.setNestedValue("anoSpot.showBattery", checked)
         }
     }
+
+    // ═══ Event border animation ═══
+    SettingsCard {
+        icon: "auto_awesome"
+        title: "Event border animation"
+        subtitle: "Pulsing gradient halo when configured events occur"
+
+        ConfigSwitch {
+            id: borderEnable
+            label: "Enable"
+            checked: Config.options?.anoSpot?.eventBorder?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.eventBorder.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Hold duration"
+            sublabel: "How long the halo stays visible before fading out"
+            from: 500; to: 5000; stepSize: 100
+            value: Config.options?.anoSpot?.eventBorder?.holdMs ?? 1500
+            valueText: `${Math.round(value)} ms`
+            enabled: borderEnable.checked
+            onValueChanged: Config.setNestedValue("anoSpot.eventBorder.holdMs", Math.round(value))
+        }
+
+        // ─── Per-event-type triggers ─────────────────────────────────────
+        // Each switch toggles presence of its event-type string in the
+        // anoSpot.eventBorder.events array.
+        function _hasEvent(name) {
+            const events = Config.options?.anoSpot?.eventBorder?.events ?? [];
+            return events.indexOf(name) >= 0;
+        }
+        function _setEvent(name, on) {
+            const current = (Config.options?.anoSpot?.eventBorder?.events ?? []).slice();
+            const idx = current.indexOf(name);
+            if (on && idx < 0) current.push(name);
+            else if (!on && idx >= 0) current.splice(idx, 1);
+            Config.setNestedValue("anoSpot.eventBorder.events", current);
+        }
+
+        ConfigSwitch {
+            label: "On notification"
+            checked: parent._hasEvent("notification")
+            enabled: borderEnable.checked
+            onCheckedChanged: parent._setEvent("notification", checked)
+        }
+        ConfigSwitch {
+            label: "On track change"
+            checked: parent._hasEvent("track")
+            enabled: borderEnable.checked
+            onCheckedChanged: parent._setEvent("track", checked)
+        }
+        ConfigSwitch {
+            label: "On recording start/stop"
+            checked: parent._hasEvent("recording")
+            enabled: borderEnable.checked
+            onCheckedChanged: parent._setEvent("recording", checked)
+        }
+        ConfigSwitch {
+            label: "On workspace change"
+            sublabel: "Fires often if you switch workspaces frequently"
+            checked: parent._hasEvent("workspace")
+            enabled: borderEnable.checked
+            onCheckedChanged: parent._setEvent("workspace", checked)
+        }
+    }
 }
