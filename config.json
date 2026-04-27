@@ -259,7 +259,8 @@
             "enable": true,
             "holdMs": 1500,
             "events": ["notification", "track", "recording", "workspace"]
-        }
+        },
+        "draggable": true
     },
 
     "interactions": {

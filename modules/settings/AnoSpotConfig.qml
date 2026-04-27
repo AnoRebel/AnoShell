@@ -119,6 +119,13 @@ ColumnLayout {
                 }
             }
         }
+
+        ConfigSwitch {
+            label: "Allow drag to reposition"
+            sublabel: "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge"
+            checked: Config.options?.anoSpot?.draggable ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.draggable", checked)
+        }
     }
 
     // ═══ Widgets ═══

@@ -36,6 +36,21 @@ Scope {
     readonly property bool showWorkspace: Config.options?.anoSpot?.showWorkspace ?? true
 
     readonly property var actions: Config.options?.anoSpot?.actions ?? ({})
+    readonly property bool draggable: Config.options?.anoSpot?.draggable ?? true
+
+    // Snap a free pointer position to one of the four screen edges based
+    // on which edge it ended up closest to. Returns "top"/"bottom"/"left"/"right".
+    function _nearestEdge(globalX, globalY, screenW, screenH) {
+        const dTop = globalY;
+        const dBottom = screenH - globalY;
+        const dLeft = globalX;
+        const dRight = screenW - globalX;
+        const minD = Math.min(dTop, dBottom, dLeft, dRight);
+        if (minD === dTop)    return "top";
+        if (minD === dBottom) return "bottom";
+        if (minD === dLeft)   return "left";
+        return "right";
+    }
 
     function _dispatchClick(button) {
         let target = "";
@@ -183,10 +198,74 @@ Scope {
                     onClicked: mouse => root._dispatchClick(mouse.button)
                 }
 
+                // Drag handle — leading edge of the pill. Press, drag the
+                // pointer toward any screen edge, release to snap. The pill
+                // itself is layer-shell-anchored so it doesn't free-float;
+                // we just compute the pointer's release-point edge and
+                // rewrite Config.options.anoSpot.position.
+                Rectangle {
+                    id: dragHandle
+                    visible: root.draggable
+                    width: root.isVertical ? parent.width : 14
+                    height: root.isVertical ? 14 : parent.height
+                    color: "transparent"
+                    anchors {
+                        top: root.isVertical ? parent.top : undefined
+                        left: root.isVertical ? undefined : parent.left
+                        horizontalCenter: root.isVertical ? parent.horizontalCenter : undefined
+                        verticalCenter: root.isVertical ? undefined : parent.verticalCenter
+                    }
+
+                    MaterialSymbol {
+                        anchors.centerIn: parent
+                        text: "drag_indicator"
+                        iconSize: 12
+                        opacity: handleArea.containsMouse || handleArea.drag.active ? 0.85 : 0.5
+                        rotation: root.isVertical ? 90 : 0
+                        color: Appearance?.colors?.colOnLayer0Subtle ?? "#a6adc8"
+                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                    }
+
+                    MouseArea {
+                        id: handleArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.SizeAllCursor
+                        acceptedButtons: Qt.LeftButton
+                        // Drag tracking: we don't bind drag.target (the layer-shell
+                        // window can't free-float); we just monitor pointer
+                        // position and snap on release.
+                        property real lastGlobalX: 0
+                        property real lastGlobalY: 0
+                        onPressed: mouse => {
+                            const gp = mapToGlobal(mouse.x, mouse.y);
+                            lastGlobalX = gp.x; lastGlobalY = gp.y;
+                        }
+                        onPositionChanged: mouse => {
+                            if (!pressed) return;
+                            const gp = mapToGlobal(mouse.x, mouse.y);
+                            lastGlobalX = gp.x; lastGlobalY = gp.y;
+                        }
+                        onReleased: {
+                            const screen = spotWindow.screen;
+                            if (!screen) return;
+                            const newEdge = root._nearestEdge(
+                                lastGlobalX, lastGlobalY,
+                                screen.width, screen.height
+                            );
+                            if (newEdge !== root.position)
+                                Config.setNestedValue("anoSpot.position", newEdge);
+                        }
+                    }
+                }
+
                 // Horizontal layout for top/bottom; vertical for left/right
                 Loader {
                     anchors.fill: parent
                     anchors.margins: 6
+                    // Reserve space for the drag handle on the leading edge
+                    anchors.leftMargin: !root.isVertical && root.draggable ? 18 : 6
+                    anchors.topMargin: root.isVertical && root.draggable ? 18 : 6
                     sourceComponent: root.isVertical ? verticalLayout : horizontalLayout
                 }
 
