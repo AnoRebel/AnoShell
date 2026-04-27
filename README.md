@@ -225,10 +225,11 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 Per-bar fields (null = use global): `morphingPanel`, `height`, `radius`, all spacing/padding/action fields.
 Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard`, `notifications`, `idle`
 
-### ActivSpot (dynamic-island overlay)
+### AnoSpot (dynamic-island overlay)
 Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notification, recording indicator (with elapsed timer), and clock/weather. Compositor-agnostic (Hyprland + Niri).
+
 ```json
-"activSpot": {
+"anoSpot": {
   "enable": false,
   "position": "top",            // top | bottom | left | right (invalid → top)
   "widthPx": 420, "heightPx": 36,
@@ -236,7 +237,10 @@ Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notif
   "notificationTimeoutMs": 4000
 }
 ```
-Toggle from Settings → ActivSpot. The Settings page warns when `activSpot.position` collides with `bars[0].edge` (visual overlap likely). v1 deliberately excludes a Discord widget and the upstream Pet animation; both are queued for follow-up changes.
+
+Toggle from Settings → AnoSpot. The Settings page warns when `anoSpot.position` collides with `bars[0].edge` (visual overlap likely).
+
+> **Renamed** from `ActivSpot`. If your existing `config.json` still uses the old `activSpot` key, it is migrated automatically on first start (values copied to `anoSpot`, old key removed; one-shot, idempotent).
 
 ### Overview (AnoView)
 Layouts: `smartgrid`, `justified`, `bands`, `masonry`, `hero`, `spiral`, `satellite`, `staggered`, `columnar`, `vortex`, `random`

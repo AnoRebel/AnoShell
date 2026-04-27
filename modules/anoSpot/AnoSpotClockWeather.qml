@@ -8,7 +8,7 @@ RowLayout {
     spacing: 6
 
     StyledText {
-        text: ActivSpotState.clockWeather.time
+        text: AnoSpotState.clockWeather.time
         font.pixelSize: 12
         font.weight: Font.Medium
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
@@ -17,7 +17,7 @@ RowLayout {
     StyledText {
         visible: text.length > 0
         text: {
-            const t = ActivSpotState.clockWeather.weatherTemp;
+            const t = AnoSpotState.clockWeather.weatherTemp;
             return t ? `· ${t}` : "";
         }
         font.pixelSize: 12

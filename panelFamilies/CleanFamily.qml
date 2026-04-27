@@ -33,7 +33,7 @@ Scope {
     PanelLoader { component: Loader { source: "root:modules/cheatsheet/Cheatsheet.qml" } }
 
     // ─── Conditional ─────────────────────────────────────────────────────
-    PanelLoader { extraCondition: Config.options?.activSpot?.enable ?? false; component: Loader { source: "root:modules/activSpot/ActivSpot.qml" } }
+    PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpot.qml" } }
     PanelLoader { extraCondition: CompositorService.compositor === "niri"; component: Loader { source: "root:modules/lock/LockScreen.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────

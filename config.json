@@ -237,7 +237,7 @@
         }
     },
 
-    "activSpot": {
+    "anoSpot": {
         "enable": false,
         "position": "top",
         "widthPx": 420,

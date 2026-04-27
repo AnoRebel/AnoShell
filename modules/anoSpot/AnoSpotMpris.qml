@@ -8,7 +8,7 @@ RowLayout {
     spacing: 6
 
     MaterialSymbol {
-        text: ActivSpotState.mpris?.playing ? "music_note" : "pause"
+        text: AnoSpotState.mpris?.playing ? "music_note" : "pause"
         iconSize: 16
         color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
     }
@@ -17,7 +17,7 @@ RowLayout {
         Layout.maximumWidth: 200
         elide: Text.ElideRight
         text: {
-            const m = ActivSpotState.mpris;
+            const m = AnoSpotState.mpris;
             if (!m) return "";
             if (m.title && m.artist) return `${m.title} — ${m.artist}`;
             return m.title || m.artist || "";

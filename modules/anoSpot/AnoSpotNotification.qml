@@ -17,7 +17,7 @@ RowLayout {
         Layout.fillWidth: true
         elide: Text.ElideRight
         text: {
-            const n = ActivSpotState.latestNotification;
+            const n = AnoSpotState.latestNotification;
             if (!n) return "";
             if (n.summary && n.body) return `${n.summary}: ${n.body}`;
             return n.summary || n.body || n.appName || "";

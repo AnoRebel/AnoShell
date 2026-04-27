@@ -43,6 +43,26 @@ Singleton {
         onTriggered: configFileView.reload()
     }
 
+    // One-shot migration of legacy config keys.
+    // Idempotent: only acts when a legacy key is present.
+    function _migrateLegacyKeys() {
+        const opts = root.options;
+        if (!opts) return;
+        let changed = false;
+
+        // activSpot -> anoSpot (module rename)
+        if (opts.activSpot && !opts.anoSpot) {
+            opts.anoSpot = opts.activSpot;
+            changed = true;
+        }
+        if (opts.activSpot) {
+            delete opts.activSpot;
+            changed = true;
+        }
+
+        if (changed) fileWriteTimer.restart();
+    }
+
     Timer {
         id: fileWriteTimer
         interval: root.readWriteDelay
@@ -57,7 +77,10 @@ Singleton {
         blockWrites: root.blockWrites
         onFileChanged: fileReloadTimer.restart()
         onAdapterUpdated: fileWriteTimer.restart()
-        onLoaded: root.ready = true
+        onLoaded: {
+            root._migrateLegacyKeys();
+            root.ready = true;
+        }
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
                 writeAdapter();

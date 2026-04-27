@@ -21,7 +21,7 @@ Scope {
         { name: "Bar", icon: "dock_to_bottom" },
         { name: "Dock", icon: "space_dashboard" },
         { name: "Sidebars", icon: "view_sidebar" },
-        { name: "ActivSpot", icon: "view_compact_alt" },
+        { name: "AnoSpot", icon: "view_compact_alt" },
         { name: "Appearance", icon: "palette" },
         { name: "Overview", icon: "overview" },
         { name: "Services", icon: "cloud" },
@@ -157,7 +157,7 @@ Scope {
                                     case 2: return barPage
                                     case 3: return dockPage
                                     case 4: return sidebarsPage
-                                    case 5: return activSpotPage
+                                    case 5: return anoSpotPage
                                     case 6: return appearancePage
                                     case 7: return overviewPage
                                     case 8: return servicesPage
@@ -199,8 +199,8 @@ Scope {
         SidebarsConfig {}
     }
     Component {
-        id: activSpotPage
-        ActivSpotConfig {}
+        id: anoSpotPage
+        AnoSpotConfig {}
     }
     Component {
         id: appearancePage

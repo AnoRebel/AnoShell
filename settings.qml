@@ -29,7 +29,7 @@ ShellRoot {
         { name: "Bar", icon: "dock_to_bottom" },
         { name: "Dock", icon: "space_dashboard" },
         { name: "Sidebars", icon: "view_sidebar" },
-        { name: "ActivSpot", icon: "view_compact_alt" },
+        { name: "AnoSpot", icon: "view_compact_alt" },
         { name: "Appearance", icon: "palette" },
         { name: "Overview", icon: "overview" },
         { name: "Services", icon: "cloud" },
@@ -164,7 +164,7 @@ ShellRoot {
                             case 2: return comp_bar
                             case 3: return comp_dock
                             case 4: return comp_sidebars
-                            case 5: return comp_activspot
+                            case 5: return comp_anospot
                             case 6: return comp_appearance
                             case 7: return comp_overview
                             case 8: return comp_services
@@ -182,7 +182,7 @@ ShellRoot {
     Component { id: comp_bar; BarConfig {} }
     Component { id: comp_dock; DockConfig {} }
     Component { id: comp_sidebars; SidebarsConfig {} }
-    Component { id: comp_activspot; ActivSpotConfig {} }
+    Component { id: comp_anospot; AnoSpotConfig {} }
     Component { id: comp_appearance; AppearanceConfig {} }
     Component { id: comp_overview; OverviewConfig {} }
     Component { id: comp_services; ServicesConfig {} }

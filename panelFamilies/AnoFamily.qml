@@ -40,7 +40,7 @@ Scope {
     // ─── Conditional ─────────────────────────────────────────────────────
     PanelLoader { extraCondition: Config.options?.dock?.enable ?? true; component: Loader { source: "root:modules/dock/Dock.qml" } }
     PanelLoader { extraCondition: Config.options?.screenCorners?.enable ?? false; component: Loader { source: "root:modules/screenCorners/ScreenCorners.qml" } }
-    PanelLoader { extraCondition: Config.options?.activSpot?.enable ?? false; component: Loader { source: "root:modules/activSpot/ActivSpot.qml" } }
+    PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpot.qml" } }
     PanelLoader { extraCondition: CompositorService.compositor === "niri"; component: Loader { source: "root:modules/lock/LockScreen.qml" } }
     PanelLoader { extraCondition: Config.options?.bar?.morphingPanels ?? false; component: Loader { source: "root:modules/common/widgets/TopLayerPanel.qml" } }
 

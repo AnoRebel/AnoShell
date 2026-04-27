@@ -8,29 +8,29 @@ import "root:modules/common/widgets"
 import "root:services"
 
 /**
- * ActivSpot — dynamic-island-style overlay aggregating Mpris, Notifications,
+ * AnoSpot — dynamic-island-style overlay aggregating Mpris, Notifications,
  * Recording, and Clock/Weather. Compositor-agnostic: never reads HyprlandData
  * directly; all compositor state flows through CompositorService.
  *
- * Toggle:    Config.options.activSpot.enable
- * Position:  Config.options.activSpot.position ∈ {top, bottom, left, right}
+ * Toggle:    Config.options.anoSpot.enable
+ * Position:  Config.options.anoSpot.position ∈ {top, bottom, left, right}
  *            (invalid values fall back to "top")
  */
 Scope {
     id: root
 
-    readonly property bool enabled: Config.options?.activSpot?.enable ?? false
-    readonly property string rawPosition: Config.options?.activSpot?.position ?? "top"
+    readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
+    readonly property string rawPosition: Config.options?.anoSpot?.position ?? "top"
     readonly property string position: ["top", "bottom", "left", "right"].indexOf(rawPosition) >= 0
                                         ? rawPosition : "top"
-    readonly property int widthPx: Config.options?.activSpot?.widthPx ?? 420
-    readonly property int heightPx: Config.options?.activSpot?.heightPx ?? 36
+    readonly property int widthPx: Config.options?.anoSpot?.widthPx ?? 420
+    readonly property int heightPx: Config.options?.anoSpot?.heightPx ?? 36
     readonly property bool isVertical: position === "left" || position === "right"
 
-    readonly property bool showMpris: Config.options?.activSpot?.showMpris ?? true
-    readonly property bool showNotification: Config.options?.activSpot?.showNotification ?? true
-    readonly property bool showRecording: Config.options?.activSpot?.showRecording ?? true
-    readonly property bool showClockWeather: Config.options?.activSpot?.showClockWeather ?? true
+    readonly property bool showMpris: Config.options?.anoSpot?.showMpris ?? true
+    readonly property bool showNotification: Config.options?.anoSpot?.showNotification ?? true
+    readonly property bool showRecording: Config.options?.anoSpot?.showRecording ?? true
+    readonly property bool showClockWeather: Config.options?.anoSpot?.showClockWeather ?? true
 
     Variants {
         model: root.enabled ? Quickshell.screens : []
@@ -47,7 +47,7 @@ Scope {
             implicitHeight: root.isVertical ? root.widthPx : root.heightPx
 
             exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.namespace: "quickshell:activspot"
+            WlrLayershell.namespace: "quickshell:anospot"
             WlrLayershell.layer: WlrLayer.Overlay
 
             anchors {
@@ -85,10 +85,10 @@ Scope {
                     id: horizontalLayout
                     RowLayout {
                         spacing: 10
-                        ActivSpotMpris      { visible: root.showMpris && ActivSpotState.mpris !== null }
-                        ActivSpotRecording  { visible: root.showRecording && ActivSpotState.recording.active }
-                        ActivSpotNotification { Layout.fillWidth: true; visible: root.showNotification && ActivSpotState.latestNotification !== null }
-                        ActivSpotClockWeather { visible: root.showClockWeather }
+                        AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
+                        AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
+                        AnoSpotNotification { Layout.fillWidth: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
+                        AnoSpotClockWeather { visible: root.showClockWeather }
                     }
                 }
 
@@ -96,10 +96,10 @@ Scope {
                     id: verticalLayout
                     ColumnLayout {
                         spacing: 10
-                        ActivSpotMpris      { visible: root.showMpris && ActivSpotState.mpris !== null }
-                        ActivSpotRecording  { visible: root.showRecording && ActivSpotState.recording.active }
-                        ActivSpotNotification { Layout.fillHeight: true; visible: root.showNotification && ActivSpotState.latestNotification !== null }
-                        ActivSpotClockWeather { visible: root.showClockWeather }
+                        AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
+                        AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
+                        AnoSpotNotification { Layout.fillHeight: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
+                        AnoSpotClockWeather { visible: root.showClockWeather }
                     }
                 }
             }

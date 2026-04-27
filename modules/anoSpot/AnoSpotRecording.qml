@@ -13,7 +13,7 @@ RowLayout {
         radius: 4
         color: "#f38ba8"
         SequentialAnimation on opacity {
-            running: ActivSpotState.recording.active
+            running: AnoSpotState.recording.active
             loops: Animation.Infinite
             NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
             NumberAnimation { from: 0.3; to: 1.0; duration: 600 }
@@ -22,7 +22,7 @@ RowLayout {
 
     StyledText {
         text: {
-            const s = ActivSpotState.recording.elapsedSeconds;
+            const s = AnoSpotState.recording.elapsedSeconds;
             const mm = String(Math.floor(s / 60)).padStart(2, '0');
             const ss = String(s % 60).padStart(2, '0');
             return `REC ${mm}:${ss}`;

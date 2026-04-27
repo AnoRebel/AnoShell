@@ -5,29 +5,29 @@ import "root:modules/common/widgets"
 import "root:services"
 
 /**
- * ActivSpot settings page — toggle, position selector (4-way), per-widget toggles,
- * and a non-blocking warning when bar.edge collides with activSpot.position.
+ * AnoSpot settings page — toggle, position selector (4-way), per-widget toggles,
+ * and a non-blocking warning when bar.edge collides with anoSpot.position.
  */
 ColumnLayout {
     id: root
     spacing: 16
 
-    readonly property bool enabled: Config.options?.activSpot?.enable ?? false
-    readonly property string currentPosition: Config.options?.activSpot?.position ?? "top"
+    readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
+    readonly property string currentPosition: Config.options?.anoSpot?.position ?? "top"
     readonly property string barEdge: Config.options?.bars?.[0]?.edge ?? "top"
     readonly property bool collides: enabled && currentPosition === barEdge
 
     // ═══ Enable + collision warning ═══
     SettingsCard {
         icon: "view_compact_alt"
-        title: "ActivSpot"
+        title: "AnoSpot"
         subtitle: "Dynamic-island-style overlay for now playing, notifications, recording, clock"
 
         ConfigSwitch {
-            label: "Enable ActivSpot"
+            label: "Enable AnoSpot"
             sublabel: "Compositor-agnostic. Works on Hyprland and Niri."
             checked: root.enabled
-            onCheckedChanged: Config.setNestedValue("activSpot.enable", checked)
+            onCheckedChanged: Config.setNestedValue("anoSpot.enable", checked)
         }
 
         Rectangle {
@@ -52,7 +52,7 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
-                    text: `Heads-up: ActivSpot position (${root.currentPosition}) matches the bar edge — they may visually overlap.`
+                    text: `Heads-up: AnoSpot position (${root.currentPosition}) matches the bar edge — they may visually overlap.`
                     font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
                     color: Appearance?.colors.colOnSecondaryContainer ?? "#fef9e7"
                 }
@@ -113,7 +113,7 @@ ColumnLayout {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Config.setNestedValue("activSpot.position", modelData.pos)
+                            onClicked: Config.setNestedValue("anoSpot.position", modelData.pos)
                         }
                     }
                 }
@@ -129,23 +129,23 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Now playing (Mpris)"
-            checked: Config.options?.activSpot?.showMpris ?? true
-            onCheckedChanged: Config.setNestedValue("activSpot.showMpris", checked)
+            checked: Config.options?.anoSpot?.showMpris ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showMpris", checked)
         }
         ConfigSwitch {
             label: "Latest notification"
-            checked: Config.options?.activSpot?.showNotification ?? true
-            onCheckedChanged: Config.setNestedValue("activSpot.showNotification", checked)
+            checked: Config.options?.anoSpot?.showNotification ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showNotification", checked)
         }
         ConfigSwitch {
             label: "Recording indicator"
-            checked: Config.options?.activSpot?.showRecording ?? true
-            onCheckedChanged: Config.setNestedValue("activSpot.showRecording", checked)
+            checked: Config.options?.anoSpot?.showRecording ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showRecording", checked)
         }
         ConfigSwitch {
             label: "Clock & weather"
-            checked: Config.options?.activSpot?.showClockWeather ?? true
-            onCheckedChanged: Config.setNestedValue("activSpot.showClockWeather", checked)
+            checked: Config.options?.anoSpot?.showClockWeather ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showClockWeather", checked)
         }
     }
 }

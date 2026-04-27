@@ -7,7 +7,7 @@ import "root:modules/common"
 import "root:services"
 
 /**
- * Aggregator for ActivSpot widgets. Surfaces a single derived state per slot
+ * Aggregator for AnoSpot widgets. Surfaces a single derived state per slot
  * so the UI binds against one source. No external IPC, no state files —
  * everything is driven by reactive QML bindings against existing ano services.
  *
@@ -35,7 +35,7 @@ Singleton {
     // ─── Latest notification (transient) ──────────────────────────────────
     property var latestNotification: null
 
-    readonly property int notificationTimeoutMs: Config.options?.activSpot?.notificationTimeoutMs ?? 4000
+    readonly property int notificationTimeoutMs: Config.options?.anoSpot?.notificationTimeoutMs ?? 4000
 
     Connections {
         target: Notifications
