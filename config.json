@@ -246,7 +246,13 @@
         "showNotification": true,
         "showRecording": true,
         "showClockWeather": true,
-        "notificationTimeoutMs": 4000
+        "notificationTimeoutMs": 4000,
+        "actions": {
+            "leftClick": "mediaControls",
+            "rightClick": "controlPanel",
+            "middleClick": "anoview",
+            "scrollOnMpris": "audio"
+        }
     },
 
     "interactions": {

@@ -32,6 +32,18 @@ Scope {
     readonly property bool showRecording: Config.options?.anoSpot?.showRecording ?? true
     readonly property bool showClockWeather: Config.options?.anoSpot?.showClockWeather ?? true
 
+    readonly property var actions: Config.options?.anoSpot?.actions ?? ({})
+
+    function _dispatchClick(button) {
+        let target = "";
+        if (button === Qt.LeftButton)        target = root.actions.leftClick   ?? "mediaControls";
+        else if (button === Qt.RightButton)  target = root.actions.rightClick  ?? "controlPanel";
+        else if (button === Qt.MiddleButton) target = root.actions.middleClick ?? "anoview";
+        if (target.length > 0) {
+            Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", target, "toggle"]);
+        }
+    }
+
     Variants {
         model: root.enabled ? Quickshell.screens : []
 
@@ -73,6 +85,15 @@ Scope {
                 border.width: 1
                 border.color: Appearance?.colors?.colOutlineVariant ?? "#444"
                 opacity: 0.96
+
+                // Click dispatcher — catches left/right/middle on the pill background.
+                // Widget MouseAreas (e.g. AnoSpotMpris wheel handler) sit above this
+                // and intercept their own events; unclaimed clicks fall through here.
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    onClicked: mouse => root._dispatchClick(mouse.button)
+                }
 
                 // Horizontal layout for top/bottom; vertical for left/right
                 Loader {
