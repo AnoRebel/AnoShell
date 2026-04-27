@@ -37,6 +37,7 @@ Scope {
 
     readonly property var actions: Config.options?.anoSpot?.actions ?? ({})
     readonly property bool draggable: Config.options?.anoSpot?.draggable ?? true
+    readonly property bool acceptDrops: Config.options?.anoSpot?.acceptDrops ?? true
 
     // Snap a free pointer position to one of the four screen edges based
     // on which edge it ended up closest to. Returns "top"/"bottom"/"left"/"right".
@@ -196,6 +197,48 @@ Scope {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     onClicked: mouse => root._dispatchClick(mouse.button)
+                }
+
+                // Drop target — files/URIs dragged from any Wayland source
+                // get copied into the AnoSpotStash and the popout opens.
+                Loader {
+                    anchors.fill: parent
+                    active: root.acceptDrops
+                    sourceComponent: dropAreaComp
+                }
+                Component {
+                    id: dropAreaComp
+                    DropArea {
+                        keys: ["text/uri-list"]
+                        property bool dropHover: false
+
+                        onEntered: drag => {
+                            if (drag.hasUrls) {
+                                dropHover = true;
+                                drag.accept();
+                            }
+                        }
+                        onExited: dropHover = false
+                        onDropped: drop => {
+                            if (drop.hasUrls) {
+                                AnoSpotStash.addUrls(drop.urls);
+                                GlobalStates.anoSpotStashOpen = true;
+                                drop.accept();
+                            }
+                            dropHover = false;
+                        }
+
+                        // Drop hover indicator: tinted overlay on the pill.
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: Math.min(width, height) / 2
+                            color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
+                            opacity: parent.dropHover ? 0.18 : 0
+                            border.width: parent.dropHover ? 2 : 0
+                            border.color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
+                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                        }
+                    }
                 }
 
                 // Drag handle — leading edge of the pill. Press, drag the

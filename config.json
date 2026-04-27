@@ -260,7 +260,9 @@
             "holdMs": 1500,
             "events": ["notification", "track", "recording", "workspace"]
         },
-        "draggable": true
+        "draggable": true,
+        "acceptDrops": true,
+        "stashDir": ""
     },
 
     "interactions": {

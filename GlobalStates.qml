@@ -39,6 +39,7 @@ Singleton {
     property bool weatherPanelOpen: false
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false
+    property bool anoSpotStashOpen: false
 
     // Lock screen
     property bool screenLocked: false

@@ -168,6 +168,35 @@ ColumnLayout {
         }
     }
 
+    // ═══ Drag and drop ═══
+    SettingsCard {
+        icon: "place_item"
+        title: "Drag and drop"
+        subtitle: "Stage files dropped on AnoSpot for triage and actions"
+
+        ConfigSwitch {
+            id: dropEnable
+            label: "Accept drops"
+            sublabel: "When off, drags pass through AnoSpot to whatever is below"
+            checked: Config.options?.anoSpot?.acceptDrops ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.acceptDrops", checked)
+        }
+
+        ConfigRow {
+            label: "Stash directory"
+            sublabel: "Empty = auto ($XDG_RUNTIME_DIR/anoSpot, falls back to /tmp/anoSpot-<UID>)"
+            enabled: dropEnable.checked
+
+            StyledTextInput {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 220
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                text: Config.options?.anoSpot?.stashDir ?? ""
+                onEditingFinished: Config.setNestedValue("anoSpot.stashDir", text.trim())
+            }
+        }
+    }
+
     // ═══ Event border animation ═══
     SettingsCard {
         icon: "auto_awesome"
