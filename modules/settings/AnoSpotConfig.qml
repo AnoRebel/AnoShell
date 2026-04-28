@@ -197,6 +197,202 @@ ColumnLayout {
         }
     }
 
+    // ═══ Custom drop actions ═══
+    SettingsCard {
+        icon: "construction"
+        title: "Custom drop actions"
+        subtitle: "User-defined commands shown as buttons in the stash popout"
+
+        // ─── API help / placeholder docs ─────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: helpCol.implicitHeight + 16
+            radius: Appearance?.rounding.small ?? 8
+            color: Appearance?.colors.colLayer2 ?? "#3a3845"
+            border.width: 1
+            border.color: Appearance?.colors.colOutlineVariant ?? "#44444466"
+
+            ColumnLayout {
+                id: helpCol
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 4
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: "Each rule becomes a button in the popout footer. Placeholders are substituted in the command:"
+                    font.pixelSize: 11
+                    wrapMode: Text.Wrap
+                    opacity: 0.8
+                    color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    text: "  {path}   first item's full path        {paths}  newline-joined paths\n" +
+                          "  {name}   first item's basename         {names}  newline-joined basenames\n" +
+                          "  {dir}    first item's parent dir       {ext}    first item's extension"
+                    font.pixelSize: 10
+                    font.family: Appearance?.font.family.monospace ?? "monospace"
+                    wrapMode: Text.NoWrap
+                    color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
+                    opacity: 0.7
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    text: "Action: 'exec' = argv-split (safe; no shell). 'shell' = bash -c (pipes work; quote your paths). " +
+                          "Toggle 'Per item' to invoke the command once per staged file instead of once with all paths."
+                    font.pixelSize: 11
+                    wrapMode: Text.Wrap
+                    opacity: 0.8
+                    color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
+                }
+            }
+        }
+
+        // ─── Existing rules ──────────────────────────────────────────────
+        Repeater {
+            model: Config.options?.anoSpot?.dropTargets ?? []
+
+            Rectangle {
+                required property var modelData
+                required property int index
+                Layout.fillWidth: true
+                implicitHeight: ruleCol.implicitHeight + 16
+                radius: Appearance?.rounding.small ?? 8
+                color: Appearance?.colors.colLayer1 ?? "#2b2930"
+                border.width: 1
+                border.color: Appearance?.colors.colOutlineVariant ?? "#44444466"
+
+                ColumnLayout {
+                    id: ruleCol
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 6
+
+                    RowLayout {
+                        spacing: 6
+                        StyledText {
+                            text: "Name"
+                            font.pixelSize: 11; opacity: 0.7
+                            Layout.preferredWidth: 64
+                        }
+                        StyledTextInput {
+                            Layout.fillWidth: true
+                            text: modelData.name ?? ""
+                            onEditingFinished: root._updateRule(index, "name", text)
+                        }
+                        StyledText {
+                            text: "Icon"
+                            font.pixelSize: 11; opacity: 0.7
+                        }
+                        StyledTextInput {
+                            Layout.preferredWidth: 110
+                            text: modelData.icon ?? "play_arrow"
+                            onEditingFinished: root._updateRule(index, "icon", text)
+                        }
+                        RippleButton {
+                            implicitHeight: 26
+                            buttonRadius: 6
+                            contentItem: RowLayout {
+                                spacing: 4
+                                MaterialSymbol {
+                                    text: "delete"; iconSize: 12
+                                    color: Appearance?.colors.colError ?? "#f38ba8"
+                                }
+                            }
+                            onClicked: root._removeRule(index)
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: 6
+                        StyledText {
+                            text: "Action"
+                            font.pixelSize: 11; opacity: 0.7
+                            Layout.preferredWidth: 64
+                        }
+                        // Crude exec/shell toggle (a real ComboBox would be nicer
+                        // but isn't in the existing widget set).
+                        RippleButton {
+                            implicitHeight: 26
+                            buttonRadius: 6
+                            contentItem: StyledText {
+                                text: (modelData.action ?? "exec") + "  ⇆"
+                                font.pixelSize: 11
+                            }
+                            onClicked: root._updateRule(index, "action",
+                                (modelData.action ?? "exec") === "exec" ? "shell" : "exec")
+                        }
+                        ConfigSwitch {
+                            label: "Per item"
+                            Layout.fillWidth: true
+                            checked: modelData.perItem ?? false
+                            onCheckedChanged: root._updateRule(index, "perItem", checked)
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: 6
+                        StyledText {
+                            text: "Command"
+                            font.pixelSize: 11; opacity: 0.7
+                            Layout.preferredWidth: 64
+                        }
+                        StyledTextInput {
+                            Layout.fillWidth: true
+                            text: modelData.command ?? ""
+                            font.family: Appearance?.font.family.monospace ?? "monospace"
+                            onEditingFinished: root._updateRule(index, "command", text)
+                        }
+                    }
+                }
+            }
+        }
+
+        // ─── Add new rule ────────────────────────────────────────────────
+        RippleButton {
+            Layout.fillWidth: true
+            implicitHeight: 32
+            buttonRadius: 8
+            contentItem: RowLayout {
+                spacing: 6
+                MaterialSymbol { text: "add"; iconSize: 14 }
+                StyledText {
+                    text: "Add custom action"
+                    font.pixelSize: 12
+                }
+            }
+            onClicked: root._addRule()
+        }
+    }
+
+    // ─── Helpers (live at the page root so cards can call them) ─────────
+    function _addRule() {
+        const cur = (Config.options?.anoSpot?.dropTargets ?? []).slice();
+        cur.push({
+            name: "New action",
+            icon: "play_arrow",
+            action: "exec",
+            command: "",
+            perItem: false
+        });
+        Config.setNestedValue("anoSpot.dropTargets", cur);
+    }
+    function _removeRule(idx) {
+        const cur = (Config.options?.anoSpot?.dropTargets ?? []).slice();
+        if (idx < 0 || idx >= cur.length) return;
+        cur.splice(idx, 1);
+        Config.setNestedValue("anoSpot.dropTargets", cur);
+    }
+    function _updateRule(idx, key, value) {
+        const cur = (Config.options?.anoSpot?.dropTargets ?? []).slice();
+        if (idx < 0 || idx >= cur.length) return;
+        const rule = Object.assign({}, cur[idx]);
+        rule[key] = value;
+        cur[idx] = rule;
+        Config.setNestedValue("anoSpot.dropTargets", cur);
+    }
+
     // ═══ Event border animation ═══
     SettingsCard {
         icon: "auto_awesome"

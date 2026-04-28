@@ -45,6 +45,125 @@ Singleton {
     property real totalSizeBytes: 0
     readonly property string totalSizeText: _formatSize(totalSizeBytes)
 
+    // ─── Built-in action runtimes ───────────────────────────────────────
+    // Each one operates on the current staged item set. Stateless helpers;
+    // higher-level orchestration (e.g. LocalSend's discover → pick → send
+    // flow) is owned by the popout UI.
+
+    readonly property string scriptsDir: Quickshell.env("HOME") + "/.config/quickshell/ano/scripts/anoSpot"
+    readonly property string discoverScript: scriptsDir + "/localsend_discover.sh"
+    readonly property string sendScript: scriptsDir + "/localsend_send.sh"
+
+    // LocalSend discovery state. Consumers bind to discoverState +
+    // discoveredDevices; after calling localSendDiscover() the state
+    // transitions: idle -> scanning -> ready (or back to idle on stop).
+    property string discoverState: "idle"
+    ListModel { id: discoveredDevicesModel }
+    property alias discoveredDevices: discoveredDevicesModel
+
+    function localSendDiscover() {
+        if (discoverState === "scanning") return;
+        discoveredDevicesModel.clear();
+        discoverState = "scanning";
+        discoverProc.command = ["bash", "-c", "exec " + _shEsc(root.discoverScript)];
+        discoverProc.running = true;
+    }
+
+    function localSendStop() {
+        discoverState = "idle";
+    }
+
+    // Send every staged file to <targetIp> via the ported send script.
+    // Each invocation is fire-and-forget (notify-send handles success/fail
+    // feedback). Caller is responsible for clear()ing the stash on success
+    // if desired.
+    function localSendAll(targetIp) {
+        if (!targetIp || targetIp.length === 0) return;
+        for (let i = 0; i < itemsModel.count; i++) {
+            const it = itemsModel.get(i);
+            if (it.isDir) continue;  // LocalSend protocol is per-file
+            sendProc.command = ["bash", "-c",
+                "exec " + _shEsc(root.sendScript) + " " + _shEsc(it.filePath) + " " + _shEsc(targetIp)];
+            sendProc.running = true;
+        }
+    }
+
+    // Open every staged item with the user's default handler.
+    function openAll() {
+        for (let i = 0; i < itemsModel.count; i++) {
+            const it = itemsModel.get(i);
+            xdgOpenProc.command = ["xdg-open", it.filePath];
+            xdgOpenProc.running = true;
+        }
+    }
+
+    // Reveal the parent directory of the first staged item (or the stash
+    // dir itself if empty) in the user's default file manager.
+    function revealFirst() {
+        const target = itemsModel.count > 0
+            ? itemsModel.get(0).filePath.replace(/\/[^\/]*$/, "")
+            : root.stashDir;
+        xdgOpenProc.command = ["xdg-open", target];
+        xdgOpenProc.running = true;
+    }
+
+    // Comma-joined paths to the wl-clipboard.
+    function copyPaths() {
+        if (itemsModel.count === 0) return;
+        const paths = [];
+        for (let i = 0; i < itemsModel.count; i++)
+            paths.push(itemsModel.get(i).filePath);
+        wlCopyProc.command = ["bash", "-c",
+            "printf %s " + _shEsc(paths.join("\n")) + " | wl-copy"];
+        wlCopyProc.running = true;
+    }
+
+    // Run a user-defined command from Config.options.anoSpot.dropTargets.
+    // Rule: { name, action: "exec"|"shell", command, perItem: bool }
+    //   - exec   -> argv-split (safe), each arg goes through placeholder substitution
+    //   - shell  -> bash -c <command after substitution> (full shell semantics)
+    //   - perItem true  -> invoked once per staged item with {path}/{name}/{dir}/{ext}
+    //     perItem false -> invoked once total with {paths} (newline-joined) + {names}
+    function runCustomRule(rule) {
+        if (!rule || !rule.command) return;
+        const isShell = rule.action === "shell";
+        if (rule.perItem) {
+            for (let i = 0; i < itemsModel.count; i++) {
+                _runRuleOnce(rule, isShell, [itemsModel.get(i)]);
+            }
+        } else {
+            const all = [];
+            for (let i = 0; i < itemsModel.count; i++) all.push(itemsModel.get(i));
+            _runRuleOnce(rule, isShell, all);
+        }
+    }
+
+    function _runRuleOnce(rule, isShell, items) {
+        const subst = (str) => {
+            let s = String(str);
+            const first = items[0] || { filePath: "", name: "", isDir: false };
+            const allPaths = items.map(i => i.filePath).join("\n");
+            const allNames = items.map(i => i.name).join("\n");
+            const dir = first.filePath.replace(/\/[^\/]*$/, "");
+            const ext = (first.name.match(/\.([^.]+)$/) || [, ""])[1];
+            return s
+                .replace(/\{path\}/g, first.filePath)
+                .replace(/\{name\}/g, first.name)
+                .replace(/\{dir\}/g, dir)
+                .replace(/\{ext\}/g, ext)
+                .replace(/\{paths\}/g, allPaths)
+                .replace(/\{names\}/g, allNames);
+        };
+        if (isShell) {
+            customProc.command = ["bash", "-c", subst(rule.command)];
+        } else {
+            // Exec mode: split on whitespace, substitute each arg.
+            const argv = String(rule.command).trim().split(/\s+/).map(subst);
+            customProc.command = argv;
+        }
+        customProc.running = true;
+    }
+
     // ─── Public API ──────────────────────────────────────────────────────
     function addUrls(urls) {
         if (!urls || urls.length === 0) return;
@@ -148,6 +267,59 @@ Singleton {
     Process {
         id: clearProc
         onExited: () => root.refresh()
+    }
+
+    Process {
+        id: discoverProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (root.discoverState !== "scanning") return;
+                discoveredDevicesModel.clear();
+                const lines = (this.text || "").split("\n");
+                for (const line of lines) {
+                    const t = line.trim();
+                    if (!t) continue;
+                    const tab = t.indexOf("\t");
+                    if (tab < 0) continue;
+                    const alias = t.substring(0, tab);
+                    const ip = t.substring(tab + 1);
+                    if (alias && ip) discoveredDevicesModel.append({ alias: alias, ip: ip });
+                }
+                root.discoverState = "ready";
+            }
+        }
+    }
+
+    Process {
+        id: sendProc
+        onExited: (code, _) => {
+            if (code !== 0)
+                console.warn("[AnoSpotStash] localsend_send exited", code);
+        }
+    }
+
+    Process {
+        id: xdgOpenProc
+        onExited: (code, _) => {
+            if (code !== 0)
+                console.warn("[AnoSpotStash] xdg-open exited", code);
+        }
+    }
+
+    Process {
+        id: wlCopyProc
+        onExited: (code, _) => {
+            if (code !== 0)
+                console.warn("[AnoSpotStash] wl-copy exited", code);
+        }
+    }
+
+    Process {
+        id: customProc
+        onExited: (code, _) => {
+            if (code !== 0)
+                console.warn("[AnoSpotStash] custom command exited", code);
+        }
     }
 
     Process {

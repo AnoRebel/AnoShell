@@ -262,7 +262,8 @@
         },
         "draggable": true,
         "acceptDrops": true,
-        "stashDir": ""
+        "stashDir": "",
+        "dropTargets": []
     },
 
     "interactions": {

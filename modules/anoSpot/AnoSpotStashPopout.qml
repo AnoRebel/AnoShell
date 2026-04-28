@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import "root:"
 import "root:modules/common"
@@ -9,12 +10,14 @@ import "root:services"
 
 /**
  * Popout panel anchored beneath/above the AnoSpot pill that lists items
- * staged in the AnoSpotStash. Per-item × removes; "Clear all" empties the
- * stash and closes the popout.
+ * staged in the AnoSpotStash, with action buttons for LocalSend / Open /
+ * Copy path / Move / Reveal, plus any user-defined dropTargets rules from
+ * Config.options.anoSpot.dropTargets.
  *
- * Action buttons (LocalSend / Open / Copy path / Move / Reveal) are added
- * by a follow-up commit; this commit ships the stage + remove/clear UX
- * only.
+ * UI states (footerStack.current):
+ *   "actions"    — default toolbar, one button per action
+ *   "localsend"  — device discovery + selection list (replaces toolbar
+ *                  while a scan is in progress or devices are listed)
  */
 Scope {
     id: root
@@ -42,8 +45,8 @@ Scope {
             visible: root.open
             color: "transparent"
 
-            implicitWidth: 360
-            implicitHeight: Math.min(420, headerCol.implicitHeight + grid.implicitHeight + footerRow.implicitHeight + 56)
+            implicitWidth: 380
+            implicitHeight: 460
 
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:anospot:stash"
@@ -79,8 +82,8 @@ Scope {
             Rectangle {
                 id: card
                 anchors.centerIn: parent
-                width: 360
-                height: Math.min(420, headerCol.implicitHeight + grid.implicitHeight + footerRow.implicitHeight + 56)
+                width: 380
+                height: 460
                 radius: Appearance?.rounding?.normal ?? 14
                 color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
                 border.width: 1
@@ -231,36 +234,230 @@ Scope {
                         }
                     }
 
-                    // ─── Footer: clear-all button ─────────────────────────
-                    RowLayout {
-                        id: footerRow
+                    // ─── Footer: actions toolbar ↔ LocalSend picker ──────
+                    Loader {
+                        id: footerLoader
                         Layout.fillWidth: true
-                        spacing: 8
+                        property string mode: "actions"   // "actions" | "localsend"
+                        sourceComponent: mode === "localsend" ? localsendComp : actionsComp
 
-                        Item { Layout.fillWidth: true }
-
-                        RippleButton {
-                            implicitHeight: 32
-                            buttonRadius: 8
-                            colBackground: Appearance?.colors?.colLayer1 ?? "#2b2930"
-
-                            contentItem: RowLayout {
-                                spacing: 6
-                                MaterialSymbol {
-                                    text: "delete_sweep"
-                                    iconSize: 16
-                                    color: Appearance?.colors?.colError ?? "#f38ba8"
-                                }
-                                StyledText {
-                                    text: "Clear all"
-                                    font.pixelSize: 12
-                                    color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
+                        // When the popout closes, snap back to actions mode.
+                        Connections {
+                            target: GlobalStates
+                            function onAnoSpotStashOpenChanged() {
+                                if (!GlobalStates.anoSpotStashOpen) {
+                                    footerLoader.mode = "actions";
+                                    AnoSpotStash.localSendStop();
                                 }
                             }
-                            onClicked: AnoSpotStash.clear()
+                        }
+                    }
+
+                    // ─── Action toolbar ──────────────────────────────────
+                    Component {
+                        id: actionsComp
+                        ColumnLayout {
+                            spacing: 6
+
+                            // Built-in actions row 1
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: 6
+
+                                AnoSpotActionButton {
+                                    icon: "send"; label: "LocalSend"
+                                    accent: Appearance?.colors?.colPrimary ?? "#a6e3a1"
+                                    onActivated: {
+                                        footerLoader.mode = "localsend";
+                                        AnoSpotStash.localSendDiscover();
+                                    }
+                                }
+                                AnoSpotActionButton {
+                                    icon: "open_in_new"; label: "Open"
+                                    onActivated: AnoSpotStash.openAll()
+                                }
+                                AnoSpotActionButton {
+                                    icon: "content_copy"; label: "Copy path"
+                                    onActivated: AnoSpotStash.copyPaths()
+                                }
+                                AnoSpotActionButton {
+                                    icon: "drive_file_move"; label: "Move to…"
+                                    onActivated: moveToProc.running = true
+                                }
+                                AnoSpotActionButton {
+                                    icon: "folder_open"; label: "Reveal"
+                                    onActivated: AnoSpotStash.revealFirst()
+                                }
+                            }
+
+                            // Custom user-defined rules (each renders as a button)
+                            Flow {
+                                Layout.fillWidth: true
+                                spacing: 6
+                                visible: customRulesRepeater.count > 0
+
+                                Repeater {
+                                    id: customRulesRepeater
+                                    model: Config.options?.anoSpot?.dropTargets ?? []
+
+                                    AnoSpotActionButton {
+                                        required property var modelData
+                                        icon: modelData.icon ?? "play_arrow"
+                                        label: modelData.name ?? "Custom"
+                                        onActivated: AnoSpotStash.runCustomRule(modelData)
+                                    }
+                                }
+                            }
+
+                            // Bottom row: clear-all
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Item { Layout.fillWidth: true }
+
+                                RippleButton {
+                                    implicitHeight: 30
+                                    buttonRadius: 8
+                                    colBackground: Appearance?.colors?.colLayer1 ?? "#2b2930"
+                                    contentItem: RowLayout {
+                                        spacing: 6
+                                        MaterialSymbol {
+                                            text: "delete_sweep"; iconSize: 14
+                                            color: Appearance?.colors?.colError ?? "#f38ba8"
+                                        }
+                                        StyledText {
+                                            text: "Clear all"; font.pixelSize: 11
+                                            color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
+                                        }
+                                    }
+                                    onClicked: AnoSpotStash.clear()
+                                }
+                            }
+                        }
+                    }
+
+                    // ─── LocalSend picker ────────────────────────────────
+                    Component {
+                        id: localsendComp
+                        ColumnLayout {
+                            spacing: 6
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 6
+                                MaterialSymbol {
+                                    text: "wifi_find"; iconSize: 14
+                                    color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
+                                }
+                                StyledText {
+                                    Layout.fillWidth: true
+                                    text: AnoSpotStash.discoverState === "scanning"
+                                        ? "Scanning for LocalSend devices…"
+                                        : (AnoSpotStash.discoveredDevices.count === 0
+                                            ? "No devices found on this network"
+                                            : `${AnoSpotStash.discoveredDevices.count} device${AnoSpotStash.discoveredDevices.count === 1 ? "" : "s"} found`)
+                                    font.pixelSize: 11
+                                    color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
+                                }
+                                RippleButton {
+                                    implicitHeight: 26
+                                    buttonRadius: 6
+                                    contentItem: RowLayout {
+                                        spacing: 4
+                                        MaterialSymbol { text: "refresh"; iconSize: 12 }
+                                        StyledText { text: "Rescan"; font.pixelSize: 11 }
+                                    }
+                                    onClicked: AnoSpotStash.localSendDiscover()
+                                }
+                                RippleButton {
+                                    implicitHeight: 26
+                                    buttonRadius: 6
+                                    contentItem: RowLayout {
+                                        spacing: 4
+                                        MaterialSymbol { text: "arrow_back"; iconSize: 12 }
+                                        StyledText { text: "Back"; font.pixelSize: 11 }
+                                    }
+                                    onClicked: {
+                                        AnoSpotStash.localSendStop();
+                                        footerLoader.mode = "actions";
+                                    }
+                                }
+                            }
+
+                            // Device list
+                            ListView {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Math.min(120, contentHeight)
+                                clip: true
+                                model: AnoSpotStash.discoveredDevices
+                                spacing: 4
+
+                                delegate: Rectangle {
+                                    width: ListView.view ? ListView.view.width : 0
+                                    height: 32
+                                    radius: 6
+                                    color: deviceMa.containsMouse
+                                        ? (Appearance?.colors?.colLayer2 ?? "#3a3845")
+                                        : (Appearance?.colors?.colLayer1 ?? "#2b2930")
+                                    Behavior on color { ColorAnimation { duration: 100 } }
+
+                                    required property string alias
+                                    required property string ip
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.leftMargin: 8
+                                        anchors.rightMargin: 8
+                                        spacing: 6
+                                        MaterialSymbol {
+                                            text: "smartphone"; iconSize: 14
+                                            color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
+                                        }
+                                        StyledText {
+                                            Layout.fillWidth: true
+                                            text: parent.parent.alias
+                                            font.pixelSize: 12
+                                            elide: Text.ElideRight
+                                            color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
+                                        }
+                                        StyledText {
+                                            text: parent.parent.ip
+                                            font.pixelSize: 10
+                                            opacity: 0.55
+                                            color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: deviceMa
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            AnoSpotStash.localSendAll(parent.ip);
+                                            // Return to actions; user sees notify-send for results.
+                                            footerLoader.mode = "actions";
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+            }
+
+            // Move-to picker via zenity. User picks a directory; we mv every
+            // staged item there and refresh the stash. Out of band of the
+            // service so that the popout stays free of zenity coupling.
+            Process {
+                id: moveToProc
+                command: ["bash", "-c",
+                    "set -e; " +
+                    "dir=$(zenity --file-selection --directory --title='Move stashed items to…' 2>/dev/null) || exit 0; " +
+                    "[ -z \"$dir\" ] && exit 0; " +
+                    "for f in '" + AnoSpotStash.stashDir.replace(/'/g, "'\\''") + "'/*; do " +
+                    "  [ -e \"$f\" ] && mv -f -- \"$f\" \"$dir/\" || true; " +
+                    "done"]
+                onExited: AnoSpotStash.refresh()
             }
 
             Keys.onPressed: event => {
