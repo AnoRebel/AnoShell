@@ -24,7 +24,7 @@ Rectangle {
     clip: true
 
     readonly property var enabledWidgets: Config.options?.sidebar?.right?.enabledWidgets ?? [
-        "systemButtons", "quickSliders", "quickToggles", "media", "notifications", "calendar", "systemInfo"
+        "systemButtons", "quickSliders", "quickToggles", "networkDetail", "media", "notifications", "calendar", "systemInfo"
     ]
 
     StyledFlickable {
@@ -101,6 +101,16 @@ Rectangle {
                 active: root.enabledWidgets.includes("quickToggles")
                 visible: active
                 sourceComponent: QuickToggles {}
+            }
+
+            // ═══════════════════════════════════════
+            // Network detail (bandwidth + VPN)
+            // ═══════════════════════════════════════
+            Loader {
+                Layout.fillWidth: true
+                active: root.enabledWidgets.includes("networkDetail")
+                visible: active
+                sourceComponent: NetworkDetailPanel {}
             }
 
             // ═══════════════════════════════════════
