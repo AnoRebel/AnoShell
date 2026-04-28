@@ -70,6 +70,21 @@ Scope {
                     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
                     anchors { top: true; bottom: true; left: true; right: true }
 
+                    // Auto-dim after Config.options.lock.dim.idleMs of no input.
+                    property bool dimmed: false
+                    Timer {
+                        id: dimIdleTimer
+                        interval: Config.options?.lock?.dim?.idleMs ?? 30000
+                        running: GlobalStates.screenLocked
+                            && (Config.options?.lock?.dim?.enable ?? true)
+                        repeat: false
+                        onTriggered: lockWindow.dimmed = true
+                    }
+                    function _wake() {
+                        lockWindow.dimmed = false
+                        dimIdleTimer.restart()
+                    }
+
                     // Background
                     Rectangle {
                         anchors.fill: parent
@@ -88,15 +103,52 @@ Scope {
                         ShaderEffectSource {
                             anchors.fill: parent
                             sourceItem: bgImage; visible: bgImage.status === Image.Ready
-                            // Simple dim overlay since we can't use MultiEffect in lock
                         }
                         Rectangle { anchors.fill: parent; color: Qt.rgba(0, 0, 0, 0.6) }
+                    }
+
+                    // Idle dim overlay — fades to a configurable opacity after
+                    // dim.idleMs of no input, back to 0 on any pointer/key event.
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "black"
+                        z: 1
+                        opacity: lockWindow.dimmed
+                            ? (Config.options?.lock?.dim?.opacity ?? 0.6)
+                            : 0
+                        Behavior on opacity {
+                            NumberAnimation { duration: 400; easing.type: Easing.InOutCubic }
+                        }
+                    }
+
+                    // Catch-all wake input — hover-and-watch surface, doesn't
+                    // accept events so they propagate to the password input.
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+                        propagateComposedEvents: true
+                        z: 2
+                        onPositionChanged: lockWindow._wake()
+                    }
+                    Connections {
+                        target: passwordInput
+                        function onTextChanged() { lockWindow._wake() }
+                        function onActiveFocusChanged() { lockWindow._wake() }
                     }
 
                     // Content
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: 24; width: 320
+                        z: 3  // above the wake-watch MouseArea
+
+                        // Notifications-while-locked panel (opt-in via
+                        // Config.options.lock.notifications.enable). Self-
+                        // hides when empty so it doesn't take vertical space.
+                        LockNotifications {
+                            Layout.fillWidth: true
+                        }
 
                         // Clock
                         ColumnLayout {
@@ -143,9 +195,29 @@ Scope {
                             color: "white"; Layout.alignment: Qt.AlignHCenter
                         }
 
-                        // Password input
+                        // Status row (battery/wifi/clock) — opt-in via
+                        // Config.options.lock.statusRow.enable. Sits above
+                        // the password input.
+                        LockStatusRow {
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        // Password input — animates wider on focus
+                        // (Config.options.lock.passwordInput.expandOnFocus,
+                        // default true) so the whole control "wakes up"
+                        // when the user starts typing.
                         Rectangle {
-                            Layout.fillWidth: true; implicitHeight: 48; radius: 24
+                            Layout.alignment: Qt.AlignHCenter
+                            readonly property bool expandOnFocus: Config.options?.lock?.passwordInput?.expandOnFocus ?? true
+                            readonly property int collapsedWidth: 240
+                            readonly property int expandedWidth: 320
+                            Layout.preferredWidth: expandOnFocus
+                                ? (passwordInput.activeFocus ? expandedWidth : collapsedWidth)
+                                : 320
+                            implicitHeight: 48; radius: 24
+                            Behavior on Layout.preferredWidth {
+                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            }
                             color: Qt.rgba(1, 1, 1, 0.1)
                             border.width: passwordInput.activeFocus ? 2 : 1
                             border.color: lockScope.authError.length > 0 ? "#EF5350" : (passwordInput.activeFocus ? Appearance?.colors.colPrimary ?? "#65558F" : "#33ffffff")
@@ -208,6 +280,26 @@ Scope {
                             visible: lockScope.authenticating
                             font.pixelSize: 13; color: "white"; opacity: 0.5
                             Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        // On-screen keyboard — opt-in via
+                        // Config.options.lock.osk.enable. Routes its key()
+                        // and submit() signals into passwordInput.
+                        LockOSK {
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: 12
+                            onKey: (text) => {
+                                passwordInput.text = passwordInput.text + text
+                                lockWindow._wake()
+                            }
+                            onBackspace: {
+                                passwordInput.text = passwordInput.text.slice(0, -1)
+                                lockWindow._wake()
+                            }
+                            onSubmit: {
+                                if (passwordInput.text.length > 0)
+                                    pamContext.respond(passwordInput.text)
+                            }
                         }
                     }
                 }

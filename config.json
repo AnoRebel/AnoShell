@@ -263,6 +263,28 @@
         }
     },
 
+    "lock": {
+        "enable": true,
+        "notifications": {
+            "enable": false,
+            "maxItems": 5
+        },
+        "osk": {
+            "enable": false
+        },
+        "statusRow": {
+            "enable": false
+        },
+        "dim": {
+            "enable": true,
+            "idleMs": 30000,
+            "opacity": 0.6
+        },
+        "passwordInput": {
+            "expandOnFocus": true
+        }
+    },
+
     "lyrics": {
         "enable": false,
         "visible": true,
