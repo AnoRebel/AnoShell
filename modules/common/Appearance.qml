@@ -13,6 +13,7 @@ Singleton {
     property QtObject rounding
     property QtObject font
     property QtObject sizes
+    property QtObject glassTokens
     property string syntaxHighlightingTheme
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -389,4 +390,20 @@ Singleton {
     }
 
     syntaxHighlightingTheme: root.m3colors.darkmode ? "Monokai" : "ayu Light"
+
+    // Glass tokens — populated by StaticThemeLoader when a static theme
+    // ships glass values, otherwise stay at sensible defaults so consuming
+    // modules can opt in unconditionally. The Material You pipeline does
+    // NOT touch these (Material You themes can still set them via the
+    // generated colors.json by adding glass_* keys, but typically don't).
+    glassTokens: QtObject {
+        // Surface translucency for popups/pills/cards opting into glass
+        property real opacity: 0.96
+        // Backdrop blur radius (used by surfaces that wire a blur effect)
+        property real blur: 0
+        // Border tint for the glass edge
+        property color borderColor: root.colors.colOutlineVariant
+        // Border thickness
+        property real borderWidth: 1
+    }
 }

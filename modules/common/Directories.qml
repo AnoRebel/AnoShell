@@ -27,6 +27,12 @@ Singleton {
     property string pluginsPath: Quickshell.shellPath("plugins")
     property string layoutsPath: Quickshell.shellPath("layouts")
 
+    // Theme paths — bundled themes ship under assets/themes/<name>.json,
+    // user themes drop into ~/.config/ano/themes/ (takes precedence on
+    // name collision so users can override bundled themes by filename).
+    property string bundledThemesPath: assetsPath + "/themes"
+    property string userThemesPath: FileUtils.trimFileProtocol(`${root.config}/ano/themes`)
+
     // Shell configuration directory (user-writable config, separate from shell source)
     property string shellConfig: FileUtils.trimFileProtocol(`${root.config}/Ano`)
 

@@ -145,6 +145,17 @@ Singleton {
                     property string manualScheme: "" // manual hex override (empty = auto)
                     property bool darkMode: true
                 }
+
+                // Theme source selector. When source === "materialYou", the
+                // existing wallpaper-driven pipeline owns Appearance.m3colors.
+                // When source === "static", StaticThemeLoader writes
+                // Appearance.m3colors from assets/themes/<static>.json (or
+                // ~/.config/ano/themes/<static>.json — user dir takes
+                // precedence on name collision).
+                property JsonObject theme: JsonObject {
+                    property string source: "materialYou"  // "materialYou" | "static"
+                    property string static: ""              // theme name without .json suffix
+                }
             }
 
             // ═══════════════════════════════════════════════════════════════

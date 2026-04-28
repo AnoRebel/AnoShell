@@ -19,6 +19,11 @@ Singleton {
     }
 
     function applyColors(fileContent) {
+        // Short-circuit when a static theme is selected. StaticThemeLoader
+        // owns the m3colors writes in that mode.
+        if ((Config.options?.appearance?.theme?.source ?? "materialYou") !== "materialYou")
+            return
+
         const json = JSON.parse(fileContent)
         for (const key in json) {
             if (json.hasOwnProperty(key)) {
