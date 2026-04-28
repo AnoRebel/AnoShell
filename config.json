@@ -261,6 +261,13 @@
         }
     },
 
+    "lyrics": {
+        "enable": false,
+        "visible": true,
+        "backend": "Auto",
+        "dir": "~/.config/ano/lyrics"
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
