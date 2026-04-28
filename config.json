@@ -235,6 +235,14 @@
         "preferredProfile": ""
     },
 
+    "network": {
+        "usage": {
+            "enable": false,
+            "intervalMs": 1000,
+            "historyLength": 30
+        }
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
