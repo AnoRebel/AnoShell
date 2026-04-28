@@ -3,7 +3,7 @@
 A comprehensive QuickShell (v0.2.1+) desktop shell for Wayland compositors.
 Supports **Hyprland** and **Niri** with runtime auto-detection.
 
-**175+ QML files • 22,000+ lines • 26 modules • 30+ IPC targets • 10 settings pages**
+**218+ QML files • 30,000+ lines • 28 modules • 41 services • 30+ IPC targets • 10 settings pages • 4 panel families • 24 bundled themes**
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ ano/
 │   │   ├── BarWindow.qml           # PanelWindow on any edge, per-bar height/radius
 │   │   ├── BarContent.qml          # Configurable spacing/padding/click/scroll actions
 │   │   ├── BarGroup.qml            # Rounded pill container
-│   │   └── modules/                # 15 bar modules (8 with morph-capable popouts)
+│   │   └── modules/                # 17 bar modules (8 with morph-capable popouts)
 │   │       ├── BarModuleLoader.qml # Singleton mapper
 │   │       ├── ClockModule.qml     # 🕐 Popout: calendar, uptime, weather
 │   │       ├── WorkspacesModule.qml# Workspace dots (Hyprland + Niri)
@@ -60,7 +60,9 @@ ano/
 │   │       ├── NotificationsModule.qml # 🔔 Popout: recent notifications
 │   │       ├── ActiveWindowModule.qml  # Window title
 │   │       ├── SidebarButtonModule.qml # Toggle pill
-│   │       ├── KeyboardModule.qml  # XKB layout indicator
+│   │       ├── KeyboardModule.qml  # XKB layout + click-to-cycle (Niri)
+│   │       ├── PrivacyModule.qml   # Mic-active indicator (zero-width when idle)
+│   │       ├── GameModeModule.qml  # GameMode-active indicator
 │   │       └── IdleModule.qml      # Coffee cup toggle
 │   │
 │   ├── overview/                   # AnoView — 10 layout algorithms
@@ -84,11 +86,12 @@ ano/
 │   │   ├── Translator.qml         # trans CLI + AI fallback, 12 languages
 │   │   └── aiChat/                 # Message rendering (3 files)
 │   │
-│   ├── sidebarRight/               # 7 files — configurable widget stack
+│   ├── sidebarRight/               # 8 files — configurable widget stack
 │   │   ├── SidebarRight.qml       # PanelWindow shell
 │   │   ├── SidebarRightContent.qml # enabledWidgets array
 │   │   ├── QuickSliders.qml       # Volume / Brightness / Mic
-│   │   ├── QuickToggles.qml       # WiFi / BT / DND / Idle pills
+│   │   ├── QuickToggles.qml       # WiFi / Hotspot / BT / DND / Idle / NightLight pills (chevron-expandable temp slider)
+│   │   ├── NetworkDetailPanel.qml  # rx/tx bandwidth + VPN toggle (auto-hides when both dormant)
 │   │   ├── CompactMediaPlayer.qml  # Vinyl art + controls
 │   │   ├── NotificationCenter.qml  # Recent notifications
 │   │   └── SystemInfoPanel.qml    # CPU/RAM/Battery gauges + net speed
@@ -96,17 +99,18 @@ ano/
 │   ├── controlPanel/               # Floating notification-shade
 │   │   └── ControlPanel.qml       # Toggles, sliders, media, gauges, power
 │   │
-│   ├── settings/                   # 11 files — 9-page settings system
-│   │   ├── SettingsOverlay.qml    # Floating overlay (9 nav pages)
+│   ├── settings/                   # 12 files — 10-page settings system
+│   │   ├── SettingsOverlay.qml    # Floating overlay (10 nav pages)
 │   │   ├── SettingsCard.qml       # Collapsible card component
 │   │   ├── GeneralConfig.qml      # Audio, battery, time, notifications, scrolling
 │   │   ├── ModulesConfig.qml      # Module enable/disable, OSD, corners, alt-tab, apps
 │   │   ├── BarConfig.qml          # Edge, layout, spacing, actions, weather, tray
 │   │   ├── DockConfig.qml         # Position, style, sizing, behavior, pinned apps
 │   │   ├── SidebarsConfig.qml     # Behavior, widget toggles, sliders
-│   │   ├── AppearanceConfig.qml   # Colors, bezel, animations, wallpaper rotation
+│   │   ├── AppearanceConfig.qml   # Theme source picker, dynamic/static themes, bezel, animations, wallpaper rotation
 │   │   ├── OverviewConfig.qml     # Layout selector (11 cards)
-│   │   ├── ServicesConfig.qml     # AI models, resources, brightness
+│   │   ├── AnoSpotConfig.qml      # Position, widgets, click bindings, event border, drag/drop, custom drop actions
+│   │   ├── ServicesConfig.qml     # AI, GameMode, PowerProfiles, NetworkUsage, Hotspot, VPN, NightLight, Lyrics, CalendarSync, Resources, Brightness
 │   │   └── AboutPage.qml         # User profile (avatar picker), system info, credits
 │   │
 │   ├── osd/                        # On-screen display (6 indicators)
@@ -142,8 +146,11 @@ ano/
 │   ├── wallpaperSelector/          # Wallpaper browser
 │   │   └── WallpaperSelector.qml  # Grid, directory nav, rotation status
 │   │
-│   ├── lock/                       # Lock screen (Niri only)
-│   │   └── LockScreen.qml        # PAM auth, clock, avatar, password
+│   ├── lock/                       # Lock screen (Niri only — Hyprland uses hyprlock)
+│   │   ├── LockScreen.qml         # PAM auth, clock, avatar, password (expand-on-focus, idle dim)
+│   │   ├── LockNotifications.qml  # Optional notification mirror while locked
+│   │   ├── LockOSK.qml            # Optional 4-row QWERTY on-screen keyboard
+│   │   └── LockStatusRow.qml      # Optional battery + wifi + clock chips
 │   │
 │   ├── focusTime/                  # App usage tracker (from ilyamiro)
 │   │   ├── FocusTimePanel.qml    # PanelWindow wrapper with IPC
@@ -153,36 +160,82 @@ ano/
 │   │   ├── DisplayManager.qml    # PanelWindow wrapper with IPC
 │   │   └── DisplayManagerContent.qml # Visual layout, resolution grid, refresh slider
 │   │
-│   └── screenCorners/              # Hot corners
-│       └── ScreenCorners.qml      # 4 configurable corner triggers
+│   ├── screenCorners/              # Hot corners
+│   │   └── ScreenCorners.qml      # 4 configurable corner triggers
+│   │
+│   ├── recordingOsd/               # Live screen-recording overlay
+│   │   └── RecordingOsd.qml       # wf-recorder elapsed + stop button
+│   │
+│   ├── calendar/                   # Standalone calendar overlay
+│   │   └── CalendarPanel.qml      # Month grid + event dots + upcoming events
+│   │
+│   └── anoSpot/                    # Dynamic-island pill (10 files)
+│       ├── AnoSpot.qml            # Pill orchestrator (drag handle, drop area, event border)
+│       ├── AnoSpotMpris.qml       # Now-playing + lyrics swap + scroll-to-volume
+│       ├── AnoSpotNotification.qml # Toast slot
+│       ├── AnoSpotRecording.qml   # Recording indicator
+│       ├── AnoSpotClockWeather.qml # Compact time + temperature
+│       ├── AnoSpotWorkspace.qml   # Workspace indicator + hover-preview trigger
+│       ├── AnoSpotWorkspacePreview.qml # Hover-popup with live ScreencopyView thumbnails
+│       ├── AnoSpotBattery.qml     # 8-tier battery glyph
+│       ├── AnoSpotStashPopout.qml # Drag-and-drop stash with custom action toolbar
+│       └── AnoSpotEventBorder.qml # Animated gradient halo
 │
-├── services/                       # 24 service singletons
-│   ├── CompositorService.qml      # Auto-detect Hyprland/Niri
-│   ├── NiriService.qml            # Full Niri IPC via socket (1321 lines)
+├── services/                       # 41 service singletons
+│   ├── CompositorService.qml      # Auto-detect Hyprland/Niri, activeWorkspaceIndex/Name abstraction
+│   ├── NiriService.qml            # Full Niri IPC via socket
+│   ├── HyprlandData.qml           # hyprctl JSON
+│   ├── HyprlandKeybinds.qml       # Hyprland keybind parser
+│   ├── NiriKeybinds.qml           # Niri KDL config parser
 │   ├── AnoSocket.qml              # Reconnecting socket wrapper
 │   ├── Ai.qml                     # AI chat (6+ providers, streaming, Anthropic thinking)
 │   ├── Audio.qml                  # PipeWire volume + protection
 │   ├── Battery.qml                # UPower + auto-suspend
-│   ├── BluetoothStatus.qml       # Device lists
-│   ├── Brightness.qml            # brightnessctl + DDC/CI
-│   ├── Cliphist.qml              # Clipboard history
-│   ├── DateTime.qml              # Clock + uptime
-│   ├── HyprlandData.qml          # hyprctl JSON
-│   ├── HyprlandKeybinds.qml      # Keybind parser
-│   ├── NiriKeybinds.qml          # KDL config parser
+│   ├── BluetoothStatus.qml        # Device lists
+│   ├── Brightness.qml             # brightnessctl + DDC/CI
+│   ├── Cliphist.qml               # Clipboard history
+│   ├── DateTime.qml               # Clock + uptime
 │   ├── Idle.qml                   # Wayland IdleInhibitor
-│   ├── KeyboardLayoutService.qml  # XKB (Hyprland + Niri)
-│   ├── MaterialThemeLoader.qml   # Wallpaper → MD3 colors
-│   ├── MprisController.qml       # Media player tracking
-│   ├── Network.qml               # nmcli WiFi/Ethernet
-│   ├── Notifications.qml         # Persistent notification center
-│   ├── ResourceUsage.qml         # CPU/RAM/swap/network from /proc
-│   ├── SpectrumService.qml       # Cava audio spectrum (reference counted)
-│   ├── TrayService.qml           # System tray with pinning + DBus menu support
-│   ├── FocusTime.qml             # App usage tracker daemon lifecycle
-│   ├── AntiFlashbang.qml         # GLSL shader to darken bright screens (Hyprland)
-│   ├── Wallpapers.qml            # Directory browsing + auto-rotation
-│   └── Weather.qml               # wttr.in + GPS
+│   ├── IdleInhibitor.qml          # Per-app inhibit registry
+│   ├── KeyboardLayoutService.qml  # XKB (Hyprland + Niri) + click-to-cycle
+│   ├── MaterialThemeLoader.qml    # Wallpaper → MD3 colors (dynamic mode)
+│   ├── StaticThemeLoader.qml      # JSON → MD3 colors (static mode)
+│   ├── ThemeRegistry.qml          # Lists bundled + user themes
+│   ├── MprisController.qml        # Media player tracking
+│   ├── LyricsService.qml          # Synced lyric .lrc parser + position polling
+│   ├── Network.qml                # nmcli WiFi/Ethernet + hotspot toggle
+│   ├── NetworkUsage.qml           # /proc/net/dev rx/tx polling (opt-in)
+│   ├── VPN.qml                    # tailscale/netbird/warp/wireguard/custom (opt-in)
+│   ├── NightLight.qml             # wlsunset wrapper (opt-in)
+│   ├── Notifications.qml          # Persistent notification center
+│   ├── Privacy.qml                # Mic-active/cam-active detection
+│   ├── GameMode.qml               # Fullscreen-app detection
+│   ├── PowerProfilePersistence.qml # power-profiles-daemon restore-on-start
+│   ├── RecorderStatus.qml         # wf-recorder process detection
+│   ├── ResourceUsage.qml          # CPU/RAM/swap/network from /proc
+│   ├── SpectrumService.qml        # Cava audio spectrum (reference counted)
+│   ├── TrayService.qml            # System tray with pinning + DBus menu support
+│   ├── FocusTime.qml              # App usage tracker daemon lifecycle
+│   ├── AntiFlashbang.qml          # GLSL shader to darken bright screens (Hyprland)
+│   ├── CalendarSync.qml           # iCal/CalDAV pull (opt-in)
+│   ├── MinimizedWindows.qml       # Niri minimize-emulation registry
+│   ├── ShellExec.qml              # Convenience exec wrapper
+│   ├── AnoSpotState.qml           # Shared AnoSpot widget state
+│   ├── AnoSpotStash.qml           # Drag-and-drop stash directory manager
+│   ├── Wallpapers.qml             # Directory browsing + auto-rotation
+│   └── Weather.qml                # wttr.in + GPS
+│
+├── panelFamilies/                  # 4 layout presets + PanelLoader
+│   ├── PanelLoader.qml            # LazyLoader gated by Config.ready + extra condition
+│   ├── AnoFamily.qml              # Default — everything enabled
+│   ├── HeftyFamily.qml            # Morphing bar panels (polygon ShapeCanvas)
+│   ├── CleanFamily.qml            # Bar + sidebars + essentials only
+│   └── MinimalFamily.qml          # Bar + bare overlays
+│
+├── assets/themes/                  # 24 bundled static themes (dark + light variants)
+│   └── *.json                     # ayu, catppuccin, dracula, eldritch, gruvbox, kanagawa,
+│                                  # noctalia-default, nord, rosepine, tokyo-night,
+│                                  # angel, aurora, inir
 │
 ├── layouts/                        # 10 overview layout algorithms + manager
 │
@@ -190,12 +243,14 @@ ano/
 │   ├── colors/switchwall.sh       # awww + matugen + pywal (with backup/restore)
 │   ├── colors/applycolor.sh       # Apply colors to kitty/ghostty/foot/cava
 │   ├── hyprland/get_keybinds.py   # Keybind config parser
+│   ├── anoSpot/                   # LocalSend send/discover scripts
 │   └── focustime/                 # App usage tracking daemon
 │       ├── focus_daemon.py        # Background daemon (Hyprland + Niri, SQLite)
 │       └── get_stats.py           # Historical query script (week/month/hourly)
 │
 ├── plugins/                        # C++ extension point placeholder
-└── assets/, translations/, panelFamilies/  # Future content
+├── external/                       # Symlinked Niri/Hyprland-Ano configs
+└── translations/                   # Future content
 ```
 
 ## Configuration
@@ -223,7 +278,43 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 }
 ```
 Per-bar fields (null = use global): `morphingPanel`, `height`, `radius`, all spacing/padding/action fields.
-Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard`, `notifications`, `idle`
+Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`
+
+### Panel Families
+Switch entire layout presets atomically. Each family loads a different combination of panels via `panelFamilies/*.qml`:
+
+| Family   | Includes                                                                  | Best for                          |
+|----------|---------------------------------------------------------------------------|-----------------------------------|
+| `ano`    | Bar + Dock + both Sidebars + HUD + AI + Overview + everything             | Default daily driver              |
+| `hefty`  | Same as `ano`, plus morphing polygon bar panels                           | Maximalist visual                 |
+| `clean`  | Bar + Sidebars + essentials. No dock, no hot corners, no HUD              | Focused work                      |
+| `minimal`| Bar + bare overlays only. No sidebars, no dock, no HUD                    | Lightweight / external launchers  |
+
+Set via `panelFamily: "ano"|"hefty"|"clean"|"minimal"` in `config.json`, cycle with `Ctrl+Super+P`, or via `qs -c ano ipc call panelFamily cycle`. Switching plays a configurable ripple-transition animation (`familyTransitionAnimation: true`).
+
+### Sidebar Right widgets
+Configurable via `sidebar.right.enabledWidgets[]` in any order:
+
+| Widget          | Purpose                                                            |
+|-----------------|--------------------------------------------------------------------|
+| `systemButtons` | Uptime + reload/settings/session row                               |
+| `quickSliders`  | Volume / Brightness / (optionally) Mic                             |
+| `quickToggles`  | WiFi / Hotspot / BT / DND / Idle / NightLight pills                |
+| `networkDetail` | Bandwidth (rx/tx) + VPN status (auto-hides when both dormant)      |
+| `media`         | Compact Mpris player                                               |
+| `notifications` | Recent notifications                                               |
+| `calendar`      | Month grid                                                         |
+| `systemInfo`    | CPU / RAM / Battery gauges                                         |
+
+The night-light pill has a chevron — tap the body to toggle, tap the chevron to expand an inline temperature slider (animated reveal).
+
+### Theme system
+Two color sources, switched via `appearance.theme.source`:
+
+- **`materialYou`** (default) — `MaterialThemeLoader` derives Material 3 palette from the active wallpaper via matugen.
+- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/ano/themes/<name>.json`). 24 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
+
+Pick from Settings → Appearance → Theme grid (hover-preview, click-to-commit). Themes optionally export `glass_*` keys consumed by `Appearance.glassTokens` for translucent surfaces (RecordingOsd, AnoSpot pill, AnoSpot stash popout).
 
 ### AnoSpot (dynamic-island overlay)
 Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notification, recording indicator (with elapsed timer), clock/weather, workspace number, and battery. Compositor-agnostic (Hyprland + Niri). Click to expand into related panels; drag from a file manager to stage files for triage actions like sending via LocalSend.
@@ -379,21 +470,24 @@ qs -c ano ipc call <target> <method>
 | `bar` | `toggle`, `open`, `close` |
 | `sidebarLeft` / `sidebarRight` | `toggle`, `open`, `close` |
 | `anoview` | `toggle [layout]`, `open`, `close` |
+| `overviewWorkspacesToggle` | `toggle` (workspace-strip overview) |
 | `settings` / `settingsStandalone` | `toggle`, `open` / `open` |
 | `audio` | `toggleMute`, `toggleMicMute`, `increment`, `decrement` |
 | `brightness` | `increment`, `decrement` |
 | `mpris` | `pauseAll`, `playPause`, `previous`, `next` |
-| `idle` | `toggle`, `enable`, `disable` |
+| `idle` / `idleInhibitor` | `toggle`, `enable`, `disable` / per-app inhibit registry |
 | `hud` | `toggle`, `open`, `close` |
 | `session` | `toggle`, `open`, `close` |
 | `dock` | `toggle`, `pin`, `unpin` |
-| `clipboard` | `toggle`, `open`, `close` |
+| `clipboard` / `cliphistService` | `toggle`, `open`, `close` / direct cliphist actions |
 | `altSwitcher` | `show`, `hide`, `next`, `prev`, `activate` |
 | `search` | `toggle`, `open`, `close` |
 | `taskView` | `toggle`, `open`, `close` |
 | `mediaControls` | `toggle`, `open`, `close` |
 | `controlPanel` | `toggle`, `open`, `close` |
 | `weatherPanel` | `toggle`, `open`, `close` |
+| `calendar` | `toggle`, `open`, `close` |
+| `recordingOsd` | `toggle`, `open`, `close` |
 | `cheatsheet` | `toggle`, `open`, `close` |
 | `lock` | `lock` |
 | `wallpapers` / `wallpaperSelector` | `apply path` / `toggle` |
@@ -404,10 +498,14 @@ qs -c ano ipc call <target> <method>
 | `focusTime` | `toggle`, `open`, `close` |
 | `displayManager` | `toggle`, `open`, `close` |
 | `antiFlashbang` | `toggle`, `enable`, `disable` |
+| `niriKeybinds` | `reload` (re-parse KDL) |
+| `minimize` | `toggle` (Niri minimize emulation) |
 | `zoom` | `zoomIn`, `zoomOut` |
 | `TEST_ALIVE` | _(no methods — existence check)_ |
 
 ## Keybinds (Hyprland)
+
+Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) and `~/.config/hypr/Ano/custom/keybinds.conf` (user overrides, sourced after defaults). Equivalent Niri bindings live at `~/.config/niri/ano.kdl`. Both are reachable via symlinks under `external/{niri,hyprland}/` inside this repo.
 
 ### QuickShell UI Toggles
 | Key | Action |
@@ -429,6 +527,7 @@ qs -c ano ipc call <target> <method>
 | `Super+Shift+D` | Toggle dock |
 | `Super+Shift+W` | Weather panel |
 | `Super+Shift+F` | FocusTime tracker |
+| `Super+−` / `Super+=` | Zoom out / in |
 | `Ctrl+Super+D` | Display manager |
 | `Ctrl+Super+T` | Wallpaper selector |
 | `Ctrl+Super+B` | Anti-flashbang shader |
