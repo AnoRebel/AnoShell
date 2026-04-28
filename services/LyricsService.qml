@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Mpris
 import "root:modules/common"
 import "lrcparser.js" as Lrc
 
@@ -404,7 +405,10 @@ Singleton {
     function jumpTo(index, time) {
         root.isManualSeeking = true;
         root.currentIndex = index;
-        if (player) {
+        // Per Quickshell.Services.Mpris docs, position is only writable
+        // when both positionSupported and canSeek are true. Silently no-op
+        // otherwise (most players will at least preserve currentIndex).
+        if (player && player.positionSupported && player.canSeek) {
             player.position = time + root.offset + 0.01;
         }
         seekTimer.restart();
@@ -418,6 +422,27 @@ Singleton {
         id: seekTimer
         interval: 500
         onTriggered: root.isManualSeeking = false
+    }
+
+    // MprisPlayer.position is not reactive by default — it only emits
+    // positionChanged on nonlinear changes (seeks). To advance the
+    // highlighted line during normal playback, manually emit
+    // positionChanged at 1Hz while playing, then bind updatePosition()
+    // to it. Pattern from quickshell.org/docs/master/types/.../MprisPlayer.
+    Timer {
+        id: positionPoll
+        running: !!root.player && root.player.playbackState === MprisPlaybackState.Playing
+                 && root.lyricsModel.count > 0
+        interval: 250  // 4Hz — smooth enough for line-level highlight, light on CPU
+        repeat: true
+        onTriggered: {
+            if (root.player) root.player.positionChanged();
+        }
+    }
+    Connections {
+        target: root.player
+        ignoreUnknownSignals: true
+        function onPositionChanged() { root.updatePosition(); }
     }
 
     // If the local file lookup didn't yield anything within the interval,
