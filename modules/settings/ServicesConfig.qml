@@ -218,4 +218,302 @@ ColumnLayout {
             }
         }
     }
+
+    // ═══ GameMode ═══
+    SettingsCard {
+        icon: "videogame_asset"
+        title: "GameMode"
+        subtitle: "Detects when gamemoded is active so the bar can show a 'gaming' indicator. Read-only — activation is handled by your existing ~/.config/hypr/scripts/gamemode helper or by libgamemode-aware games."
+
+        ConfigSwitch {
+            id: gmEnable
+            label: "Enable detection"
+            checked: Config.options?.gameMode?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("gameMode.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Poll interval"
+            sublabel: "How often `gamemoded -s` is checked"
+            from: 500; to: 10000; stepSize: 500
+            enabled: gmEnable.checked
+            value: Config.options?.gameMode?.pollIntervalMs ?? 2000
+            onValueChanged: Config.setNestedValue("gameMode.pollIntervalMs", Math.round(value))
+            valueText: `${(Math.round(value) / 1000).toFixed(1)}s`
+        }
+
+        ConfigRow {
+            label: "Status"
+            sublabel: gmEnable.checked
+                ? (GameMode.active ? `Active · ${GameMode.clientCount} client(s)` : "Inactive")
+                : "Detection disabled"
+            StyledText {
+                text: gmEnable.checked && GameMode.active ? "●" : "○"
+                color: gmEnable.checked && GameMode.active
+                    ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
+                    : Qt.rgba(1, 1, 1, 0.3)
+                font.pixelSize: 18
+            }
+        }
+    }
+
+    // ═══ Power Profiles ═══
+    SettingsCard {
+        icon: "battery_saver"
+        title: "Power profiles"
+        subtitle: "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`."
+
+        ConfigSwitch {
+            label: "Restore on start"
+            sublabel: "When off, power-profiles-daemon decides at boot"
+            checked: Config.options?.powerProfiles?.restoreOnStart ?? true
+            onCheckedChanged: Config.setNestedValue("powerProfiles.restoreOnStart", checked)
+        }
+
+        ConfigRow {
+            label: "Last active profile"
+            sublabel: "Updated automatically when you change profiles via any tool"
+            StyledText {
+                text: {
+                    const p = Config.options?.powerProfiles?.preferredProfile ?? "";
+                    return p.length > 0 ? p : "(not set yet)";
+                }
+                font.family: Appearance?.font.family.mono ?? "monospace"
+                opacity: 0.8
+            }
+        }
+    }
+
+    // ═══ Network Usage ═══
+    SettingsCard {
+        icon: "monitoring"
+        title: "Network usage tracking"
+        subtitle: "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface."
+
+        ConfigSwitch {
+            id: nuEnable
+            label: "Enable"
+            checked: Config.options?.network?.usage?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("network.usage.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Poll interval"
+            from: 250; to: 5000; stepSize: 250
+            enabled: nuEnable.checked
+            value: Config.options?.network?.usage?.intervalMs ?? 1000
+            onValueChanged: Config.setNestedValue("network.usage.intervalMs", Math.round(value))
+            valueText: `${(Math.round(value) / 1000).toFixed(2)}s`
+        }
+
+        ConfigSlider {
+            label: "History length"
+            sublabel: "Number of samples kept for sparkline display"
+            from: 10; to: 120; stepSize: 5
+            enabled: nuEnable.checked
+            value: Config.options?.network?.usage?.historyLength ?? 30
+            onValueChanged: Config.setNestedValue("network.usage.historyLength", Math.round(value))
+            valueText: `${Math.round(value)} pts`
+        }
+    }
+
+    // ═══ VPN ═══
+    SettingsCard {
+        icon: "vpn_key"
+        title: "VPN"
+        subtitle: "Connection status + control for tailscale, netbird, warp, wireguard, or a custom CLI. The active provider is the first entry below with `enabled: true`."
+
+        ConfigSwitch {
+            id: vpnEnable
+            label: "Enable VPN service"
+            sublabel: "When off, no provider CLI is queried regardless of `providers` content"
+            checked: Config.options?.vpn?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("vpn.enable", checked)
+        }
+
+        ConfigSwitch {
+            label: "Notify on state change"
+            sublabel: "Reserved — surfaces can subscribe to statusChanged for their own toasts"
+            enabled: vpnEnable.checked
+            checked: Config.options?.vpn?.notifyOnChange ?? true
+            onCheckedChanged: Config.setNestedValue("vpn.notifyOnChange", checked)
+        }
+
+        ConfigRow {
+            label: "Active provider"
+            sublabel: vpnEnable.checked && VPN.enabled
+                ? `${VPN.providerName} · state: ${VPN.status.state}`
+                : "(no provider enabled)"
+            StyledText {
+                text: VPN.connected ? "●" : "○"
+                color: VPN.connected
+                    ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
+                    : Qt.rgba(1, 1, 1, 0.3)
+                font.pixelSize: 18
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: vpnHelp.implicitHeight + 16
+            radius: Appearance?.rounding.small ?? 8
+            color: Appearance?.colors.colLayer2 ?? "#3a3845"
+            border.width: 1
+            border.color: Appearance?.colors.colOutlineVariant ?? "#44444466"
+            ColumnLayout {
+                id: vpnHelp
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 4
+                StyledText {
+                    Layout.fillWidth: true
+                    text: "Configure providers via Config.options.vpn.providers — an array of:\n  \"tailscale\"  |  \"netbird\"  |  \"warp\"  |  \"wireguard\"\nor a custom object: { name, enabled: true, connectCmd: [...], disconnectCmd: [...], interface, displayName }"
+                    font.pixelSize: 11
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                    wrapMode: Text.Wrap
+                    opacity: 0.75
+                }
+            }
+        }
+    }
+
+    // ═══ Calendar (external sync) ═══
+    SettingsCard {
+        icon: "event"
+        title: "Calendar sync"
+        subtitle: "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered."
+
+        ConfigSwitch {
+            id: calEnable
+            label: "Enable"
+            checked: Config.options?.calendar?.externalSync?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("calendar.externalSync.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Refresh interval"
+            from: 5; to: 240; stepSize: 5
+            enabled: calEnable.checked
+            value: Config.options?.calendar?.externalSync?.refreshMinutes ?? 15
+            onValueChanged: Config.setNestedValue("calendar.externalSync.refreshMinutes", Math.round(value))
+            valueText: `${Math.round(value)} min`
+        }
+
+        ConfigRow {
+            label: "Sources"
+            sublabel: {
+                const n = (Config.options?.calendar?.externalSync?.sources ?? []).length;
+                return n === 0
+                    ? "None configured. Add via Config.options.calendar.externalSync.sources (UI editor not built yet)."
+                    : `${n} feed${n === 1 ? "" : "s"} configured · ${CalendarSync.events.length} events loaded`;
+            }
+            StyledText {
+                text: CalendarSync.fetching ? "syncing…" : (CalendarSync.ready ? "ready" : "idle")
+                font.pixelSize: 11
+                opacity: 0.6
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+        }
+    }
+
+    // ═══ Lyrics ═══
+    SettingsCard {
+        icon: "lyrics"
+        title: "Lyrics"
+        subtitle: "Synchronized lyrics for the active media player. Reads local .lrc files, falls back to LRCLIB and NetEase online sources."
+
+        ConfigSwitch {
+            id: lyEnable
+            label: "Enable"
+            checked: Config.options?.lyrics?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("lyrics.enable", checked)
+        }
+
+        ConfigSwitch {
+            label: "Visible by default"
+            sublabel: "When off, surfaces start collapsed and the user has to toggle"
+            enabled: lyEnable.checked
+            checked: Config.options?.lyrics?.visible ?? true
+            onCheckedChanged: Config.setNestedValue("lyrics.visible", checked)
+        }
+
+        // Backend picker (Auto / Local / LRCLIB / NetEase)
+        ConfigRow {
+            label: "Backend"
+            sublabel: {
+                const b = Config.options?.lyrics?.backend ?? "Auto";
+                if (b === "Local")   return "Local files only — no network calls";
+                if (b === "LRCLIB")  return "Online via lrclib.net (open public corpus)";
+                if (b === "NetEase") return "Online via music.163.com (Chinese-music coverage)";
+                return "Auto: local file → LRCLIB → NetEase";
+            }
+            enabled: lyEnable.checked
+
+            RowLayout {
+                spacing: 4
+                Repeater {
+                    model: ["Auto", "Local", "LRCLIB", "NetEase"]
+                    RippleButton {
+                        required property string modelData
+                        implicitHeight: 26
+                        buttonRadius: 6
+                        toggled: (Config.options?.lyrics?.backend ?? "Auto") === modelData
+                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        contentItem: StyledText {
+                            text: modelData
+                            font.pixelSize: 11
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                        }
+                        onClicked: Config.setNestedValue("lyrics.backend", modelData)
+                    }
+                }
+            }
+        }
+
+        ConfigRow {
+            label: "Lyrics directory"
+            sublabel: "Path for local .lrc files. Supports `~` expansion."
+            enabled: lyEnable.checked
+            StyledTextInput {
+                text: Config.options?.lyrics?.dir ?? "~/.config/ano/lyrics"
+                onEditingFinished: Config.setNestedValue("lyrics.dir", text.trim())
+                Layout.preferredWidth: 220
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+        }
+    }
+
+    // ═══ Shell ═══
+    SettingsCard {
+        icon: "terminal"
+        title: "Shell"
+        subtitle: "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter."
+
+        ConfigRow {
+            label: "Preferred shell"
+            sublabel: `Detected from $SHELL: ${ShellExec.detected}. Active: ${ShellExec.current}.`
+
+            RowLayout {
+                spacing: 4
+                Repeater {
+                    model: ["", "bash", "zsh", "fish", "nushell"]
+                    RippleButton {
+                        required property string modelData
+                        implicitHeight: 26
+                        buttonRadius: 6
+                        toggled: (Config.options?.shell?.preferred ?? "") === modelData
+                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        contentItem: StyledText {
+                            text: modelData === "" ? "Auto" : modelData
+                            font.pixelSize: 11
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                        }
+                        onClicked: Config.setNestedValue("shell.preferred", modelData)
+                    }
+                }
+            }
+        }
+    }
 }
