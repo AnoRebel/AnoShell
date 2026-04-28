@@ -9,14 +9,244 @@ import qs.services
  * animation controls, and wallpaper rotation config.
  */
 ColumnLayout {
+    id: appearanceRoot
     spacing: 16
+
+    // Track the originally-selected theme so hover-preview can revert
+    // when the cursor leaves a card without the user clicking. Captured
+    // once on entry into the picker, restored on cancel/exit.
+    readonly property string committedSource: Config.options?.appearance?.theme?.source ?? "materialYou"
+    readonly property string committedStatic: Config.options?.appearance?.theme?.static ?? ""
+
+    // True while the user is hovering a non-selected theme card. Pinned
+    // by mouse-enter, cleared on click (commits) or mouse-leave (reverts).
+    property bool previewing: false
+    property string previewingName: ""
+
+    function _previewTheme(name: string): void {
+        // Always switch to static mode so the previewed theme actually shows.
+        Config.setNestedValue("appearance.theme.source", "static")
+        Config.setNestedValue("appearance.theme.static", name)
+        previewing = true
+        previewingName = name
+    }
+
+    function _revertPreview(): void {
+        if (!previewing) return
+        Config.setNestedValue("appearance.theme.source", committedSource)
+        Config.setNestedValue("appearance.theme.static", committedStatic)
+        previewing = false
+        previewingName = ""
+    }
+
+    function _commitTheme(name: string): void {
+        Config.setNestedValue("appearance.theme.source", "static")
+        Config.setNestedValue("appearance.theme.static", name)
+        previewing = false
+        previewingName = ""
+    }
+
+    function _commitMaterialYou(): void {
+        Config.setNestedValue("appearance.theme.source", "materialYou")
+        previewing = false
+        previewingName = ""
+    }
+
+    // ═══ Theme Source ═══
+    SettingsCard {
+        icon: "auto_awesome"
+        title: "Theme source"
+        subtitle: "Dynamic Material You (wallpaper-derived) or pick a static theme"
+
+        ConfigRow {
+            label: "Source"
+            sublabel: appearanceRoot.committedSource === "materialYou"
+                ? "Dynamic — palette derived from the active wallpaper"
+                : `Static — ${appearanceRoot.committedStatic || "(none selected)"}`
+
+            RowLayout {
+                spacing: 4
+                Repeater {
+                    model: ["materialYou", "static"]
+                    RippleButton {
+                        required property string modelData
+                        implicitHeight: 28
+                        buttonRadius: 8
+                        toggled: appearanceRoot.committedSource === modelData
+                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        contentItem: StyledText {
+                            text: modelData === "materialYou" ? "Material You" : "Static"
+                            font.pixelSize: 12
+                            anchors.leftMargin: 10; anchors.rightMargin: 10
+                        }
+                        onClicked: {
+                            if (modelData === "materialYou") appearanceRoot._commitMaterialYou()
+                            else if (appearanceRoot.committedStatic.length > 0)
+                                appearanceRoot._commitTheme(appearanceRoot.committedStatic)
+                            else
+                                Config.setNestedValue("appearance.theme.source", "static")
+                        }
+                    }
+                }
+            }
+        }
+
+        // ─── Theme grid (visible only when source = static or while previewing) ───
+        Item {
+            Layout.fillWidth: true
+            implicitHeight: visible ? grid.implicitHeight + 16 : 0
+            visible: appearanceRoot.committedSource === "static" || appearanceRoot.previewing
+
+            // Two-column grid of theme cards. Hover previews; click commits.
+            GridLayout {
+                id: grid
+                anchors.fill: parent
+                anchors.topMargin: 8
+                columns: 2
+                columnSpacing: 8
+                rowSpacing: 8
+
+                Repeater {
+                    model: ThemeRegistry.themes
+
+                    Rectangle {
+                        required property var modelData
+                        readonly property string themeName: modelData.name
+                        readonly property bool isCommitted:
+                            appearanceRoot.committedSource === "static"
+                            && appearanceRoot.committedStatic === themeName
+                        readonly property bool isPreviewing:
+                            appearanceRoot.previewing
+                            && appearanceRoot.previewingName === themeName
+
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: cellCol.implicitHeight + 16
+                        radius: Appearance?.rounding.small ?? 8
+                        color: themeMa.containsMouse
+                            ? (Appearance?.colors.colLayer2 ?? "#3a3845")
+                            : (Appearance?.colors.colLayer1 ?? "#2b2930")
+                        border.width: (isCommitted || isPreviewing) ? 2 : 1
+                        border.color: isCommitted
+                            ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
+                            : isPreviewing
+                                ? (Appearance?.colors.colSecondary ?? "#cba6f7")
+                                : (Appearance?.colors.colOutlineVariant ?? "#44444466")
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                        ColumnLayout {
+                            id: cellCol
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 6
+
+                            // Header: name + dark/light + source badge
+                            RowLayout {
+                                spacing: 6
+                                StyledText {
+                                    text: modelData.displayName
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                                Rectangle {
+                                    visible: modelData.source === "user"
+                                    radius: 4
+                                    color: Appearance?.colors.colTertiaryContainer ?? "#5a4a3a"
+                                    implicitWidth: userBadge.implicitWidth + 8
+                                    implicitHeight: userBadge.implicitHeight + 4
+                                    StyledText {
+                                        id: userBadge
+                                        anchors.centerIn: parent
+                                        text: "user"
+                                        font.pixelSize: 9
+                                    }
+                                }
+                                MaterialSymbol {
+                                    text: modelData.darkmode ? "dark_mode" : "light_mode"
+                                    iconSize: 14
+                                    color: modelData.darkmode
+                                        ? Qt.rgba(1, 1, 1, 0.55)
+                                        : Qt.rgba(1, 0.85, 0.4, 0.85)
+                                }
+                            }
+
+                            // Swatch row — primary / surface / surface-container / outline
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 4
+                                Repeater {
+                                    model: [
+                                        modelData.primary,
+                                        modelData.surface,
+                                        modelData.surfaceContainer,
+                                        modelData.outline
+                                    ]
+                                    Rectangle {
+                                        required property string modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 16
+                                        radius: 4
+                                        color: modelData
+                                        border.width: 1
+                                        border.color: Qt.rgba(0, 0, 0, 0.25)
+                                    }
+                                }
+                            }
+
+                            // Description
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: modelData.description
+                                font.pixelSize: 10
+                                opacity: 0.6
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 2
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        MouseArea {
+                            id: themeMa
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: {
+                                if (!parent.isCommitted) appearanceRoot._previewTheme(parent.themeName)
+                            }
+                            onExited: {
+                                if (appearanceRoot.previewing
+                                    && appearanceRoot.previewingName === parent.themeName)
+                                    appearanceRoot._revertPreview()
+                            }
+                            onClicked: appearanceRoot._commitTheme(parent.themeName)
+                        }
+                    }
+                }
+            }
+        }
+
+        NoticeBox {
+            visible: appearanceRoot.committedSource === "static" && ThemeRegistry.count === 0
+            text: "No themes found. Bundled themes live in assets/themes/. Drop additional .json files into ~/.config/ano/themes/ to add your own."
+            iconName: "info"
+        }
+
+        NoticeBox {
+            visible: appearanceRoot.previewing
+            text: `Previewing "${appearanceRoot.previewingName}". Click a card to apply, or move the cursor away to revert.`
+            iconName: "preview"
+        }
+    }
 
     // ═══ Theme Colors ═══
     SettingsCard {
         icon: "palette"
         title: "Theme Colors"
-        subtitle: "Material You color scheme derived from your wallpaper"
+        subtitle: "Live color swatches from the active palette"
         collapsible: true
+        expanded: false
 
         // Live color swatch grid
         GridLayout {
