@@ -22,8 +22,11 @@ QtObject {
             case "sidebarButton": return sidebarButtonModule
             case "weather": return weatherModule
             case "keyboard": return keyboardModule
+            case "keyboardLayout": return keyboardModule  // alias — same module, both IDs accepted
             case "notifications": return notificationsModule
             case "idle": return idleModule
+            case "privacy": return privacyModule
+            case "gamemode": return gameModeModule
             default:
                 console.warn(`[BarModuleLoader] Unknown module: ${name}`)
                 return null
@@ -44,4 +47,6 @@ QtObject {
     property Component keyboardModule: Component { KeyboardModule {} }
     property Component notificationsModule: Component { NotificationsModule {} }
     property Component idleModule: Component { IdleModule {} }
+    property Component privacyModule: Component { PrivacyModule {} }
+    property Component gameModeModule: Component { GameModeModule {} }
 }
