@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * PanelLoader — LazyLoader gated by Config.ready and an optional extra condition.

@@ -155,6 +155,57 @@ Scope {
                     }
                 }
 
+                // Lyrics — 5 lines centered on LyricsService.currentLine
+                // (2 before, current bold + accent, 2 after). Visible only
+                // when the user opted into lyrics AND the active track has
+                // lyrics loaded. Section is gated by lyrics.visible (which
+                // the user can toggle without disabling the whole service).
+                Loader {
+                    Layout.fillWidth: true
+                    active: (Config.options?.lyrics?.enable ?? false)
+                            && (Config.options?.lyrics?.visible ?? true)
+                            && LyricsService.model.count > 0
+                    visible: active
+                    sourceComponent: ColumnLayout {
+                        spacing: 2
+                        readonly property int linesShown: 5
+                        readonly property int half: Math.floor(linesShown / 2)
+
+                        Repeater {
+                            model: parent.linesShown
+                            StyledText {
+                                required property int index
+                                readonly property int targetIdx:
+                                    LyricsService.currentIndex - parent.half + index
+                                readonly property bool inRange:
+                                    targetIdx >= 0 && targetIdx < LyricsService.model.count
+                                readonly property bool isCurrent:
+                                    targetIdx === LyricsService.currentIndex && targetIdx >= 0
+                                Layout.fillWidth: true
+                                Layout.maximumWidth: mediaCard.width - 48
+                                Layout.alignment: Qt.AlignHCenter
+                                horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.Wrap
+                                text: inRange
+                                    ? (LyricsService.model.get(targetIdx)?.lyricLine ?? "")
+                                    : ""
+                                font.pixelSize: isCurrent
+                                    ? (Appearance?.font.pixelSize.normal ?? 16)
+                                    : (Appearance?.font.pixelSize.smaller ?? 12)
+                                font.weight: isCurrent ? Font.DemiBold : Font.Normal
+                                color: isCurrent
+                                    ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
+                                    : (Appearance?.colors.colOnLayer1 ?? "#cdd6f4")
+                                opacity: isCurrent ? 1
+                                    : (inRange
+                                        ? (1 - Math.abs(targetIdx - LyricsService.currentIndex) * 0.3)
+                                        : 0)
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                            }
+                        }
+                    }
+                }
+
                 // Audio spectrum (if cava active)
                 Loader {
                     Layout.fillWidth: true; Layout.preferredHeight: 32

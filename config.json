@@ -330,7 +330,14 @@
         "draggable": true,
         "acceptDrops": true,
         "stashDir": "",
-        "dropTargets": []
+        "dropTargets": [],
+        "workspaceHoverPreview": {
+            "enable": true,
+            "openDelayMs": 200,
+            "closeDelayMs": 300,
+            "thumbnailWidth": 180,
+            "thumbnailHeight": 110
+        }
     },
 
     "interactions": {

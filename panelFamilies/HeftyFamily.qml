@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Hefty Family — Full experience with morphing bar panels.
@@ -49,6 +49,7 @@ Scope {
     PanelLoader { extraCondition: Config.options?.screenCorners?.enable ?? false; component: Loader { source: "root:modules/screenCorners/ScreenCorners.qml" } }
     PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpot.qml" } }
     PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpotStashPopout.qml" } }
+    PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpotWorkspacePreview.qml" } }
     PanelLoader { component: Loader { source: "root:modules/calendar/CalendarPanel.qml" } }
     PanelLoader { extraCondition: CompositorService.compositor === "niri"; component: Loader { source: "root:modules/lock/LockScreen.qml" } }
 

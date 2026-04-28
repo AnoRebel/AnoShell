@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Minimal Family — Lightweight shell.
