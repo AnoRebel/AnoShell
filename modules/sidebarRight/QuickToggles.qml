@@ -29,6 +29,18 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Hotspot — broadcasts a WiFi network from this machine. SSID +
+        // password configured via Config.options.network.hotspot. Password
+        // auto-generated on first enable when empty.
+        TogglePill {
+            iconName: Network.hotspotActive ? "wifi_tethering" : "wifi_tethering_off"
+            label: Network.hotspotBusy ? "..." : (Network.hotspotActive ? "Hotspot" : "Off")
+            active: Network.hotspotActive
+            activeColor: "#FFA726"
+            onClicked: Network.toggleHotspot()
+            Layout.fillWidth: true
+        }
+
         // Bluetooth
         TogglePill {
             iconName: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"

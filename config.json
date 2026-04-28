@@ -241,6 +241,10 @@
             "enable": false,
             "intervalMs": 1000,
             "historyLength": 30
+        },
+        "hotspot": {
+            "ssid": "AnoHotspot",
+            "password": ""
         }
     },
 
@@ -331,6 +335,7 @@
         "acceptDrops": true,
         "stashDir": "",
         "dropTargets": [],
+        "showLyrics": false,
         "workspaceHoverPreview": {
             "enable": true,
             "openDelayMs": 200,

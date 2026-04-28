@@ -4,11 +4,12 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.modules.common
 import qs.services.network
 
 /**
  * Network service using nmcli. WiFi scanning, connecting, password management,
- * status monitoring, and signal strength tracking.
+ * status monitoring, signal strength tracking, and a hotspot toggle.
  */
 Singleton {
     id: root
@@ -19,6 +20,12 @@ Singleton {
     property bool wifiScanning: false
     property bool wifiConnecting: connectProc.running
     property WifiAccessPoint wifiConnectTarget
+
+    // Hotspot — detected by polling `nmcli -t -f NAME,TYPE,DEVICE c show --active`
+    // for a row of type `802-11-wireless` whose name is the configured SSID.
+    // Toggled via nmcli device wifi hotspot / nmcli connection down.
+    property bool hotspotActive: false
+    property bool hotspotBusy: hotspotToggleProc.running
     readonly property list<WifiAccessPoint> wifiNetworks: []
     readonly property WifiAccessPoint active: wifiNetworks.find(n => n.active) ?? null
     readonly property list<var> friendlyWifiNetworks: [...wifiNetworks].sort((a, b) => {
@@ -74,6 +81,72 @@ Singleton {
 
     function openPublicWifiPortal() {
         Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"])
+    }
+
+    // Hotspot — read SSID + password from
+    //   Config.options.network.hotspot.{ssid, password}
+    // Generates a random 12-char alphanumeric password on first enable
+    // when none is configured, and persists it back to config.
+    function _generateHotspotPassword() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
+        let p = ""
+        for (let i = 0; i < 12; i++)
+            p += chars[Math.floor(Math.random() * chars.length)]
+        return p
+    }
+
+    function toggleHotspot(): void {
+        const ssid = (Config.options?.network?.hotspot?.ssid ?? "").trim() || "AnoHotspot"
+        let password = (Config.options?.network?.hotspot?.password ?? "").trim()
+        if (root.hotspotActive) {
+            // Bring it down by name. We don't know the connection's exact
+            // nmcli name (nmcli auto-names hotspot connections "Hotspot"
+            // by default), so try the configured SSID first, then "Hotspot".
+            hotspotToggleProc.command = ["bash", "-c",
+                `nmcli connection down ${JSON.stringify(ssid)} 2>/dev/null || ` +
+                `nmcli connection down Hotspot 2>/dev/null || true`]
+        } else {
+            // Generate + persist a password if none.
+            if (password.length === 0) {
+                password = root._generateHotspotPassword()
+                Config.setNestedValue("network.hotspot.password", password)
+            }
+            // Persist the SSID too if it was empty (we used the default).
+            if ((Config.options?.network?.hotspot?.ssid ?? "").trim().length === 0)
+                Config.setNestedValue("network.hotspot.ssid", ssid)
+            hotspotToggleProc.command = ["nmcli", "device", "wifi", "hotspot",
+                "ssid", ssid, "password", password]
+        }
+        hotspotToggleProc.running = true
+    }
+
+    Process {
+        id: hotspotToggleProc
+        onExited: (_, __) => hotspotPollProc.running = true
+    }
+    Process {
+        id: hotspotPollProc
+        // Look for an active connection of type 802-11-wireless whose name
+        // looks like a hotspot. Matches the default "Hotspot" name and any
+        // connection with the configured SSID.
+        command: ["bash", "-c",
+            "nmcli -t -f NAME,TYPE,DEVICE c show --active 2>/dev/null | " +
+            "awk -F: '$2 == \"802-11-wireless\" { print $1 }'"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const ssid = (Config.options?.network?.hotspot?.ssid ?? "").trim() || "AnoHotspot"
+                const lines = (this.text || "").split("\n").map(l => l.trim()).filter(l => l)
+                root.hotspotActive = lines.some(l => l === "Hotspot" || l === ssid)
+            }
+        }
+    }
+    // Refresh hotspot state on a slow interval (cheap nmcli call).
+    Timer {
+        interval: 5000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: hotspotPollProc.running = true
     }
 
     function changePassword(network, password, username = ""): void {
