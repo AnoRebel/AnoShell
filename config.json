@@ -225,6 +225,11 @@
         "models": {}
     },
 
+    "gameMode": {
+        "enable": false,
+        "pollIntervalMs": 2000
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
