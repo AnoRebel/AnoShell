@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Services.UPower
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -271,15 +272,46 @@ ColumnLayout {
         }
 
         ConfigRow {
-            label: "Last active profile"
-            sublabel: "Updated automatically when you change profiles via any tool"
-            StyledText {
-                text: {
-                    const p = Config.options?.powerProfiles?.preferredProfile ?? "";
-                    return p.length > 0 ? p : "(not set yet)";
+            label: "Active profile"
+            sublabel: "Persists across reboots when restore-on-start is on"
+
+            RowLayout {
+                spacing: 4
+
+                Repeater {
+                    model: ({
+                        // Filter performance out when the daemon doesn't expose it
+                        list: PowerProfiles.hasPerformanceProfile
+                            ? [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
+                            : [PowerProfile.PowerSaver, PowerProfile.Balanced]
+                    }).list
+
+                    RippleButton {
+                        required property int modelData
+                        readonly property string label: modelData === PowerProfile.PowerSaver
+                            ? "Power saver"
+                            : modelData === PowerProfile.Balanced
+                                ? "Balanced"
+                                : "Performance"
+                        readonly property string symbol: modelData === PowerProfile.PowerSaver
+                            ? "battery_saver"
+                            : modelData === PowerProfile.Balanced
+                                ? "balance"
+                                : "rocket_launch"
+                        implicitHeight: 28
+                        buttonRadius: 8
+                        toggled: PowerProfiles.profile === modelData
+                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        contentItem: RowLayout {
+                            spacing: 4
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
+                            MaterialSymbol { text: symbol; iconSize: 14 }
+                            StyledText { text: label; font.pixelSize: 12 }
+                        }
+                        onClicked: PowerProfiles.profile = modelData
+                    }
                 }
-                font.family: Appearance?.font.family.mono ?? "monospace"
-                opacity: 0.8
             }
         }
     }
