@@ -343,6 +343,30 @@ Layouts: `smartgrid`, `justified`, `bands`, `masonry`, `hero`, `spiral`, `satell
 ### AI Chat
 Providers: **Gemini** (2.5 Flash, 3 Flash), **Anthropic** (Claude Sonnet 4, Haiku 3.5), **OpenAI** (GPT-4.1 Mini), **Mistral** (Medium 3), **OpenRouter** (dynamic free models), **Ollama** (local auto-detect). Commands: `/model`, `/key`, `/temp`, `/prompt`, `/save`, `/load`, `/clear`
 
+### Optional services
+All of the following are **disabled by default**. Enable from Settings → Services or by editing `config.json` directly.
+
+| Block | Purpose | Notable keys |
+|---|---|---|
+| `gameMode.enable` | Auto-detect fullscreen apps and dim distractions | `pollIntervalMs` |
+| `powerProfiles.restoreOnStart` | Restore last `power-profiles-daemon` profile on shell start | `preferredProfile` (auto-populated when you change profiles) |
+| `network.usage` | Per-interface rx/tx polling for the sidebar bandwidth panel | `intervalMs`, `historyLength` |
+| `network.hotspot` | WiFi tethering toggle backed by `nmcli device wifi hotspot` | `ssid`, `password` (auto-generated on first enable) |
+| `vpn` | Generic VPN status + connect/disconnect for tailscale/netbird/warp/wireguard/custom | `providers[]`, `notifyOnChange` |
+| `calendar` | KHal/CalDAV pull into the calendar panel | `upcomingDays`, `externalSync.{enable, refreshMinutes, sources[]}` |
+| `lyrics` | Synced lyric overlay in MediaControls + AnoSpot | `enable`, `backend`, `dir` |
+| `nightLight` | wlsunset-backed warm-shift, works on any wlroots compositor | `mode` (manual/schedule), `dayTemp`, `nightTemp`, `latitude`, `longitude` |
+| `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
+| `lock.osk` | On-screen keyboard for password entry | — |
+| `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
+| `lock.dim` | Auto-dim the lock background after idle | `idleMs`, `opacity` |
+| `lock.passwordInput.expandOnFocus` | Animate the password field on focus | — |
+| `anoSpot.showLyrics` | Swap track title for the current lyric line | requires `lyrics.enable` |
+| `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
+| `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
+
+`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/ano/themes/<name>.json` to override). 24 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
+
 ### Module Enable/Disable
 Every module is toggleable via the `enabledPanels` array or the Modules settings page.
 
@@ -476,7 +500,7 @@ For the Niri session specifically, **niri ≥ 26.04** is required — `~/.config
 `pyprland` (dropdown terminal, minimize, lost windows), `pywal` (terminal colors), `ddcutil` (external monitors), `cava` (spectrum), `zenity` (file picker — required for AnoSpot's "Move to…" action), `ydotool` (paste), `translate-shell` (translator), `wf-recorder` (screen recording — drives AnoSpot's recording widget), `xdg-desktop-portal-*` (one of `-gtk`/`-kde`/`-hyprland` — file open/screenshare integration; almost always already installed by the desktop)
 
 ### Optional
-`ffmpeg`, `hyprpicker`, `qalc` (calculator), `grim`+`slurp` (screenshot), `localsend` (the GUI app — only needed on the **receiving** device for AnoSpot's LocalSend action; the sender side ships ready-to-use scripts in `scripts/anoSpot/`)
+`ffmpeg`, `hyprpicker`, `qalc` (calculator), `grim`+`slurp` (screenshot), `wlsunset` (night light — works on any wlroots session), `localsend` (the GUI app — only needed on the **receiving** device for AnoSpot's LocalSend action; the sender side ships ready-to-use scripts in `scripts/anoSpot/`)
 
 ### AnoSpot dependency map
 Each AnoSpot widget/action and the underlying tool that makes it work:
