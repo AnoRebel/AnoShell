@@ -230,6 +230,11 @@
         "pollIntervalMs": 2000
     },
 
+    "powerProfiles": {
+        "restoreOnStart": true,
+        "preferredProfile": ""
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
