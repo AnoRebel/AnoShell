@@ -316,6 +316,84 @@ ColumnLayout {
         }
     }
 
+    // ═══ Night Light ═══
+    SettingsCard {
+        icon: "nightlight"
+        title: "Night light"
+        subtitle: "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway)."
+
+        ConfigSwitch {
+            id: nlEnable
+            label: "Enable"
+            checked: Config.options?.nightLight?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("nightLight.enable", checked)
+        }
+
+        ConfigRow {
+            label: "Mode"
+            sublabel: "Manual holds a fixed temperature; schedule transitions at sunrise/sunset"
+            enabled: nlEnable.checked
+            RowLayout {
+                spacing: 4
+                Repeater {
+                    model: ["manual", "schedule"]
+                    RippleButton {
+                        required property string modelData
+                        implicitHeight: 28
+                        buttonRadius: 8
+                        toggled: (Config.options?.nightLight?.mode ?? "manual") === modelData
+                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        contentItem: StyledText {
+                            text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
+                            font.pixelSize: 12
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
+                        }
+                        onClicked: Config.setNestedValue("nightLight.mode", modelData)
+                    }
+                }
+            }
+        }
+
+        ConfigSlider {
+            label: "Night temperature"
+            sublabel: "Lower = warmer / more orange"
+            from: 2500; to: 6500; stepSize: 100
+            enabled: nlEnable.checked
+            value: Config.options?.nightLight?.nightTemp ?? 4000
+            onValueChanged: Config.setNestedValue("nightLight.nightTemp", Math.round(value))
+            valueText: `${Math.round(value)}K`
+        }
+
+        ConfigSlider {
+            label: "Day temperature"
+            sublabel: "Used in schedule mode at noon"
+            from: 4000; to: 6500; stepSize: 100
+            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
+            value: Config.options?.nightLight?.dayTemp ?? 6500
+            onValueChanged: Config.setNestedValue("nightLight.dayTemp", Math.round(value))
+            valueText: `${Math.round(value)}K`
+        }
+
+        ConfigSlider {
+            label: "Latitude"
+            from: -90; to: 90; stepSize: 0.5
+            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
+            value: Config.options?.nightLight?.latitude ?? 0
+            onValueChanged: Config.setNestedValue("nightLight.latitude", value)
+            valueText: value.toFixed(1)
+        }
+
+        ConfigSlider {
+            label: "Longitude"
+            from: -180; to: 180; stepSize: 0.5
+            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
+            value: Config.options?.nightLight?.longitude ?? 0
+            onValueChanged: Config.setNestedValue("nightLight.longitude", value)
+            valueText: value.toFixed(1)
+        }
+    }
+
     // ═══ Network Usage ═══
     SettingsCard {
         icon: "monitoring"

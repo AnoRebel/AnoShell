@@ -255,6 +255,15 @@
         "providers": []
     },
 
+    "nightLight": {
+        "enable": false,
+        "mode": "manual",
+        "dayTemp": 6500,
+        "nightTemp": 4000,
+        "latitude": 0,
+        "longitude": 0
+    },
+
     "shell": {
         "preferred": ""
     },

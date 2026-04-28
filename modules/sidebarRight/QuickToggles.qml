@@ -71,6 +71,18 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Night light
+        TogglePill {
+            iconName: NightLight.enabled ? "nightlight" : "wb_sunny"
+            label: NightLight.enabled
+                ? `${NightLight.nightTemp}K`
+                : "Day"
+            active: NightLight.enabled
+            activeColor: "#FFB74D"
+            onClicked: NightLight.toggle()
+            Layout.fillWidth: true
+        }
+
         // Battery (if laptop)
         Loader {
             Layout.fillWidth: true
