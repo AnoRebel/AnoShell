@@ -10,13 +10,20 @@ import qs.services
  */
 Rectangle {
     id: root
-    implicitHeight: toggleGrid.implicitHeight + 16
+    property bool nightLightExpanded: false
+
+    implicitHeight: contentCol.implicitHeight + 16
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
 
+    ColumnLayout {
+        id: contentCol
+        anchors { fill: parent; margins: 8 }
+        spacing: 6
+
     GridLayout {
         id: toggleGrid
-        anchors { fill: parent; margins: 8 }
+        Layout.fillWidth: true
         columns: 3; columnSpacing: 6; rowSpacing: 6
 
         // WiFi
@@ -71,7 +78,7 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Night light
+        // Night light — tap pill to toggle, chevron to expand inline slider
         TogglePill {
             iconName: NightLight.enabled ? "nightlight" : "wb_sunny"
             label: NightLight.enabled
@@ -80,6 +87,9 @@ Rectangle {
             active: NightLight.enabled
             activeColor: "#FFB74D"
             onClicked: NightLight.toggle()
+            showChevron: true
+            chevronRotation: root.nightLightExpanded ? 180 : 0
+            onChevronClicked: root.nightLightExpanded = !root.nightLightExpanded
             Layout.fillWidth: true
         }
 
@@ -109,6 +119,57 @@ Rectangle {
         }
     }
 
+        // ── Night light inline expander ──
+        // Animated reveal of a temperature slider when the night-light pill's
+        // chevron is tapped. Stays out of the layout entirely when collapsed.
+        Item {
+            Layout.fillWidth: true
+            clip: true
+            implicitHeight: root.nightLightExpanded ? expanderCol.implicitHeight + 8 : 0
+            opacity: root.nightLightExpanded ? 1 : 0
+            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+
+            ColumnLayout {
+                id: expanderCol
+                anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 4 }
+                spacing: 4
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    MaterialSymbol {
+                        text: "thermostat"; iconSize: 16
+                        color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+                    }
+                    StyledText {
+                        text: `${NightLight.nightTemp}K`
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        font.family: Appearance?.font.family.numbers
+                        color: NightLight.enabled
+                            ? "#FFB74D"
+                            : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
+                    }
+                    Item { Layout.fillWidth: true }
+                    StyledText {
+                        text: NightLight.enabled ? "On" : "Off"
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        opacity: 0.7
+                        color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                    }
+                }
+
+                Slider {
+                    id: tempSlider
+                    Layout.fillWidth: true
+                    from: 2500; to: 6500; stepSize: 100
+                    value: NightLight.nightTemp
+                    onMoved: Config.setNestedValue("nightLight.nightTemp", Math.round(value))
+                }
+            }
+        }
+    }
+
     // Toggle pill component
     component TogglePill: Rectangle {
         id: pill
@@ -116,7 +177,10 @@ Rectangle {
         property string label: ""
         property bool active: false
         property color activeColor: Appearance?.colors.colPrimary ?? "#65558F"
+        property bool showChevron: false
+        property real chevronRotation: 0
         signal clicked()
+        signal chevronClicked()
 
         implicitHeight: 44
         radius: Appearance?.rounding.small ?? 8
@@ -139,13 +203,29 @@ Rectangle {
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
-                Layout.maximumWidth: 70
+                Layout.maximumWidth: pill.showChevron ? 50 : 70
                 color: pill.active ? pill.activeColor : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+            }
+            MaterialSymbol {
+                visible: pill.showChevron
+                text: "expand_more"; iconSize: 16
+                rotation: pill.chevronRotation
+                color: pill.active ? pill.activeColor : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                Behavior on rotation { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: pill.chevronClicked()
+                }
             }
         }
 
+        // Main click area excludes the chevron region when one is shown
         MouseArea {
             anchors.fill: parent
+            anchors.rightMargin: pill.showChevron ? 26 : 0
             cursorShape: Qt.PointingHandCursor
             onClicked: pill.clicked()
         }
