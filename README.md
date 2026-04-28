@@ -226,19 +226,114 @@ Per-bar fields (null = use global): `morphingPanel`, `height`, `radius`, all spa
 Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard`, `notifications`, `idle`
 
 ### AnoSpot (dynamic-island overlay)
-Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notification, recording indicator (with elapsed timer), and clock/weather. Compositor-agnostic (Hyprland + Niri).
+Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notification, recording indicator (with elapsed timer), clock/weather, workspace number, and battery. Compositor-agnostic (Hyprland + Niri). Click to expand into related panels; drag from a file manager to stage files for triage actions like sending via LocalSend.
 
 ```json
 "anoSpot": {
   "enable": false,
   "position": "top",            // top | bottom | left | right (invalid → top)
   "widthPx": 420, "heightPx": 36,
-  "showMpris": true, "showNotification": true, "showRecording": true, "showClockWeather": true,
-  "notificationTimeoutMs": 4000
+
+  // Per-widget visibility
+  "showMpris": true,
+  "showNotification": true,
+  "showRecording": true,
+  "showClockWeather": true,
+  "showWorkspace": true,
+  "showBattery": true,
+  "notificationTimeoutMs": 4000,
+
+  // Click bindings — each value is the IPC target opened by `qs -c ano ipc call <target> toggle`
+  "actions": {
+    "leftClick": "mediaControls",
+    "rightClick": "controlPanel",
+    "middleClick": "anoview",
+    "scrollOnMpris": "audio"     // wheel on the Mpris widget → volume up/down
+  },
+
+  // Animated gradient halo that pulses on configured events
+  "eventBorder": {
+    "enable": true,
+    "holdMs": 1500,
+    "events": ["notification", "track", "recording", "workspace"]
+  },
+
+  // Drag-handle to reposition (release snaps to nearest screen edge)
+  "draggable": true,
+
+  // Drag and drop
+  "acceptDrops": true,
+  "stashDir": "",                // empty = auto ($XDG_RUNTIME_DIR/anoSpot, /tmp/anoSpot-<UID> fallback)
+  "dropTargets": []              // user-defined custom action buttons; see below
 }
 ```
 
-Toggle from Settings → AnoSpot. The Settings page warns when `anoSpot.position` collides with `bars[0].edge` (visual overlap likely).
+Toggle from Settings → AnoSpot. Page warns when `anoSpot.position` collides with `bars[0].edge` (visual overlap likely).
+
+#### Click bindings
+| Trigger              | Default action                        | Configurable via                      |
+|----------------------|---------------------------------------|---------------------------------------|
+| Left click           | open Media Controls                   | `actions.leftClick`                   |
+| Right click          | open Control Panel                    | `actions.rightClick`                  |
+| Middle click         | open AnoView (overview)               | `actions.middleClick`                 |
+| Wheel on Mpris area  | volume up/down                        | `actions.scrollOnMpris` (`""` = off)  |
+| Click Workspace widget | open AnoView (overview)             | (hard-coded discoverability shortcut) |
+
+Each `actions.*` value is the IPC target name; the dispatcher invokes `qs -c ano ipc call <target> toggle`. Set to `""` to disable.
+
+#### Drag and drop
+Drop files (or any `text/uri-list` payload) on the pill to stage them in an ephemeral stash directory. The popout opens with a thumbnail-grid view of the staged items, per-item × removal, and an action toolbar.
+
+Built-in actions:
+
+| Action       | Behavior                                                 | Requires                          |
+|--------------|----------------------------------------------------------|-----------------------------------|
+| LocalSend    | mDNS + /24 sweep for LocalSend devices, then send each staged file to the picked device | `python3`, `curl`, `openssl`, `iproute2` (all standard) |
+| Open         | `xdg-open` each staged item with the user's default app  | `xdg-utils`                       |
+| Copy path    | Newline-joined absolute paths to the wl-clipboard        | `wl-clipboard`                    |
+| Move to…     | zenity directory picker, then `mv` each item there       | `zenity`                          |
+| Reveal       | `xdg-open` the parent directory in the user's file manager | `xdg-utils`                     |
+| Clear all    | Empty the stash and close the popout                     | —                                 |
+
+Stash directory resolution order:
+1. `Config.options.anoSpot.stashDir` if non-empty (explicit override)
+2. `$XDG_RUNTIME_DIR/anoSpot` (preferred — per-user, ephemeral, auto-cleaned at logout)
+3. `/tmp/anoSpot-<UID>` (fallback if `XDG_RUNTIME_DIR` is unset)
+
+The directory is created on first use. Originals are never moved; AnoSpot stages copies and acts on those copies.
+
+#### Custom drop actions
+Add user-defined buttons to the popout footer via `Config.options.anoSpot.dropTargets[]`. Each rule:
+
+```json
+{
+  "name":    "Encode for web",
+  "icon":    "compress",          // any Material Symbols name
+  "action":  "shell",             // "exec" = argv-split (safe, no shell) | "shell" = bash -c
+  "command": "ffmpeg -i {path} -c:v libx264 -crf 28 {dir}/{name}.web.mp4",
+  "perItem": true                 // true = invoke once per staged item; false = once with full set
+}
+```
+
+Placeholder substitution:
+
+| Placeholder | Substituted with                              |
+|-------------|-----------------------------------------------|
+| `{path}`    | First item's full absolute path               |
+| `{name}`    | First item's basename                         |
+| `{dir}`     | First item's parent directory                 |
+| `{ext}`     | First item's extension (without leading dot)  |
+| `{paths}`   | Newline-joined absolute paths (full set)      |
+| `{names}`   | Newline-joined basenames (full set)           |
+
+Action modes:
+- **`exec`** — Splits `command` on whitespace, substitutes each arg individually, runs the resulting argv directly. No shell, no globs, no pipes. Safe for paths with spaces or special characters.
+- **`shell`** — Substitutes the whole `command` string then runs via `bash -c`. Pipes, redirects, and globs work. You quote your paths.
+
+Edit the rule list in Settings → AnoSpot → "Custom drop actions" — fields, add, remove, and a built-in placeholder cheat-sheet.
+
+#### Event border animation
+The pill renders a gradient halo behind itself that pulses when configured events fire. Subscribe/unsubscribe per event type via `eventBorder.events` (e.g. drop `"workspace"` if it's too chatty for your workflow). Hold duration controls how long the halo stays visible before fading.
 
 > **Renamed** from `ActivSpot`. If your existing `config.json` still uses the old `activSpot` key, it is migrated automatically on first start (values copied to `anoSpot`, old key removed; one-shot, idempotent).
 
@@ -367,18 +462,44 @@ qs -c ano ipc call <target> <method>
 | `jq` | JSON parsing in scripts |
 | `brightnessctl` | Screen backlight |
 | `NetworkManager` (`nmcli`) | WiFi/Ethernet |
-| `cliphist` + `wl-clipboard` | Clipboard |
-| `curl` | HTTP (weather, AI chat) |
-| `libnotify` | Notifications |
-| `python3` | Scripts |
+| `cliphist` + `wl-clipboard` | Clipboard, AnoSpot Copy-path action |
+| `curl` | HTTP (weather, AI chat, AnoSpot LocalSend send) |
+| `openssl` | Random fingerprint for AnoSpot LocalSend |
+| `iproute2` (`ip`) | Network introspection for AnoSpot LocalSend discovery |
+| `libnotify` | Notifications, AnoSpot LocalSend status messages |
+| `python3` | Scripts (general + AnoSpot LocalSend discovery/send) |
+| `xdg-utils` (`xdg-open`) | AnoSpot Open / Reveal actions |
 
 For the Niri session specifically, **niri ≥ 26.04** is required — `~/.config/niri/ano.kdl` uses the `background-effect { blur }` and window-rule `popups { … }` blocks introduced in 26.04 for visual parity with Hyprland-Ano.
 
 ### Recommended
-`pyprland` (dropdown terminal, minimize, lost windows), `pywal` (terminal colors), `ddcutil` (external monitors), `cava` (spectrum), `zenity` (file picker), `ydotool` (paste), `translate-shell` (translator)
+`pyprland` (dropdown terminal, minimize, lost windows), `pywal` (terminal colors), `ddcutil` (external monitors), `cava` (spectrum), `zenity` (file picker — required for AnoSpot's "Move to…" action), `ydotool` (paste), `translate-shell` (translator), `wf-recorder` (screen recording — drives AnoSpot's recording widget), `xdg-desktop-portal-*` (one of `-gtk`/`-kde`/`-hyprland` — file open/screenshare integration; almost always already installed by the desktop)
 
 ### Optional
-`ffmpeg`, `hyprpicker`, `qalc` (calculator), `grim`+`slurp` (screenshot)
+`ffmpeg`, `hyprpicker`, `qalc` (calculator), `grim`+`slurp` (screenshot), `localsend` (the GUI app — only needed on the **receiving** device for AnoSpot's LocalSend action; the sender side ships ready-to-use scripts in `scripts/anoSpot/`)
+
+### AnoSpot dependency map
+Each AnoSpot widget/action and the underlying tool that makes it work:
+
+| Surface                  | Provided by                                                |
+|--------------------------|------------------------------------------------------------|
+| Mpris widget             | Mpris D-Bus (any modern player); `playerctl` recommended    |
+| Notification widget      | `libnotify`-emitted notifications via the QS service       |
+| Recording widget         | `wf-recorder` (detected by polling `pgrep -x wf-recorder`)  |
+| Battery widget           | UPower D-Bus (standard on every Linux desktop with a battery) |
+| Workspace widget         | `CompositorService` → Hyprland or Niri IPC                 |
+| Clock/Weather widget     | Built-in `DateTime` + `Weather` services                   |
+| Click bindings           | QuickShell IPC (`qs -c ano ipc call …`); no external deps  |
+| Drag handle              | Qt `MouseArea`; no external deps                           |
+| Drop target              | QML `DropArea` (Wayland data-device protocol)              |
+| Stash                    | bash + `cp`/`rm`/`stat`/`du`/`mkdir`/`ls` (coreutils)      |
+| Action: LocalSend        | `bash`, `python3`, `curl`, `openssl`, `iproute2`           |
+| Action: Open / Reveal    | `xdg-utils` (`xdg-open`)                                   |
+| Action: Copy path        | `wl-clipboard` (`wl-copy`)                                 |
+| Action: Move to…         | `zenity` (file picker) + coreutils `mv`                    |
+| Action: Custom           | whatever your rule's `command` invokes                     |
+
+If any dependency is missing, the corresponding action shows a `notify-send` failure message but the rest of AnoSpot keeps working.
 
 ### Color Pipeline
 ```
