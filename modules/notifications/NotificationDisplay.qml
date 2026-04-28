@@ -80,20 +80,54 @@ Item {
                     }
                 }
 
-                // Notifications in group
-                Repeater {
+                // Notifications in group — ListView (not Repeater) so the
+                // built-in add/remove/displaced transitions animate
+                // entrance/exit and the cascade on clear-all (where a
+                // batch of items get dismissed in one tick of the model).
+                // expressiveAnimations gates the transitions so users can
+                // opt back to a snappy, no-frills feed.
+                ListView {
+                    id: notifList
+                    Layout.fillWidth: true
+                    interactive: false  // host scroll lives at the parent layer
+                    spacing: 4
+                    implicitHeight: contentHeight
+                    readonly property bool expressive: Config.options?.notifications?.expressiveAnimations ?? true
+
                     model: {
                         const notifs = Notifications.groupsByAppName[modelData]?.notifications ?? []
                         return root.maxItems > 0 ? notifs.slice(0, root.maxItems) : notifs
                     }
 
-                    NotificationItem {
+                    delegate: NotificationItem {
                         required property var modelData
+                        width: ListView.view ? ListView.view.width : 0
                         notification: modelData
                         compact: root.compact
-                        Layout.fillWidth: true
                         onDismissed: id => Notifications.discardNotification(id)
                         onActionInvoked: (id, identifier) => Notifications.attemptInvokeAction(id, identifier)
+                    }
+
+                    add: Transition {
+                        enabled: notifList.expressive
+                        ParallelAnimation {
+                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200; easing.type: Easing.OutCubic }
+                            NumberAnimation { property: "scale"; from: 0.92; to: 1; duration: 200; easing.type: Easing.OutCubic }
+                        }
+                    }
+                    remove: Transition {
+                        enabled: notifList.expressive
+                        ParallelAnimation {
+                            NumberAnimation { property: "opacity"; to: 0; duration: 220; easing.type: Easing.InCubic }
+                            // Slide trailing — gives the cascade direction.
+                            NumberAnimation { property: "x"; to: 24; duration: 220; easing.type: Easing.InCubic }
+                        }
+                    }
+                    // Items that shift up when one above them leaves — gives
+                    // the cascade a continuous feel instead of jump-cuts.
+                    displaced: Transition {
+                        enabled: notifList.expressive
+                        NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutCubic }
                     }
                 }
             }

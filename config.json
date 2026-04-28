@@ -157,7 +157,8 @@
     "notifications": {
         "timeout": 7000,
         "position": "topRight",
-        "edgeMargin": 8
+        "edgeMargin": 8,
+        "expressiveAnimations": true
     },
 
     "osd": {
