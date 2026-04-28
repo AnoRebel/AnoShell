@@ -243,6 +243,12 @@
         }
     },
 
+    "vpn": {
+        "enable": true,
+        "notifyOnChange": true,
+        "providers": []
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
