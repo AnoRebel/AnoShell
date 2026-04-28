@@ -31,6 +31,14 @@ ShellRoot {
     Component.onCompleted: {
         root._log(`Initializing Ano shell on ${CompositorService.compositor}`);
         root._log(`Shell root: ${Directories.shellRoot}`);
+        // Touch autonomous singletons so they instantiate even when no UI
+        // currently reads them. Each runs purely on side-effects:
+        //   PowerProfilePersistence — restores profile on Config.ready
+        //   AntiFlashbang           — IPC-controlled shader on Hyprland
+        //   MinimizedWindows        — Niri minimize-emulation registry
+        void PowerProfilePersistence;
+        void AntiFlashbang;
+        void MinimizedWindows;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
