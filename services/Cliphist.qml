@@ -18,11 +18,26 @@ Singleton {
     property string pressPasteCommand: "ydotool key -d 1 29:1 47:1 47:0 29:0"
     property list<string> entries: []
 
+    /**
+     * Pause the auto-refresh that's triggered when the wl-clipboard
+     * contents change. Set this true around an operation that briefly
+     * hijacks the clipboard (e.g. a screenshot script that copies a PNG
+     * into the clipboard, then restores the previous payload). When
+     * cleared, callers should also invoke refresh() to bring the entry
+     * list back in sync with whatever cliphist saw during the suppression
+     * window.
+     *
+     * Compositor-agnostic — the underlying wl-clipboard protocol is the
+     * same on Hyprland and Niri.
+     */
+    property bool suppressRefresh: false
+
     function entryIsImage(entry) {
         return !!(/^\d+\t\[\[.*binary data.*\d+x\d+.*\]\]$/.test(entry))
     }
 
     function refresh() {
+        if (root.suppressRefresh) return
         readProc.buffer = []
         readProc.running = true
     }
@@ -66,7 +81,10 @@ Singleton {
 
     Connections {
         target: Quickshell
-        function onClipboardTextChanged() { delayedUpdateTimer.restart() }
+        function onClipboardTextChanged() {
+            if (root.suppressRefresh) return
+            delayedUpdateTimer.restart()
+        }
     }
 
     Timer {
