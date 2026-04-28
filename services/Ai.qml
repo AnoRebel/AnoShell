@@ -254,7 +254,7 @@ Singleton {
     }
 
     // Chat save/load
-    property string chatSavePath: `${Directories.cache}/ano/ai_chats`
+    property string chatSavePath: `${Directories.cache}/anoshell/ai_chats`
 
     function saveChat(name) {
         const data = messageIDs.map(id => {

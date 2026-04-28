@@ -32,7 +32,7 @@ import "calendar_ics.js" as IcsParser
  *
  * Ported verbatim from inir/services/CalendarSync.qml. Changes:
  *   - calendar_ics.js copied alongside (zero deps, pure JS)
- *   - cachePath uses Directories.genericCache + "/ano/calendar-sync.json"
+ *   - cachePath uses Directories.genericCache + "/anoshell/calendar-sync.json"
  *     instead of inir's Directories.calendarSyncCachePath (which doesn't
  *     exist in ano's Directories.qml; computing it inline is enough)
  */
@@ -53,7 +53,7 @@ Singleton {
     signal fetchFinished(bool success)
     signal sourceError(string sourceId, string error)
 
-    readonly property string cachePath: Directories.genericCache + "/ano/calendar-sync.json"
+    readonly property string cachePath: Directories.genericCache + "/anoshell/calendar-sync.json"
 
     Component.onCompleted: {
         loadCache()

@@ -12,7 +12,7 @@ set -euo pipefail
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-COLORS_JSON="$XDG_STATE_HOME/ano/generated/colors.json"
+COLORS_JSON="$XDG_STATE_HOME/anoshell/generated/colors.json"
 MODE="dark"
 
 while [[ $# -gt 0 ]]; do

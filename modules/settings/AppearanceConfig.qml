@@ -229,7 +229,7 @@ ColumnLayout {
 
         NoticeBox {
             visible: appearanceRoot.committedSource === "static" && ThemeRegistry.count === 0
-            text: "No themes found. Bundled themes live in assets/themes/. Drop additional .json files into ~/.config/ano/themes/ to add your own."
+            text: "No themes found. Bundled themes live in assets/themes/. Drop additional .json files into ~/.config/anoshell/themes/ to add your own."
             iconName: "info"
         }
 

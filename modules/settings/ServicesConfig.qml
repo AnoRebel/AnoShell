@@ -586,7 +586,7 @@ ColumnLayout {
             sublabel: "Path for local .lrc files. Supports `~` expansion."
             enabled: lyEnable.checked
             StyledTextInput {
-                text: Config.options?.lyrics?.dir ?? "~/.config/ano/lyrics"
+                text: Config.options?.lyrics?.dir ?? "~/.config/anoshell/lyrics"
                 onEditingFinished: Config.setNestedValue("lyrics.dir", text.trim())
                 Layout.preferredWidth: 220
                 font.family: Appearance?.font.family.mono ?? "monospace"

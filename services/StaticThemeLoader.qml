@@ -13,7 +13,7 @@ import Quickshell.Io
  * tokens (any key starting with "glass") populate Appearance.glassTokens.
  *
  * Resolution order for the theme file path:
- *   1. ~/.config/ano/themes/<name>.json   (user override, if present)
+ *   1. ~/.config/anoshell/themes/<name>.json   (user override, if present)
  *   2. <shell>/assets/themes/<name>.json  (bundled fallback)
  *
  * Active when Config.options.appearance.theme.source === "static" and

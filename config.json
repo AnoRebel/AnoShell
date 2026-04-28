@@ -303,7 +303,7 @@
         "enable": false,
         "visible": true,
         "backend": "Auto",
-        "dir": "~/.config/ano/lyrics"
+        "dir": "~/.config/anoshell/lyrics"
     },
 
     "screenCorners": {

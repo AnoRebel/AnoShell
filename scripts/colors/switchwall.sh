@@ -14,7 +14,7 @@
 #
 # Safety:
 #   - Backs up current config before changes
-#   - All temp files in /tmp/ano-switchwall/
+#   - All temp files in /tmp/anoshell-switchwall/
 #   - Non-destructive: original files preserved with .bak suffix
 # ══════════════════════════════════════════════════════════════════════════
 
@@ -27,8 +27,8 @@ XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
 QUICKSHELL_CONFIG_NAME="ano"
 CONFIG_DIR="$XDG_CONFIG_HOME/quickshell/$QUICKSHELL_CONFIG_NAME"
-STATE_DIR="$XDG_STATE_HOME/ano/generated"
-CACHE_DIR="$XDG_CACHE_HOME/ano"
+STATE_DIR="$XDG_STATE_HOME/anoshell/generated"
+CACHE_DIR="$XDG_CACHE_HOME/anoshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="$CACHE_DIR/backups"
 COLORS_JSON="$STATE_DIR/colors.json"
@@ -36,7 +36,7 @@ MATUGEN_DIR="$XDG_CONFIG_HOME/matugen"
 SHELL_CONFIG="$CONFIG_DIR/config.json"
 
 # ── Temp directory ───────────────────────────────────────────────────────
-TMPDIR="/tmp/ano-switchwall"
+TMPDIR="/tmp/anoshell-switchwall"
 mkdir -p "$TMPDIR" "$STATE_DIR" "$BACKUP_DIR"
 
 # ── Parse Arguments ──────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ strip = true
 
 [templates.colors-json]
 input_path = "~/.config/matugen/templates/colors.json"
-output_path = "~/.local/state/ano/generated/colors.json"
+output_path = "~/.local/state/anoshell/generated/colors.json"
 MATUGENEOF
     fi
 

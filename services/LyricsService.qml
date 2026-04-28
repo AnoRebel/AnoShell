@@ -53,7 +53,7 @@ Singleton {
     readonly property bool lyricsVisible: Config.options?.lyrics?.visible ?? true
     readonly property string preferredBackend: Config.options?.lyrics?.backend ?? "Auto"
     readonly property string lyricsDir: {
-        const raw = Config.options?.lyrics?.dir ?? "~/.config/ano/lyrics";
+        const raw = Config.options?.lyrics?.dir ?? "~/.config/anoshell/lyrics";
         const home = Quickshell.env("HOME") || "";
         return raw.replace(/^~(\/|$)/, home + "/").replace(/\/$/, "");
     }

@@ -8,7 +8,7 @@ import Quickshell.Io
 
 /**
  * Discovers + indexes available static themes from
- *   1. Directories.userThemesPath (~/.config/ano/themes/*.json) — user overrides
+ *   1. Directories.userThemesPath (~/.config/anoshell/themes/*.json) — user overrides
  *   2. Directories.bundledThemesPath (assets/themes/*.json) — shipped
  *
  * Exposes `themes`, a ListModel of:

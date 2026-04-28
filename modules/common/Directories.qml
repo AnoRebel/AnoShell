@@ -28,28 +28,33 @@ Singleton {
     property string layoutsPath: Quickshell.shellPath("layouts")
 
     // Theme paths — bundled themes ship under assets/themes/<name>.json,
-    // user themes drop into ~/.config/ano/themes/ (takes precedence on
+    // user themes drop into ~/.config/anoshell/themes/ (takes precedence on
     // name collision so users can override bundled themes by filename).
     property string bundledThemesPath: assetsPath + "/themes"
-    property string userThemesPath: FileUtils.trimFileProtocol(`${root.config}/ano/themes`)
+    property string userThemesPath: FileUtils.trimFileProtocol(`${root.config}/anoshell/themes`)
+
+    // User-overrides directory — user-writable JSON config that's deep-merged
+    // on top of the shell's bundled config.json. Survives shell upgrades.
+    property string userConfigDir: FileUtils.trimFileProtocol(`${root.config}/anoshell`)
+    property string userConfigPath: FileUtils.trimFileProtocol(`${root.config}/anoshell/config.json`)
 
     // Shell configuration directory (user-writable config, separate from shell source)
-    property string shellConfig: FileUtils.trimFileProtocol(`${root.config}/Ano`)
+    property string shellConfig: FileUtils.trimFileProtocol(`${root.config}/anoshell`)
 
     // Config files — single config.json (not light/dark split like rebels)
     property string shellConfigPath: FileUtils.trimFileProtocol(Quickshell.shellPath("config.json"))
 
     // Cache directories for media
-    property string favicons: FileUtils.trimFileProtocol(`${root.cache}/ano/media/favicons`)
-    property string coverArt: FileUtils.trimFileProtocol(`${root.cache}/ano/media/coverart`)
-    property string tempImages: "/tmp/quickshell-ano/media/images"
-    property string screenshotTemp: "/tmp/quickshell-ano/media/screenshot"
+    property string favicons: FileUtils.trimFileProtocol(`${root.cache}/anoshell/media/favicons`)
+    property string coverArt: FileUtils.trimFileProtocol(`${root.cache}/anoshell/media/coverart`)
+    property string tempImages: "/tmp/quickshell-anoshell/media/images"
+    property string screenshotTemp: "/tmp/quickshell-anoshell/media/screenshot"
 
     // User state files
-    property string generatedMaterialThemePath: FileUtils.trimFileProtocol(`${root.state}/ano/generated/colors.json`)
-    property string generatedWallpaperCategoryPath: FileUtils.trimFileProtocol(`${root.state}/ano/generated/wallpaper/category.txt`)
-    property string notificationsPath: FileUtils.trimFileProtocol(`${root.cache}/ano/notifications/notifications.json`)
-    property string cliphistDecode: FileUtils.trimFileProtocol("/tmp/quickshell-ano/media/cliphist")
+    property string generatedMaterialThemePath: FileUtils.trimFileProtocol(`${root.state}/anoshell/generated/colors.json`)
+    property string generatedWallpaperCategoryPath: FileUtils.trimFileProtocol(`${root.state}/anoshell/generated/wallpaper/category.txt`)
+    property string notificationsPath: FileUtils.trimFileProtocol(`${root.cache}/anoshell/notifications/notifications.json`)
+    property string cliphistDecode: FileUtils.trimFileProtocol("/tmp/quickshell-anoshell/media/cliphist")
 
     // Script paths
     property string wallpaperSwitchScriptPath: FileUtils.trimFileProtocol(`${root.scriptPath}/colors/switchwall.sh`)
@@ -73,6 +78,6 @@ Singleton {
         Quickshell.execDetached(["bash", "-c", `rm -rf '${coverArt}'; mkdir -p '${coverArt}'`])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${tempImages}'; mkdir -p '${tempImages}'`])
-        Quickshell.execDetached(["mkdir", "-p", FileUtils.trimFileProtocol(`${root.state}/ano/generated/wallpaper`)])
+        Quickshell.execDetached(["mkdir", "-p", FileUtils.trimFileProtocol(`${root.state}/anoshell/generated/wallpaper`)])
     }
 }
