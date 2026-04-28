@@ -3,6 +3,8 @@
 A comprehensive QuickShell (v0.2.1+) desktop shell for Wayland compositors.
 Supports **Hyprland** and **Niri** with runtime auto-detection.
 
+Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config + themes + lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
+
 **218+ QML files • 30,000+ lines • 28 modules • 41 services • 30+ IPC targets • 10 settings pages • 4 panel families • 24 bundled themes**
 
 ## Quick Start
@@ -257,6 +259,48 @@ ano/
 
 All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call settings toggle`) or standalone window (`qs -n -p settings.qml`).
 
+### User overrides — `~/.config/anoshell/config.json`
+
+The shell's bundled `~/.config/quickshell/ano/config.json` is the **source of truth** that the Settings UI writes to. To pin specific keys to a different value (and have them survive shell upgrades, `git pull`s, or accidental Settings-page edits), drop a partial JSON file at:
+
+```
+~/.config/anoshell/config.json
+```
+
+It's deep-merged on top of the bundled config every time either file changes. **Only include the keys you want to override** — everything else falls through to the bundle's defaults.
+
+```json
+// Example ~/.config/anoshell/config.json
+{
+  "bar": {
+    "layout": { "height": 38, "radius": 16 },
+    "actions": { "leftClick": "settings" }
+  },
+  "anoSpot": {
+    "enable": true,
+    "position": "bottom"
+  },
+  "appearance": {
+    "theme": { "source": "static", "static": "tokyo-night-dark" }
+  },
+  "nightLight": { "enable": true, "nightTemp": 3500 }
+}
+```
+
+**Semantics**
+
+- **Plain objects** are merged recursively (your `bar.layout.height` doesn't wipe `bar.actions`).
+- **Arrays and scalars** replace the underlying value entirely (e.g. setting `enabledPanels: [...]` replaces the whole list).
+- The override file **wins**: any key it sets cannot be changed from the Settings UI — the next reload re-applies the override. The Settings page edit still persists in the bundled config (so removing the key from the override later "unlocks" the new value), but a console warning fires at write time:
+  > `[Config] "nightLight.enable" is set by ~/.config/anoshell/config.json; this write will be reverted on next reload`
+- The file is **optional**. If it doesn't exist, behavior is identical to having no override.
+- It's read with `watchChanges: true` — edits via any tool reload immediately, no shell restart needed.
+- A malformed JSON file logs a parse error and is ignored; the bundled config still loads normally.
+
+**What can be overridden**
+
+Any key documented below in the Bar System / AnoSpot / Optional services sections, plus anything else in `config.json`. The override schema is identical to the bundled config — there are no special override-only keys.
+
 ### Bar System
 ```json
 {
@@ -312,7 +356,7 @@ The night-light pill has a chevron — tap the body to toggle, tap the chevron t
 Two color sources, switched via `appearance.theme.source`:
 
 - **`materialYou`** (default) — `MaterialThemeLoader` derives Material 3 palette from the active wallpaper via matugen.
-- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/ano/themes/<name>.json`). 24 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
+- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/anoshell/themes/<name>.json`). 24 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
 
 Pick from Settings → Appearance → Theme grid (hover-preview, click-to-commit). Themes optionally export `glass_*` keys consumed by `Appearance.glassTokens` for translucent surfaces (RecordingOsd, AnoSpot pill, AnoSpot stash popout).
 
@@ -456,7 +500,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
 | `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
 
-`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/ano/themes/<name>.json` to override). 24 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
+`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 24 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
 
 ### Module Enable/Disable
 Every module is toggleable via the `enabledPanels` array or the Modules settings page.

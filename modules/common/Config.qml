@@ -8,13 +8,23 @@ import qs.modules.common.functions
 Singleton {
     id: root
     property string filePath: Directories.shellConfigPath
+    property string userOverridePath: Directories.userConfigPath
     property alias options: configOptionsJsonAdapter
     property bool ready: false
     property int readWriteDelay: 50 // milliseconds
     property bool blockWrites: false
 
+    // Dot-paths that are sourced from the user override file. Writes to
+    // these via setNestedValue still happen but emit a console warning
+    // because the next reload will overwrite the change with the user's
+    // override value.
+    property var _shadowedPaths: ({})
+
     // Set nested config value by dot-path (e.g., "bar.position")
     function setNestedValue(nestedKey, value) {
+        if (root._shadowedPaths[nestedKey]) {
+            console.warn(`[Config] "${nestedKey}" is set by ${root.userOverridePath}; this write will be reverted on next reload`);
+        }
         let keys = nestedKey.split(".");
         let obj = root.options;
         let parents = [obj];
@@ -34,6 +44,51 @@ Singleton {
             }
         }
         obj[keys[keys.length - 1]] = convertedValue;
+    }
+
+    // Recursively merge `override` into `target`. Plain objects are merged;
+    // arrays and scalars replace target's value. Returns the list of
+    // dot-paths that were shadowed by the override.
+    function _deepMergeInto(target, override, prefix) {
+        const shadowed = [];
+        if (!override || typeof override !== "object" || Array.isArray(override))
+            return shadowed;
+        for (const key in override) {
+            const value = override[key];
+            const path = prefix ? `${prefix}.${key}` : key;
+            const isPlainObject = value && typeof value === "object" && !Array.isArray(value);
+            if (isPlainObject && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
+                shadowed.push(...root._deepMergeInto(target[key], value, path));
+            } else {
+                target[key] = value;
+                shadowed.push(path);
+            }
+        }
+        return shadowed;
+    }
+
+    function _applyUserOverrides() {
+        const text = (userOverrideFileView.text() || "").trim();
+        root._shadowedPaths = {};
+        if (text.length === 0) return;
+        let parsed;
+        try {
+            parsed = JSON.parse(text);
+        } catch (e) {
+            console.warn(`[Config] failed to parse ${root.userOverridePath}: ${e.message}`);
+            return;
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            console.warn(`[Config] ${root.userOverridePath} must contain a JSON object`);
+            return;
+        }
+        const shadowed = root._deepMergeInto(root.options, parsed, "");
+        const map = {};
+        for (const p of shadowed) map[p] = true;
+        root._shadowedPaths = map;
+        if (shadowed.length > 0) {
+            console.log(`[Config] applied ${shadowed.length} key(s) from ${root.userOverridePath}`);
+        }
     }
 
     Timer {
@@ -79,6 +134,10 @@ Singleton {
         onAdapterUpdated: fileWriteTimer.restart()
         onLoaded: {
             root._migrateLegacyKeys();
+            // Re-read the override file each time the bundle reloads, so
+            // override edits made via an external editor are picked up too.
+            userOverrideFileView.reload();
+            root._applyUserOverrides();
             root.ready = true;
         }
         onLoadFailed: error => {
@@ -150,7 +209,7 @@ Singleton {
                 // existing wallpaper-driven pipeline owns Appearance.m3colors.
                 // When source === "static", StaticThemeLoader writes
                 // Appearance.m3colors from assets/themes/<static>.json (or
-                // ~/.config/ano/themes/<static>.json — user dir takes
+                // ~/.config/anoshell/themes/<static>.json — user dir takes
                 // precedence on name collision).
                 property JsonObject theme: JsonObject {
                     property string source: "materialYou"  // "materialYou" | "static"
@@ -276,5 +335,18 @@ Singleton {
                 property bool confirmShutdown: true
             }
         }
+    }
+
+    // User overrides — optional ~/.config/anoshell/config.json that's
+    // deep-merged on top of the bundled config. Read-only at runtime: any
+    // key set here wins over Settings-page edits, which will be reverted
+    // on the next reload (with a console warning at write time).
+    FileView {
+        id: userOverrideFileView
+        path: root.userOverridePath
+        watchChanges: true
+        blockWrites: true
+        onFileChanged: configFileView.reload()
+        // Missing file is fine — the override layer is opt-in.
     }
 }
