@@ -249,6 +249,10 @@
         "providers": []
     },
 
+    "shell": {
+        "preferred": ""
+    },
+
     "screenCorners": {
         "enable": false,
         "dwellMs": 300,
