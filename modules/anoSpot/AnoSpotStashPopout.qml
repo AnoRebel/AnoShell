@@ -86,8 +86,14 @@ Scope {
                 height: 460
                 radius: Appearance?.rounding?.normal ?? 14
                 color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
-                border.width: 1
-                border.color: Appearance?.colors?.colOutlineVariant ?? "#444"
+                // Glass-token opt-in for the popout surface. Inner cells
+                // remain solid (Layer1) so the layered look reads cleanly
+                // even with translucent themes like aurora/angel.
+                border.width: Appearance?.glassTokens?.borderWidth ?? 1
+                border.color: Appearance?.glassTokens?.borderColor
+                            ?? Appearance?.colors?.colOutlineVariant
+                            ?? "#444"
+                opacity: Appearance?.glassTokens?.opacity ?? 1
 
                 // Swallow clicks on the card so the scrim doesn't close it.
                 MouseArea { anchors.fill: parent }

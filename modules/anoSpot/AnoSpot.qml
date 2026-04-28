@@ -186,9 +186,15 @@ Scope {
                 height: parent.height
                 radius: Math.min(width, height) / 2
                 color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
-                border.width: 1
-                border.color: Appearance?.colors?.colOutlineVariant ?? "#444"
-                opacity: 0.96
+                // Glass-token-driven border + opacity so static themes
+                // (aurora, angel, etc.) can dial the pill's translucency.
+                // Material You and "neutral" static themes leave the
+                // tokens at sensible defaults and look unchanged.
+                border.width: Appearance?.glassTokens?.borderWidth ?? 1
+                border.color: Appearance?.glassTokens?.borderColor
+                            ?? Appearance?.colors?.colOutlineVariant
+                            ?? "#444"
+                opacity: Appearance?.glassTokens?.opacity ?? 0.96
 
                 // Click dispatcher — catches left/right/middle on the pill background.
                 // Widget MouseAreas (e.g. AnoSpotMpris wheel handler) sit above this

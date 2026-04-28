@@ -177,16 +177,21 @@ Scope {
                     cached: true
                 }
 
-                // Background — plain rounded rect. A glass/blur variant
-                // can be swapped in once the static theme system lands.
+                // Background — translucent rounded rect themed from the
+                // active palette + glass tokens. Themes that ship higher
+                // glass.opacity (aurora, angel) make the pill more
+                // see-through; opaque themes (most) leave it close to a
+                // solid surface.
                 Rectangle {
                     id: pillBg
                     anchors.fill: parent
                     radius: Math.min(width, height) / 2
                     color: Appearance?.colors?.colLayer2 ?? "#3a3845"
-                    border.width: 1
-                    border.color: Appearance?.colors?.colOutlineVariant ?? "#444"
-                    opacity: 0.96
+                    border.width: Appearance?.glassTokens?.borderWidth ?? 1
+                    border.color: Appearance?.glassTokens?.borderColor
+                                ?? Appearance?.colors?.colOutlineVariant
+                                ?? "#444"
+                    opacity: Appearance?.glassTokens?.opacity ?? 0.96
                 }
 
                 Behavior on scale {
