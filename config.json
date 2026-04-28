@@ -255,6 +255,7 @@
     },
 
     "calendar": {
+        "upcomingDays": 7,
         "externalSync": {
             "enable": false,
             "refreshMinutes": 15,

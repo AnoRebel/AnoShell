@@ -35,6 +35,7 @@ Scope {
     // ─── Conditional ─────────────────────────────────────────────────────
     PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpot.qml" } }
     PanelLoader { extraCondition: Config.options?.anoSpot?.enable ?? false; component: Loader { source: "root:modules/anoSpot/AnoSpotStashPopout.qml" } }
+    PanelLoader { component: Loader { source: "root:modules/calendar/CalendarPanel.qml" } }
     PanelLoader { extraCondition: CompositorService.compositor === "niri"; component: Loader { source: "root:modules/lock/LockScreen.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────

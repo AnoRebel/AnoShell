@@ -40,6 +40,7 @@ Singleton {
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false
     property bool anoSpotStashOpen: false
+    property bool calendarOpen: false
 
     // Lock screen
     property bool screenLocked: false

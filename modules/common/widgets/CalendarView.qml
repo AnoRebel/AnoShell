@@ -1,17 +1,24 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 
 /**
  * A simple month calendar grid view.
+ *
+ * Optional event indicators: set `showEventDots: true` to render up to
+ * 3 colored dots per day, sourced from CalendarSync.getSourceColorsForDate.
+ * The grid stays purely visual — actual event interaction lives in the
+ * surrounding panel via the dateClicked signal.
  */
 Item {
     id: root
     property date displayDate: new Date()
     property date selectedDate: new Date()
     property int firstDayOfWeek: 1 // Monday
+    property bool showEventDots: false
 
     signal dateClicked(date clickedDate)
 
@@ -92,6 +99,7 @@ Item {
                     property bool isSelected: dayNum === root.selectedDate.getDate() && dayGrid.month === root.selectedDate.getMonth() && dayGrid.year === root.selectedDate.getFullYear()
 
                     Rectangle {
+                        id: dayCell
                         anchors.centerIn: parent
                         width: 28; height: 28
                         radius: 14
@@ -106,6 +114,30 @@ Item {
                                 : Appearance?.m3colors.m3onBackground ?? "black"
                             font.weight: isToday ? Font.Bold : Font.Normal
                             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
+                        }
+
+                        // Event indicators — up to 3 colored dots beneath the
+                        // day number when CalendarSync has events on this date.
+                        Row {
+                            anchors.bottom: parent.bottom
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottomMargin: 2
+                            spacing: 2
+                            visible: root.showEventDots
+                            Repeater {
+                                model: root.showEventDots
+                                    ? (CalendarSync.getSourceColorsForDate(parent.parent.parent.thisDate) || []).slice(0, 3)
+                                    : []
+                                Rectangle {
+                                    required property string modelData
+                                    width: 4
+                                    height: 4
+                                    radius: 2
+                                    color: modelData
+                                    border.width: dayCell.color === Qt.color(modelData) ? 1 : 0
+                                    border.color: Appearance?.colors.colOnLayer0 ?? "white"
+                                }
+                            }
                         }
 
                         MouseArea {
