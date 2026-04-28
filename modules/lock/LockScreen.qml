@@ -3,10 +3,10 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Lock screen — only active on Niri (Hyprland uses hyprlock).

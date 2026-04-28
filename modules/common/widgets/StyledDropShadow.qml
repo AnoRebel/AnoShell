@@ -1,6 +1,6 @@
 import QtQuick
 import Qt5Compat.GraphicalEffects
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Styled drop shadow effect with theme-aware defaults.

@@ -3,10 +3,10 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * AnoSpot — dynamic-island-style overlay aggregating Mpris, Notifications,

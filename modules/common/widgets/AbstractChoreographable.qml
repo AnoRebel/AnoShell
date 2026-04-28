@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Base component for staggered entrance animations.

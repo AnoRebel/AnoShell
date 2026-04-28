@@ -3,7 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * VPN connection status + control for the active configured provider.

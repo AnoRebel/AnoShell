@@ -5,8 +5,8 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * FocusTime Panel — app usage tracker overlay.

@@ -1,6 +1,6 @@
 pragma Singleton
 
-import "root:modules/common"
+import qs.modules.common
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray

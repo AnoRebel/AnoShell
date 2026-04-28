@@ -4,7 +4,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import "root:services/network"
+import qs.services.network
 
 /**
  * Network service using nmcli. WiFi scanning, connecting, password management,

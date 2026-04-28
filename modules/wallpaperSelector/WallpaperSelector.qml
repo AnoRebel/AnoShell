@@ -4,11 +4,11 @@ import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:modules/common/functions"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.functions
+import qs.services
 
 /**
  * Wallpaper selector overlay — browse wallpapers from a directory,

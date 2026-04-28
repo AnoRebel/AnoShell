@@ -5,8 +5,8 @@ import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
-import "root:modules/common"
-import "root:modules/common/widgets"
+import qs.modules.common
+import qs.modules.common.widgets
 
 /**
  * A single window thumbnail in AnoView. Shows a screencopy capture

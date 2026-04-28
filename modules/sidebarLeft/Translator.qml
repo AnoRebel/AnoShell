@@ -2,10 +2,10 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
-import "root:modules/sidebarLeft/translator"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
+import qs.modules.sidebarLeft.translator
 
 /**
  * Translator widget. Uses `trans` CLI tool (translate-shell) for translation

@@ -3,11 +3,11 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Mpris
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:modules/common/widgets/spectrum"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.widgets.spectrum
+import qs.services
 
 /**
  * Full-screen media controls panel. Shows large album art,

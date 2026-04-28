@@ -3,10 +3,10 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Workspaces bar module — shows workspace indicators with click-to-switch.

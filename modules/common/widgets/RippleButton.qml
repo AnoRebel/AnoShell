@@ -1,6 +1,6 @@
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:modules/common/functions"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.functions
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls

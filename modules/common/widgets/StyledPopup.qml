@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Styled popup window anchored to a parent item. Used for bar module

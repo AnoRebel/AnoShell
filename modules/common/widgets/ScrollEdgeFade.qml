@@ -1,5 +1,5 @@
 import QtQuick
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Fade overlay at the top/bottom edges of a scrollable area.

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import "root:modules/common"
+import qs.modules.common
 
 Flickable {
     id: root

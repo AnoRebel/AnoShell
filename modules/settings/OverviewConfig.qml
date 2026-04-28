@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:layouts"
-import "root:services"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.layouts
+import qs.services
 
 /**
  * AnoView overview settings — elaborate layout selection with visual previews

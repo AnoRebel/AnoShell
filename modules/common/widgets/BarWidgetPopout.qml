@@ -1,12 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:modules/common/widgets/shapes"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.widgets.shapes
 import "root:modules/common/widgets/shapes/material-shapes.js" as MaterialShapes
 import "root:modules/common/widgets/shapes/shapes/corner-rounding.js" as CornerRounding
 import "root:modules/common/widgets/shapes/geometry/offset.js" as Offset
-import "root:services"
+import qs.services
 
 /**
  * BarWidgetPopout — A bar module wrapper that, when clicked, expands

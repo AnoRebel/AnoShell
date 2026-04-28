@@ -6,7 +6,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "root:services"
+import qs.services
 
 /**
  * Extended Hyprland data service. Provides window lists, workspace data,

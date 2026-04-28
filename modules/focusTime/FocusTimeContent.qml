@@ -3,8 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * FocusTime content — the actual UI for the time tracker.

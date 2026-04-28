@@ -4,11 +4,11 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Widgets
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
-import "root:layouts"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
+import qs.layouts
 
 /**
  * Task View — separate from AnoView overview.

@@ -4,8 +4,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "root:modules/common"
-import "root:modules/common/functions"
+import qs.modules.common
+import qs.modules.common.functions
 import "calendar_ics.js" as IcsParser
 
 /**
@@ -31,7 +31,6 @@ import "calendar_ics.js" as IcsParser
  * false (default — opt in once a calendar UI surface lands).
  *
  * Ported verbatim from inir/services/CalendarSync.qml. Changes:
- *   - qs.modules.common → "root:modules/common"
  *   - calendar_ics.js copied alongside (zero deps, pure JS)
  *   - cachePath uses Directories.genericCache + "/ano/calendar-sync.json"
  *     instead of inir's Directories.calendarSyncCachePath (which doesn't

@@ -2,10 +2,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Left sidebar — slides in from the left edge.

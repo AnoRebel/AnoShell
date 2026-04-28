@@ -5,7 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
-import "root:modules/common"
+import qs.modules.common
 import "lrcparser.js" as Lrc
 
 /**

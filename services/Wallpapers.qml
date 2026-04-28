@@ -1,9 +1,9 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import "root:services"
-import "root:modules/common"
-import "root:modules/common/functions"
+import qs.services
+import qs.modules.common
+import qs.modules.common.functions
 import QtQuick
 import Qt.labs.folderlistmodel
 import Quickshell

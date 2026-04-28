@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "root:"
-import "root:modules/common"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.services
 
 /**
  * BarManager — Creates and manages N bars per monitor.

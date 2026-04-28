@@ -1,6 +1,6 @@
 import QtQuick
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Mirrored audio spectrum visualizer. Bars grow from center outward

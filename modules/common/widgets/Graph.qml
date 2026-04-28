@@ -1,6 +1,6 @@
 import QtQuick
-import "root:modules/common"
-import "root:modules/common/functions"
+import qs.modules.common
+import qs.modules.common.functions
 
 /**
  * Simple one-value line graph with fill.

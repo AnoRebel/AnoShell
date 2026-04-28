@@ -3,7 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.UPower
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Persists the active power-profiles-daemon profile across reboots.

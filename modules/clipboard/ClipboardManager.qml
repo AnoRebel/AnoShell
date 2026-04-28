@@ -3,11 +3,11 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:modules/common/functions"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.functions
+import qs.services
 
 /**
  * Clipboard manager overlay — browse clipboard history from cliphist,

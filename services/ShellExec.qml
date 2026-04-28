@@ -2,7 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Shell-runtime detection + script-invocation helper.

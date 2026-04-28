@@ -2,13 +2,13 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
 import "root:modules/common/widgets/shapes/material-shapes.js" as MaterialShapes
 import "root:modules/common/widgets/shapes/shapes/corner-rounding.js" as CornerRounding
 import "root:modules/common/widgets/shapes/geometry/offset.js" as Offset
-import "root:services"
+import qs.services
 
 /**
  * TopLayerPanel — A single PanelWindow that hosts multiple MorphedPanel

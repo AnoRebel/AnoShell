@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Aggregator for AnoSpot widgets. Surfaces a single derived state per slot

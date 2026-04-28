@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Services settings — elaborate AI model configuration, weather service,

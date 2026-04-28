@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Material 3 circular progress indicator.

@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 Item {
     id: window

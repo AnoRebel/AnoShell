@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "root:"
-import "root:modules/common"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.services
 
 /**
  * Hot screen corners. Invisible hit zones at the 4 corners of each screen.

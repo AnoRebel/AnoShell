@@ -1,6 +1,6 @@
 import QtQuick
 import Qt5Compat.GraphicalEffects
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Styled blur effect layer for background blur on panels/overlays.

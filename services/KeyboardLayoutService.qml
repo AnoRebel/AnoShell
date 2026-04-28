@@ -4,8 +4,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Keyboard layout service. Works on both Hyprland and Niri.

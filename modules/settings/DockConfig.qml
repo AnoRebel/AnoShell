@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Dock settings — elaborate with visual position preview, style selector

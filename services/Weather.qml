@@ -5,8 +5,8 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtPositioning
-import "root:modules/common"
-import "root:services"
+import qs.modules.common
+import qs.services
 
 /**
  * Weather service using wttr.in API with optional GPS positioning.

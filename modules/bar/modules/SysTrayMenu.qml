@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

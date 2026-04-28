@@ -1,7 +1,7 @@
 pragma Singleton
 
-import "root:services"
-import "root:modules/common"
+import qs.services
+import qs.modules.common
 import Quickshell
 import Quickshell.Services.UPower
 import QtQuick

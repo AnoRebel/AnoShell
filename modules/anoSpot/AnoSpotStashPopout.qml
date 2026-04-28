@@ -3,10 +3,10 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Popout panel anchored beneath/above the AnoSpot pill that lists items

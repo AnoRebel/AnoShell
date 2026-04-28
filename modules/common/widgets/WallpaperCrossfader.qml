@@ -1,5 +1,5 @@
 import QtQuick
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * WallpaperCrossfader — crossfade transition between wallpaper images.

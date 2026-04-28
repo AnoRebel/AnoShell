@@ -3,10 +3,10 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
-import "root:"
-import "root:modules/common"
-import "root:modules/common/widgets"
-import "root:services"
+import qs
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 /**
  * Session/Power screen — fullscreen overlay with lock, logout, suspend, reboot, shutdown.

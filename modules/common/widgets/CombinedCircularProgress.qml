@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
-import "root:modules/common"
+import qs.modules.common
 
 /**
  * Combined circular progress — two overlapping rings in one gauge.

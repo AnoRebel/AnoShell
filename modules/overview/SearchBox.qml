@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
-import "root:modules/common"
-import "root:modules/common/widgets"
+import qs.modules.common
+import qs.modules.common.widgets
 
 /**
  * Search/filter box for AnoView. Type to filter windows by title/class.
