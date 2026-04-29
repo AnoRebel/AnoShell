@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -178,6 +179,26 @@ ColumnLayout {
             onValueChanged: Config.setNestedValue("battery.full", Math.round(value))
             valueText: `${Math.round(value)}%`
         }
+
+        // Threshold-ordering check — these only make sense when
+        // suspend < critical < low. Surfaces a warning if the user has
+        // set them out of order.
+        NoticeBox {
+            readonly property int _low: Config.options?.battery?.low ?? 20
+            readonly property int _critical: Config.options?.battery?.critical ?? 10
+            readonly property int _suspend: Config.options?.battery?.suspend ?? 5
+            readonly property bool _ordered: _suspend <= _critical && _critical <= _low
+            visible: !_ordered
+            iconName: "warning"
+            text: `Threshold ordering looks off: suspend (${_suspend}%) ≤ critical (${_critical}%) ≤ low (${_low}%) is recommended.`
+        }
+
+        ConfigSwitch {
+            label: "Battery sounds"
+            sublabel: "Play sounds for charging, low battery, and full events"
+            checked: Config.options?.sounds?.battery ?? true
+            onCheckedChanged: Config.setNestedValue("sounds.battery", checked)
+        }
     }
 
     // ═══ Time & Clock ═══
@@ -212,35 +233,57 @@ ColumnLayout {
             }
         }
 
-        ConfigRow {
+        // Live-preview row for each format input — small text on the
+        // right shows what the format actually renders against `now`.
+        component TimeFormatRow: ConfigRow {
+            id: tfRow
+            property string formatKey: ""
+            property string defaultValue: ""
+            property int inputWidth: 120
+            // Re-render the preview every minute for time formats; the
+            // calling code can override with a faster timer if needed.
+            // For day/month formats one-second precision is overkill.
+            readonly property string previewText: {
+                const fmt = (Config.options?.time?.[tfRow.formatKey] ?? tfRow.defaultValue)
+                return Qt.locale().toString(new Date(), fmt)
+            }
+
+            RowLayout {
+                spacing: 8
+                StyledTextInput {
+                    text: Config.options?.time?.[tfRow.formatKey] ?? tfRow.defaultValue
+                    onEditingFinished: Config.setNestedValue(`time.${tfRow.formatKey}`, text)
+                    Layout.preferredWidth: tfRow.inputWidth
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                }
+                StyledText {
+                    text: "→ " + tfRow.previewText
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    opacity: 0.7
+                    elide: Text.ElideRight
+                    Layout.maximumWidth: 220
+                }
+            }
+        }
+
+        TimeFormatRow {
             label: "Time format"
             sublabel: "Qt format: hh:mm (24h), h:mm AP (12h), hh:mm:ss (with seconds)"
-            StyledTextInput {
-                text: Config.options?.time?.format ?? "hh:mm"
-                onEditingFinished: Config.setNestedValue("time.format", text)
-                Layout.preferredWidth: 120
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
+            formatKey: "format"
+            defaultValue: "hh:mm"
         }
 
-        ConfigRow {
+        TimeFormatRow {
             label: "Short date format"
-            StyledTextInput {
-                text: Config.options?.time?.shortDateFormat ?? "dd/MM"
-                onEditingFinished: Config.setNestedValue("time.shortDateFormat", text)
-                Layout.preferredWidth: 120
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
+            formatKey: "shortDateFormat"
+            defaultValue: "dd/MM"
         }
 
-        ConfigRow {
+        TimeFormatRow {
             label: "Long date format"
-            StyledTextInput {
-                text: Config.options?.time?.dateFormat ?? "dddd, dd/MM"
-                onEditingFinished: Config.setNestedValue("time.dateFormat", text)
-                Layout.preferredWidth: 180
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
+            formatKey: "dateFormat"
+            inputWidth: 180
+            defaultValue: "dddd, dd/MM"
         }
 
         ConfigSwitch {
@@ -263,14 +306,7 @@ ColumnLayout {
             from: 1000; to: 30000; stepSize: 1000
             value: Config.options?.notifications?.timeout ?? 7000
             onValueChanged: Config.setNestedValue("notifications.timeout", Math.round(value))
-            valueText: `${(Math.round(value) / 1000).toFixed(0)}s`
-        }
-
-        ConfigSwitch {
-            label: "Battery sounds"
-            sublabel: "Play sounds for charging, low battery, and full events"
-            checked: Config.options?.sounds?.battery ?? true
-            onCheckedChanged: Config.setNestedValue("sounds.battery", checked)
+            valueText: Format.formatDuration(value)
         }
     }
 
