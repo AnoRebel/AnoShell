@@ -12,137 +12,248 @@ Singleton {
     property alias options: configOptionsJsonAdapter
     property bool ready: false
     property int readWriteDelay: 50 // milliseconds
-    property bool blockWrites: false
 
-    // Dot-paths that are sourced from the user override file. Writes to
-    // these via setNestedValue still happen but emit a console warning
-    // because the next reload will overwrite the change with the user's
-    // override value.
-    property var _shadowedPaths: ({})
+    // The user's per-machine delta. Sparse JS object — only keys the user
+    // has actually changed live here. Writes from setNestedValue land
+    // here, then get serialized to userOverridePath. The bundled config
+    // is never written to.
+    property var _userDelta: ({})
+    // Suppresses the file-changed echo when we're the one writing.
+    property bool _writingUserDelta: false
 
-    // Set nested config value by dot-path (e.g., "bar.position")
-    function setNestedValue(nestedKey, value) {
-        if (root._shadowedPaths[nestedKey]) {
-            console.warn(`[Config] "${nestedKey}" is set by ${root.userOverridePath}; this write will be reverted on next reload`);
-        }
-        let keys = nestedKey.split(".");
-        let obj = root.options;
-        let parents = [obj];
+    // Walk a dot-path on `obj`, creating empty objects as needed for
+    // intermediate segments. Returns [parent, leafKey] so the caller can
+    // assign or delete the leaf.
+    function _walkPath(obj, dotPath, createMissing) {
+        const keys = dotPath.split(".");
+        let cur = obj;
         for (let i = 0; i < keys.length - 1; ++i) {
-            if (!obj[keys[i]] || typeof obj[keys[i]] !== "object") {
-                obj[keys[i]] = {};
+            if (cur[keys[i]] === undefined || cur[keys[i]] === null
+                || typeof cur[keys[i]] !== "object" || Array.isArray(cur[keys[i]])) {
+                if (!createMissing) return [null, null];
+                cur[keys[i]] = {};
             }
-            obj = obj[keys[i]];
-            parents.push(obj);
+            cur = cur[keys[i]];
         }
-        // Auto-convert string booleans/numbers
+        return [cur, keys[keys.length - 1]];
+    }
+
+    // Set nested config value by dot-path (e.g., "bar.position").
+    // Writes both to live in-memory state (so UI updates immediately) AND
+    // to the user delta (so the change persists to ~/.config/anoshell/config.json).
+    function setNestedValue(nestedKey, value) {
+        // Auto-convert string booleans/numbers — keeps existing call sites working
         let convertedValue = value;
         if (typeof value === "string") {
-            let trimmed = value.trim();
+            const trimmed = value.trim();
             if (trimmed === "true" || trimmed === "false" || !isNaN(Number(trimmed))) {
                 try { convertedValue = JSON.parse(trimmed); } catch (e) { convertedValue = value; }
             }
         }
-        obj[keys[keys.length - 1]] = convertedValue;
+
+        // 1. Live in-memory mutation — UI sees the change this tick
+        const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
+        liveParent[liveLeaf] = convertedValue;
+
+        // 2. User delta mutation — persists to disk
+        const [deltaParent, deltaLeaf] = root._walkPath(root._userDelta, nestedKey, true);
+        deltaParent[deltaLeaf] = convertedValue;
+
+        userDeltaWriteTimer.restart();
     }
 
-    // Recursively merge `override` into `target`. Plain objects are merged;
-    // arrays and scalars replace target's value. Returns the list of
-    // dot-paths that were shadowed by the override.
-    function _deepMergeInto(target, override, prefix) {
-        const shadowed = [];
-        if (!override || typeof override !== "object" || Array.isArray(override))
-            return shadowed;
-        for (const key in override) {
-            const value = override[key];
-            const path = prefix ? `${prefix}.${key}` : key;
-            const isPlainObject = value && typeof value === "object" && !Array.isArray(value);
-            if (isPlainObject && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
-                shadowed.push(...root._deepMergeInto(target[key], value, path));
+    // Reset a dot-path to its bundled default. Removes the key from the
+    // user delta and restores the in-memory value from the freshly-loaded
+    // bundle defaults. Empty intermediate objects in the delta are
+    // pruned so the file stays tidy.
+    function resetToDefault(nestedKey) {
+        // Remove from delta and prune empty parents
+        const segments = nestedKey.split(".");
+        const trail = [root._userDelta];
+        for (let i = 0; i < segments.length - 1; ++i) {
+            const next = trail[trail.length - 1][segments[i]];
+            if (!next || typeof next !== "object") return; // not in delta
+            trail.push(next);
+        }
+        delete trail[trail.length - 1][segments[segments.length - 1]];
+        for (let i = trail.length - 1; i > 0; --i) {
+            if (Object.keys(trail[i]).length === 0) {
+                delete trail[i - 1][segments[i - 1]];
             } else {
-                target[key] = value;
-                shadowed.push(path);
+                break;
             }
         }
-        return shadowed;
+
+        // Restore live value from bundle defaults
+        const [bundleParent, bundleLeaf] = root._walkPath(root._bundleDefaults, nestedKey, false);
+        if (bundleParent !== null && bundleLeaf in bundleParent) {
+            const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
+            liveParent[liveLeaf] = bundleParent[bundleLeaf];
+        }
+
+        userDeltaWriteTimer.restart();
     }
 
-    function _applyUserOverrides() {
+    // Bundled-defaults snapshot — parsed once on bundle load, used by
+    // resetToDefault to restore values without re-reading the file.
+    property var _bundleDefaults: ({})
+
+    // Recursively merge `override` into `target`. Plain objects are merged;
+    // arrays and scalars replace target's value.
+    function _deepMergeInto(target, override) {
+        if (!override || typeof override !== "object" || Array.isArray(override))
+            return;
+        for (const key in override) {
+            const value = override[key];
+            const isPlainObject = value && typeof value === "object" && !Array.isArray(value);
+            if (isPlainObject && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
+                root._deepMergeInto(target[key], value);
+            } else {
+                target[key] = value;
+            }
+        }
+    }
+
+    // Deep-clone a plain JS structure. Used to snapshot the bundle so the
+    // adapter's live mutations don't leak back into our defaults.
+    function _deepClone(obj) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj !== "object") return obj;
+        if (Array.isArray(obj)) return obj.map(v => root._deepClone(v));
+        const out = {};
+        for (const k in obj) out[k] = root._deepClone(obj[k]);
+        return out;
+    }
+
+    // Snapshot the JsonAdapter's current state into a plain JS object.
+    // Used to capture bundled defaults right after bundle load (before the
+    // user delta is merged in).
+    function _snapshotAdapter(adapter) {
+        const out = {};
+        for (const key in adapter) {
+            // Skip QML internals / signals / functions
+            if (key.startsWith("_") || key.startsWith("on")) continue;
+            const v = adapter[key];
+            if (typeof v === "function") continue;
+            if (v && typeof v === "object" && typeof v.objectName === "string") {
+                // Nested JsonObject
+                out[key] = root._snapshotAdapter(v);
+            } else {
+                out[key] = root._deepClone(v);
+            }
+        }
+        return out;
+    }
+
+    function _loadUserDelta() {
         const text = (userOverrideFileView.text() || "").trim();
-        root._shadowedPaths = {};
-        if (text.length === 0) return;
-        let parsed;
+        if (text.length === 0) {
+            root._userDelta = {};
+            return;
+        }
         try {
-            parsed = JSON.parse(text);
+            const parsed = JSON.parse(text);
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                console.warn(`[Config] ${root.userOverridePath} must contain a JSON object`);
+                root._userDelta = {};
+                return;
+            }
+            root._userDelta = parsed;
         } catch (e) {
             console.warn(`[Config] failed to parse ${root.userOverridePath}: ${e.message}`);
-            return;
+            root._userDelta = {};
         }
-        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-            console.warn(`[Config] ${root.userOverridePath} must contain a JSON object`);
-            return;
-        }
-        const shadowed = root._deepMergeInto(root.options, parsed, "");
-        const map = {};
-        for (const p of shadowed) map[p] = true;
-        root._shadowedPaths = map;
-        if (shadowed.length > 0) {
-            console.log(`[Config] applied ${shadowed.length} key(s) from ${root.userOverridePath}`);
-        }
+    }
+
+    function _applyUserDelta() {
+        if (Object.keys(root._userDelta).length === 0) return;
+        root._deepMergeInto(root.options, root._userDelta);
+    }
+
+    function _writeUserDelta() {
+        root._writingUserDelta = true;
+        const text = JSON.stringify(root._userDelta, null, 2) + "\n";
+        userOverrideFileView.setText(text);
+        // Clear the echo-suppress flag after the file-watcher has had a
+        // chance to fire. The watcher will fire ~10ms after setText; we
+        // wait one readWriteDelay to be safe.
+        echoClearTimer.restart();
     }
 
     Timer {
-        id: fileReloadTimer
+        id: bundleReloadTimer
         interval: root.readWriteDelay
         repeat: false
         onTriggered: configFileView.reload()
     }
 
+    // Debounced write of the user delta. Multiple setNestedValue calls
+    // within readWriteDelay coalesce into one disk write.
+    Timer {
+        id: userDeltaWriteTimer
+        interval: root.readWriteDelay
+        repeat: false
+        onTriggered: root._writeUserDelta()
+    }
+
+    // After a setText call, swallow exactly one onFileChanged echo so we
+    // don't reload-loop on our own writes.
+    Timer {
+        id: echoClearTimer
+        interval: root.readWriteDelay * 4
+        repeat: false
+        onTriggered: root._writingUserDelta = false
+    }
+
     // One-shot migration of legacy config keys.
-    // Idempotent: only acts when a legacy key is present.
+    // Idempotent: only acts when a legacy key is present. Migrated keys
+    // land in the user delta (since the bundle is now read-only).
     function _migrateLegacyKeys() {
         const opts = root.options;
         if (!opts) return;
-        let changed = false;
+        let migrated = false;
 
         // activSpot -> anoSpot (module rename)
         if (opts.activSpot && !opts.anoSpot) {
+            // Copy into delta so the migration persists
+            root._userDelta.anoSpot = root._deepClone(opts.activSpot);
             opts.anoSpot = opts.activSpot;
-            changed = true;
+            migrated = true;
         }
         if (opts.activSpot) {
-            delete opts.activSpot;
-            changed = true;
+            // Can't actually delete from the bundled JsonAdapter — that
+            // would write back. The legacy key stays harmlessly in the
+            // bundle; the new key wins on read.
         }
 
-        if (changed) fileWriteTimer.restart();
-    }
-
-    Timer {
-        id: fileWriteTimer
-        interval: root.readWriteDelay
-        repeat: false
-        onTriggered: configFileView.writeAdapter()
+        if (migrated) userDeltaWriteTimer.restart();
     }
 
     FileView {
         id: configFileView
         path: root.filePath
         watchChanges: true
-        blockWrites: root.blockWrites
-        onFileChanged: fileReloadTimer.restart()
-        onAdapterUpdated: fileWriteTimer.restart()
+        // Bundle is read-only — settings UI writes to the user delta.
+        // Setting blockWrites prevents the adapter from echoing changes
+        // back into the file we just loaded from.
+        blockWrites: true
+        onFileChanged: bundleReloadTimer.restart()
         onLoaded: {
-            root._migrateLegacyKeys();
-            // Re-read the override file each time the bundle reloads, so
-            // override edits made via an external editor are picked up too.
+            // Bundle reload resets the adapter to bundle defaults. We
+            // re-snapshot the defaults (in case the bundle itself changed,
+            // e.g. shell upgrade), then request a user-delta reload —
+            // the actual apply (and legacy-key migration) happens in
+            // userOverrideFileView.onLoaded, after _userDelta is populated.
+            root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
             userOverrideFileView.reload();
-            root._applyUserOverrides();
-            root.ready = true;
+            // ready flips after the delta has been applied (in user-file
+            // onLoaded / onLoadFailed handlers).
         }
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
-                writeAdapter();
+                console.warn(`[Config] bundled config not found at ${root.filePath} — using built-in defaults`);
+                root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
+                userOverrideFileView.reload();
             }
         }
 
@@ -337,16 +448,41 @@ Singleton {
         }
     }
 
-    // User overrides — optional ~/.config/anoshell/config.json that's
-    // deep-merged on top of the bundled config. Read-only at runtime: any
-    // key set here wins over Settings-page edits, which will be reverted
-    // on the next reload (with a console warning at write time).
+    // User per-machine config delta at ~/.config/anoshell/config.json.
+    // The Settings UI writes here (via setNestedValue → _writeUserDelta).
+    // External edits (text editor, git pull, scp from another machine) are
+    // picked up via watchChanges and trigger a bundle reload, which then
+    // re-applies the delta on top of bundle defaults.
+    //
+    // Echo suppression: when WE write the file, the watcher would fire and
+    // cause a reload loop. We set _writingUserDelta=true around our own
+    // writes; the onFileChanged handler skips a reload while it's set,
+    // and echoClearTimer clears the flag a few ms later.
     FileView {
         id: userOverrideFileView
         path: root.userOverridePath
         watchChanges: true
-        blockWrites: true
-        onFileChanged: configFileView.reload()
-        // Missing file is fine — the override layer is opt-in.
+        // Writes go via setText() in _writeUserDelta — never via an adapter.
+        onFileChanged: {
+            // Echo from our own setText — already applied in memory.
+            if (root._writingUserDelta) return;
+            // External edit: reload bundle to reset adapter to defaults,
+            // then this view's onLoaded re-applies the (possibly smaller)
+            // delta on top.
+            bundleReloadTimer.restart();
+        }
+        onLoaded: {
+            root._loadUserDelta();
+            root._applyUserDelta();
+            root._migrateLegacyKeys();
+            root.ready = true;
+        }
+        onLoadFailed: error => {
+            if (error === FileViewError.FileNotFound) {
+                root._userDelta = {};
+                root._migrateLegacyKeys();
+                root.ready = true;
+            }
+        }
     }
 }
