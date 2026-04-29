@@ -317,17 +317,18 @@ ColumnLayout {
                             font.pixelSize: 11; opacity: 0.7
                             Layout.preferredWidth: 64
                         }
-                        // Crude exec/shell toggle (a real ComboBox would be nicer
-                        // but isn't in the existing widget set).
-                        RippleButton {
-                            implicitHeight: 26
-                            buttonRadius: 6
-                            contentItem: StyledText {
-                                text: (modelData.action ?? "exec") + "  ⇆"
-                                font.pixelSize: 11
-                            }
-                            onClicked: root._updateRule(index, "action",
-                                (modelData.action ?? "exec") === "exec" ? "shell" : "exec")
+                        // exec/shell selector — ChoiceRow keeps the click
+                        // semantics consistent with every other binary
+                        // choice on the page (no more "click to flip").
+                        ChoiceRow {
+                            compact: false
+                            itemSpacing: 4
+                            model: [
+                                { value: "exec", label: "exec", icon: "terminal" },
+                                { value: "shell", label: "shell", icon: "code" }
+                            ]
+                            current: modelData.action ?? "exec"
+                            onChose: value => root._updateRule(index, "action", value)
                         }
                         ConfigSwitch {
                             label: "Per item"

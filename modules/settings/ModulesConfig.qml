@@ -187,17 +187,19 @@ ColumnLayout {
 
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"; opacity: 0.15 }
 
-        // Corner action selectors
+        // Corner action selectors. ChoiceRow renders compact icon+label
+        // pills with ≥32px hit targets — replaces the previous 36-button
+        // GroupButton wall (9 actions × 4 corners) that had 28×40 cells.
         readonly property var cornerActions: [
-            { id: "sidebarLeftOpen", label: "Left Sidebar" },
-            { id: "sidebarRightOpen", label: "Right Sidebar" },
-            { id: "overviewOpen", label: "Overview" },
-            { id: "settingsOpen", label: "Settings" },
-            { id: "hudVisible", label: "HUD" },
-            { id: "searchOpen", label: "App Launcher" },
-            { id: "clipboardOpen", label: "Clipboard" },
-            { id: "controlPanelOpen", label: "Control Panel" },
-            { id: "", label: "None" },
+            { value: "sidebarLeftOpen", label: "Left Sidebar", icon: "view_sidebar" },
+            { value: "sidebarRightOpen", label: "Right Sidebar", icon: "view_sidebar" },
+            { value: "overviewOpen", label: "Overview", icon: "overview" },
+            { value: "settingsOpen", label: "Settings", icon: "settings" },
+            { value: "hudVisible", label: "HUD", icon: "dashboard" },
+            { value: "searchOpen", label: "App Launcher", icon: "search" },
+            { value: "clipboardOpen", label: "Clipboard", icon: "content_paste" },
+            { value: "controlPanelOpen", label: "Control Panel", icon: "tune" },
+            { value: "", label: "None", icon: "block" },
         ]
 
         Repeater {
@@ -208,24 +210,31 @@ ColumnLayout {
                 { corner: "bottomRight", label: "Bottom Right", icon: "south_east" },
             ]
 
-            ConfigRow {
+            ColumnLayout {
                 required property var modelData
-                label: modelData.label
+                Layout.fillWidth: true
+                spacing: 4
 
                 RowLayout {
-                    spacing: 3
-                    Repeater {
-                        model: cornerActions
-                        GroupButton {
-                            required property var modelData
-                            label: modelData.label
-                            showLabel: true
-                            toggled: (Config.options?.screenCorners?.actions?.[parent.parent.parent.modelData.corner] ?? "") === modelData.id
-                            onClicked: Config.setNestedValue(`screenCorners.actions.${parent.parent.parent.modelData.corner}`, modelData.id)
-                            implicitHeight: 28
-                            font.pixelSize: 10
-                        }
+                    spacing: 6
+                    MaterialSymbol {
+                        text: parent.modelData.icon; iconSize: 16
+                        color: Appearance?.colors.colSubtext ?? "#CAC4D0"
                     }
+                    StyledText {
+                        text: parent.modelData.label
+                        font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                ChoiceRow {
+                    Layout.fillWidth: true
+                    compact: true
+                    itemSpacing: 4
+                    model: cornerActions
+                    current: Config.options?.screenCorners?.actions?.[parent.modelData.corner] ?? ""
+                    onChose: value => Config.setNestedValue(`screenCorners.actions.${parent.modelData.corner}`, value)
                 }
             }
         }

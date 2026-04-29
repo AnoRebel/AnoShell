@@ -552,51 +552,71 @@ ColumnLayout {
         subtitle: "What happens when you click or scroll on each bar section"
 
         readonly property var actionChoices: [
-            { id: "sidebarLeft", label: "Left Sidebar", icon: "view_sidebar" },
-            { id: "sidebarRight", label: "Right Sidebar", icon: "view_sidebar" },
-            { id: "overview", label: "Overview", icon: "overview" },
-            { id: "settings", label: "Settings", icon: "settings" },
-            { id: "hud", label: "HUD", icon: "dashboard" },
-            { id: "session", label: "Session", icon: "power_settings_new" },
-            { id: "clipboard", label: "Clipboard", icon: "content_paste" },
-            { id: "wallpaper", label: "Wallpaper", icon: "image" },
-            { id: "cheatsheet", label: "Cheatsheet", icon: "keyboard" },
-            { id: "none", label: "None", icon: "block" },
+            { value: "sidebarLeft", label: "Left Sidebar", icon: "view_sidebar" },
+            { value: "sidebarRight", label: "Right Sidebar", icon: "view_sidebar" },
+            { value: "overview", label: "Overview", icon: "overview" },
+            { value: "settings", label: "Settings", icon: "settings" },
+            { value: "hud", label: "HUD", icon: "dashboard" },
+            { value: "session", label: "Session", icon: "power_settings_new" },
+            { value: "clipboard", label: "Clipboard", icon: "content_paste" },
+            { value: "wallpaper", label: "Wallpaper", icon: "image" },
+            { value: "cheatsheet", label: "Cheatsheet", icon: "keyboard" },
+            { value: "none", label: "None", icon: "block" },
         ]
         readonly property var scrollChoices: [
-            { id: "brightness", label: "Brightness", icon: "brightness_6" },
-            { id: "volume", label: "Volume", icon: "volume_up" },
-            { id: "workspace", label: "Workspace", icon: "grid_view" },
-            { id: "none", label: "None", icon: "block" },
+            { value: "brightness", label: "Brightness", icon: "brightness_6" },
+            { value: "volume", label: "Volume", icon: "volume_up" },
+            { value: "workspace", label: "Workspace", icon: "grid_view" },
+            { value: "none", label: "None", icon: "block" },
         ]
+
+        // Helper to look up an action's display label for the header rows
+        function _labelFor(actions, value) {
+            for (const a of actions) if (a.value === value) return a.label
+            return "(unknown)"
+        }
 
         // Click actions
         StyledText { text: "Click actions"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14; Layout.fillWidth: true }
 
         Repeater {
             model: [
-                { section: "Left", key: "leftClick", default_: "sidebarLeft" },
-                { section: "Right", key: "rightClick", default_: "sidebarRight" },
-                { section: "Center (right-click)", key: "centerClick", default_: "overview" },
+                { section: "Left", key: "leftClick", default_: "sidebarLeft", desc: "Left section click" },
+                { section: "Right", key: "rightClick", default_: "sidebarRight", desc: "Right section click" },
+                { section: "Center", key: "centerClick", default_: "overview", desc: "Center section right-click" },
             ]
 
-            ConfigRow {
+            ColumnLayout {
                 required property var modelData
-                label: `${modelData.section} section click`
+                Layout.fillWidth: true
+                spacing: 4
+
+                // Header row — section name + currently-selected action label.
+                // Replaces the previous icon-only buttons with no visible label.
                 RowLayout {
-                    spacing: 3
-                    Repeater {
-                        model: actionChoices
-                        GroupButton {
-                            required property var modelData
-                            label: modelData.label; iconName: modelData.icon; iconSize: 14
-                            showLabel: false
-                            toggled: (Config.options?.bar?.actions?.[parent.parent.parent.modelData.key] ?? parent.parent.parent.modelData.default_) === modelData.id
-                            onClicked: Config.setNestedValue(`bar.actions.${parent.parent.parent.modelData.key}`, modelData.id)
-                            implicitWidth: 36; implicitHeight: 32
-                            StyledToolTip { text: parent.modelData.label }
-                        }
+                    Layout.fillWidth: true
+                    spacing: 6
+                    StyledText {
+                        text: parent.modelData.desc
+                        font.pixelSize: Appearance?.font.pixelSize.small ?? 13
+                        font.weight: Font.DemiBold
+                        Layout.fillWidth: true
                     }
+                    StyledText {
+                        text: "→ " + _labelFor(actionChoices,
+                            Config.options?.bar?.actions?.[parent.parent.modelData.key] ?? parent.parent.modelData.default_)
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        opacity: 0.7
+                    }
+                }
+
+                ChoiceRow {
+                    Layout.fillWidth: true
+                    compact: true
+                    itemSpacing: 4
+                    model: actionChoices
+                    current: Config.options?.bar?.actions?.[parent.modelData.key] ?? parent.modelData.default_
+                    onChose: value => Config.setNestedValue(`bar.actions.${parent.modelData.key}`, value)
                 }
             }
         }
@@ -608,47 +628,26 @@ ColumnLayout {
 
         ConfigRow {
             label: "Left section scroll"
-            RowLayout {
-                spacing: 3
-                Repeater {
-                    model: scrollChoices
-                    GroupButton {
-                        required property var modelData
-                        label: modelData.label; iconName: modelData.icon
-                        toggled: (Config.options?.bar?.actions?.scrollLeft ?? "brightness") === modelData.id
-                        onClicked: Config.setNestedValue("bar.actions.scrollLeft", modelData.id)
-                    }
-                }
+            ChoiceRow {
+                model: scrollChoices
+                current: Config.options?.bar?.actions?.scrollLeft ?? "brightness"
+                onChose: value => Config.setNestedValue("bar.actions.scrollLeft", value)
             }
         }
         ConfigRow {
             label: "Right section scroll"
-            RowLayout {
-                spacing: 3
-                Repeater {
-                    model: scrollChoices
-                    GroupButton {
-                        required property var modelData
-                        label: modelData.label; iconName: modelData.icon
-                        toggled: (Config.options?.bar?.actions?.scrollRight ?? "volume") === modelData.id
-                        onClicked: Config.setNestedValue("bar.actions.scrollRight", modelData.id)
-                    }
-                }
+            ChoiceRow {
+                model: scrollChoices
+                current: Config.options?.bar?.actions?.scrollRight ?? "volume"
+                onChose: value => Config.setNestedValue("bar.actions.scrollRight", value)
             }
         }
         ConfigRow {
             label: "Center section scroll"
-            RowLayout {
-                spacing: 3
-                Repeater {
-                    model: scrollChoices
-                    GroupButton {
-                        required property var modelData
-                        label: modelData.label; iconName: modelData.icon
-                        toggled: (Config.options?.bar?.actions?.scrollCenter ?? "workspace") === modelData.id
-                        onClicked: Config.setNestedValue("bar.actions.scrollCenter", modelData.id)
-                    }
-                }
+            ChoiceRow {
+                model: scrollChoices
+                current: Config.options?.bar?.actions?.scrollCenter ?? "workspace"
+                onChose: value => Config.setNestedValue("bar.actions.scrollCenter", value)
             }
         }
     }

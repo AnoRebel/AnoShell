@@ -569,25 +569,17 @@ ColumnLayout {
             }
             enabled: lyEnable.checked
 
-            RowLayout {
-                spacing: 4
-                Repeater {
-                    model: ["Auto", "Local", "LRCLIB", "NetEase"]
-                    RippleButton {
-                        required property string modelData
-                        implicitHeight: 26
-                        buttonRadius: 6
-                        toggled: (Config.options?.lyrics?.backend ?? "Auto") === modelData
-                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
-                        contentItem: StyledText {
-                            text: modelData
-                            font.pixelSize: 11
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
-                        }
-                        onClicked: Config.setNestedValue("lyrics.backend", modelData)
-                    }
-                }
+            ChoiceRow {
+                compact: false
+                itemSpacing: 4
+                model: [
+                    { value: "Auto", label: "Auto", icon: "auto_awesome" },
+                    { value: "Local", label: "Local", icon: "folder" },
+                    { value: "LRCLIB", label: "LRCLIB", icon: "cloud" },
+                    { value: "NetEase", label: "NetEase", icon: "language" }
+                ]
+                current: Config.options?.lyrics?.backend ?? "Auto"
+                onChose: value => Config.setNestedValue("lyrics.backend", value)
             }
         }
 
