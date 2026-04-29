@@ -104,13 +104,23 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 
 | Key | Action |
 |-----|--------|
+| `Ctrl+K` | Open the command palette (search every config key) |
 | `Up` / `Down` | Cycle nav rail (when no input is focused) |
 | `Tab` / `Shift+Tab` | Cycle pages or default Tab traversal inside an input |
 | `Ctrl+1`..`Ctrl+9` | Jump to page N |
 | `Ctrl+0` | Jump to last page |
 | `Esc` | Close the panel (overlay) or quit (standalone) |
 
-Each page has a "Reset" affordance in its header (only visible when that page has overridden any keys), and AboutPage has a global "Reset every setting" card. Both reset paths target only the user delta at `~/.config/anoshell/config.json`; bundled defaults are never written to.
+**Command palette (`Ctrl+K`).** Search every config key in the shell — case-insensitive, multi-word (every term must match somewhere). The index is built dynamically from `config.json`, so new keys appear automatically as you add them. Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
+
+```
+Ctrl+K → "event border"   → anoSpot.eventBorder.holdMs   → AnoSpot · Event border animation
+Ctrl+K → "hotspot"        → network.hotspot.password     → Services · Network usage tracking
+Ctrl+K → "lyrics"         → lyrics.dir                   → Services · Lyrics
+Ctrl+K → "wallpaper rot"  → background.randomize         → Appearance · Wallpaper Rotation
+```
+
+Each page also has a per-page "Reset" affordance in its header (only visible when that page has overridden any keys), and AboutPage has a global "Reset every setting" card. Both reset paths target only the user delta at `~/.config/anoshell/config.json`; bundled defaults are never written to.
 
 ### How config persistence works
 
@@ -549,7 +559,7 @@ Scripts include automatic backup — restore with: switchwall.sh --restore
 ## Widget Library (50+ components)
 **Foundation**: StyledText, MaterialSymbol, Circle, PointingHandInteraction, FadeLoader, Revealer, StyledImage, WavyLine, DragManager, RoundCorner
 **Controls**: RippleButton, StyledSlider, StyledSwitch, StyledProgressBar, CircularProgress, CombinedCircularProgress, Graph, StyledScrollBar, StyledFlickable, Tooltips, StyledTextInput/Area
-**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ConfigTextInput (placeholder + validator + inline errors), ChoiceRow (single-select icon-row picker), RestartRequiredBadge (clickable reload-now pill), ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade, StyledPopup, SettingsCard, SettingsPageHeader (per-page reset)
+**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ConfigTextInput (placeholder + validator + inline errors), ChoiceRow (single-select icon-row picker), RestartRequiredBadge (clickable reload-now pill), ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade, StyledPopup, SettingsCard (with `configKeys` for command-palette resolution), SettingsPageHeader (per-page reset), SettingsCommandPalette (Ctrl+K dynamic-search overlay)
 **Animation**: Anim, CAnim, AbstractChoreographable, FlyFadeEnterChoreographable, ChoreographerLayout
 **Morph**: ShapeCanvas, MorphedPanel, TopLayerPanel, BarWidgetPopout, BarModulePopout (16 JS shape files)
 **Spectrum**: LinearSpectrum, MirroredSpectrum
@@ -598,7 +608,7 @@ ano/
 │   ├── sidebarLeft/                # AI Chat | Notifications | Translator
 │   ├── sidebarRight/               # Configurable widget stack (see Sidebar Right widgets)
 │   ├── controlPanel/               # Floating notification-shade
-│   ├── settings/                   # 10-page settings system + SettingsKeyHandler + SettingsPageHeader
+│   ├── settings/                   # 10-page settings system + SettingsKeyHandler + SettingsPageHeader + SettingsCommandPalette (Ctrl+K) + SettingsRegistry (dynamic search index)
 │   ├── osd/                        # 6-indicator on-screen display
 │   ├── hud/                        # Heads-up display
 │   ├── session/                    # Hold-to-confirm power screen
