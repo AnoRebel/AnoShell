@@ -8,6 +8,61 @@ import QtQuick
 QtObject {
     id: root
 
+    // Canonical list of valid module IDs the bar can render. The Settings
+    // bar editor uses this to render "available chip" rows and to validate
+    // that user-edited config doesn't carry typos. Order is the suggested
+    // default ordering for new bars.
+    readonly property var availableModuleIds: [
+        "sidebarButton",
+        "activeWindow",
+        "workspaces",
+        "clock",
+        "weather",
+        "battery",
+        "network",
+        "bluetooth",
+        "tray",
+        "media",
+        "resources",
+        "keyboard",
+        "notifications",
+        "idle",
+        "privacy",
+        "gamemode"
+    ]
+
+    // Human-readable labels for the UI. Falls back to the raw ID when
+    // missing so a future module added to availableModuleIds without
+    // a label still renders a chip.
+    readonly property var moduleLabels: ({
+        "clock": "Clock",
+        "workspaces": "Workspaces",
+        "battery": "Battery",
+        "network": "Network",
+        "bluetooth": "Bluetooth",
+        "tray": "System tray",
+        "media": "Media",
+        "resources": "Resources",
+        "activeWindow": "Active window",
+        "sidebarButton": "Sidebar button",
+        "weather": "Weather",
+        "keyboard": "Keyboard layout",
+        "notifications": "Notifications",
+        "idle": "Idle inhibit",
+        "privacy": "Privacy",
+        "gamemode": "Game mode"
+    })
+
+    function isKnownModule(name) {
+        return availableModuleIds.indexOf(name) !== -1 || name === "keyboardLayout"
+    }
+
+    function labelFor(name) {
+        // Normalise the keyboardLayout alias for display
+        const id = (name === "keyboardLayout") ? "keyboard" : name
+        return moduleLabels[id] || id
+    }
+
     function getModule(name) {
         switch (name) {
             case "clock": return clockModule

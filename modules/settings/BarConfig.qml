@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.bar.modules
 import qs.services
 
 /**
@@ -143,71 +144,256 @@ ColumnLayout {
     SettingsCard {
         icon: "view_module"
         title: "Bar Modules"
-        subtitle: "Configure which modules appear in left, center, and right sections"
+        subtitle: "Drop modules into the left, center, and right sections. Reorder with the ◂ ▸ buttons."
 
-        // Available modules reference
-        StyledText {
-            text: "Available: clock, workspaces, battery, network, bluetooth, tray, media, resources, activeWindow, sidebarButton, weather, keyboard, notifications, idle"
-            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-            opacity: 0.5
-            wrapMode: Text.Wrap
+        // ── Left section ───────────────────────────────────────────────
+        ColumnLayout {
+            spacing: 6
             Layout.fillWidth: true
-        }
-
-        // Left modules
-        ColumnLayout {
-            spacing: 4
             StyledText { text: "Left section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            Rectangle {
-                Layout.fillWidth: true; implicitHeight: 36; radius: 8
-                color: Appearance?.colors.colLayer2 ?? "#2B2930"
-                StyledTextInput {
-                    anchors { fill: parent; margins: 8 }
-                    text: root.leftModules.join(", ")
-                    font.family: Appearance?.font.family.mono ?? "monospace"
-                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                    onEditingFinished: Config.setNestedValue("bars.0.modules.left", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
-                }
+            BarModuleSection {
+                Layout.fillWidth: true
+                section: "left"
+                modules: root.leftModules
             }
         }
 
-        // Center modules
+        // ── Center section ─────────────────────────────────────────────
         ColumnLayout {
-            spacing: 4
+            spacing: 6
+            Layout.fillWidth: true
             StyledText { text: "Center section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            Rectangle {
-                Layout.fillWidth: true; implicitHeight: 36; radius: 8
-                color: Appearance?.colors.colLayer2 ?? "#2B2930"
-                StyledTextInput {
-                    anchors { fill: parent; margins: 8 }
-                    text: root.centerModules.join(", ")
-                    font.family: Appearance?.font.family.mono ?? "monospace"
-                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                    onEditingFinished: Config.setNestedValue("bars.0.modules.center", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
-                }
+            BarModuleSection {
+                Layout.fillWidth: true
+                section: "center"
+                modules: root.centerModules
             }
         }
 
-        // Right modules
+        // ── Right section ──────────────────────────────────────────────
         ColumnLayout {
-            spacing: 4
+            spacing: 6
+            Layout.fillWidth: true
             StyledText { text: "Right section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            Rectangle {
-                Layout.fillWidth: true; implicitHeight: 36; radius: 8
-                color: Appearance?.colors.colLayer2 ?? "#2B2930"
-                StyledTextInput {
-                    anchors { fill: parent; margins: 8 }
-                    text: root.rightModules.join(", ")
-                    font.family: Appearance?.font.family.mono ?? "monospace"
-                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                    onEditingFinished: Config.setNestedValue("bars.0.modules.right", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
-                }
+            BarModuleSection {
+                Layout.fillWidth: true
+                section: "right"
+                modules: root.rightModules
             }
         }
 
         NoticeBox {
-            text: "Edit module lists above as comma-separated names. Changes apply after shell reload."
+            text: "Module changes apply to bar 0 (the primary bar). Multi-bar configs are edited via config.json. Bar reload required."
             iconName: "info"
+        }
+    }
+
+    // Inline component for one bar section's chip editor. Shows active
+    // chips with reorder/remove affordances, and an "Add" button revealing
+    // the available-modules palette.
+    component BarModuleSection: ColumnLayout {
+        id: section
+        property string section: ""           // "left" | "center" | "right"
+        property var modules: []              // current active list
+        property bool _addingMode: false      // true while the available palette is shown
+
+        readonly property string _configPath: `bars.0.modules.${section}`
+        readonly property var _allIds: BarModuleLoader.availableModuleIds ?? []
+        // Available = catalogue minus what's already active
+        readonly property var _availableIds: {
+            const active = section.modules ?? []
+            return section._allIds.filter(id => !active.includes(id))
+        }
+
+        function _writeModules(arr) {
+            Config.setNestedValue(section._configPath, arr)
+        }
+
+        function _moveBy(idx, delta) {
+            const arr = [...section.modules]
+            const next = idx + delta
+            if (next < 0 || next >= arr.length) return
+            const tmp = arr[next]; arr[next] = arr[idx]; arr[idx] = tmp
+            section._writeModules(arr)
+        }
+
+        function _remove(idx) {
+            const arr = [...section.modules]
+            arr.splice(idx, 1)
+            section._writeModules(arr)
+        }
+
+        function _add(id) {
+            const arr = [...section.modules, id]
+            section._writeModules(arr)
+            section._addingMode = false
+        }
+
+        spacing: 6
+
+        // Active chip row + add button
+        Flow {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Repeater {
+                model: section.modules
+
+                delegate: Rectangle {
+                    id: chip
+                    required property var modelData
+                    required property int index
+
+                    readonly property string moduleId: chip.modelData
+                    readonly property bool isKnown: BarModuleLoader.isKnownModule(chip.moduleId)
+                    readonly property string displayLabel:
+                        chip.isKnown
+                            ? `${chip.index + 1}. ${BarModuleLoader.labelFor(chip.moduleId)}`
+                            : `Unknown: ${chip.moduleId}`
+
+                    implicitWidth: chipRow.implicitWidth + 14
+                    implicitHeight: 30
+                    radius: Appearance?.rounding.small ?? 8
+                    color: chip.isKnown
+                        ? (Appearance?.colors.colSecondaryContainer ?? "#E8DEF8")
+                        : (Appearance?.m3colors.m3errorContainer ?? "#5C1A1A")
+                    border.width: chip.isKnown ? 0 : 1
+                    border.color: Appearance?.m3colors.m3error ?? "#F2B8B5"
+
+                    RowLayout {
+                        id: chipRow
+                        anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 8 }
+                        spacing: 4
+
+                        StyledText {
+                            text: chip.displayLabel
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                            color: chip.isKnown
+                                ? (Appearance?.m3colors.m3onSecondaryContainer ?? "#1D192B")
+                                : (Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC")
+                        }
+
+                        // ◂ move-left / ▴ move-up
+                        ToolbarButton {
+                            iconName: "chevron_left"
+                            iconSize: 16
+                            visible: chip.index > 0
+                            toolTipText: "Move earlier"
+                            onClicked: section._moveBy(chip.index, -1)
+                        }
+                        // ▸ move-right / ▾ move-down
+                        ToolbarButton {
+                            iconName: "chevron_right"
+                            iconSize: 16
+                            visible: chip.index < (section.modules.length - 1)
+                            toolTipText: "Move later"
+                            onClicked: section._moveBy(chip.index, 1)
+                        }
+                        // ✕ remove
+                        ToolbarButton {
+                            iconName: "close"
+                            iconSize: 16
+                            toolTipText: "Remove"
+                            onClicked: section._remove(chip.index)
+                        }
+                    }
+                }
+            }
+
+            // Empty-state hint when the section has no modules
+            Loader {
+                active: (section.modules ?? []).length === 0
+                visible: active
+                sourceComponent: StyledText {
+                    text: "No modules yet — click + to add"
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+                    opacity: 0.7
+                }
+            }
+
+            // + Add module button
+            RippleButton {
+                implicitHeight: 30
+                buttonRadius: Appearance?.rounding.small ?? 8
+                visible: section._availableIds.length > 0
+                contentItem: RowLayout {
+                    spacing: 4
+                    anchors.leftMargin: 10; anchors.rightMargin: 10
+                    MaterialSymbol {
+                        text: section._addingMode ? "expand_less" : "add"
+                        iconSize: 14
+                    }
+                    StyledText {
+                        text: section._addingMode ? "Hide" : "Add"
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    }
+                }
+                onClicked: section._addingMode = !section._addingMode
+            }
+        }
+
+        // Available palette — only visible while adding
+        Loader {
+            Layout.fillWidth: true
+            active: section._addingMode && section._availableIds.length > 0
+            visible: active
+            sourceComponent: Rectangle {
+                implicitHeight: paletteFlow.implicitHeight + 12
+                radius: Appearance?.rounding.small ?? 8
+                color: Appearance?.colors.colLayer2 ?? "#2B2930"
+                border.width: 1
+                border.color: Appearance?.colors.colOutlineVariant ?? "#49454F"
+
+                Flow {
+                    id: paletteFlow
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 6 }
+                    spacing: 6
+
+                    Repeater {
+                        model: section._availableIds
+                        delegate: Rectangle {
+                            id: paletteChip
+                            required property var modelData
+
+                            implicitWidth: paletteLabel.implicitWidth + 22
+                            implicitHeight: 28
+                            radius: Appearance?.rounding.small ?? 8
+                            color: paletteMA.containsMouse
+                                ? (Appearance?.colors.colLayer1Hover ?? "#3C3947")
+                                : (Appearance?.colors.colLayer1 ?? "#2B2930")
+                            border.width: 1
+                            border.color: Appearance?.colors.colOutlineVariant ?? "#49454F"
+
+                            Behavior on color { ColorAnimation { duration: 100 } }
+
+                            RowLayout {
+                                anchors.centerIn: parent
+                                spacing: 4
+                                MaterialSymbol {
+                                    text: "add"
+                                    iconSize: 12
+                                    color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+                                }
+                                StyledText {
+                                    id: paletteLabel
+                                    text: BarModuleLoader.labelFor(paletteChip.modelData)
+                                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                                    color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                                }
+                            }
+
+                            MouseArea {
+                                id: paletteMA
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: section._add(paletteChip.modelData)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
