@@ -16,6 +16,20 @@ Singleton {
     property QtObject glassTokens
     property string syntaxHighlightingTheme
 
+    // Transient theme preview overlay. When non-null, StaticThemeLoader
+    // applies these tokens INSTEAD of reading from the configured
+    // `appearance.theme.static` path. Used by AppearanceConfig's theme
+    // grid hover-preview so disk writes don't fire on every cell-enter.
+    //
+    // Contract:
+    //   - Set to a parsed-JSON theme object (same shape as files in
+    //     assets/themes/) to preview that theme.
+    //   - Set to null or {} to clear the preview (revert to the
+    //     committed static theme or Material You).
+    //   - Click-commit must clear previewTokens synchronously *before*
+    //     calling Config.setNestedValue to avoid a stale-preview tick.
+    property var previewTokens: null
+
     // ═══════════════════════════════════════════════════════════════════════
     // Wallpaper-based transparency (Material You dynamic transparency)
     // ═══════════════════════════════════════════════════════════════════════
