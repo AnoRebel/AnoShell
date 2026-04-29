@@ -24,6 +24,14 @@ Singleton {
         if ((Config.options?.appearance?.theme?.source ?? "materialYou") !== "materialYou")
             return
 
+        // Preview-tokens overlay (set by AppearanceConfig hover-preview)
+        // wins over Material You output — the user is peeking at a static
+        // theme. StaticThemeLoader applies the overlay; we step aside
+        // until the preview clears (mouse-leave or click-commit).
+        if (Appearance.previewTokens && typeof Appearance.previewTokens === "object") {
+            for (const _ in Appearance.previewTokens) return // non-empty → defer
+        }
+
         const json = JSON.parse(fileContent)
         for (const key in json) {
             if (json.hasOwnProperty(key)) {

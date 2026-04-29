@@ -29,33 +29,42 @@ ColumnLayout {
     property bool previewing: false
     property string previewingName: ""
 
+    // Preview a theme without writing to the user delta. Sets
+    // Appearance.previewTokens; both theme loaders defer to it for the
+    // duration of the hover.
     function _previewTheme(name: string): void {
-        // Always switch to static mode so the previewed theme actually shows.
-        Config.setNestedValue("appearance.theme.source", "static")
-        Config.setNestedValue("appearance.theme.static", name)
+        const tokens = ThemeRegistry.themeContents ? ThemeRegistry.themeContents[name] : null
+        if (!tokens) return
+        Appearance.previewTokens = tokens
         previewing = true
         previewingName = name
     }
 
+    // Clear the preview overlay. The active source (Material You or the
+    // committed static theme) re-renders on the next tick.
     function _revertPreview(): void {
         if (!previewing) return
-        Config.setNestedValue("appearance.theme.source", committedSource)
-        Config.setNestedValue("appearance.theme.static", committedStatic)
+        Appearance.previewTokens = null
         previewing = false
         previewingName = ""
     }
 
+    // Commit the previewed theme to the user delta. Clears previewTokens
+    // synchronously *before* the disk write so there's no stale-overlay
+    // tick.
     function _commitTheme(name: string): void {
-        Config.setNestedValue("appearance.theme.source", "static")
-        Config.setNestedValue("appearance.theme.static", name)
+        Appearance.previewTokens = null
         previewing = false
         previewingName = ""
+        Config.setNestedValue("appearance.theme.source", "static")
+        Config.setNestedValue("appearance.theme.static", name)
     }
 
     function _commitMaterialYou(): void {
-        Config.setNestedValue("appearance.theme.source", "materialYou")
+        Appearance.previewTokens = null
         previewing = false
         previewingName = ""
+        Config.setNestedValue("appearance.theme.source", "materialYou")
     }
 
     // ═══ Theme Source ═══

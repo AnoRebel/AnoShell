@@ -59,16 +59,11 @@ Singleton {
         // onLoadFailed silently leaves resolvedPath at the bundled fallback.
     }
 
-    function applyTheme(fileContent) {
-        if (!active) return
-        let json
-        try {
-            json = JSON.parse(fileContent)
-        } catch (e) {
-            console.warn("[StaticThemeLoader] failed to parse theme JSON:", e)
-            return
-        }
-
+    // Apply a parsed theme JSON object to Appearance. Pulled out of
+    // applyTheme(string) so the preview-tokens path can call it without
+    // re-parsing.
+    function applyThemeJson(json) {
+        if (!json || typeof json !== "object") return
         const m3 = Appearance.m3colors
         const glass = Appearance.glassTokens
         for (const key in json) {
@@ -100,8 +95,49 @@ Singleton {
             m3.darkmode = (m3.m3background.hslLightness < 0.5)
     }
 
+    function applyTheme(fileContent) {
+        // Preview overlay wins regardless of source. AppearanceConfig
+        // populates Appearance.previewTokens during hover so the user can
+        // peek at static themes from Material You mode without
+        // committing. When the preview clears, we fall through to the
+        // active source's normal output.
+        if (root._hasPreview()) {
+            root.applyThemeJson(Appearance.previewTokens)
+            return
+        }
+        if (!active) return
+        let json
+        try {
+            json = JSON.parse(fileContent)
+        } catch (e) {
+            console.warn("[StaticThemeLoader] failed to parse theme JSON:", e)
+            return
+        }
+        root.applyThemeJson(json)
+    }
+
+    function _hasPreview() {
+        const p = Appearance.previewTokens
+        if (!p || typeof p !== "object") return false
+        // Empty-object preview clears (per Appearance.previewTokens contract)
+        for (const _ in p) return true
+        return false
+    }
+
     function reapplyTheme() {
-        themeFileView.reload()
+        // Preview wins.
+        if (root._hasPreview()) {
+            root.applyThemeJson(Appearance.previewTokens)
+            return
+        }
+        if (root.active) {
+            themeFileView.reload()
+            return
+        }
+        // Source is Material You — restore by re-reading the generated
+        // colors file.
+        if (typeof MaterialThemeLoader !== "undefined")
+            MaterialThemeLoader.reapplyTheme()
     }
 
     // React to config changes — re-resolve and reload when source/name flips.
@@ -113,6 +149,17 @@ Singleton {
         if (!active || resolvedPath.length === 0) return
         themeFileView.path = ""
         themeFileView.path = resolvedPath
+    }
+
+    // Track preview-overlay changes. When AppearanceConfig sets/clears
+    // Appearance.previewTokens we re-render — set applies the preview,
+    // clear falls through to the committed file.
+    Connections {
+        target: Appearance
+        function onPreviewTokensChanged() {
+            if (!root.active) return
+            root.reapplyTheme()
+        }
     }
 
     FileView {

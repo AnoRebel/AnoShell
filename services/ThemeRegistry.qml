@@ -25,6 +25,10 @@ import Quickshell.Io
  *       source            "user" if loaded from userThemesPath, else "bundled"
  *     }
  *
+ * Also exposes `themeContents`, a JS object mapping theme name → fully
+ * parsed JSON, used by AppearanceConfig's hover-preview to feed
+ * Appearance.previewTokens without re-reading the file.
+ *
  * Refresh by calling refresh(); the registry also auto-refreshes on
  * Component.onCompleted.
  *
@@ -38,6 +42,10 @@ Singleton {
     property alias themes: themesModel
     readonly property int count: themesModel.count
 
+    // name → parsed JSON. Populated alongside themesModel as files are
+    // read. Used for hover-preview without disk re-reads.
+    property var themeContents: ({})
+
     // Track loaded names so the bundled pass can skip user-overridden entries.
     property var _loadedNames: new Set()
     // Pending file-read queue. Each entry: { path, name, source }
@@ -45,6 +53,7 @@ Singleton {
 
     function refresh(): void {
         themesModel.clear()
+        themeContents = ({})
         _loadedNames = new Set()
         _pendingFiles = []
         // List user dir first so it wins on name collisions.
@@ -140,6 +149,11 @@ Singleton {
                     outline: json.outline || json.outline_variant || "#444444",
                     source: entry.source
                 })
+                // Cache the full parsed JSON so AppearanceConfig hover-preview
+                // can feed Appearance.previewTokens without re-reading the file.
+                const updated = Object.assign({}, root.themeContents)
+                updated[entry.name] = json
+                root.themeContents = updated
                 root._loadedNames.add(entry.name)
                 root._processNext()
             }
