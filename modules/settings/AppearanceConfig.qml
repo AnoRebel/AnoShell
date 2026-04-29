@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -496,7 +497,7 @@ ColumnLayout {
             from: 200; to: 2000; stepSize: 100
             value: Config.options?.background?.transition?.duration ?? 800
             onValueChanged: Config.setNestedValue("background.transition.duration", Math.round(value))
-            valueText: `${Math.round(value)}ms`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigRow {

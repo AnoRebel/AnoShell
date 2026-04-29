@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -191,7 +192,7 @@ ColumnLayout {
             from: 500; to: 5000; stepSize: 250
             value: Config.options?.osd?.timeout ?? 1500
             onValueChanged: Config.setNestedValue("osd.timeout", Math.round(value))
-            valueText: `${(Math.round(value) / 1000).toFixed(1)}s`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigRow {
@@ -247,7 +248,7 @@ ColumnLayout {
             from: 100; to: 1500; stepSize: 50
             value: Config.options?.screenCorners?.dwellMs ?? 300
             onValueChanged: Config.setNestedValue("screenCorners.dwellMs", Math.round(value))
-            valueText: `${Math.round(value)}ms`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSlider {
@@ -331,7 +332,7 @@ ColumnLayout {
             from: 50; to: 500; stepSize: 25
             value: Config.options?.altSwitcher?.animationDurationMs ?? 200
             onValueChanged: Config.setNestedValue("altSwitcher.animationDurationMs", Math.round(value))
-            valueText: `${Math.round(value)}ms`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSwitch {
@@ -456,11 +457,15 @@ ColumnLayout {
         ConfigRow {
             label: "Default compositor"
             sublabel: "Fallback when auto-detection fails"
-            StyledTextInput {
-                text: Config.options?.compositor?.defaultCompositor ?? "hyprland"
-                onEditingFinished: Config.setNestedValue("compositor.defaultCompositor", text)
-                Layout.preferredWidth: 120
-                font.family: Appearance?.font.family.mono ?? "monospace"
+            RowLayout {
+                spacing: 6
+                StyledTextInput {
+                    text: Config.options?.compositor?.defaultCompositor ?? "hyprland"
+                    onEditingFinished: Config.setNestedValue("compositor.defaultCompositor", text)
+                    Layout.preferredWidth: 120
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                }
+                RestartRequiredBadge {}
             }
         }
 
@@ -639,11 +644,17 @@ ColumnLayout {
         title: "Display Manager"
         subtitle: "Monitor configuration panel (Hyprland only)"
 
-        ConfigSwitch {
-            label: "Enable Display Manager"
-            sublabel: "Show monitor resolution/refresh rate controls"
-            checked: Config.options?.displayManager?.enable ?? true
-            onCheckedChanged: Config.setNestedValue("displayManager.enable", checked)
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            ConfigSwitch {
+                Layout.fillWidth: true
+                label: "Enable Display Manager"
+                sublabel: "Show monitor resolution/refresh rate controls"
+                checked: Config.options?.displayManager?.enable ?? true
+                onCheckedChanged: Config.setNestedValue("displayManager.enable", checked)
+            }
+            RestartRequiredBadge {}
         }
 
         NoticeBox {
@@ -665,7 +676,7 @@ ColumnLayout {
             from: 50; to: 500; stepSize: 25
             value: Config.options?.hacks?.arbitraryRaceConditionDelay ?? 100
             onValueChanged: Config.setNestedValue("hacks.arbitraryRaceConditionDelay", Math.round(value))
-            valueText: `${Math.round(value)}ms`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigRow {
@@ -678,11 +689,17 @@ ColumnLayout {
             }
         }
 
-        ConfigSwitch {
-            label: "Morphing bar panels"
-            sublabel: "Use polygon-based ShapeCanvas bars (experimental, from hefty-hype)"
-            checked: Config.options?.bar?.morphingPanels ?? false
-            onCheckedChanged: Config.setNestedValue("bar.morphingPanels", checked)
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            ConfigSwitch {
+                Layout.fillWidth: true
+                label: "Morphing bar panels"
+                sublabel: "Use polygon-based ShapeCanvas bars (experimental, from hefty-hype)"
+                checked: Config.options?.bar?.morphingPanels ?? false
+                onCheckedChanged: Config.setNestedValue("bar.morphingPanels", checked)
+            }
+            RestartRequiredBadge {}
         }
 
         ConfigSwitch {

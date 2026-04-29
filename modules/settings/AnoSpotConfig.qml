@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -444,7 +445,7 @@ ColumnLayout {
             sublabel: "How long the halo stays visible before fading out"
             from: 500; to: 5000; stepSize: 100
             value: Config.options?.anoSpot?.eventBorder?.holdMs ?? 1500
-            valueText: `${Math.round(value)} ms`
+            valueText: Format.formatDuration(value)
             enabled: borderEnable.checked
             onValueChanged: Config.setNestedValue("anoSpot.eventBorder.holdMs", Math.round(value))
         }
