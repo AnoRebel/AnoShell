@@ -64,6 +64,7 @@ ColumnLayout {
             model: allModules
 
             RowLayout {
+                id: moduleRow
                 required property var modelData
                 Layout.fillWidth: true; spacing: 12
 
@@ -80,11 +81,19 @@ ColumnLayout {
                 }
 
                 StyledSwitch {
+                    id: moduleSwitch
                     checked: (Config.options?.enabledPanels ?? []).includes(modelData.id) || (Config.options?.enabledPanels ?? []).length === 0
-                    onCheckedChanged: {
+
+                    // toggled() only fires on user-driven changes (mouse
+                    // click, Space-key activation, accessibility action).
+                    // Bind-time mutations to `checked` do NOT fire it,
+                    // which is exactly what we want — the initial-bind
+                    // race that corrupted enabledPanels can't happen here.
+                    onToggled: {
                         let panels = [...(Config.options?.enabledPanels ?? [])]
                         if (panels.length === 0) {
-                            // First time — populate from defaults
+                            // First user write — materialise the default
+                            // "everything enabled" list before mutating.
                             panels = root.parent.allModules.map(m => m.id)
                         }
                         if (checked && !panels.includes(modelData.id)) panels.push(modelData.id)
