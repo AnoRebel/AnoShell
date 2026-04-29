@@ -13,6 +13,9 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    // configRoots: this page owns `bar` (including bar.morphingPanels even
+    // though ModulesConfig has a dotted entry for it — both pages can
+    // reset the key, the user can pick whichever page they think of first).
     SettingsPageHeader {
         title: "Bar"
         subtitle: "Edge, layout, modules, click actions, weather, tray"

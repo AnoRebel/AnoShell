@@ -11,6 +11,8 @@ import qs.services
 ColumnLayout {
     spacing: 16
 
+    // configRoots match this page's setNestedValue writes — `sounds.battery`
+    // dotted because ModulesConfig owns `sounds.theme`.
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"

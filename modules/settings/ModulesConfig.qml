@@ -14,14 +14,19 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    // configRoots: kept in sync with the keys this page actually writes
+    // via Config.setNestedValue. Dotted paths cover keys whose top-level
+    // root is owned by another page (bar.morphingPanels → BarConfig owns
+    // "bar"; display.primaryMonitor → no other page owns "display";
+    // sounds.theme → GeneralConfig owns "sounds.battery"). Verified
+    // against `grep setNestedValue` on this file as of audit-fixes.
     SettingsPageHeader {
         title: "Modules"
         subtitle: "Enable/disable shell modules, OSD, hot corners, apps, advanced"
         configRoots: [
             "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
-            "hud", "clipboard", "taskView", "media", "compositor",
-            "hacks", "displayManager",
+            "taskView", "media", "compositor", "hacks", "displayManager",
             "display.primaryMonitor", "sounds.theme", "bar.morphingPanels"
         ]
     }
