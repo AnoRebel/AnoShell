@@ -11,6 +11,12 @@ import qs.services
 ColumnLayout {
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Sidebars"
+        subtitle: "Behavior, widget toggles, sliders"
+        configRoots: ["sidebar"]
+    }
+
     // ═══ Sidebar Behavior ═══
     SettingsCard {
         icon: "speed"

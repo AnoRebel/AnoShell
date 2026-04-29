@@ -16,6 +16,123 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    property bool _confirmingResetAll: false
+
+    SettingsPageHeader {
+        title: "About"
+        subtitle: "User profile, shell info, system details, credits"
+        configRoots: ["user"]
+    }
+
+    // ═══ Reset everything ═══
+    // Global "wipe the user delta" — only visible when at least one key
+    // has been overridden. Two-step inline confirmation, no modal.
+    Loader {
+        Layout.fillWidth: true
+        active: Config.hasUserOverrides
+        visible: active
+        sourceComponent: Rectangle {
+            implicitHeight: resetCol.implicitHeight + 24
+            radius: Appearance?.rounding.normal ?? 12
+            color: Appearance?.m3colors.m3errorContainer ?? "#5C1A1A"
+            opacity: 0.85
+
+            ColumnLayout {
+                id: resetCol
+                anchors { fill: parent; margins: 12 }
+                spacing: 8
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    MaterialSymbol {
+                        text: "warning"; iconSize: 22
+                        color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 1
+                        StyledText {
+                            text: "Reset every setting"
+                            font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
+                            font.weight: Font.DemiBold
+                            color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                        }
+                        StyledText {
+                            text: "Wipes ~/.config/anoshell/config.json. Bundled defaults take over for every key."
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                            opacity: 0.8
+                            wrapMode: Text.Wrap
+                            Layout.fillWidth: true
+                            color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                        }
+                    }
+
+                    // Pre-confirm button
+                    RippleButton {
+                        visible: !root._confirmingResetAll
+                        implicitHeight: 32
+                        buttonRadius: Appearance?.rounding.small ?? 8
+                        contentItem: StyledText {
+                            text: "Reset all"
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
+                            color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                            font.weight: Font.DemiBold
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
+                        }
+                        onClicked: root._confirmingResetAll = true
+                    }
+                }
+
+                // Confirm row — slides in below when armed
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: root._confirmingResetAll
+                    spacing: 8
+
+                    StyledText {
+                        text: "Are you sure? This can't be undone."
+                        Layout.fillWidth: true
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
+                        color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                    }
+
+                    RippleButton {
+                        implicitHeight: 28
+                        buttonRadius: Appearance?.rounding.small ?? 8
+                        contentItem: StyledText {
+                            text: "Cancel"
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                            anchors.leftMargin: 10; anchors.rightMargin: 10
+                            color: Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC"
+                        }
+                        onClicked: root._confirmingResetAll = false
+                    }
+
+                    RippleButton {
+                        implicitHeight: 28
+                        buttonRadius: Appearance?.rounding.small ?? 8
+                        colBackground: Appearance?.m3colors.m3error ?? "#F2B8B5"
+                        contentItem: StyledText {
+                            text: "Wipe everything"
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                            font.weight: Font.DemiBold
+                            color: Appearance?.m3colors.m3onError ?? "#601410"
+                            anchors.leftMargin: 10; anchors.rightMargin: 10
+                        }
+                        onClicked: {
+                            Config.resetAllToDefaults();
+                            root._confirmingResetAll = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // ═══ User Profile ═══
     SettingsCard {
         icon: "person"

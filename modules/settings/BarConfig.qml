@@ -12,6 +12,12 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Bar"
+        subtitle: "Edge, layout, modules, click actions, weather, tray"
+        configRoots: ["bar", "bars", "tray"]
+    }
+
     readonly property string currentEdge: Config.options?.bars?.[0]?.edge ?? "top"
     readonly property var leftModules: Config.options?.bars?.[0]?.modules?.left ?? ["sidebarButton", "activeWindow"]
     readonly property var centerModules: Config.options?.bars?.[0]?.modules?.center ?? ["workspaces"]

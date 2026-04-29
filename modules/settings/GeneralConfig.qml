@@ -11,6 +11,12 @@ import qs.services
 ColumnLayout {
     spacing: 16
 
+    SettingsPageHeader {
+        title: "General"
+        subtitle: "Audio, battery, time, notifications, scrolling, sounds"
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery"]
+    }
+
     // ═══ Audio ═══
     SettingsCard {
         icon: "volume_up"

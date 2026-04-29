@@ -12,6 +12,13 @@ import qs.services
 ColumnLayout {
     id: root
     spacing: 16
+
+    SettingsPageHeader {
+        title: "Overview"
+        subtitle: "AnoView layout algorithm"
+        configRoots: ["overview"]
+    }
+
     readonly property string currentLayout: Config.options?.overview?.layout ?? "smartgrid"
 
     // ═══ Layout Selection ═══

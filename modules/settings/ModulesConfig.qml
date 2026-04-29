@@ -14,6 +14,18 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Modules"
+        subtitle: "Enable/disable shell modules, OSD, hot corners, apps, advanced"
+        configRoots: [
+            "enabledPanels", "panelFamily", "familyTransitionAnimation",
+            "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
+            "hud", "clipboard", "taskView", "media", "compositor",
+            "hacks", "displayManager",
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels"
+        ]
+    }
+
     // ═══ Panel Modules Enable/Disable ═══
     SettingsCard {
         icon: "extension"

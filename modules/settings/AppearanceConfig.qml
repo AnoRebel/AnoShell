@@ -12,6 +12,12 @@ ColumnLayout {
     id: appearanceRoot
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Appearance"
+        subtitle: "Theme source, colors, bezel, animations, wallpaper rotation"
+        configRoots: ["appearance", "background", "animations"]
+    }
+
     // Track the originally-selected theme so hover-preview can revert
     // when the cursor leaves a card without the user clicking. Captured
     // once on entry into the picker, restored on cancel/exit.

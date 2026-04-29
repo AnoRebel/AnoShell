@@ -62,6 +62,66 @@ Singleton {
         userDeltaWriteTimer.restart();
     }
 
+    // True when at least one key has been overridden by the user.
+    readonly property bool hasUserOverrides: {
+        // Re-evaluate when _userDelta changes
+        const d = root._userDelta;
+        if (!d) return false;
+        for (const _ in d) return true;
+        return false;
+    }
+
+    // True when any of the given top-level config keys is in the user
+    // delta. Used by per-page Settings headers to show/hide their reset
+    // affordance based on whether that page has any overridden values.
+    function hasOverridesForRoots(roots) {
+        const d = root._userDelta;
+        if (!d || !roots) return false;
+        for (const r of roots)
+            if (d[r] !== undefined) return true;
+        return false;
+    }
+
+    // Wipe the entire user delta and restore every value to the bundle
+    // default. Triggers one disk write; the user file becomes "{}\n".
+    function resetAllToDefaults() {
+        root._userDelta = {};
+        // Adapter is currently the merged state. Force a bundle reload
+        // to re-baseline cleanly — this re-snapshots defaults, then
+        // applies the (now empty) delta, which is a no-op.
+        configFileView.reload();
+        userDeltaWriteTimer.restart();
+    }
+
+    // Reset multiple dot-paths (or top-level keys) in one shot. Useful
+    // for "Reset this page" buttons in the Settings UI — pass the page's
+    // configRoots and every key under those subtrees clears.
+    function resetPaths(paths) {
+        if (!paths || paths.length === 0) return;
+        let touched = false;
+        for (const p of paths) {
+            if (typeof p !== "string" || p.length === 0) continue;
+            // Top-level shortcut: delete the whole subtree at once
+            if (!p.includes(".")) {
+                if (root._userDelta[p] !== undefined) {
+                    delete root._userDelta[p];
+                    touched = true;
+                }
+            } else {
+                root.resetToDefault(p);
+                touched = true;
+                continue; // resetToDefault already restores live + schedules write
+            }
+        }
+        if (touched) {
+            // Force a bundle reload to re-baseline any top-level subtrees
+            // we just cleared (they need to revert from the merged value
+            // back to the bundle default).
+            configFileView.reload();
+            userDeltaWriteTimer.restart();
+        }
+    }
+
     // Reset a dot-path to its bundled default. Removes the key from the
     // user delta and restores the in-memory value from the freshly-loaded
     // bundle defaults. Empty intermediate objects in the delta are
@@ -145,6 +205,41 @@ Singleton {
         return out;
     }
 
+    // Fire a desktop notification about a config error. Critical urgency
+    // so the user sees it even if DND is on. App name "Ano Shell" so it's
+    // grouped with other shell-originated notifications.
+    function _notifyConfigError(summary, body) {
+        Quickshell.execDetached([
+            "notify-send",
+            "-u", "critical",
+            "-a", "Ano Shell",
+            "-i", "dialog-error",
+            summary,
+            body
+        ]);
+    }
+
+    // Pull a human-readable position string out of a SyntaxError. JS engines
+    // report line/column inconsistently — try to find any of the common
+    // patterns and fall back to the raw message.
+    function _formatJsonErrorLocation(rawMessage, text) {
+        const m = String(rawMessage || "");
+        // Pattern: "at line 5 column 12" or "line 5 column 12"
+        const lineCol = m.match(/line\s+(\d+)\s+column\s+(\d+)/i);
+        if (lineCol) return `line ${lineCol[1]}, column ${lineCol[2]}`;
+        // Pattern: "at position 42"
+        const pos = m.match(/position\s+(\d+)/i);
+        if (pos) {
+            const idx = parseInt(pos[1], 10);
+            const before = text.slice(0, idx);
+            const line = before.split("\n").length;
+            const lastNl = before.lastIndexOf("\n");
+            const col = lastNl < 0 ? idx + 1 : idx - lastNl;
+            return `line ${line}, column ${col}`;
+        }
+        return null;
+    }
+
     function _loadUserDelta() {
         const text = (userOverrideFileView.text() || "").trim();
         if (text.length === 0) {
@@ -154,14 +249,21 @@ Singleton {
         try {
             const parsed = JSON.parse(text);
             if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-                console.warn(`[Config] ${root.userOverridePath} must contain a JSON object`);
-                root._userDelta = {};
+                const msg = `${root.userOverridePath} must contain a JSON object (got ${Array.isArray(parsed) ? "array" : typeof parsed}). Last-known config kept.`;
+                console.warn(`[Config] ${msg}`);
+                root._notifyConfigError("Config error", msg);
+                // Don't clobber _userDelta — keep the last good state in memory
                 return;
             }
             root._userDelta = parsed;
         } catch (e) {
-            console.warn(`[Config] failed to parse ${root.userOverridePath}: ${e.message}`);
-            root._userDelta = {};
+            const where = root._formatJsonErrorLocation(e.message, text);
+            const detail = where ? `${e.message} (${where})` : e.message;
+            const msg = `Could not parse ${root.userOverridePath}: ${detail}. Last-known config kept.`;
+            console.warn(`[Config] ${msg}`);
+            root._notifyConfigError("Config parse error", msg);
+            // Keep prior _userDelta — better than nuking the user's settings
+            // because of a stray comma
         }
     }
 

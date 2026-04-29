@@ -12,6 +12,12 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    SettingsPageHeader {
+        title: "AnoSpot"
+        subtitle: "Position, widgets, click bindings, event border, drag/drop"
+        configRoots: ["anoSpot"]
+    }
+
     readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
     readonly property string currentPosition: Config.options?.anoSpot?.position ?? "top"
     readonly property string barEdge: Config.options?.bars?.[0]?.edge ?? "top"

@@ -12,6 +12,16 @@ import qs.services
 ColumnLayout {
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Services"
+        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather"
+        configRoots: [
+            "ai", "gameMode", "powerProfiles", "network", "vpn",
+            "nightLight", "lyrics", "calendar", "resources", "light",
+            "shell", "weather"
+        ]
+    }
+
     // ═══ AI Chat ═══
     SettingsCard {
         icon: "neurology"

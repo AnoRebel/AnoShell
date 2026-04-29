@@ -14,6 +14,12 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    SettingsPageHeader {
+        title: "Dock"
+        subtitle: "Position, style, sizing, behavior, pinned apps"
+        configRoots: ["dock"]
+    }
+
     readonly property string currentPosition: Config.options?.dock?.position ?? "bottom"
     readonly property string currentStyle: Config.options?.dock?.style ?? "pill"
     readonly property bool dockEnabled: Config.options?.dock?.enable ?? true
