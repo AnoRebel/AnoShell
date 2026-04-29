@@ -33,61 +33,128 @@ ColumnLayout {
 
     // ═══ Panel Modules Enable/Disable ═══
     SettingsCard {
+        id: modulesCard
         icon: "extension"
         title: "Enabled Modules"
-        subtitle: "Toggle individual shell modules on and off"
+        subtitle: `Toggle individual shell modules on and off · ${enabledCount} of ${allModules.length} enabled`
         collapsible: false
 
+        property string moduleSearchQuery: ""
+
+        readonly property int enabledCount: {
+            const arr = (Config.options?.enabledPanels ?? [])
+            return arr.length === 0 ? allModules.length : arr.length
+        }
+
         readonly property var allModules: [
-            { id: "anoBar", name: "Bar", icon: "dock_to_bottom", desc: "Status bar with configurable modules" },
-            { id: "anoOverview", name: "AnoView Overview", icon: "overview", desc: "Window overview with 10 layout algorithms" },
-            { id: "anoNotificationPopup", name: "Notification Popups", icon: "notifications", desc: "Floating notification bubbles" },
-            { id: "anoOnScreenDisplay", name: "OSD", icon: "volume_up", desc: "Volume/brightness/media indicators" },
-            { id: "anoSessionScreen", name: "Session Screen", icon: "power_settings_new", desc: "Lock/logout/suspend/reboot/shutdown" },
-            { id: "anoSidebarLeft", name: "Left Sidebar", icon: "view_sidebar", desc: "AI Chat, Notifications, Translator" },
-            { id: "anoSidebarRight", name: "Right Sidebar", icon: "view_sidebar", desc: "Quick controls, media, calendar, system info" },
-            { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers" },
-            { id: "anoCheatsheet", name: "Keybind Cheatsheet", icon: "keyboard", desc: "Searchable keyboard shortcuts" },
-            { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers" },
-            { id: "anoSettings", name: "Settings Overlay", icon: "settings", desc: "This settings panel" },
-            { id: "anoFamilyTransition", name: "Family Transition", icon: "swap_horiz", desc: "Panel family switch animation" },
-            { id: "anoDock", name: "Dock", icon: "space_dashboard", desc: "Application dock with pinned apps" },
-            { id: "anoClipboard", name: "Clipboard Manager", icon: "content_paste", desc: "Clipboard history browser" },
-            { id: "anoAltSwitcher", name: "Alt-Tab Switcher", icon: "tab", desc: "Window switcher with thumbnails" },
-            { id: "anoSearch", name: "App Launcher", icon: "search", desc: "Application search and launch" },
-            { id: "anoTaskView", name: "Task View", icon: "view_comfy", desc: "Current workspace window view" },
-            { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel" },
-            { id: "anoControlPanel", name: "Control Panel", icon: "tune", desc: "Quick-access system controls" },
-            { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information" },
-            { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)" },
-            { id: "anoHUD", name: "HUD", icon: "dashboard", desc: "System dashboard overlay" },
-            { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats" },
-            { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor configuration (Hyprland only)" },
+            // Bars & status surfaces
+            { id: "anoBar", name: "Bar", icon: "dock_to_bottom", desc: "Status bar with configurable modules", category: "Bars" },
+            { id: "anoDock", name: "Dock", icon: "space_dashboard", desc: "Application dock with pinned apps", category: "Bars" },
+            { id: "anoHUD", name: "HUD", icon: "dashboard", desc: "System dashboard overlay", category: "Bars" },
+            { id: "anoOnScreenDisplay", name: "OSD", icon: "volume_up", desc: "Volume/brightness/media indicators", category: "Bars" },
+            { id: "anoNotificationPopup", name: "Notification Popups", icon: "notifications", desc: "Floating notification bubbles", category: "Bars" },
+            // Overlays & panels
+            { id: "anoOverview", name: "AnoView Overview", icon: "overview", desc: "Window overview with 10 layout algorithms", category: "Overlays" },
+            { id: "anoTaskView", name: "Task View", icon: "view_comfy", desc: "Current workspace window view", category: "Overlays" },
+            { id: "anoAltSwitcher", name: "Alt-Tab Switcher", icon: "tab", desc: "Window switcher with thumbnails", category: "Overlays" },
+            { id: "anoSearch", name: "App Launcher", icon: "search", desc: "Application search and launch", category: "Overlays" },
+            { id: "anoControlPanel", name: "Control Panel", icon: "tune", desc: "Quick-access system controls", category: "Overlays" },
+            { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel", category: "Overlays" },
+            { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information", category: "Overlays" },
+            { id: "anoCheatsheet", name: "Keybind Cheatsheet", icon: "keyboard", desc: "Searchable keyboard shortcuts", category: "Overlays" },
+            { id: "anoSessionScreen", name: "Session Screen", icon: "power_settings_new", desc: "Lock/logout/suspend/reboot/shutdown", category: "Overlays" },
+            { id: "anoSettings", name: "Settings Overlay", icon: "settings", desc: "This settings panel", category: "Overlays" },
+            // Sidebars
+            { id: "anoSidebarLeft", name: "Left Sidebar", icon: "view_sidebar", desc: "AI Chat, Notifications, Translator", category: "Sidebars" },
+            { id: "anoSidebarRight", name: "Right Sidebar", icon: "view_sidebar", desc: "Quick controls, media, calendar, system info", category: "Sidebars" },
+            // Utilities & integrations
+            { id: "anoClipboard", name: "Clipboard Manager", icon: "content_paste", desc: "Clipboard history browser", category: "Utilities" },
+            { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers", category: "Utilities" },
+            { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities" },
+            { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities" },
+            { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor configuration (Hyprland only)", category: "Utilities" },
+            { id: "anoFamilyTransition", name: "Family Transition", icon: "swap_horiz", desc: "Panel family switch animation", category: "Utilities" },
+            { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities" },
         ]
 
-        Repeater {
-            model: allModules
+        // Search filter — case-insensitive substring match against name + desc.
+        function _matchesQuery(mod) {
+            const q = modulesCard.moduleSearchQuery.trim().toLowerCase()
+            if (q.length === 0) return true
+            return mod.name.toLowerCase().includes(q) || mod.desc.toLowerCase().includes(q)
+        }
 
-            RowLayout {
-                id: moduleRow
+        ConfigTextInput {
+            Layout.fillWidth: true
+            placeholderText: "Search modules…"
+            text: modulesCard.moduleSearchQuery
+            onTextChanged: modulesCard.moduleSearchQuery = text
+            iconAction: text.length > 0 ? "close" : "search"
+            onIconClicked: { if (text.length > 0) text = "" }
+        }
+
+        Repeater {
+            // Filter by search query, then group by category. Each
+            // category emits a header row + the matching module rows
+            // beneath it. Empty categories collapse to nothing.
+            model: {
+                const filtered = allModules.filter(modulesCard._matchesQuery)
+                const cats = []
+                const seen = {}
+                for (const m of filtered) {
+                    if (!seen[m.category]) {
+                        seen[m.category] = true
+                        cats.push({ _isCategory: true, name: m.category })
+                    }
+                }
+                const out = []
+                for (const cat of cats) {
+                    out.push(cat)
+                    for (const m of filtered) if (m.category === cat.name) out.push(m)
+                }
+                return out
+            }
+
+            // One delegate handles either category headers or module rows.
+            // Loader picks the right component based on _isCategory.
+            Loader {
                 required property var modelData
-                Layout.fillWidth: true; spacing: 12
+                Layout.fillWidth: true
+                sourceComponent: modelData._isCategory ? categoryHeader : moduleEntry
+
+                Component {
+                    id: categoryHeader
+                    StyledText {
+                        text: parent.modelData.name
+                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        font.weight: Font.DemiBold
+                        opacity: 0.6
+                        Layout.topMargin: 6
+                    }
+                }
+
+                Component {
+                    id: moduleEntry
+                    RowLayout {
+                        id: moduleRow
+                        readonly property var modelData: parent.modelData
+                        Layout.fillWidth: true; spacing: 12
 
                 Rectangle {
                     width: 32; height: 32; radius: 8
                     color: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.12)
-                    MaterialSymbol { anchors.centerIn: parent; text: modelData.icon; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F" }
+                    MaterialSymbol { anchors.centerIn: parent; text: moduleRow.modelData.icon; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F" }
                 }
 
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 0
-                    StyledText { text: modelData.name; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-                    StyledText { text: modelData.desc; font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10; opacity: 0.4; Layout.fillWidth: true; elide: Text.ElideRight }
+                    StyledText { text: moduleRow.modelData.name; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
+                    StyledText { text: moduleRow.modelData.desc; font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10; opacity: 0.4; Layout.fillWidth: true; elide: Text.ElideRight }
                 }
 
                 StyledSwitch {
                     id: moduleSwitch
-                    checked: (Config.options?.enabledPanels ?? []).includes(modelData.id) || (Config.options?.enabledPanels ?? []).length === 0
+                    checked: (Config.options?.enabledPanels ?? []).includes(moduleRow.modelData.id) || (Config.options?.enabledPanels ?? []).length === 0
 
                     // toggled() only fires on user-driven changes (mouse
                     // click, Space-key activation, accessibility action).
@@ -99,15 +166,17 @@ ColumnLayout {
                         if (panels.length === 0) {
                             // First user write — materialise the default
                             // "everything enabled" list before mutating.
-                            panels = root.parent.allModules.map(m => m.id)
+                            panels = modulesCard.allModules.map(m => m.id)
                         }
-                        if (checked && !panels.includes(modelData.id)) panels.push(modelData.id)
-                        else if (!checked) panels = panels.filter(p => p !== modelData.id)
+                        if (checked && !panels.includes(moduleRow.modelData.id)) panels.push(moduleRow.modelData.id)
+                        else if (!checked) panels = panels.filter(p => p !== moduleRow.modelData.id)
                         Config.setNestedValue("enabledPanels", panels)
                     }
                 }
-            }
-        }
+                    } // close RowLayout (moduleRow)
+                } // close Component moduleEntry
+            } // close Loader delegate
+        } // close Repeater
     }
 
     // ═══ OSD Indicators ═══
