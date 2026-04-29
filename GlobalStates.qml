@@ -34,6 +34,7 @@ Singleton {
     property bool cheatsheetOpen: false
     property bool settingsOverlayOpen: false
     property bool settingsOpen: false
+    property bool settingsCommandPaletteOpen: false
     property bool regionSelectorOpen: false
     property bool searchOpen: false
     property bool weatherPanelOpen: false

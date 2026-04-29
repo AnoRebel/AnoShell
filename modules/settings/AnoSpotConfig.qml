@@ -42,6 +42,7 @@ ColumnLayout {
         icon: "view_compact_alt"
         title: "AnoSpot"
         subtitle: "Dynamic-island-style overlay for now playing, notifications, recording, clock"
+        configKeys: ["anoSpot.enable"]
 
         ConfigSwitch {
             label: "Enable AnoSpot"
@@ -88,6 +89,7 @@ ColumnLayout {
         icon: "open_in_full"
         title: "Position"
         subtitle: "Which screen edge the overlay anchors to"
+        configKeys: ["anoSpot.position", "anoSpot.draggable"]
 
         Item {
             Layout.fillWidth: true
@@ -156,6 +158,7 @@ ColumnLayout {
         icon: "widgets"
         title: "Widgets"
         subtitle: "Which slots to render"
+        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.showBattery", "anoSpot.showLyrics"]
 
         ConfigSwitch {
             label: "Now playing (Mpris)"
@@ -196,6 +199,7 @@ ColumnLayout {
         icon: "place_item"
         title: "Drag and drop"
         subtitle: "Stage files dropped on AnoSpot for triage and actions"
+        configKeys: ["anoSpot.acceptDrops", "anoSpot.stashDir"]
 
         ConfigSwitch {
             id: dropEnable
@@ -235,6 +239,7 @@ ColumnLayout {
         icon: "construction"
         title: "Custom drop actions"
         subtitle: "User-defined commands shown as buttons in the stash popout"
+        configKeys: ["anoSpot.dropTargets"]
 
         // ─── API help / placeholder docs ─────────────────────────────────
         Rectangle {
@@ -432,6 +437,7 @@ ColumnLayout {
         icon: "auto_awesome"
         title: "Event border animation"
         subtitle: "Pulsing gradient halo when configured events occur"
+        configKeys: ["anoSpot.eventBorder"]
 
         ConfigSwitch {
             id: borderEnable

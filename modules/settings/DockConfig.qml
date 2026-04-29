@@ -29,6 +29,7 @@ ColumnLayout {
         icon: "space_dashboard"
         title: "Dock"
         subtitle: "Application dock with pinned and running apps"
+        configKeys: ["dock.enable"]
         collapsible: false
 
         RowLayout {
@@ -67,6 +68,7 @@ ColumnLayout {
         icon: "open_with"
         title: "Position"
         subtitle: "Which screen edge the dock appears on"
+        configKeys: ["dock.position"]
         visible: root.dockEnabled
 
         // Visual position preview — screen diagram with dock indicator
@@ -175,6 +177,7 @@ ColumnLayout {
         icon: "style"
         title: "Style"
         subtitle: "Visual appearance of the dock"
+        configKeys: ["dock.style"]
         visible: root.dockEnabled
 
         // Style selector with mini-previews
@@ -264,6 +267,7 @@ ColumnLayout {
         icon: "straighten"
         title: "Sizing"
         subtitle: "Dock height and icon dimensions"
+        configKeys: ["dock.height", "dock.iconSize"]
         visible: root.dockEnabled
 
         // Live size preview
@@ -331,6 +335,7 @@ ColumnLayout {
         icon: "tune"
         title: "Behavior"
         subtitle: "Auto-hide, hover reveal, and desktop-only visibility"
+        configKeys: ["dock.pinnedOnStartup", "dock.hoverToReveal", "dock.showOnDesktop"]
         visible: root.dockEnabled
 
         ConfigSwitch {
@@ -360,6 +365,7 @@ ColumnLayout {
         icon: "push_pin"
         title: "Pinned Apps"
         subtitle: "Apps that always appear in the dock, even when not running"
+        configKeys: ["dock.pinnedApps"]
 
         // Current pinned apps list
         ColumnLayout {
@@ -491,6 +497,7 @@ ColumnLayout {
         icon: "monitor"
         title: "Screen Filter"
         subtitle: "Restrict dock to specific monitors"
+        configKeys: ["dock.screenList"]
         expanded: false
 
         ConfigRow {

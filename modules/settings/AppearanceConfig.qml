@@ -73,6 +73,7 @@ ColumnLayout {
         icon: "auto_awesome"
         title: "Theme source"
         subtitle: "Dynamic Material You (wallpaper-derived) or pick a static theme"
+        configKeys: ["appearance.theme", "appearance.colors"]
 
         ConfigRow {
             label: "Source"
@@ -261,6 +262,7 @@ ColumnLayout {
         icon: "palette"
         title: "Theme Colors"
         subtitle: "Live color swatches from the active palette"
+        configKeys: ["appearance.colors"]
         collapsible: true
         expanded: false
 
@@ -326,6 +328,7 @@ ColumnLayout {
         icon: "font_download"
         title: "Fonts"
         subtitle: "Font families used across the shell"
+        configKeys: ["appearance.fonts"]
         expanded: false
 
         ConfigRow {
@@ -349,6 +352,7 @@ ColumnLayout {
         icon: "tonality"
         title: "Background Tint"
         subtitle: "Apply extra color tinting to layer backgrounds"
+        configKeys: ["appearance.extraBackgroundTint"]
 
         ConfigSwitch {
             label: "Extra background tint"
@@ -363,6 +367,7 @@ ColumnLayout {
         icon: "fullscreen"
         title: "Global Margin (Bezel)"
         subtitle: "Gap between all shell elements and screen edges"
+        configKeys: ["appearance.bezel"]
 
         // Visual bezel preview
         Item {
@@ -408,6 +413,7 @@ ColumnLayout {
         icon: "animation"
         title: "Animations"
         subtitle: "Enable/disable and control animation speed"
+        configKeys: ["animations"]
 
         ConfigSwitch {
             label: "Enable animations"
@@ -431,6 +437,7 @@ ColumnLayout {
         icon: "image"
         title: "Wallpaper Rotation"
         subtitle: "Automatically cycle through wallpapers from a directory"
+        configKeys: ["background.randomize", "background.wallpaperPath"]
 
         ConfigSwitch {
             label: "Enable random wallpaper rotation"
@@ -470,6 +477,7 @@ ColumnLayout {
         icon: "swap_horiz"
         title: "Wallpaper Transitions"
         subtitle: "Animation when switching between wallpapers (from inir backdrop)"
+        configKeys: ["background.transition"]
 
         ConfigSwitch {
             label: "Enable wallpaper transitions"

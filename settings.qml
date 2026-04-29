@@ -24,17 +24,19 @@ ShellRoot {
     property int currentPage: 0
 
     readonly property var pages: [
-        { name: "General", icon: "tune" },
-        { name: "Modules", icon: "extension" },
-        { name: "Bar", icon: "dock_to_bottom" },
-        { name: "Dock", icon: "space_dashboard" },
-        { name: "Sidebars", icon: "view_sidebar" },
-        { name: "AnoSpot", icon: "view_compact_alt" },
-        { name: "Appearance", icon: "palette" },
-        { name: "Overview", icon: "overview" },
-        { name: "Services", icon: "cloud" },
-        { name: "About", icon: "info" },
+        { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery"] },
+        { name: "Modules",    icon: "extension",       configRoots: ["enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels"] },
+        { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
+        { name: "Dock",       icon: "space_dashboard", configRoots: ["dock"] },
+        { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar"] },
+        { name: "AnoSpot",    icon: "view_compact_alt",configRoots: ["anoSpot"] },
+        { name: "Appearance", icon: "palette",         configRoots: ["appearance", "background", "animations"] },
+        { name: "Overview",   icon: "overview",        configRoots: ["overview"] },
+        { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "powerProfiles", "network", "vpn", "nightLight", "lyrics", "calendar", "resources", "light", "shell", "weather"] },
+        { name: "About",      icon: "info",            configRoots: ["user"] },
     ]
+
+    Component.onCompleted: SettingsRegistry.registerPages(settingsRoot.pages)
 
     FloatingWindow {
         id: settingsWindow
@@ -160,6 +162,7 @@ ShellRoot {
 
             // ─── Content area ─────────────────────────────────────────
             StyledFlickable {
+                id: pageFlickable
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 contentHeight: pageLoader.implicitHeight + 40
@@ -186,6 +189,16 @@ ShellRoot {
                     }
                 }
             }
+        }
+
+        // ── Ctrl+K command palette ──────────────────────────────────
+        SettingsCommandPalette {
+            anchors.fill: parent
+            currentPage: settingsRoot.currentPage
+            pageCount: settingsRoot.pages.length
+            flickable: pageFlickable
+            activePageItem: pageLoader.item
+            onPageRequested: idx => settingsRoot.currentPage = idx
         }
     }
 

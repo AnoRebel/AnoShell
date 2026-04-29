@@ -32,6 +32,7 @@ ColumnLayout {
         icon: "dock_to_bottom"
         title: "Position & Style"
         subtitle: "Bar edge, auto-hide, background, and margin"
+        configKeys: ["bar.position", "bar.cornerStyle", "bar.autoHide", "bar.showBackground", "bars"]
 
         // Visual edge selector
         Item {
@@ -148,6 +149,7 @@ ColumnLayout {
         icon: "view_module"
         title: "Bar Modules"
         subtitle: "Drop modules into the left, center, and right sections. Reorder with the ◂ ▸ buttons."
+        configKeys: ["bars"]
 
         // ── Left section ───────────────────────────────────────────────
         ColumnLayout {
@@ -405,6 +407,7 @@ ColumnLayout {
         icon: "straighten"
         title: "Layout & Sizing"
         subtitle: "Bar height, corner radius, module spacing, padding, and decorations"
+        configKeys: ["bar.layout"]
 
         // Live preview bar mockup
         Item {
@@ -553,6 +556,7 @@ ColumnLayout {
         icon: "touch_app"
         title: "Click & Scroll Actions"
         subtitle: "What happens when you click or scroll on each bar section"
+        configKeys: ["bar.actions"]
 
         readonly property var actionChoices: [
             { value: "sidebarLeft", label: "Left Sidebar", icon: "view_sidebar" },
@@ -660,6 +664,7 @@ ColumnLayout {
         icon: "grid_view"
         title: "Workspaces"
         subtitle: "Workspace indicator count and style"
+        configKeys: ["bar.workspaces"]
 
         ConfigSlider {
             label: "Number of workspaces shown"
@@ -676,6 +681,7 @@ ColumnLayout {
         icon: "thermostat"
         title: "Weather"
         subtitle: "Weather data in bar and sidebar"
+        configKeys: ["bar.weather"]
 
         ConfigSwitch {
             label: "Show weather module in bar"
@@ -725,6 +731,7 @@ ColumnLayout {
         icon: "more_horiz"
         title: "System Tray"
         subtitle: "Tray icon filtering and pin management"
+        configKeys: ["tray"]
 
         ConfigSwitch {
             label: "Filter passive items"

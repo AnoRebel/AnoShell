@@ -16,6 +16,13 @@ Rectangle {
     property bool collapsible: true
     default property alias content: contentColumn.data
 
+    // Config keys this card owns — used by the Ctrl+K command palette to
+    // resolve a typed search query (e.g. "bar.layout.height") to a card
+    // and scroll the page flickable to it. Each entry can be a top-level
+    // root ("audio") or a dotted path ("bar.layout.height"). The palette
+    // scrolls to the first card whose configKeys list covers the query.
+    property var configKeys: []
+
     Layout.fillWidth: true
     implicitHeight: cardColumn.implicitHeight + 2
     radius: Appearance?.rounding.normal ?? 12

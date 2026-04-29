@@ -29,6 +29,7 @@ ColumnLayout {
         icon: "neurology"
         title: "AI Chat"
         subtitle: "Model configuration, API keys, system prompt, and temperature"
+        configKeys: ["ai"]
 
         // Model status indicator
         Rectangle {
@@ -189,6 +190,7 @@ ColumnLayout {
         icon: "monitor_heart"
         title: "Resources Monitor"
         subtitle: "CPU, RAM, network polling frequency and history"
+        configKeys: ["resources"]
 
         // Live mini-dashboard
         RowLayout {
@@ -234,6 +236,7 @@ ColumnLayout {
         icon: "brightness_6"
         title: "Brightness"
         subtitle: "Backlight device override"
+        configKeys: ["light"]
 
         ConfigRow {
             label: "Device name"
@@ -252,6 +255,7 @@ ColumnLayout {
         icon: "videogame_asset"
         title: "GameMode"
         subtitle: "Detects when gamemoded is active so the bar can show a 'gaming' indicator. Read-only — activation is handled by your existing ~/.config/hypr/scripts/gamemode helper or by libgamemode-aware games."
+        configKeys: ["gameMode"]
 
         ConfigSwitch {
             id: gmEnable
@@ -290,6 +294,7 @@ ColumnLayout {
         icon: "battery_saver"
         title: "Power profiles"
         subtitle: "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`."
+        configKeys: ["powerProfiles"]
 
         ConfigSwitch {
             label: "Restore on start"
@@ -348,6 +353,7 @@ ColumnLayout {
         icon: "nightlight"
         title: "Night light"
         subtitle: "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway)."
+        configKeys: ["nightLight"]
 
         ConfigSwitch {
             id: nlEnable
@@ -426,6 +432,7 @@ ColumnLayout {
         icon: "monitoring"
         title: "Network usage tracking"
         subtitle: "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface."
+        configKeys: ["network"]
 
         ConfigSwitch {
             id: nuEnable
@@ -459,6 +466,7 @@ ColumnLayout {
         icon: "vpn_key"
         title: "VPN"
         subtitle: "Connection status + control for tailscale, netbird, warp, wireguard, or a custom CLI. The active provider is the first entry below with `enabled: true`."
+        configKeys: ["vpn"]
 
         ConfigSwitch {
             id: vpnEnable
@@ -529,6 +537,7 @@ ColumnLayout {
         icon: "event"
         title: "Calendar sync"
         subtitle: "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered."
+        configKeys: ["calendar"]
 
         ConfigSwitch {
             id: calEnable
@@ -582,6 +591,7 @@ ColumnLayout {
         icon: "lyrics"
         title: "Lyrics"
         subtitle: "Synchronized lyrics for the active media player. Reads local .lrc files, falls back to LRCLIB and NetEase online sources."
+        configKeys: ["lyrics"]
 
         ConfigSwitch {
             id: lyEnable
@@ -642,6 +652,7 @@ ColumnLayout {
         icon: "terminal"
         title: "Shell"
         subtitle: "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter."
+        configKeys: ["shell"]
 
         ConfigRow {
             label: "Preferred shell"

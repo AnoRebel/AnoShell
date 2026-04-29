@@ -25,6 +25,7 @@ ColumnLayout {
         icon: "volume_up"
         title: "Audio"
         subtitle: "Volume protection, system sounds, and audio behavior"
+        configKeys: ["audio"]
 
         // Current volume indicator
         RowLayout {
@@ -86,6 +87,7 @@ ColumnLayout {
         icon: "battery_full"
         title: "Battery"
         subtitle: "Warning thresholds, auto-suspend, and power notifications"
+        configKeys: ["battery", "sounds.battery"]
         visible: Battery.available
 
         // Live battery indicator
@@ -206,6 +208,7 @@ ColumnLayout {
         icon: "schedule"
         title: "Time & Clock"
         subtitle: "Clock format, date format, and second precision"
+        configKeys: ["time"]
 
         // Live clock preview
         Rectangle {
@@ -299,6 +302,7 @@ ColumnLayout {
         icon: "notifications"
         title: "Notifications"
         subtitle: "Popup behavior, timeout, and sounds"
+        configKeys: ["notifications"]
 
         ConfigSlider {
             label: "Auto-dismiss timeout"
@@ -314,6 +318,7 @@ ColumnLayout {
     SettingsCard {
         icon: "touch_app"
         title: "Scrolling & Interactions"
+        configKeys: ["interactions"]
         subtitle: "Touchpad and mouse scroll speed"
 
         ConfigSwitch {

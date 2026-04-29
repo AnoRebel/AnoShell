@@ -138,6 +138,7 @@ ColumnLayout {
         icon: "person"
         title: "User Profile"
         subtitle: "Avatar, display name, and account settings"
+        configKeys: ["user"]
         collapsible: false
 
         // Profile card with large avatar + greeting
@@ -356,6 +357,7 @@ ColumnLayout {
         title: "Ano Shell"
         subtitle: "A comprehensive QuickShell desktop shell"
         collapsible: false
+        configKeys: []
 
         // Logo area
         Item {
@@ -382,6 +384,7 @@ ColumnLayout {
         icon: "computer"
         title: "System Details"
         subtitle: "Runtime environment and paths"
+        configKeys: []
 
         Repeater {
             model: [
@@ -421,6 +424,7 @@ ColumnLayout {
         icon: "star"
         title: "Features"
         subtitle: "What this shell can do"
+        configKeys: []
 
         GridLayout {
             Layout.fillWidth: true
@@ -457,6 +461,7 @@ ColumnLayout {
         icon: "groups"
         title: "Credits & Sources"
         subtitle: "Built from patterns across the QuickShell community"
+        configKeys: []
 
         Repeater {
             model: [

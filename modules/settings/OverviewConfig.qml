@@ -42,6 +42,7 @@ ColumnLayout {
         icon: "overview"
         title: "AnoView Layout"
         subtitle: "Choose how windows are arranged in the overview"
+        configKeys: ["overview"]
         collapsible: false
 
         // Visual layout grid with mini-previews

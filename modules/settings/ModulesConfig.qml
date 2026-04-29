@@ -39,6 +39,7 @@ ColumnLayout {
         title: "Enabled Modules"
         subtitle: `Toggle individual shell modules on and off · ${enabledCount} of ${allModules.length} enabled`
         collapsible: false
+        configKeys: ["enabledPanels"]
 
         property string moduleSearchQuery: ""
 
@@ -185,6 +186,7 @@ ColumnLayout {
         icon: "volume_up"
         title: "OSD Indicators"
         subtitle: "Choose which on-screen display indicators are shown"
+        configKeys: ["osd"]
 
         ConfigSlider {
             label: "Auto-hide timeout"
@@ -235,6 +237,7 @@ ColumnLayout {
         icon: "fullscreen"
         title: "Hot Screen Corners"
         subtitle: "Trigger actions by moving cursor to screen corners"
+        configKeys: ["screenCorners"]
 
         ConfigSwitch {
             label: "Enable hot corners"
@@ -320,6 +323,7 @@ ColumnLayout {
         icon: "tab"
         title: "Alt-Tab Window Switcher"
         subtitle: "Window switching overlay appearance and behavior"
+        configKeys: ["altSwitcher"]
 
         ConfigSwitch {
             label: "Enable animations"
@@ -379,6 +383,7 @@ ColumnLayout {
         icon: "view_comfy"
         title: "Task View"
         subtitle: "Current workspace window layout"
+        configKeys: ["taskView"]
 
         ConfigRow {
             label: "Layout algorithm"
@@ -399,6 +404,7 @@ ColumnLayout {
         icon: "search"
         title: "App Launcher"
         subtitle: "Application search and recent apps"
+        configKeys: ["apps"]
         expanded: false
 
         NoticeBox {
@@ -412,6 +418,7 @@ ColumnLayout {
         icon: "apps"
         title: "Default Applications"
         subtitle: "Preferred applications for various actions"
+        configKeys: ["apps"]
 
         ConfigRow {
             label: "Terminal"
@@ -447,6 +454,7 @@ ColumnLayout {
         icon: "computer"
         title: "Compositor"
         subtitle: "Wayland compositor settings"
+        configKeys: ["compositor", "display.primaryMonitor"]
         expanded: false
 
         ConfigRow {
@@ -486,6 +494,7 @@ ColumnLayout {
         icon: "swap_horiz"
         title: "Panel Families"
         subtitle: "Switch between different shell presets — changes which modules are active"
+        configKeys: ["panelFamily", "familyTransitionAnimation"]
         collapsible: false
 
         readonly property string currentFamily: Config.options?.panelFamily ?? "ano"
@@ -619,6 +628,7 @@ ColumnLayout {
         icon: "timer"
         title: "Focus Time"
         subtitle: "App usage tracking with daily and weekly statistics"
+        configKeys: ["focusTime"]
 
         ConfigSwitch {
             label: "Enable Focus Time"
@@ -643,6 +653,7 @@ ColumnLayout {
         icon: "desktop_windows"
         title: "Display Manager"
         subtitle: "Monitor configuration panel (Hyprland only)"
+        configKeys: ["displayManager"]
 
         RowLayout {
             Layout.fillWidth: true
@@ -668,6 +679,7 @@ ColumnLayout {
         icon: "code"
         title: "Advanced"
         subtitle: "Debug settings and workarounds"
+        configKeys: ["hacks", "media", "sounds.theme", "bar.morphingPanels"]
         expanded: false
 
         ConfigSlider {

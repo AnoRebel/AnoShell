@@ -22,6 +22,7 @@ ColumnLayout {
         icon: "speed"
         title: "Sidebar Behavior"
         subtitle: "Animation, loading, and dismissal settings"
+        configKeys: ["sidebar.instantOpen", "sidebar.keepLeftSidebarLoaded", "sidebar.keepRightSidebarLoaded"]
 
         ConfigSwitch {
             label: "Instant open (skip animation)"
@@ -62,6 +63,7 @@ ColumnLayout {
         icon: "view_sidebar"
         title: "Left Sidebar"
         subtitle: "AI Chat and Notifications panel"
+        configKeys: ["sidebar.left"]
 
         NoticeBox {
             text: "The left sidebar contains two tabs: AI Chat and Notifications with a compact media player. AI model configuration is in the Services page."
@@ -75,6 +77,7 @@ ColumnLayout {
         icon: "widgets"
         title: "Right Sidebar Widgets"
         subtitle: "Choose which modules appear in the right sidebar"
+        configKeys: ["sidebar.right"]
 
         readonly property var _enabled: Config.options?.sidebar?.right?.enabledWidgets ?? [
             "systemButtons", "quickSliders", "quickToggles", "media", "notifications", "calendar", "systemInfo"
@@ -138,6 +141,7 @@ ColumnLayout {
     SettingsCard {
         icon: "tune"
         title: "Quick Sliders"
+        configKeys: ["sidebar.quickSliders"]
         // Sub-toggles only matter when the parent "Quick Sliders" widget
         // is enabled. Disable them visually rather than hide so the page
         // doesn't reflow when the parent toggle flips.

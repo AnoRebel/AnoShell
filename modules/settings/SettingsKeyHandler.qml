@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 
 /**
  * Shared keyboard navigation for both Settings shells (overlay + standalone).
@@ -42,6 +43,13 @@ Item {
     Keys.priority: Keys.AfterItem
 
     Keys.onPressed: event => {
+        // Ctrl+K — open the command palette. Toggles open if already shown.
+        if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_K) {
+            GlobalStates.settingsCommandPaletteOpen = !GlobalStates.settingsCommandPaletteOpen;
+            event.accepted = true;
+            return;
+        }
+
         if (event.key === Qt.Key_Up) {
             const next = Math.max(0, root.currentPage - 1);
             if (next !== root.currentPage) root.pageRequested(next);
