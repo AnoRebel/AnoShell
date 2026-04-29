@@ -257,7 +257,17 @@ ano/
 
 ## Configuration
 
-All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call settings toggle`) or standalone window (`qs -n -p settings.qml`).
+All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call settings toggle`) or standalone window (`qs -n -p settings.qml`). Both share the same page components and behave identically — including keyboard navigation:
+
+| Key | Action |
+|-----|--------|
+| `Up` / `Down` | Cycle nav rail (when no input is focused) |
+| `Tab` / `Shift+Tab` | Cycle pages or default Tab traversal inside an input |
+| `Ctrl+1`..`Ctrl+9` | Jump to page N |
+| `Ctrl+0` | Jump to last page |
+| `Esc` | Close the panel (overlay) or quit (standalone) |
+
+Each page has a "Reset" affordance in its header (only visible when that page has overridden any keys), and AboutPage has a global "Reset every setting" card. Both reset paths target only the user delta at `~/.config/anoshell/config.json`; bundled defaults are never written to.
 
 ### User overrides — `~/.config/anoshell/config.json`
 
@@ -679,7 +689,7 @@ Scripts include automatic backup — restore with: switchwall.sh --restore
 ## Widget Library (50+ components)
 **Foundation**: StyledText, MaterialSymbol, Circle, PointingHandInteraction, FadeLoader, Revealer, StyledImage, WavyLine, DragManager, RoundCorner
 **Controls**: RippleButton, StyledSlider, StyledSwitch, StyledProgressBar, CircularProgress, CombinedCircularProgress, Graph, StyledScrollBar, StyledFlickable, Tooltips, StyledTextInput/Area
-**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade, StyledPopup, SettingsCard
+**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ConfigTextInput (placeholder + validator + inline errors), ChoiceRow (single-select icon-row picker), RestartRequiredBadge (clickable reload-now pill), ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade, StyledPopup, SettingsCard, SettingsPageHeader (per-page reset)
 **Animation**: Anim, CAnim, AbstractChoreographable, FlyFadeEnterChoreographable, ChoreographerLayout
 **Morph**: ShapeCanvas, MorphedPanel, TopLayerPanel, BarWidgetPopout, BarModulePopout (16 JS shape files)
 **Spectrum**: LinearSpectrum, MirroredSpectrum
