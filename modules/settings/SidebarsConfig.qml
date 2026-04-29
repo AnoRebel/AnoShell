@@ -30,18 +30,30 @@ ColumnLayout {
             onCheckedChanged: Config.setNestedValue("sidebar.instantOpen", checked)
         }
 
-        ConfigSwitch {
-            label: "Keep left sidebar loaded"
-            sublabel: "Faster re-open at the cost of ~20MB memory"
-            checked: Config.options?.sidebar?.keepLeftSidebarLoaded ?? true
-            onCheckedChanged: Config.setNestedValue("sidebar.keepLeftSidebarLoaded", checked)
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            ConfigSwitch {
+                Layout.fillWidth: true
+                label: "Keep left sidebar loaded"
+                sublabel: "Faster re-open at the cost of ~20MB memory"
+                checked: Config.options?.sidebar?.keepLeftSidebarLoaded ?? true
+                onCheckedChanged: Config.setNestedValue("sidebar.keepLeftSidebarLoaded", checked)
+            }
+            RestartRequiredBadge {}
         }
 
-        ConfigSwitch {
-            label: "Keep right sidebar loaded"
-            sublabel: "Faster re-open at the cost of ~15MB memory"
-            checked: Config.options?.sidebar?.keepRightSidebarLoaded ?? true
-            onCheckedChanged: Config.setNestedValue("sidebar.keepRightSidebarLoaded", checked)
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            ConfigSwitch {
+                Layout.fillWidth: true
+                label: "Keep right sidebar loaded"
+                sublabel: "Faster re-open at the cost of ~15MB memory"
+                checked: Config.options?.sidebar?.keepRightSidebarLoaded ?? true
+                onCheckedChanged: Config.setNestedValue("sidebar.keepRightSidebarLoaded", checked)
+            }
+            RestartRequiredBadge {}
         }
     }
 
@@ -59,9 +71,20 @@ ColumnLayout {
 
     // ═══ Right Sidebar Widgets ═══
     SettingsCard {
+        id: rightWidgetsCard
         icon: "widgets"
         title: "Right Sidebar Widgets"
         subtitle: "Choose which modules appear in the right sidebar"
+
+        readonly property var _enabled: Config.options?.sidebar?.right?.enabledWidgets ?? [
+            "systemButtons", "quickSliders", "quickToggles", "media", "notifications", "calendar", "systemInfo"
+        ]
+
+        NoticeBox {
+            visible: rightWidgetsCard._enabled.length === 0
+            iconName: "warning"
+            text: "Right sidebar is empty — re-enable at least one widget below or it won't render anything."
+        }
 
         // Widget toggles
         Repeater {
@@ -93,7 +116,10 @@ ColumnLayout {
                     checked: (Config.options?.sidebar?.right?.enabledWidgets ?? [
                         "systemButtons", "quickSliders", "quickToggles", "media", "notifications", "calendar", "systemInfo"
                     ]).includes(modelData.key)
-                    onCheckedChanged: {
+                    // onToggled (user-driven only) — bind-time mutations
+                    // never fire it, so the array can't be corrupted by
+                    // initial-bind cascades like ModulesConfig had.
+                    onToggled: {
                         const widgets = Config.options?.sidebar?.right?.enabledWidgets ?? [
                             "systemButtons", "quickSliders", "quickToggles", "media", "notifications", "calendar", "systemInfo"
                         ]
@@ -112,7 +138,14 @@ ColumnLayout {
     SettingsCard {
         icon: "tune"
         title: "Quick Sliders"
-        subtitle: "Configure which sliders appear in the right sidebar"
+        // Sub-toggles only matter when the parent "Quick Sliders" widget
+        // is enabled. Disable them visually rather than hide so the page
+        // doesn't reflow when the parent toggle flips.
+        readonly property bool _parentEnabled: rightWidgetsCard._enabled.includes("quickSliders")
+        subtitle: _parentEnabled
+            ? "Configure which sliders appear in the right sidebar"
+            : "Enable the Quick Sliders widget above to use these"
+        enabled: _parentEnabled
 
         ConfigSwitch {
             label: "Show brightness slider"

@@ -263,7 +263,20 @@ ColumnLayout {
                     spacing: 4
 
                     StyledText {
+                        id: greetingText
+                        // _tick is incremented every minute by the timer
+                        // below — referencing it makes Qt re-evaluate the
+                        // expression so the greeting stays current across
+                        // midnight without a full re-render.
+                        property int _tick: 0
+                        Timer {
+                            interval: 60_000
+                            repeat: true
+                            running: true
+                            onTriggered: greetingText._tick++
+                        }
                         text: {
+                            greetingText._tick // bind tracker
                             const hour = new Date().getHours()
                             if (hour < 5) return "Good Night"
                             if (hour < 12) return "Good Morning"

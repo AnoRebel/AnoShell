@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.UPower
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -117,7 +119,13 @@ ColumnLayout {
                                 font.weight: Font.DemiBold
                             }
                             StyledText {
-                                text: `${Ai.models[modelData]?.api_format ?? "?"} • ${Ai.models[modelData]?.description ?? ""}`
+                                readonly property bool _hasKey: (Ai.apiKeys[Ai.models[modelData]?.key_id]?.length ?? 0) > 0
+                                // Append textual marker when key is missing —
+                                // colour-only indication is not enough.
+                                text: {
+                                    const base = `${Ai.models[modelData]?.api_format ?? "?"} • ${Ai.models[modelData]?.description ?? ""}`
+                                    return _hasKey ? base : `${base} · Missing key`
+                                }
                                 font.pixelSize: Appearance?.font.pixelSize.smallest ?? 11
                                 opacity: 0.5; elide: Text.ElideRight; Layout.fillWidth: true
                             }
@@ -151,8 +159,17 @@ ColumnLayout {
 
         ColumnLayout {
             spacing: 4
-            StyledText { text: "System prompt"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
+            RowLayout {
+                Layout.fillWidth: true
+                StyledText { text: "System prompt"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14; Layout.fillWidth: true }
+                StyledText {
+                    text: `${promptArea.text.length} chars`
+                    font.pixelSize: Appearance?.font.pixelSize.smallest ?? 11
+                    opacity: 0.55
+                }
+            }
             StyledTextArea {
+                id: promptArea
                 Layout.fillWidth: true
                 Layout.preferredHeight: 100
                 text: Config.options?.ai?.systemPrompt ?? "You are a helpful assistant integrated into a Linux desktop shell called Ano."
@@ -199,7 +216,7 @@ ColumnLayout {
             from: 500; to: 10000; stepSize: 500
             value: Config.options?.resources?.updateInterval ?? 3000
             onValueChanged: Config.setNestedValue("resources.updateInterval", Math.round(value))
-            valueText: `${(Math.round(value) / 1000).toFixed(1)}s`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSlider {
@@ -250,7 +267,7 @@ ColumnLayout {
             enabled: gmEnable.checked
             value: Config.options?.gameMode?.pollIntervalMs ?? 2000
             onValueChanged: Config.setNestedValue("gameMode.pollIntervalMs", Math.round(value))
-            valueText: `${(Math.round(value) / 1000).toFixed(1)}s`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigRow {
@@ -423,7 +440,7 @@ ColumnLayout {
             enabled: nuEnable.checked
             value: Config.options?.network?.usage?.intervalMs ?? 1000
             onValueChanged: Config.setNestedValue("network.usage.intervalMs", Math.round(value))
-            valueText: `${(Math.round(value) / 1000).toFixed(2)}s`
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSlider {
@@ -484,14 +501,24 @@ ColumnLayout {
                 id: vpnHelp
                 anchors.fill: parent
                 anchors.margins: 8
-                spacing: 4
+                spacing: 6
                 StyledText {
                     Layout.fillWidth: true
-                    text: "Configure providers via Config.options.vpn.providers — an array of:\n  \"tailscale\"  |  \"netbird\"  |  \"warp\"  |  \"wireguard\"\nor a custom object: { name, enabled: true, connectCmd: [...], disconnectCmd: [...], interface, displayName }"
+                    text: "VPN providers must be configured in config.json — supported builtins: tailscale, netbird, warp, wireguard. Custom providers use { name, enabled, connectCmd, disconnectCmd, interface, displayName }."
                     font.pixelSize: 11
-                    font.family: Appearance?.font.family.mono ?? "monospace"
                     wrapMode: Text.Wrap
                     opacity: 0.75
+                }
+                RippleButton {
+                    implicitHeight: 28
+                    buttonRadius: Appearance?.rounding.small ?? 6
+                    contentItem: RowLayout {
+                        spacing: 6
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        MaterialSymbol { text: "edit"; iconSize: 14 }
+                        StyledText { text: "Open config.json"; font.pixelSize: 11 }
+                    }
+                    onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
                 }
             }
         }
@@ -524,14 +551,28 @@ ColumnLayout {
             sublabel: {
                 const n = (Config.options?.calendar?.externalSync?.sources ?? []).length;
                 return n === 0
-                    ? "None configured. Add via Config.options.calendar.externalSync.sources (UI editor not built yet)."
+                    ? "No feeds configured. Add iCal/CalDAV URLs to calendar.externalSync.sources in config.json."
                     : `${n} feed${n === 1 ? "" : "s"} configured · ${CalendarSync.events.length} events loaded`;
             }
-            StyledText {
-                text: CalendarSync.fetching ? "syncing…" : (CalendarSync.ready ? "ready" : "idle")
-                font.pixelSize: 11
-                opacity: 0.6
-                font.family: Appearance?.font.family.mono ?? "monospace"
+            RowLayout {
+                spacing: 8
+                StyledText {
+                    text: CalendarSync.fetching ? "syncing…" : (CalendarSync.ready ? "ready" : "idle")
+                    font.pixelSize: 11
+                    opacity: 0.6
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                }
+                RippleButton {
+                    implicitHeight: 28
+                    buttonRadius: Appearance?.rounding.small ?? 6
+                    contentItem: RowLayout {
+                        spacing: 6
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        MaterialSymbol { text: "edit"; iconSize: 14 }
+                        StyledText { text: "Open config.json"; font.pixelSize: 11 }
+                    }
+                    onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
+                }
             }
         }
     }

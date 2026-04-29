@@ -21,6 +21,22 @@ ColumnLayout {
 
     readonly property string currentLayout: Config.options?.overview?.layout ?? "smartgrid"
 
+    // Hoisted so the selected-indicator can resolve display names without
+    // duplicating the list. Each entry: id (config value) + name (UI label).
+    readonly property var layoutsModel: [
+        { id: "smartgrid", name: "Smart Grid", desc: "Optimal grid with aspect-fit", icon: "grid_view" },
+        { id: "justified", name: "Justified", desc: "Text-wrap style rows", icon: "view_week" },
+        { id: "bands", name: "Bands", desc: "Grouped by workspace", icon: "view_stream" },
+        { id: "masonry", name: "Masonry", desc: "Pinterest-style columns", icon: "dashboard" },
+        { id: "hero", name: "Hero", desc: "Active window large + stack", icon: "picture_in_picture" },
+        { id: "spiral", name: "Spiral", desc: "Fibonacci space partitions", icon: "rotate_right" },
+        { id: "satellite", name: "Satellite", desc: "Active center + orbital ring", icon: "blur_circular" },
+        { id: "staggered", name: "Staggered", desc: "Brick-wall offset grid", icon: "view_comfy" },
+        { id: "columnar", name: "Columnar", desc: "One window per column", icon: "view_column" },
+        { id: "vortex", name: "Vortex", desc: "Golden spiral with rotation", icon: "cyclone" },
+        { id: "random", name: "Random", desc: "Different layout each time", icon: "shuffle" },
+    ]
+
     // ═══ Layout Selection ═══
     SettingsCard {
         icon: "overview"
@@ -35,19 +51,7 @@ ColumnLayout {
             columnSpacing: 10; rowSpacing: 10
 
             Repeater {
-                model: [
-                    { id: "smartgrid", name: "Smart Grid", desc: "Optimal grid with aspect-fit", icon: "grid_view" },
-                    { id: "justified", name: "Justified", desc: "Text-wrap style rows", icon: "view_week" },
-                    { id: "bands", name: "Bands", desc: "Grouped by workspace", icon: "view_stream" },
-                    { id: "masonry", name: "Masonry", desc: "Pinterest-style columns", icon: "dashboard" },
-                    { id: "hero", name: "Hero", desc: "Active window large + stack", icon: "picture_in_picture" },
-                    { id: "spiral", name: "Spiral", desc: "Fibonacci space partitions", icon: "rotate_right" },
-                    { id: "satellite", name: "Satellite", desc: "Active center + orbital ring", icon: "blur_circular" },
-                    { id: "staggered", name: "Staggered", desc: "Brick-wall offset grid", icon: "view_comfy" },
-                    { id: "columnar", name: "Columnar", desc: "One window per column", icon: "view_column" },
-                    { id: "vortex", name: "Vortex", desc: "Golden spiral with rotation", icon: "cyclone" },
-                    { id: "random", name: "Random", desc: "Different layout each time", icon: "shuffle" },
-                ]
+                model: root.layoutsModel
 
                 Rectangle {
                     required property var modelData
@@ -113,7 +117,13 @@ ColumnLayout {
             Layout.fillWidth: true; spacing: 8
             MaterialSymbol { text: "check_circle"; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F"; fill: 1 }
             StyledText {
-                text: `Selected: ${root.currentLayout.charAt(0).toUpperCase() + root.currentLayout.slice(1)}`
+                // Show the layout's display name (e.g. "Smart Grid"), not
+                // the kebab-case id with first letter capitalised.
+                text: {
+                    const m = root.layoutsModel ?? []
+                    for (const l of m) if (l.id === root.currentLayout) return `Selected: ${l.name}`
+                    return `Selected: ${root.currentLayout}`
+                }
                 font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                 font.weight: Font.DemiBold
                 color: Appearance?.colors.colPrimary ?? "#65558F"

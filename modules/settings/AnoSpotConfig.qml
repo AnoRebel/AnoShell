@@ -20,8 +20,21 @@ ColumnLayout {
 
     readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
     readonly property string currentPosition: Config.options?.anoSpot?.position ?? "top"
-    readonly property string barEdge: Config.options?.bars?.[0]?.edge ?? "top"
-    readonly property bool collides: enabled && currentPosition === barEdge
+
+    // Iterate over every configured bar — multi-monitor / multi-bar
+    // setups would otherwise miss collisions on bars beyond the first.
+    readonly property var collidingBars: {
+        if (!enabled) return []
+        const bars = Config.options?.bars ?? []
+        const out = []
+        for (let i = 0; i < bars.length; ++i) {
+            if ((bars[i]?.edge ?? "top") === currentPosition) {
+                out.push(bars[i]?.id || `bar ${i}`)
+            }
+        }
+        return out
+    }
+    readonly property bool collides: collidingBars.length > 0
 
     // ═══ Enable + collision warning ═══
     SettingsCard {
@@ -58,7 +71,10 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
-                    text: `Heads-up: AnoSpot position (${root.currentPosition}) matches the bar edge — they may visually overlap.`
+                    text: {
+                        const list = root.collidingBars.join(", ")
+                        return `Heads-up: AnoSpot position (${root.currentPosition}) matches the edge of: ${list}. They may visually overlap.`
+                    }
                     font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
                     color: Appearance?.colors.colOnSecondaryContainer ?? "#fef9e7"
                 }
@@ -193,11 +209,21 @@ ColumnLayout {
             sublabel: "Empty = auto ($XDG_RUNTIME_DIR/anoSpot, falls back to /tmp/anoSpot-<UID>)"
             enabled: dropEnable.checked
 
-            StyledTextInput {
+            ConfigTextInput {
                 Layout.fillWidth: true
-                Layout.preferredWidth: 220
+                Layout.preferredWidth: 240
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                placeholderText: "(auto)"
                 text: Config.options?.anoSpot?.stashDir ?? ""
+                // Validation: an absolute path or empty for auto-resolution.
+                // Catches the common typo of accidental leading whitespace
+                // or an unwritable relative path before drops start failing.
+                validator: (s) => {
+                    const t = (s || "").trim()
+                    if (t.length === 0) return null
+                    if (!t.startsWith("/") && !t.startsWith("~")) return "Use an absolute or ~ path"
+                    return null
+                }
                 onEditingFinished: Config.setNestedValue("anoSpot.stashDir", text.trim())
             }
         }

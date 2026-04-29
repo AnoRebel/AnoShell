@@ -685,7 +685,10 @@ ColumnLayout {
 
         ConfigRow {
             label: "City name"
-            sublabel: "Leave empty for auto-detect via GPS"
+            sublabel: (Config.options?.bar?.weather?.enableGPS ?? false)
+                ? "GPS positioning is on — manual city is ignored"
+                : "Leave empty to disable, or specify a city for manual lookup"
+            enabled: !(Config.options?.bar?.weather?.enableGPS ?? false)
             StyledTextInput {
                 text: Config.options?.bar?.weather?.city ?? ""
                 onEditingFinished: Config.setNestedValue("bar.weather.city", text)
