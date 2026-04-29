@@ -45,6 +45,18 @@ ShellRoot {
         width: 960
         height: 720
 
+        // Shared keyboard navigation: Up/Down/Tab through pages, Ctrl+1..9
+        // jump-to-page, Esc closes the window. focus: true so the handler
+        // gets the activeFocusItem when the window opens.
+        SettingsKeyHandler {
+            anchors.fill: parent
+            focus: true
+            currentPage: settingsRoot.currentPage
+            pageCount: settingsRoot.pages.length
+            onPageRequested: idx => settingsRoot.currentPage = idx
+            onCloseRequested: Qt.quit()
+        }
+
         RowLayout {
             anchors.fill: parent
             spacing: 0

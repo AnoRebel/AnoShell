@@ -171,7 +171,19 @@ Scope {
             }
         }
 
-        Keys.onPressed: event => { if (event.key === Qt.Key_Escape) GlobalStates.settingsOpen = false }
+        // Shared keyboard navigation: Up/Down/Tab through pages, Ctrl+1..9
+        // jump-to-page, Esc closes. Lives behind the visible card so it
+        // doesn't intercept clicks but still receives focus when the panel
+        // is open (WlrKeyboardFocus.Exclusive grants the panel the focus
+        // chain).
+        SettingsKeyHandler {
+            anchors.fill: parent
+            focus: settingsPanel.visible
+            currentPage: root.currentPage
+            pageCount: root.pages.length
+            onPageRequested: idx => root.currentPage = idx
+            onCloseRequested: GlobalStates.settingsOpen = false
+        }
     }
 
     // ═══════════════════════════════════════
