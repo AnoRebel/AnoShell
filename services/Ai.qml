@@ -338,13 +338,14 @@ Singleton {
     function sendOpenAI(model, assistantId) {
         const apiKey = apiKeys[model.key_id] ?? ""
         const msgs = buildMessages()
-        const body = JSON.stringify({
+        // QML's JS engine doesn't support object-spread, so merge with
+        // Object.assign — base fields first, then extraParams overrides.
+        const body = JSON.stringify(Object.assign({
             model: model.model,
             messages: msgs,
             temperature: temperature,
             stream: true,
-            ...model.extraParams
-        })
+        }, model.extraParams || {}))
 
         openaiProc.environment = { API_KEY: apiKey, ENDPOINT: model.endpoint, BODY: body }
         openaiProc.assistantId = assistantId
