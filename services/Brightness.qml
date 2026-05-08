@@ -5,6 +5,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.services
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
 
