@@ -328,6 +328,26 @@ Singleton {
             // bundle; the new key wins on read.
         }
 
+        // appearance.theme.static -> appearance.theme.name. The previous
+        // property name `static` is a QML reserved word and broke shell
+        // load; rename for the schema, migrate any user-delta value over.
+        const themeBlock = root._userDelta?.appearance?.theme;
+        if (themeBlock && typeof themeBlock === "object") {
+            // The migrated leaf may be the literal "static" key in JS-object
+            // form because the file was edited externally before the rename.
+            if (typeof themeBlock["static"] === "string"
+                && themeBlock["static"].length > 0
+                && (!themeBlock.name || themeBlock.name.length === 0)) {
+                themeBlock.name = themeBlock["static"];
+                delete themeBlock["static"];
+                migrated = true;
+            } else if (themeBlock["static"] !== undefined) {
+                // Stale empty value — drop it.
+                delete themeBlock["static"];
+                migrated = true;
+            }
+        }
+
         if (migrated) userDeltaWriteTimer.restart();
     }
 
@@ -366,10 +386,10 @@ Singleton {
             // Panel Families
             // ═══════════════════════════════════════════════════════════════
             property string panelFamily: "ano" // "ano" default, extensible
-            property JsonArray enabledPanels: JsonArray {
-                // Dynamic module loading — list of panel IDs to activate
-                // Populated by family defaults on first run
-            }
+            // Dynamic module loading — list of panel IDs to activate.
+            // Populated by family defaults on first run. Empty array means
+            // "all modules enabled" (see ModulesConfig for the convention).
+            property var enabledPanels: []
             property bool familyTransitionAnimation: true
 
             // ═══════════════════════════════════════════════════════════════
@@ -421,12 +441,16 @@ Singleton {
                 // Theme source selector. When source === "materialYou", the
                 // existing wallpaper-driven pipeline owns Appearance.m3colors.
                 // When source === "static", StaticThemeLoader writes
-                // Appearance.m3colors from assets/themes/<static>.json (or
-                // ~/.config/anoshell/themes/<static>.json — user dir takes
+                // Appearance.m3colors from assets/themes/<name>.json (or
+                // ~/.config/anoshell/themes/<name>.json — user dir takes
                 // precedence on name collision).
+                //
+                // Property is `name` (not `static`) because `static` is a
+                // reserved word in QML's QtQml parser and using it as a
+                // property identifier fails to load.
                 property JsonObject theme: JsonObject {
                     property string source: "materialYou"  // "materialYou" | "static"
-                    property string static: ""              // theme name without .json suffix
+                    property string name: ""                // theme name without .json suffix
                 }
             }
 
@@ -440,16 +464,16 @@ Singleton {
                 property bool autoHide: false
                 property int autoHideDelay: 1000 // ms
 
-                // Multi-bar: array of bar definitions per monitor
-                // Each bar has: id, position (top/bottom/left/right), modules (left/center/right arrays)
-                property JsonArray bars: JsonArray {
-                    // Default: single top bar (populated on first run)
-                }
+                // Multi-bar: array of bar definitions per monitor.
+                // Each bar has: id, position (top/bottom/left/right),
+                // modules (left/center/right arrays). Default: single
+                // top bar populated on first run.
+                property var bars: []
 
                 // Module arrangement — drag-and-drop ordering
-                property JsonArray modulesLeft: JsonArray {}
-                property JsonArray modulesCenter: JsonArray {}
-                property JsonArray modulesRight: JsonArray {}
+                property var modulesLeft: []
+                property var modulesCenter: []
+                property var modulesRight: []
             }
 
             // ═══════════════════════════════════════════════════════════════

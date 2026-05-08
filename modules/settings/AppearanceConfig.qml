@@ -23,7 +23,7 @@ ColumnLayout {
     // when the cursor leaves a card without the user clicking. Captured
     // once on entry into the picker, restored on cancel/exit.
     readonly property string committedSource: Config.options?.appearance?.theme?.source ?? "materialYou"
-    readonly property string committedStatic: Config.options?.appearance?.theme?.static ?? ""
+    readonly property string committedStatic: Config.options?.appearance?.theme?.name ?? ""
 
     // True while the user is hovering a non-selected theme card. Pinned
     // by mouse-enter, cleared on click (commits) or mouse-leave (reverts).
@@ -58,7 +58,7 @@ ColumnLayout {
         previewing = false
         previewingName = ""
         Config.setNestedValue("appearance.theme.source", "static")
-        Config.setNestedValue("appearance.theme.static", name)
+        Config.setNestedValue("appearance.theme.name", name)
     }
 
     function _commitMaterialYou(): void {

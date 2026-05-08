@@ -18,7 +18,7 @@ Singleton {
 
     // Transient theme preview overlay. When non-null, StaticThemeLoader
     // applies these tokens INSTEAD of reading from the configured
-    // `appearance.theme.static` path. Used by AppearanceConfig's theme
+    // `appearance.theme.name` path. Used by AppearanceConfig's theme
     // grid hover-preview so disk writes don't fire on every cell-enter.
     //
     // Contract:

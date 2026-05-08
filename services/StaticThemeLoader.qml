@@ -17,7 +17,7 @@ import Quickshell.Io
  *   2. <shell>/assets/themes/<name>.json  (bundled fallback)
  *
  * Active when Config.options.appearance.theme.source === "static" and
- * Config.options.appearance.theme.static is non-empty. When source is
+ * Config.options.appearance.theme.name is non-empty. When source is
  * "materialYou" or static is empty, this loader is dormant and
  * MaterialThemeLoader owns the m3colors writes.
  */
@@ -25,7 +25,7 @@ Singleton {
     id: root
 
     readonly property string source: Config.options?.appearance?.theme?.source ?? "materialYou"
-    readonly property string staticName: Config.options?.appearance?.theme?.static ?? ""
+    readonly property string staticName: Config.options?.appearance?.theme?.name ?? ""
     readonly property bool active: source === "static" && staticName.length > 0
 
     // Resolved on demand — checks user dir first, falls back to bundled.

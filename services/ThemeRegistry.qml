@@ -14,7 +14,7 @@ import Quickshell.Io
  * Exposes `themes`, a ListModel of:
  *     {
  *       name              filename without .json (= the value to write to
- *                         Config.options.appearance.theme.static)
+ *                         Config.options.appearance.theme.name)
  *       displayName       _meta.name from the JSON
  *       description       _meta.description
  *       darkmode          true/false from _meta.darkmode
