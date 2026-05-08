@@ -399,7 +399,7 @@ qs -c ano ipc call <target> <method>
 | `audio` | `toggleMute`, `toggleMicMute`, `increment`, `decrement` |
 | `brightness` | `increment`, `decrement` |
 | `mpris` | `pauseAll`, `playPause`, `previous`, `next` |
-| `idle` / `idleInhibitor` | `toggle`, `enable`, `disable` / per-app inhibit registry |
+| `idle` | `toggle`, `enable`, `disable` |
 | `hud` | `toggle`, `open`, `close` |
 | `session` | `toggle`, `open`, `close` |
 | `dock` | `toggle`, `pin`, `unpin` |
