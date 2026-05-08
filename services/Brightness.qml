@@ -88,9 +88,13 @@ Singleton {
         property bool ready: false
         property bool animateChanges: !monitor.isDdc
 
+        // Single onBrightnessChanged handler — fans out to both the
+        // root-level signal (for UI consumers) and the debounced
+        // setTimer (which actually pushes the value to the device).
         onBrightnessChanged: {
             if (!monitor.ready) return
             root.brightnessChanged()
+            setTimer.restart()
         }
 
         function initialize() {
@@ -123,10 +127,6 @@ Singleton {
         property var setTimer: Timer {
             interval: monitor.isDdc ? 300 : 0
             onTriggered: syncBrightness()
-        }
-
-        onBrightnessChanged: {
-            if (monitor.ready) setTimer.restart()
         }
 
         function syncBrightness() {
