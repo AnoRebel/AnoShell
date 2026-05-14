@@ -69,7 +69,9 @@ Singleton {
     // Priority: ~/.face → AccountsService → ~/.face.icon
     property string userAvatarPathFace: FileUtils.trimFileProtocol(`${root.home}/.face`)
     property string userAvatarPathFaceIcon: FileUtils.trimFileProtocol(`${root.home}/.face.icon`)
-    property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${SystemInfo.username}`)
+    // Quickshell 0.3 removed SystemInfo; fall back to the USER env var.
+    readonly property string _username: Quickshell.env("USER") || ""
+    property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${_username}`)
 
     // Initialize required directories on startup
     Component.onCompleted: {

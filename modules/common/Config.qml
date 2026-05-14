@@ -461,8 +461,12 @@ Singleton {
                 property string position: "top" // top, bottom, left, right
                 property int cornerStyle: 0 // 0: Normal | 1: Floating (adds gaps)
                 property bool verbose: false // verbose mode shows more info in bar modules
-                property bool autoHide: false
-                property int autoHideDelay: 1000 // ms
+                // autoHide block matches the bundled config shape. Per-bar
+                // `bars[].autoHide` (a plain bool in bars[]) overrides this.
+                property JsonObject autoHide: JsonObject {
+                    property bool enable: false
+                    property int delay: 1000 // ms
+                }
 
                 // Multi-bar: array of bar definitions per monitor.
                 // Each bar has: id, position (top/bottom/left/right),
@@ -484,11 +488,22 @@ Singleton {
                 property string thumbnailPath: "" // for video wallpapers
                 property string wallpaperDir: "~/Pictures/hyprwallpapers"
 
-                property JsonObject rotation: JsonObject {
-                    property bool enabled: true
-                    property int intervalMinutes: 30 // wallpaper rotation interval
-                    property bool shuffle: true // random order vs sequential
-                    property bool applyTheme: true // re-derive Material You colors on change
+                // Wallpaper rotation. Property name matches the bundled
+                // config.json (`background.randomize.*`) and Wallpapers.qml's
+                // readers. Interval is in seconds (not minutes) to match the
+                // existing AppearanceConfig slider and bundled defaults.
+                property JsonObject randomize: JsonObject {
+                    property bool enable: false
+                    property string directory: "~/Pictures/Wallpapers"
+                    property int interval: 300
+                }
+                // Wallpaper transition (cross-fade / slide). Read by the
+                // wallpaper renderer for the swap animation.
+                property JsonObject transition: JsonObject {
+                    property bool enable: true
+                    property string type: "crossfade"
+                    property int duration: 800
+                    property string direction: "right"
                 }
             }
 
