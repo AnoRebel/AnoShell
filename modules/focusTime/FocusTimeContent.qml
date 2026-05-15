@@ -359,7 +359,7 @@ Item {
                             visible: root.selectedAppClass === "" && !root.isWeekView
                             color: weekMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                             Behavior on color { ColorAnimation { duration: 150 } }
-                            MaterialSymbol { anchors.centerIn: parent; text: "calendar_view_week"; size: 20; color: Appearance.colors.colOnLayer0 }
+                            MaterialSymbol { anchors.centerIn: parent; text: "calendar_view_week"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea {
                                 id: weekMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                 onClicked: root.isWeekView = true
@@ -371,7 +371,7 @@ Item {
                             width: 40; height: 40; radius: 20
                             color: prevMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                             Behavior on color { ColorAnimation { duration: 150 } }
-                            MaterialSymbol { anchors.centerIn: parent; text: "chevron_left"; size: 20; color: Appearance.colors.colOnLayer0 }
+                            MaterialSymbol { anchors.centerIn: parent; text: "chevron_left"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea { id: prevMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(-1) }
                         }
                     }
@@ -411,7 +411,7 @@ Item {
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40; radius: 20
                         color: nextMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
-                        MaterialSymbol { anchors.centerIn: parent; text: "chevron_right"; size: 20; color: Appearance.colors.colOnLayer0 }
+                        MaterialSymbol { anchors.centerIn: parent; text: "chevron_right"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                         MouseArea { id: nextMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(1) }
                     }
                 }
@@ -620,7 +620,7 @@ Item {
                                         fillMode: Image.PreserveAspectFit; visible: model.icon !== ""
                                     }
                                     MaterialSymbol {
-                                        text: "apps"; size: 24; color: Appearance.m3colors.outline
+                                        text: "apps"; iconSize: 24; color: Appearance.m3colors.outline
                                         visible: model.icon === ""
                                     }
                                     StyledText {

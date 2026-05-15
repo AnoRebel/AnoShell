@@ -17,7 +17,18 @@ Item {
     property var anchorEdges: Edges.Top
     property var anchorGravity: Edges.Top
 
-    default property alias content: contentContainer.data
+    // The popup body. Callers do `StyledPopup { Rectangle {...} }` and
+    // the children land inside the inner contentContainer. The alias
+    // can't target an id inside a Loader.sourceComponent (sourceComponent
+    // contents aren't visible at compile time), so we use the default
+    // property "data" of an inline Item that lives at root scope, and the
+    // popup window picks it up as a child when it instantiates.
+    default property alias content: contentHolder.data
+
+    Item {
+        id: contentHolder
+        visible: false   // never rendered here, just a parking spot
+    }
 
     Loader {
         id: popupLoader
@@ -62,9 +73,18 @@ Item {
                     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
                     clip: true
 
+                    // Reparent the caller's content into here when the
+                    // popup window is alive. Children of contentHolder
+                    // (set via the default property) get moved in.
                     Item {
                         id: contentContainer
                         anchors { fill: parent; margins: 12 }
+
+                        Component.onCompleted: {
+                            for (let i = contentHolder.data.length - 1; i >= 0; --i) {
+                                contentHolder.data[i].parent = contentContainer;
+                            }
+                        }
                     }
                 }
 

@@ -33,7 +33,8 @@ PanelWindow {
     aboveWindows: true
 
     property string ns: "quickshell:displayManager"
-    WlSessionLock.surface.layer: WlSessionLockSurface.Overlay
+    WlrLayershell.namespace: ns
+    WlrLayershell.layer: WlrLayer.Overlay
 
     color: "transparent"
 
