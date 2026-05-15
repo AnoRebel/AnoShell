@@ -4,6 +4,7 @@ import qs.modules.common.widgets.spectrum
 import qs.services
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 /**
  * Compact media player bar module with morph-capable popout showing
@@ -73,7 +74,10 @@ Item {
                 active: !SpectrumService.isIdle; visible: active
                 sourceComponent: Rectangle {
                     radius: 6; color: Appearance?.colors.colLayer2 ?? "#2B2930"
-                    MirroredSpectrum { anchors { fill: parent; margins: 2 }; fillColor: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.5) }
+                    MirroredSpectrum {
+                        anchors { fill: parent; margins: 2 }
+                        fillColor: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.5)
+                    }
                 }
                 Component.onCompleted: SpectrumService.registerComponent("mediaBarPopup")
                 Component.onDestruction: SpectrumService.unregisterComponent("mediaBarPopup")

@@ -385,7 +385,8 @@ ColumnLayout {
                     color: pinnedAppMA.containsMouse ? Appearance?.colors.colLayer1Hover ?? "#E5DFED" : (index % 2 === 0 ? Qt.rgba(1,1,1,0.02) : "transparent")
 
                     RowLayout {
-                        anchors { fill: parent; leftMargin: 8; rightMargin: 8 }; spacing: 10
+                        anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
+                        spacing: 10
 
                         // Index badge
                         Rectangle {

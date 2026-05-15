@@ -70,8 +70,15 @@ Item {
     }
 
     Component.onCompleted: updateOccupied()
-    Connections { target: CompositorService.compositor === "hyprland" ? Hyprland.workspaces : null; function onValuesChanged() { updateOccupied() } }
-    Connections { target: CompositorService.compositor === "niri" ? NiriService : null; function onAllWorkspacesChanged() { updateOccupied() }; function onWindowsChanged() { updateOccupied() } }
+    Connections {
+        target: CompositorService.compositor === "hyprland" ? Hyprland.workspaces : null
+        function onValuesChanged() { updateOccupied() }
+    }
+    Connections {
+        target: CompositorService.compositor === "niri" ? NiriService : null
+        function onAllWorkspacesChanged() { updateOccupied() }
+        function onWindowsChanged() { updateOccupied() }
+    }
     onCurrentWorkspaceNumberChanged: updateOccupied()
 
     // Occupied background

@@ -5,6 +5,7 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs
 import qs.modules.common
 import qs.services
 import qs.modules.focusTime
@@ -17,17 +18,10 @@ import "."
 PanelWindow {
     id: panel
 
-    WlSessionLock.surface: WlSessionLockSurface {}
+    anchors { top: true; bottom: true; left: true; right: true }
 
-    anchors {
-        rect.x: (panel.screen.width - panelWidth) / 2
-        rect.y: (panel.screen.height - panelHeight) / 2
-        rect.width: panelWidth
-        rect.height: panelHeight
-    }
-
-    property int panelWidth: Math.min(820, panel.screen.width * 0.55)
-    property int panelHeight: Math.min(680, panel.screen.height * 0.75)
+    property int panelWidth: Math.min(820, panel.screen?.width * 0.55 ?? 820)
+    property int panelHeight: Math.min(680, panel.screen?.height * 0.75 ?? 680)
 
     screen: GlobalStates.primaryScreen
     visible: GlobalStates.focusTimeOpen
@@ -36,7 +30,8 @@ PanelWindow {
 
     // Namespace for layer rules
     property string ns: "quickshell:focusTime"
-    WlSessionLock.surface.layer: WlSessionLockSurface.Overlay
+    WlrLayershell.namespace: ns
+    WlrLayershell.layer: WlrLayer.Overlay
 
     color: "transparent"
 

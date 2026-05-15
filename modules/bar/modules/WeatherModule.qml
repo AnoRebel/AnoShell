@@ -61,8 +61,12 @@ Item {
             // Sunrise/sunset
             RowLayout {
                 Layout.fillWidth: true; spacing: 12
-                RowLayout { spacing: 4; MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#FFB74D" }; StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
-                RowLayout { spacing: 4; MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#AB47BC"; rotation: 180 }; StyledText { text: Weather.data.sunset || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
+                RowLayout { spacing: 4
+                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#FFB74D" }
+                    StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
+                RowLayout { spacing: 4
+                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#AB47BC"; rotation: 180 }
+                    StyledText { text: Weather.data.sunset || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
             }
 
             StyledText { text: "Click for full weather"; font.pixelSize: 9; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }

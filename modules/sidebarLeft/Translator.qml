@@ -90,7 +90,7 @@ Item {
             Layout.fillWidth: true; spacing: 8
 
             LanguageSelectorButton {
-                text: root.sourceLanguage === "auto" ? "Auto" : root.sourceLanguage.toUpperCase()
+                label: root.sourceLanguage === "auto" ? "Auto" : root.sourceLanguage.toUpperCase()
                 onClicked: {
                     // Cycle common languages
                     const langs = ["auto", "en", "es", "fr", "de", "ja", "ko", "zh", "ar", "ru", "pt", "sw"]
@@ -104,7 +104,7 @@ Item {
             MaterialSymbol { text: "arrow_forward"; iconSize: 20; opacity: 0.4 }
 
             LanguageSelectorButton {
-                text: root.targetLanguage.toUpperCase()
+                label: root.targetLanguage.toUpperCase()
                 onClicked: {
                     const langs = ["en", "es", "fr", "de", "ja", "ko", "zh", "ar", "ru", "pt", "sw"]
                     const idx = langs.indexOf(root.targetLanguage)

@@ -8,7 +8,9 @@ import qs.modules.common.widgets
  */
 RippleButton {
     id: root
-    property alias text: label.text
+    // `text` is FINAL on Button (RippleButton's ancestor). Use `label`
+    // for the displayed string instead.
+    property alias label: labelText.text
 
     implicitHeight: 32
     implicitWidth: label.implicitWidth + 24
@@ -17,7 +19,7 @@ RippleButton {
     colBackgroundHover: Appearance?.colors.colSecondaryContainerHover ?? "#DDD3EE"
 
     contentItem: StyledText {
-        id: label
+        id: labelText
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13

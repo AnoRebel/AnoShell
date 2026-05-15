@@ -54,13 +54,26 @@ Item {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; implicitHeight: 32; radius: 6; color: Appearance?.colors.colLayer2 ?? "#2B2930"
-                Graph { anchors { fill: parent; margins: 2 }; values: ResourceUsage.cpuUsageHistory; color: Appearance?.colors.colPrimary ?? "#65558F"; fillOpacity: 0.3; alignment: Graph.Alignment.Right }
+            Rectangle {
+                Layout.fillWidth: true; implicitHeight: 32; radius: 6
+                color: Appearance?.colors.colLayer2 ?? "#2B2930"
+                Graph {
+                    anchors { fill: parent; margins: 2 }
+                    values: ResourceUsage.cpuUsageHistory
+                    color: Appearance?.colors.colPrimary ?? "#65558F"
+                    fillOpacity: 0.3
+                    alignment: Graph.Alignment.Right
+                }
             }
 
             Repeater {
                 model: [{ label: "CPU max", value: ResourceUsage.maxAvailableCpuString }, { label: "RAM total", value: ResourceUsage.maxAvailableMemoryString }, { label: "Uptime", value: DateTime.uptime }]
-                RowLayout { required property var modelData; Layout.fillWidth: true; spacing: 8; StyledText { text: modelData.label; font.pixelSize: 11; opacity: 0.4; Layout.fillWidth: true }; StyledText { text: modelData.value; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
+                RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true; spacing: 8
+                    StyledText { text: modelData.label; font.pixelSize: 11; opacity: 0.4; Layout.fillWidth: true }
+                    StyledText { text: modelData.value; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                }
             }
 
             StyledText { text: "Click to open HUD"; font.pixelSize: 9; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }

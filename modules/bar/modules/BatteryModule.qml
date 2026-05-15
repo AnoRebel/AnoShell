@@ -60,7 +60,8 @@ Item {
 
         ColumnLayout {
             id: popupCol
-            anchors { fill: parent }; spacing: 10
+            anchors { fill: parent }
+            spacing: 10
 
             // Large gauge
             RowLayout {
@@ -90,10 +91,11 @@ Item {
                 model: [
                     { label: "Health", value: Battery.health > 0 ? `${Math.round(Battery.health)}%` : "N/A" },
                     { label: "Power rate", value: `${Battery.energyRate.toFixed(1)} W` },
-                    { label: "Time to " + (Battery.isCharging ? "full" : "empty"), value: {
-                        const t = Battery.isCharging ? Battery.timeToFull : Battery.timeToEmpty
-                        return t > 0 ? `${Math.round(t / 60)} min` : "Calculating..."
-                    }},
+                    { label: "Time to " + (Battery.isCharging ? "full" : "empty"),
+                      value: (() => {
+                        const t = Battery.isCharging ? Battery.timeToFull : Battery.timeToEmpty;
+                        return t > 0 ? `${Math.round(t / 60)} min` : "Calculating...";
+                      })() },
                 ]
                 RowLayout {
                     required property var modelData

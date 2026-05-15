@@ -551,8 +551,12 @@ Singleton {
             // Notifications
             // ═══════════════════════════════════════════════════════════════
             property JsonObject notifications: JsonObject {
+                property int timeout: 7000  // ms — bundled `notifications.timeout` (NotificationPopup reads this)
+                property string position: "topRight"
+                property int edgeMargin: 8
+                property bool expressiveAnimations: true
+                // Kept for back-compat with anything still reading silent / maxVisible
                 property bool silent: false
-                property int popupTimeout: 5000 // ms
                 property int maxVisible: 5
             }
 

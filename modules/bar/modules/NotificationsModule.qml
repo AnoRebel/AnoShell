@@ -65,7 +65,8 @@ Item {
                             color: Appearance?.colors.colLayer2 ?? "#2B2930"
 
                             RowLayout {
-                                id: nItemRow; anchors { fill: parent; margins: 4 }; spacing: 6
+                                id: nItemRow; anchors { fill: parent; margins: 4 }
+                                spacing: 6
                                 MaterialSymbol { text: "notifications"; iconSize: 14; opacity: 0.4 }
                                 ColumnLayout {
                                     Layout.fillWidth: true; spacing: 0

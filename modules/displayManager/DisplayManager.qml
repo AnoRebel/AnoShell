@@ -5,6 +5,7 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs
 import qs.modules.common
 import qs.services
 import qs.modules.displayManager
@@ -17,15 +18,12 @@ import "."
 PanelWindow {
     id: panel
 
-    anchors {
-        rect.x: (panel.screen.width - panelWidth) / 2
-        rect.y: (panel.screen.height - panelHeight) / 2
-        rect.width: panelWidth
-        rect.height: panelHeight
-    }
+    // Full-screen anchored window; the actual content is a centered card
+    // inside (Quickshell 0.3 dropped anchors.rect.{x,y,w,h} positioning).
+    anchors { top: true; bottom: true; left: true; right: true }
 
-    property int panelWidth: Math.min(860, panel.screen.width * 0.55)
-    property int panelHeight: Math.min(420, panel.screen.height * 0.45)
+    property int panelWidth: Math.min(860, panel.screen?.width * 0.55 ?? 860)
+    property int panelHeight: Math.min(420, panel.screen?.height * 0.45 ?? 420)
 
     screen: GlobalStates.primaryScreen
     visible: GlobalStates.displayManagerOpen && CompositorService.isHyprland

@@ -36,12 +36,15 @@ Singleton {
     readonly property list<var> outputDevices: root.devices(true)
     readonly property list<var> inputDevices: root.devices(false)
 
-    // Friendly names
+    // Friendly names. Null-guarded — nodes can transiently be null
+    // during reconnection.
     function friendlyDeviceName(node) {
+        if (!node) return "Unknown"
         return node.nickname || node.description || "Unknown"
     }
     function appNodeDisplayName(node) {
-        return node.properties["application.name"] || node.description || node.name
+        if (!node) return ""
+        return (node.properties && node.properties["application.name"]) || node.description || node.name || ""
     }
 
     // Signals

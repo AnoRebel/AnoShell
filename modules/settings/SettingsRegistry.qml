@@ -149,9 +149,14 @@ Singleton {
     function _buildHaystack(path, pageName) {
         const segments = path.split(".");
         // Also produce camel-case-split tokens, so "hold ms" and "event border"
-        // match the run-on identifiers.
-        const camelSplit = segments.flatMap(s => s.replace(/([a-z])([A-Z])/g, "$1 $2").split(/\s+/));
-        return [path, pageName, ...segments, ...camelSplit].join(" ").toLowerCase();
+        // match the run-on identifiers. QtJS doesn't always have flatMap,
+        // so concat manually.
+        const camelSplit = [];
+        for (const s of segments) {
+            const parts = s.replace(/([a-z])([A-Z])/g, "$1 $2").split(/\s+/);
+            for (const p of parts) camelSplit.push(p);
+        }
+        return [path, pageName].concat(segments).concat(camelSplit).join(" ").toLowerCase();
     }
 
     // ── Filter / rank ──────────────────────────────────────────────────

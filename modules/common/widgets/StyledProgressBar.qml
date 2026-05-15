@@ -38,7 +38,10 @@ ProgressBar {
                 height: contentItem.height * 6
                 width: contentItem.width * root.visualPosition
                 lineWidth: contentItem.height; fullLength: root.width
-                Connections { target: root; function onValueChanged() { wavyFill.requestPaint() } }
+                Connections {
+        target: root
+        function onValueChanged() { wavyFill.requestPaint() }
+    }
                 FrameAnimation { running: root.animateWave; onTriggered: wavyFill.requestPaint() }
             }
         }
