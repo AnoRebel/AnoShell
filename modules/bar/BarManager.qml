@@ -32,8 +32,14 @@ Scope {
 
     readonly property var barDefinitions: Config.options?.bars ?? defaultBars
 
-    // Per-screen bar instances
+    // Per-screen bar instances.
+    //
+    // Variants (not Repeater) is required at every level here: Repeater only
+    // instantiates delegates into a visual parent, but a Quickshell Scope is
+    // non-visual, so a Repeater nested in one creates nothing. Variants is the
+    // model→instance primitive for non-item objects and acts as a reload scope.
     Variants {
+        id: screenVariants
         model: {
             const screens = Quickshell.screens
             const screenList = Config.options?.bar?.screenList ?? []
@@ -41,26 +47,25 @@ Scope {
             return screens.filter(screen => screenList.includes(screen.name))
         }
 
-        Scope {
+        delegate: Scope {
             id: screenScope
             required property var modelData
 
-            // Create one BarWindow per bar definition, per screen
-            Repeater {
+            // One BarWindow per bar definition on this screen.
+            Variants {
                 model: root.barDefinitions
 
-                LazyLoader {
-                    id: barLoader
+                delegate: BarWindow {
                     required property var modelData
-                    required property int index
-                    // Skip bars that use morphingPanel — those are rendered by TopLayerPanel
-                    active: GlobalStates.barOpen && !GlobalStates.screenLocked && !(barLoader.modelData?.morphingPanel ?? false)
+                    // Skip bars that use morphingPanel — those are rendered by TopLayerPanel.
+                    readonly property bool _shouldShow: GlobalStates.barOpen
+                        && !GlobalStates.screenLocked
+                        && !(modelData?.morphingPanel ?? false)
 
-                    component: BarWindow {
-                        screen: screenScope.modelData
-                        barConfig: barLoader.modelData
-                        barIndex: barLoader.index
-                    }
+                    screen: screenScope.modelData
+                    barConfig: modelData
+                    barIndex: 0
+                    visible: _shouldShow
                 }
             }
         }
