@@ -7,8 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import qs.modules.sidebarRight
-
+import "root:modules/sidebarRight" as Sb
 /**
  * Right sidebar — slides in from the right edge.
  * Contains quick toggles, sliders, notifications, calendar, system info.
@@ -72,7 +71,7 @@ Scope {
                 focus: GlobalStates.sidebarRightOpen
                 Keys.onPressed: event => { if (event.key === Qt.Key_Escape) sidebarRoot.hide() }
 
-                sourceComponent: SidebarRightContent {
+                sourceComponent: Sb.SidebarRightContent {
                     panelScreen: sidebarRoot.screen ?? null
                 }
             }

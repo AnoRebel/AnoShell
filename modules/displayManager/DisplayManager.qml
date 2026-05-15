@@ -7,8 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
-import qs.modules.displayManager
-
+import "root:modules/displayManager" as DM
 /**
  * Display Manager — visual monitor configuration overlay.
  * Adapted from ilyamiro's MonitorPopup for Ano Shell.
@@ -59,7 +58,7 @@ PanelWindow {
     // ═══════════════════════════════════════════════════════════════════════
     // Content
     // ═══════════════════════════════════════════════════════════════════════
-    DisplayManagerContent {
+    DM.DisplayManagerContent {
         id: content
         anchors.fill: parent
         visible: GlobalStates.displayManagerOpen

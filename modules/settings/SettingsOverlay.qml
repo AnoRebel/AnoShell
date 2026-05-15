@@ -7,8 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import qs.modules.settings
-
+import "root:modules/settings" as Pages
 /**
  * Settings overlay — floating panel over the shell.
  * Navigation rail on the left, content pages on the right.
@@ -183,7 +182,7 @@ Scope {
             // ── Ctrl+K command palette ──────────────────────────────
             // Anchored over the settings card so the scrim covers the
             // whole panel without bleeding outside it.
-            SettingsCommandPalette {
+            Pages.SettingsCommandPalette {
                 anchors.fill: parent
                 currentPage: root.currentPage
                 pageCount: root.pages.length
@@ -198,7 +197,7 @@ Scope {
         // doesn't intercept clicks but still receives focus when the panel
         // is open (WlrKeyboardFocus.Exclusive grants the panel the focus
         // chain).
-        SettingsKeyHandler {
+        Pages.SettingsKeyHandler {
             anchors.fill: parent
             focus: settingsPanel.visible
             currentPage: root.currentPage
@@ -214,43 +213,43 @@ Scope {
 
     Component {
         id: generalPage
-        GeneralConfig {}
+        Pages.GeneralConfig {}
     }
     Component {
         id: modulesPage
-        ModulesConfig {}
+        Pages.ModulesConfig {}
     }
     Component {
         id: barPage
-        BarConfig {}
+        Pages.BarConfig {}
     }
     Component {
         id: dockPage
-        DockConfig {}
+        Pages.DockConfig {}
     }
     Component {
         id: sidebarsPage
-        SidebarsConfig {}
+        Pages.SidebarsConfig {}
     }
     Component {
         id: anoSpotPage
-        AnoSpotConfig {}
+        Pages.AnoSpotConfig {}
     }
     Component {
         id: appearancePage
-        AppearanceConfig {}
+        Pages.AppearanceConfig {}
     }
     Component {
         id: overviewPage
-        OverviewConfig {}
+        Pages.OverviewConfig {}
     }
     Component {
         id: servicesPage
-        ServicesConfig {}
+        Pages.ServicesConfig {}
     }
     Component {
         id: aboutPage
-        AboutPage {}
+        Pages.AboutPage {}
     }
 
     IpcHandler {

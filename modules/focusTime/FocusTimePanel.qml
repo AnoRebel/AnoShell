@@ -7,8 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
-import qs.modules.focusTime
-
+import "root:modules/focusTime" as FT
 /**
  * FocusTime Panel — app usage tracker overlay.
  * Adapted from ilyamiro's FocusTimePopup for Ano Shell.
@@ -62,7 +61,7 @@ PanelWindow {
     // ═══════════════════════════════════════════════════════════════════════
     // Content
     // ═══════════════════════════════════════════════════════════════════════
-    FocusTimeContent {
+    FT.FocusTimeContent {
         id: content
         anchors.fill: parent
         visible: GlobalStates.focusTimeOpen

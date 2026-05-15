@@ -11,8 +11,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import "root:layouts" as Layouts
-import qs.modules.overview
-
+import "root:modules/overview" as Ov
 /**
  * AnoView — Compositor-agnostic window overview with 10 selectable layouts.
  * Works on both Hyprland (via Hyprland.toplevels) and Niri (via NiriService.windows + ToplevelManager).
@@ -276,7 +275,7 @@ Scope {
                                     id: winRepeater
                                     model: windowLayoutModel
 
-                                    delegate: WindowThumbnail {
+                                    delegate: Ov.WindowThumbnail {
                                         hWin: modelData.win
                                         wHandle: hWin?.wayland ?? null
                                         winKey: String(modelData.address ?? modelData.win?.address ?? index)
@@ -297,7 +296,7 @@ Scope {
                                 }
                             }
 
-                            SearchBox {
+                            Ov.SearchBox {
                                 id: searchBox
                                 onTextChanged: text => { root.animateWindows = true; exposeArea.searchText = text }
                             }

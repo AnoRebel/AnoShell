@@ -646,6 +646,21 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
+            // Sounds
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject sounds: JsonObject {
+                property bool battery: true
+                property string theme: "freedesktop"
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Hacks — debug/workaround knobs
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject hacks: JsonObject {
+                property int arbitraryRaceConditionDelay: 100
+            }
+
+            // ═══════════════════════════════════════════════════════════════
             // Interactions (scrolling tuning)
             // ═══════════════════════════════════════════════════════════════
             property JsonObject interactions: JsonObject {
