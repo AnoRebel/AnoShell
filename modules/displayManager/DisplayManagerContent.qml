@@ -240,9 +240,9 @@ Item {
                                     scale: 1.0 / singleMonitorZoom.scale
                                     ColumnLayout {
                                         anchors.centerIn: parent; spacing: 4
-                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.iconNerd; font.pixelSize: 38; color: selectedResAccent; text: "󰍹"; Behavior on color { ColorAnimation { duration: 400 } } }
-                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.monospace; font.weight: Font.Bold; font.pixelSize: 16; color: window.text_; text: monitorsModel.count > 0 ? monitorsModel.get(0).name : "Unknown" }
-                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.monospace; font.pixelSize: 12; color: window.subtext0; text: currentSimW + "x" + currentSimH + " @ " + (monitorsModel.count > 0 ? monitorsModel.get(0).rate : "60") + "Hz" }
+                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 38; color: selectedResAccent; text: "󰍹"; Behavior on color { ColorAnimation { duration: 400 } } }
+                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.weight: Font.Bold; font.pixelSize: 16; color: window.text_; text: monitorsModel.count > 0 ? monitorsModel.get(0).name : "Unknown" }
+                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.pixelSize: 12; color: window.subtext0; text: currentSimW + "x" + currentSimH + " @ " + (monitorsModel.count > 0 ? monitorsModel.get(0).rate : "60") + "Hz" }
                                     }
                                 }
                             }
@@ -318,9 +318,9 @@ Item {
                                             scale: Math.min(idealScale, maxPhysicalScale)
                                             ColumnLayout {
                                                 anchors.centerIn: parent; spacing: 2
-                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.iconNerd; font.pixelSize: 32; color: isActive ? selectedResAccent : window.text_; text: "󰍹"; Behavior on color { ColorAnimation { duration: 300 } } }
-                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.monospace; font.weight: Font.Black; font.pixelSize: 13; color: window.text_; text: model.name }
-                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.monospace; font.pixelSize: 10; color: window.subtext0; text: model.resW + "x" + model.resH + " @ " + model.rate + "Hz" }
+                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 32; color: isActive ? selectedResAccent : window.text_; text: "󰍹"; Behavior on color { ColorAnimation { duration: 300 } } }
+                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.weight: Font.Black; font.pixelSize: 13; color: window.text_; text: model.name }
+                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.pixelSize: 10; color: window.subtext0; text: model.resW + "x" + model.resH + " @ " + model.rate + "Hz" }
                                             }
                                         }
                                     }
@@ -404,9 +404,9 @@ Item {
                                 Behavior on border.color { ColorAnimation { duration: 200 } }
                                 RowLayout {
                                     anchors.fill: parent; anchors.margins: 12; spacing: 8
-                                    StyledText { font.family: Appearance.font.monospace; font.weight: isSel ? Font.Black : Font.Bold; font.pixelSize: 16; color: isSel ? accentColor : window.text_; text: modelData.label; Behavior on color { ColorAnimation { duration: 200 } } }
+                                    StyledText { font.family: Appearance.font.family.monospace; font.weight: isSel ? Font.Black : Font.Bold; font.pixelSize: 16; color: isSel ? accentColor : window.text_; text: modelData.label; Behavior on color { ColorAnimation { duration: 200 } } }
                                     Item { Layout.fillWidth: true }
-                                    StyledText { font.family: Appearance.font.monospace; font.pixelSize: 12; color: isSel ? window.text_ : window.overlay0; text: modelData.resW + "x" + modelData.resH; Behavior on color { ColorAnimation { duration: 200 } } }
+                                    StyledText { font.family: Appearance.font.family.monospace; font.pixelSize: 12; color: isSel ? window.text_ : window.overlay0; text: modelData.resW + "x" + modelData.resH; Behavior on color { ColorAnimation { duration: 200 } } }
                                 }
                                 scale: resMa.pressed ? 0.96 : 1.0
                                 Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutSine } }
@@ -454,7 +454,7 @@ Item {
                             model: sliderContainer.rates.length
                             Item {
                                 x: (index / (sliderContainer.rates.length - 1)) * track.width; y: track.y + 20
-                                StyledText { anchors.horizontalCenter: parent.horizontalCenter; text: sliderContainer.rates[index]; font.family: Appearance.font.monospace; font.pixelSize: 13; font.weight: sliderContainer.currentIndex === index ? Font.Bold : Font.Normal; color: sliderContainer.currentIndex === index ? selectedRateAccent : window.overlay0; Behavior on color { ColorAnimation { duration: 200 } } }
+                                StyledText { anchors.horizontalCenter: parent.horizontalCenter; text: sliderContainer.rates[index]; font.family: Appearance.font.family.monospace; font.pixelSize: 13; font.weight: sliderContainer.currentIndex === index ? Font.Bold : Font.Normal; color: sliderContainer.currentIndex === index ? selectedRateAccent : window.overlay0; Behavior on color { ColorAnimation { duration: 200 } } }
                             }
                         }
                         Rectangle {
@@ -522,8 +522,8 @@ Item {
 
                     RowLayout {
                         anchors.centerIn: parent; spacing: 8
-                        StyledText { font.family: Appearance.font.iconNerd; font.pixelSize: 20; color: window.crust; text: "󰸵" }
-                        StyledText { font.family: Appearance.font.monospace; font.weight: Font.Black; font.pixelSize: 14; color: window.crust; text: monitorsModel.count > 1 ? "Apply All" : "Apply" }
+                        StyledText { font.family: Appearance.font.family.iconNerd; font.pixelSize: 20; color: window.crust; text: "󰸵" }
+                        StyledText { font.family: Appearance.font.family.monospace; font.weight: Font.Black; font.pixelSize: 14; color: window.crust; text: monitorsModel.count > 1 ? "Apply All" : "Apply" }
                     }
                 }
 
