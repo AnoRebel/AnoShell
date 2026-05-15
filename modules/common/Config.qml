@@ -478,6 +478,16 @@ Singleton {
                 property var modulesLeft: []
                 property var modulesCenter: []
                 property var modulesRight: []
+
+                // Weather widget shown in the bar / popout. Distinct from
+                // top-level weather (which controls the provider).
+                property JsonObject weather: JsonObject {
+                    property bool enable: false
+                    property string city: ""
+                    property bool useUSCS: false
+                    property bool enableGPS: false
+                    property int fetchInterval: 15
+                }
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -555,7 +565,37 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // Weather
+            // Time / Clock / Date
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject time: JsonObject {
+                property string format: "hh:mm"
+                property bool secondPrecision: false
+                property string shortDateFormat: "dd/MM"
+                property string dateFormat: "dddd, dd/MM"
+                property string dateWithYearFormat: "dd/MM/yyyy"
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Battery thresholds
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject battery: JsonObject {
+                property int low: 20
+                property int critical: 10
+                property int suspend: 5
+                property int full: 100
+                property bool automaticSuspend: false
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Resources monitor
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject resources: JsonObject {
+                property int updateInterval: 3000
+                property int historyLength: 60
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Weather provider config (existing — leaves top-level location/unit)
             // ═══════════════════════════════════════════════════════════════
             property JsonObject weather: JsonObject {
                 property string location: "" // empty = auto-detect

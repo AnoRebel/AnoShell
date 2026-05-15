@@ -7,7 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
-import "."
+import qs.modules.displayManager
 
 /**
  * Display Manager — visual monitor configuration overlay.

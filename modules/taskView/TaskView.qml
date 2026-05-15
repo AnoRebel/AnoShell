@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -9,7 +10,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "root:layouts"
+import "root:layouts" as Layouts
 
 /**
  * Task View — separate from AnoView overview.
@@ -132,7 +133,7 @@ Scope {
                             property var _dep2: CompositorService.compositor === "niri" ? NiriService.windows : null
                             values: {
                                 if (areaW <= 0 || areaH <= 0) return []
-                                return LayoutsManager.doLayout(root.layoutAlgorithm, tvRoot.buildWindowList(), areaW, areaH, tvRoot.getActiveAddress())
+                                return Layouts.LayoutsManager.doLayout(root.layoutAlgorithm, tvRoot.buildWindowList(), areaW, areaH, tvRoot.getActiveAddress())
                             }
                         }
 

@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import "root:modules/common/widgets/spectrum"
+import "root:modules/common/widgets/spectrum" as Spectrum
 import qs.services
 
 /**
@@ -197,7 +197,7 @@ Scope {
                         radius: Appearance?.rounding.normal ?? 12
                         color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
 
-                        MirroredSpectrum {
+                        Spectrum.MirroredSpectrum {
                             anchors { fill: parent; margins: 4 }
                             fillColor: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.6)
                             cornerRadius: 3

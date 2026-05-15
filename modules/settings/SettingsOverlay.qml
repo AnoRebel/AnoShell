@@ -7,7 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "."
+import qs.modules.settings
 
 /**
  * Settings overlay — floating panel over the shell.

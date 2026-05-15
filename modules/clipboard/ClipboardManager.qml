@@ -182,7 +182,7 @@ Scope {
                                         StyledText {
                                             visible: isImage
                                             text: displayText
-                                            font.pixelSize: 13; font.style: Font.StyleItalic
+                                            font.pixelSize: 13; font.italic: true
                                             opacity: 0.6; Layout.fillWidth: true
                                         }
 

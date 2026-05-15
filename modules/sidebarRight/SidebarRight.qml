@@ -7,7 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "."
+import qs.modules.sidebarRight
 
 /**
  * Right sidebar — slides in from the right edge.

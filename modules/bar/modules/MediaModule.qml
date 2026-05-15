@@ -1,6 +1,6 @@
 import qs.modules.common
 import qs.modules.common.widgets
-import "root:modules/common/widgets/spectrum"
+import "root:modules/common/widgets/spectrum" as Spectrum
 import qs.services
 import QtQuick
 import QtQuick.Layouts
