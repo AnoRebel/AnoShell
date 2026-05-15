@@ -48,7 +48,8 @@ Scope {
     LazyLoader { active: Config.ready && (Config.options?.bar?.morphingPanels ?? false); component: Loader { source: "root:modules/common/widgets/TopLayerPanel.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────
-    PanelLoader {
+    LazyLoader {
+        active: Config.ready
         component: Loader {
             source: "root:modules/common/FamilyTransitionOverlay.qml"
             onLoaded: {
