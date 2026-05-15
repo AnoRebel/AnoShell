@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.services
-import "root:modules/bar" as Bar
+import qs.modules.bar
 import "."
 /**
  * BarManager — Creates and manages N bars per monitor.
@@ -56,7 +56,7 @@ Scope {
                     // Skip bars that use morphingPanel — those are rendered by TopLayerPanel
                     active: GlobalStates.barOpen && !GlobalStates.screenLocked && !(barLoader.modelData?.morphingPanel ?? false)
 
-                    component: Bar.BarWindow {
+                    component: BarWindow {
                         screen: screenScope.modelData
                         barConfig: barLoader.modelData
                         barIndex: barLoader.index

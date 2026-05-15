@@ -7,7 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
-import "root:modules/displayManager" as DM
+import qs.modules.displayManager
 import "."
 /**
  * Display Manager — visual monitor configuration overlay.
@@ -59,7 +59,7 @@ PanelWindow {
     // ═══════════════════════════════════════════════════════════════════════
     // Content
     // ═══════════════════════════════════════════════════════════════════════
-    DM.DisplayManagerContent {
+    DisplayManagerContent {
         id: content
         anchors.fill: parent
         visible: GlobalStates.displayManagerOpen

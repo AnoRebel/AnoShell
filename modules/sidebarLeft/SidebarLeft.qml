@@ -7,7 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "root:modules/sidebarLeft" as Sb
+import qs.modules.sidebarLeft
 import "."
 /**
  * Left sidebar — slides in from the left edge.
@@ -73,7 +73,7 @@ Scope {
                 focus: GlobalStates.sidebarLeftOpen
                 Keys.onPressed: event => { if (event.key === Qt.Key_Escape) sidebarRoot.hide() }
 
-                sourceComponent: Sb.SidebarLeftContent {}
+                sourceComponent: SidebarLeftContent {}
             }
         }
     }

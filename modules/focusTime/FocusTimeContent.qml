@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.modules.common.widgets
 import qs.services
 import "."
 

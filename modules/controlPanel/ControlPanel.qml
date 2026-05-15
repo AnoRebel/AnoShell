@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import "root:modules/common/widgets/spectrum" as Spectrum
+import qs.modules.common.widgets.spectrum
 import qs.services
 
 /**

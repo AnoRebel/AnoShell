@@ -10,8 +10,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "root:layouts" as Layouts
-
+import qs.layouts
 /**
  * Task View — separate from AnoView overview.
  * Shows only windows on the CURRENT workspace, using the configured
@@ -133,7 +132,7 @@ Scope {
                             property var _dep2: CompositorService.compositor === "niri" ? NiriService.windows : null
                             values: {
                                 if (areaW <= 0 || areaH <= 0) return []
-                                return Layouts.LayoutsManager.doLayout(root.layoutAlgorithm, tvRoot.buildWindowList(), areaW, areaH, tvRoot.getActiveAddress())
+                                return LayoutsManager.doLayout(root.layoutAlgorithm, tvRoot.buildWindowList(), areaW, areaH, tvRoot.getActiveAddress())
                             }
                         }
 

@@ -10,8 +10,8 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import "root:layouts" as Layouts
-import "root:modules/overview" as Ov
+import qs.layouts
+import qs.modules.overview
 import "."
 /**
  * AnoView — Compositor-agnostic window overview with 10 selectable layouts.
@@ -75,7 +75,7 @@ Scope {
                     } else {
                         // Opening
                         if (root.layoutAlgorithm === 'random') {
-                            var layouts = Layouts.LayoutsManager.layoutNames.filter(l => l !== root.lastLayoutAlgorithm)
+                            var layouts = LayoutsManager.layoutNames.filter(l => l !== root.lastLayoutAlgorithm)
                             root.lastLayoutAlgorithm = layouts[Math.floor(Math.random() * layouts.length)]
                         } else {
                             root.lastLayoutAlgorithm = root.layoutAlgorithm
@@ -268,7 +268,7 @@ Scope {
                                     values: {
                                         if (areaW <= 0 || areaH <= 0) return []
                                         var wl = root.buildWindowList(query)
-                                        return Layouts.LayoutsManager.doLayout(algo, wl, areaW, areaH, root.getActiveAddress())
+                                        return LayoutsManager.doLayout(algo, wl, areaW, areaH, root.getActiveAddress())
                                     }
                                 }
 
@@ -276,7 +276,7 @@ Scope {
                                     id: winRepeater
                                     model: windowLayoutModel
 
-                                    delegate: Ov.WindowThumbnail {
+                                    delegate: WindowThumbnail {
                                         hWin: modelData.win
                                         wHandle: hWin?.wayland ?? null
                                         winKey: String(modelData.address ?? modelData.win?.address ?? index)
@@ -297,7 +297,7 @@ Scope {
                                 }
                             }
 
-                            Ov.SearchBox {
+                            SearchBox {
                                 id: searchBox
                                 onTextChanged: text => { root.animateWindows = true; exposeArea.searchText = text }
                             }

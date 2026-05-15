@@ -8,7 +8,7 @@ import Quickshell.Services.Mpris
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import "root:modules/common/widgets/spectrum" as Spectrum
+import qs.modules.common.widgets.spectrum
 import qs.services
 
 /**
@@ -213,7 +213,7 @@ Scope {
                     Layout.fillWidth: true; Layout.preferredHeight: 32
                     active: !SpectrumService.isIdle
                     visible: active
-                    sourceComponent: Spectrum.MirroredSpectrum {
+                    sourceComponent: MirroredSpectrum {
                         fillColor: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.5)
                         cornerRadius: 3
                     }
