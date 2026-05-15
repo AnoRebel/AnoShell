@@ -404,7 +404,6 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject display: JsonObject {
                 property string primaryMonitor: "" // empty = auto (focused screen)
-                property int bezel: 5 // Global gap/margin from screen edges (pixels) for ALL elements
                 property bool respectHyprlandGaps: true // sync bezel with Hyprland gaps_out
             }
 
@@ -412,6 +411,7 @@ Singleton {
             // Appearance
             // ═══════════════════════════════════════════════════════════════
             property JsonObject appearance: JsonObject {
+                property int bezel: 0 // Global gap from screen edges (px) for ALL elements
                 property bool extraBackgroundTint: true
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
 
@@ -603,6 +603,9 @@ Singleton {
         id: userOverrideFileView
         path: root.userOverridePath
         watchChanges: true
+        // Missing file is the expected state for users who haven't
+        // customised anything yet — suppress the read-error noise.
+        printErrors: false
         // Writes go via setText() in _writeUserDelta — never via an adapter.
         onFileChanged: {
             // Echo from our own setText — already applied in memory.

@@ -63,7 +63,9 @@ Singleton {
     property string wallpaperDir: FileUtils.trimFileProtocol(`${root.pictures}/hyprwallpapers`)
 
     // Shell root
-    property string shellRoot: FileUtils.trimFileProtocol(Quickshell.shellRoot)
+    // Quickshell 0.3 renamed shellRoot → shellDir. shellRoot still works but
+    // emits a deprecation warning at load — use shellDir.
+    property string shellRoot: FileUtils.trimFileProtocol(Quickshell.shellDir)
 
     // User avatar locations (common Linux conventions)
     // Priority: ~/.face → AccountsService → ~/.face.icon

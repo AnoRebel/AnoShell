@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import qs.modules.common
 import qs.services
-import qs.panelFamilies
+import "."
 
 /**
  * Hefty Family — Full experience with morphing bar panels.
