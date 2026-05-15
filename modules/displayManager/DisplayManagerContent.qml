@@ -395,7 +395,7 @@ Item {
                                 { resW: 800,  resH: 600,  label: "SVGA", accent: accentRed }
                             ]
                             delegate: Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 48; radius: Appearance.rounding.smallRounding
+                                Layout.fillWidth: true; Layout.preferredHeight: 48; radius: Appearance.rounding.small
                                 property bool isSel: monitorsModel.count > 0 && monitorsModel.get(activeEditIndex).resW === modelData.resW && monitorsModel.get(activeEditIndex).resH === modelData.resH
                                 property color accentColor: modelData.accent
                                 color: isSel ? Qt.alpha(accentColor, 0.15) : (resMa.containsMouse ? window.surface0 : window.mantle)

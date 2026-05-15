@@ -426,19 +426,19 @@ Item {
                     // Daily average
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 200
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         ColumnLayout {
                             anchors.centerIn: parent; spacing: 2
-                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.outline; text: "Daily average" }
+                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.m3outline; text: "Daily average" }
                             StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 20; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
-                            StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 11; color: Appearance.m3colors.outline; text: root.weekRangeStr; visible: root.weekRangeStr !== "" }
+                            StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 11; color: Appearance.m3colors.m3outline; text: root.weekRangeStr; visible: root.weekRangeStr !== "" }
                         }
                     }
 
                     // Total time (hero)
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 300
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         ColumnLayout {
                             anchors.centerIn: parent; spacing: 0
                             StyledText {
@@ -451,7 +451,7 @@ Item {
                     // vs Yesterday
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 200
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         ColumnLayout {
                             anchors.centerIn: parent; spacing: 4
                             RowLayout {
@@ -459,17 +459,17 @@ Item {
                                 visible: !(root.totalSeconds === 0 && root.yesterdaySeconds === 0) && root.totalSeconds !== root.yesterdaySeconds
                                 StyledText {
                                     font.weight: Font.Bold; font.pixelSize: 16
-                                    color: (root.totalSeconds - root.yesterdaySeconds) > 0 ? Appearance.m3colors.error : Appearance.m3colors.primary
+                                    color: (root.totalSeconds - root.yesterdaySeconds) > 0 ? Appearance.m3colors.m3error : Appearance.m3colors.m3primary
                                     text: ((root.totalSeconds - root.yesterdaySeconds) > 0 ? "\u2191 " : "\u2193 ") + root.formatTimeList(Math.abs(root.totalSeconds - root.yesterdaySeconds))
                                 }
                             }
                             StyledText {
-                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 14; color: Appearance.m3colors.outline
+                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 14; color: Appearance.m3colors.m3outline
                                 text: (root.totalSeconds === 0 && root.yesterdaySeconds === 0) ? "No data" : (root.totalSeconds === root.yesterdaySeconds ? "Same time" : "")
                                 visible: (root.totalSeconds === 0 && root.yesterdaySeconds === 0) || root.totalSeconds === root.yesterdaySeconds
                             }
                             StyledText {
-                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.outline
+                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.m3outline
                                 text: "vs yesterday"; visible: !(root.totalSeconds === 0 && root.yesterdaySeconds === 0)
                             }
                         }
@@ -486,7 +486,7 @@ Item {
                     // Week bars
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 400
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         RowLayout {
                             anchors.centerIn: parent; height: parent.height - 32; spacing: 12
                             Repeater {
@@ -504,14 +504,14 @@ Item {
                                         Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 600; easing.type: Easing.OutQuint } }
                                         Rectangle {
                                             anchors.fill: parent; radius: 4
-                                            color: model.isTarget ? Appearance.m3colors.primary : Appearance.colors.colLayer2
+                                            color: model.isTarget ? Appearance.m3colors.m3primary : Appearance.colors.colLayer2
                                             opacity: barMa.containsMouse ? 0.7 : 1.0
                                         }
                                     }
                                     StyledText {
                                         id: dayLbl; anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
                                         font.weight: Font.DemiBold; font.pixelSize: 12
-                                        color: model.isTarget ? Appearance.colors.colOnLayer0 : Appearance.m3colors.outline
+                                        color: model.isTarget ? Appearance.colors.colOnLayer0 : Appearance.m3colors.m3outline
                                         text: model.dayName
                                     }
                                 }
@@ -522,7 +522,7 @@ Item {
                     // Month heatmap
                     Rectangle {
                         Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 300
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         ColumnLayout {
                             anchors.fill: parent; anchors.margins: 12; spacing: 4
                             StyledText {
@@ -538,10 +538,10 @@ Item {
                                         width: 14; height: 14; radius: 3
                                         color: {
                                             if (model.total < 0) return "transparent";
-                                            if (model.isTarget) return Appearance.m3colors.primary;
+                                            if (model.isTarget) return Appearance.m3colors.m3primary;
                                             if (model.total === 0) return Appearance.colors.colLayer2;
                                             let intensity = Math.min(model.total / Math.max(root.maxMonthTotal, 1), 1.0);
-                                            return Qt.alpha(Appearance.m3colors.primary, 0.2 + intensity * 0.8);
+                                            return Qt.alpha(Appearance.m3colors.m3primary, 0.2 + intensity * 0.8);
                                         }
                                         MouseArea {
                                             anchors.fill: parent; cursorShape: model.total >= 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
@@ -557,7 +557,7 @@ Item {
                 // ─── Hourly breakdown ───────────────────────────────────
                 Rectangle {
                     Layout.fillWidth: true; Layout.preferredHeight: 60
-                    radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                    radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                     visible: !root.isWeekView
                     Row {
                         anchors.fill: parent; anchors.margins: 8; spacing: 1
@@ -569,7 +569,7 @@ Item {
                                     anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
                                     width: parent.width; radius: 2
                                     height: Math.max(2, parent.height * (root.hourlyData[index] / Math.max(root.maxHourlyTotal, 1)))
-                                    color: Appearance.m3colors.primary; opacity: 0.6
+                                    color: Appearance.m3colors.m3primary; opacity: 0.6
                                     Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 400; easing.type: Easing.OutQuint } }
                                 }
                             }
@@ -582,7 +582,7 @@ Item {
                             model: 5
                             delegate: StyledText {
                                 Layout.fillWidth: true; horizontalAlignment: index === 0 ? Text.AlignLeft : (index === 4 ? Text.AlignRight : Text.AlignHCenter)
-                                font.pixelSize: 9; color: Appearance.m3colors.outline; text: (index * 6) + ":00"
+                                font.pixelSize: 9; color: Appearance.m3colors.m3outline; text: (index * 6) + ":00"
                             }
                         }
                     }
@@ -599,7 +599,7 @@ Item {
                             model: appListModel
                             delegate: Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 44
-                                radius: Appearance.rounding.smallRounding
+                                radius: Appearance.rounding.small
                                 color: appItemMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                                 Behavior on color { ColorAnimation { duration: 150 } }
                                 MouseArea {
@@ -620,7 +620,7 @@ Item {
                                         fillMode: Image.PreserveAspectFit; visible: model.icon !== ""
                                     }
                                     MaterialSymbol {
-                                        text: "apps"; iconSize: 24; color: Appearance.m3colors.outline
+                                        text: "apps"; iconSize: 24; color: Appearance.m3colors.m3outline
                                         visible: model.icon === ""
                                     }
                                     StyledText {
@@ -633,7 +633,7 @@ Item {
                                         color: Appearance.colors.colLayer2
                                         Rectangle {
                                             width: parent.width * (model.percent / 100); height: parent.height; radius: 3
-                                            color: Appearance.m3colors.primary
+                                            color: Appearance.m3colors.m3primary
                                             Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
                                         }
                                     }
@@ -643,7 +643,7 @@ Item {
                                     }
                                     StyledText {
                                         text: model.percent.toFixed(1) + "%"; font.pixelSize: 11
-                                        color: Appearance.m3colors.outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight
+                                        color: Appearance.m3colors.m3outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight
                                     }
                                 }
                             }
@@ -661,28 +661,28 @@ Item {
                         Layout.fillWidth: true; Layout.preferredHeight: 70; spacing: 16
                         Rectangle {
                             Layout.fillWidth: true; Layout.fillHeight: true
-                            radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                            radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.outline; text: "Peak hours" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Peak hours" }
                                 StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 18; color: Appearance.colors.colOnLayer0; text: root.peakUsageHours }
                             }
                         }
                         Rectangle {
                             Layout.fillWidth: true; Layout.fillHeight: true
-                            radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                            radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.outline; text: "Weekly average" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Weekly average" }
                                 StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 18; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
                             }
                         }
                         Rectangle {
                             Layout.fillWidth: true; Layout.fillHeight: true
-                            radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                            radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.outline; text: "Week range" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Week range" }
                                 StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 14; color: Appearance.colors.colOnLayer0; text: root.weekRangeStr }
                             }
                         }
@@ -691,7 +691,7 @@ Item {
                     // Week heatmap (7x24 grid)
                     Rectangle {
                         Layout.fillWidth: true; Layout.preferredHeight: 180
-                        radius: Appearance.rounding.smallRounding; color: Appearance.colors.colLayer1
+                        radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         Column {
                             anchors.fill: parent; anchors.margins: 12; spacing: 2
                             // Header row
@@ -703,7 +703,7 @@ Item {
                                     delegate: StyledText {
                                         width: (parent.parent.parent.width - 34 - 46) / 24; height: 14
                                         text: index % 3 === 0 ? index.toString() : ""; font.pixelSize: 9
-                                        color: Appearance.m3colors.outline; horizontalAlignment: Text.AlignHCenter
+                                        color: Appearance.m3colors.m3outline; horizontalAlignment: Text.AlignHCenter
                                     }
                                 }
                             }
@@ -715,7 +715,7 @@ Item {
                                     spacing: 2
                                     StyledText {
                                         width: 30; height: 20; text: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dayIdx]
-                                        font.pixelSize: 10; font.weight: Font.DemiBold; color: Appearance.m3colors.outline
+                                        font.pixelSize: 10; font.weight: Font.DemiBold; color: Appearance.m3colors.m3outline
                                         verticalAlignment: Text.AlignVCenter
                                     }
                                     Repeater {
@@ -727,7 +727,7 @@ Item {
                                                 let val = (root.weekHeatmapData[dayIdx] && root.weekHeatmapData[dayIdx][hourIdx]) || 0;
                                                 if (val === 0) return Appearance.colors.colLayer2;
                                                 let intensity = Math.min(val / Math.max(root.maxWeekHour, 1), 1.0);
-                                                return Qt.alpha(Appearance.m3colors.primary, 0.15 + intensity * 0.85);
+                                                return Qt.alpha(Appearance.m3colors.m3primary, 0.15 + intensity * 0.85);
                                             }
                                         }
                                     }
@@ -746,7 +746,7 @@ Item {
                                 model: weekAppListModel
                                 delegate: Rectangle {
                                     Layout.fillWidth: true; Layout.preferredHeight: 40
-                                    radius: Appearance.rounding.smallRounding
+                                    radius: Appearance.rounding.small
                                     color: weekAppMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                                     MouseArea { id: weekAppMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor }
                                     RowLayout {
@@ -758,7 +758,7 @@ Item {
                                         }
                                         StyledText { Layout.fillWidth: true; text: model.name; font.pixelSize: 13; color: Appearance.colors.colOnLayer0; elide: Text.ElideRight }
                                         StyledText { text: root.formatTimeList(model.seconds); font.pixelSize: 13; font.weight: Font.DemiBold; color: Appearance.colors.colOnLayer0 }
-                                        StyledText { text: model.percent.toFixed(1) + "%"; font.pixelSize: 11; color: Appearance.m3colors.outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                        StyledText { text: model.percent.toFixed(1) + "%"; font.pixelSize: 11; color: Appearance.m3colors.m3outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
                                     }
                                 }
                             }
