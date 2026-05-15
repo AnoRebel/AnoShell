@@ -17,8 +17,6 @@ import "."
 PanelWindow {
     id: panel
 
-    WlSessionLock.surface: WlSessionLockSurface {}
-
     anchors {
         rect.x: (panel.screen.width - panelWidth) / 2
         rect.y: (panel.screen.height - panelHeight) / 2

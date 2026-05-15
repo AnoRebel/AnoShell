@@ -339,7 +339,7 @@ Item {
                             visible: root.selectedAppClass !== "" || root.isWeekView
                             color: backMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
                             Behavior on color { ColorAnimation { duration: 150 } }
-                            MaterialSymbol { anchors.centerIn: parent; text: "arrow_back"; size: 20; color: Appearance.colors.colOnLayer0 }
+                            MaterialSymbol { anchors.centerIn: parent; text: "arrow_back"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea {
                                 id: backMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                 onClicked: {
