@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.services
+import "."
 
 /**
  * BarManager — Creates and manages N bars per monitor.

@@ -7,7 +7,7 @@ import Quickshell.Services.Mpris
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.common.widgets.spectrum
+import "root:modules/common/widgets/spectrum"
 import qs.services
 
 /**

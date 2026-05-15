@@ -142,7 +142,8 @@ Scope {
                     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
 
                     RowLayout {
-                        anchors { fill: parent; leftMargin: 16; rightMargin: 16 }; spacing: 10
+                        anchors { fill: parent; leftMargin: 16; rightMargin: 16 }
+                        spacing: 10
                         MaterialSymbol { text: "search"; iconSize: 24; color: Appearance?.colors.colPrimary ?? "#65558F" }
                         StyledTextInput {
                             id: searchInput
@@ -175,7 +176,8 @@ Scope {
                         implicitHeight: calcRow.implicitHeight + 12; radius: Appearance?.rounding.small ?? 8
                         color: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
                         RowLayout {
-                            id: calcRow; anchors { fill: parent; margins: 6 }; spacing: 8
+                            id: calcRow; anchors { fill: parent; margins: 6 }
+                            spacing: 8
                             MaterialSymbol { text: "calculate"; iconSize: 20; color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" }
                             StyledText {
                                 text: `= ${root.calcResult}`
@@ -248,7 +250,8 @@ Scope {
                                 border.color: Appearance?.colors.colPrimary ?? "#65558F"
 
                                 RowLayout {
-                                    anchors { fill: parent; margins: 6 }; spacing: 10
+                                    anchors { fill: parent; margins: 6 }
+                                    spacing: 10
                                     IconImage {
                                         implicitWidth: 32; implicitHeight: 32
                                         source: modelData.icon ? `image://icon/${modelData.icon}` : `image://icon/${modelData.id}`

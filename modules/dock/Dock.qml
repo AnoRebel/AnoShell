@@ -103,8 +103,10 @@ Scope {
                 right: !root.isLeft || !root.isVertical
             }
 
-            implicitWidth: root.isVertical ? (dockHeight + 16) : undefined
-            implicitHeight: root.isVertical ? undefined : (dockHeight + 16)
+            // Vertical bar fixes width, horizontal bar fixes height. 0 = let the
+            // layout system pick the natural axis size.
+            implicitWidth: root.isVertical ? (dockHeight + 16) : 0
+            implicitHeight: root.isVertical ? 0 : (dockHeight + 16)
 
             mask: Region { item: dockBg }
 

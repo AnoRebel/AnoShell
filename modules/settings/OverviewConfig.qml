@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.layouts
+import "root:layouts"
 import qs.services
 
 /**

@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.common.widgets.spectrum
+import "root:modules/common/widgets/spectrum"
 import qs.services
 
 /**
@@ -110,7 +110,8 @@ Scope {
 
                         ColumnLayout {
                             id: sliderCol
-                            anchors { fill: parent; margins: 8 }; spacing: 10
+                            anchors { fill: parent; margins: 8 }
+                            spacing: 10
 
                             RowLayout {
                                 spacing: 8
@@ -124,7 +125,8 @@ Scope {
                                     color: Audio.sink?.audio?.muted ? Appearance?.m3colors.m3error ?? "#BA1A1A" : Appearance?.colors.colPrimary ?? "#65558F"
                                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Audio.toggleMute() }
                                 }
-                                StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Audio.sink?.audio?.volume ?? 0; onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }; stopIndicatorValues: [1] }
+                                StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Audio.sink?.audio?.volume ?? 0; onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }
+                                stopIndicatorValues: [1] }
                             }
                         }
                     }
@@ -138,7 +140,8 @@ Scope {
                             radius: Appearance?.rounding.normal ?? 12
                             color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
                             RowLayout {
-                                id: mediaRow; anchors { fill: parent; margins: 8 }; spacing: 10
+                                id: mediaRow; anchors { fill: parent; margins: 8 }
+                                spacing: 10
                                 MaterialSymbol { text: MprisController.isPlaying ? "music_note" : "pause"; iconSize: 20; fill: 1; color: Appearance?.colors.colPrimary ?? "#65558F" }
                                 ColumnLayout {
                                     Layout.fillWidth: true; spacing: 1

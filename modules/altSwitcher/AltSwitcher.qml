@@ -193,7 +193,8 @@ Scope {
                         implicitHeight: 32; radius: 16
                         color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
                         RowLayout {
-                            anchors { fill: parent; leftMargin: 12; rightMargin: 12 }; spacing: 6
+                            anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                            spacing: 6
                             MaterialSymbol { text: "search"; iconSize: 16; opacity: 0.5 }
                             StyledText { text: root.searchText; font.pixelSize: 14; Layout.fillWidth: true }
                         }
@@ -235,7 +236,8 @@ Scope {
 
                                 RowLayout {
                                     id: windowRow
-                                    anchors { fill: parent; margins: 6 }; spacing: 10
+                                    anchors { fill: parent; margins: 6 }
+                                    spacing: 10
 
                                     // App icon
                                     Rectangle {

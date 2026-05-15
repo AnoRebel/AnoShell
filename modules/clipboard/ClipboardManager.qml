@@ -110,7 +110,8 @@ Scope {
                     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
 
                     RowLayout {
-                        anchors { fill: parent; leftMargin: 14; rightMargin: 14 }; spacing: 8
+                        anchors { fill: parent; leftMargin: 14; rightMargin: 14 }
+                        spacing: 8
                         MaterialSymbol { text: "search"; iconSize: 20; opacity: 0.5 }
                         StyledTextInput {
                             id: clipSearch
@@ -162,7 +163,8 @@ Scope {
 
                                 RowLayout {
                                     id: entryContent
-                                    anchors { fill: parent; margins: 6 }; spacing: 8
+                                    anchors { fill: parent; margins: 6 }
+                                    spacing: 8
 
                                     // Type indicator
                                     MaterialSymbol {

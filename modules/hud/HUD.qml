@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.common.widgets.spectrum
+import "root:modules/common/widgets/spectrum"
 import qs.services
 
 /**
@@ -149,7 +149,8 @@ Scope {
 
                     RowLayout {
                         id: netRow
-                        anchors { fill: parent; margins: 8 }; spacing: 16
+                        anchors { fill: parent; margins: 8 }
+                        spacing: 16
 
                         // Connection
                         RowLayout {
@@ -217,7 +218,8 @@ Scope {
 
                         RowLayout {
                             id: mediaRow
-                            anchors { fill: parent; margins: 8 }; spacing: 10
+                            anchors { fill: parent; margins: 8 }
+                            spacing: 10
 
                             MaterialSymbol {
                                 text: MprisController.isPlaying ? "music_note" : "pause"

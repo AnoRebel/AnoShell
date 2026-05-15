@@ -113,7 +113,8 @@ Scope {
 
                     RowLayout {
                         id: sunRow
-                        anchors { fill: parent; margins: 8 }; spacing: 16
+                        anchors { fill: parent; margins: 8 }
+                        spacing: 16
 
                         RowLayout {
                             Layout.fillWidth: true; spacing: 8

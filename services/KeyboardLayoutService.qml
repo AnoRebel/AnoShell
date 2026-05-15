@@ -101,12 +101,13 @@ Singleton {
         }
     }
 
-    // Niri: poll layout from NiriService
+    // Niri: subscribe to the NiriService.layoutChanged(string) signal.
+    // Previous version referenced a non-existent keyboardLayoutChanged.
     Connections {
         enabled: CompositorService.compositor === "niri"
         target: NiriService
-        function onKeyboardLayoutChanged() {
-            root.currentLayoutName = NiriService.keyboardLayout
+        function onLayoutChanged(layout) {
+            root.currentLayoutName = layout
         }
     }
 

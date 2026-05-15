@@ -10,7 +10,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import qs.layouts
+import "root:layouts"
 import "."
 
 /**

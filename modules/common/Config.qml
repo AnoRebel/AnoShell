@@ -586,6 +586,36 @@ Singleton {
                 property bool confirmLogout: true
                 property bool confirmShutdown: true
             }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Audio protection
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject audio: JsonObject {
+                property JsonObject protection: JsonObject {
+                    property bool enable: true
+                    property int maxAllowedIncrease: 10
+                    property int maxAllowed: 100
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Brightness device override
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject light: JsonObject {
+                property string device: ""
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Interactions (scrolling tuning)
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject interactions: JsonObject {
+                property JsonObject scrolling: JsonObject {
+                    property bool fasterTouchpadScroll: false
+                    property int touchpadScrollFactor: 100
+                    property int mouseScrollFactor: 50
+                    property int mouseScrollDeltaThreshold: 120
+                }
+            }
         }
     }
 

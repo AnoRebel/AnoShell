@@ -7,6 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
+import "."
 
 /**
  * FocusTime Panel — app usage tracker overlay.

@@ -215,6 +215,7 @@ Scope {
 
                 // Progress ring (fills as you hold)
                 Canvas {
+                    id: holdCanvas
                     anchors.fill: parent
                     visible: btn.holdProgress > 0
                     onPaint: {
@@ -227,9 +228,14 @@ Scope {
                         ctx.lineCap = "round"
                         ctx.stroke()
                     }
-                    Connections { target: btn; function onHoldProgressChanged() { parent.children[parent.children.length - 1]?.requestPaint() } }
-                    // Repainting — the Canvas is the last child, access self via requestPaint
-                    onHoldProgressChanged: requestPaint()
+                    // Repaint whenever btn.holdProgress ticks. The earlier
+                    // dual-handler version had an unattached onHoldProgressChanged
+                    // on Canvas (Canvas has no such signal) — Quickshell 0.3
+                    // flagged it. One Connections targeting btn is enough.
+                    Connections {
+                        target: btn
+                        function onHoldProgressChanged() { holdCanvas.requestPaint() }
+                    }
                 }
 
                 // Icon
