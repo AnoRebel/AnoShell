@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import qs.modules.common
 import qs.services
-import "root:panelFamilies"
 
 /**
  * Minimal Family — Lightweight shell.
@@ -13,20 +12,20 @@ Scope {
     id: family
 
     // ─── Core Panels ─────────────────────────────────────────────────────
-    PanelLoader { component: Loader { source: "root:modules/bar/BarManager.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/overview/AnoView.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/notificationPopup/NotificationPopup.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/osd/OSD.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/session/SessionScreen.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/bar/BarManager.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/overview/AnoView.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/notificationPopup/NotificationPopup.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/osd/OSD.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/session/SessionScreen.qml" } }
 
     // ─── Essential Overlays ──────────────────────────────────────────────
-    PanelLoader { component: Loader { source: "root:modules/settings/SettingsOverlay.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/search/Search.qml" } }
-    PanelLoader { component: Loader { source: "root:modules/altSwitcher/AltSwitcher.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/settings/SettingsOverlay.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/search/Search.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/altSwitcher/AltSwitcher.qml" } }
 
     // ─── Conditional ─────────────────────────────────────────────────────
-    PanelLoader { extraCondition: CompositorService.compositor === "niri"; component: Loader { source: "root:modules/lock/LockScreen.qml" } }
+    LazyLoader { active: Config.ready && (CompositorService.compositor === "niri"); component: Loader { source: "root:modules/lock/LockScreen.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────
-    PanelLoader { component: Loader { source: "root:modules/common/FamilyTransitionOverlay.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/common/FamilyTransitionOverlay.qml" } }
 }
