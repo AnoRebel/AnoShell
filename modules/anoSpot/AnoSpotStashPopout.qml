@@ -7,6 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Popout panel anchored beneath/above the AnoSpot pill that lists items

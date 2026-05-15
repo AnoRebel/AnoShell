@@ -5,6 +5,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * BarWindow — A single bar instance on a given screen edge.

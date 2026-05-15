@@ -4,6 +4,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.services
+import "."
 
 /**
  * Appearance settings — elaborate with color preview, bezel visualization,

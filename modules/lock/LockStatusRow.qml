@@ -3,6 +3,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Layouts
+import "."
 
 /**
  * Status row shown above the password input on the lock screen.

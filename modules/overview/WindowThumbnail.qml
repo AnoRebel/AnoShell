@@ -7,6 +7,7 @@ import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
 import qs.modules.common
 import qs.modules.common.widgets
+import "."
 
 /**
  * A single window thumbnail in AnoView. Shows a screencopy capture

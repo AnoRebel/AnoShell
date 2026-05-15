@@ -4,6 +4,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.bar.modules
 import qs.services
+import "."
 
 /**
  * Bar configuration — elaborate settings with visual bar preview,

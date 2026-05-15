@@ -8,6 +8,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import "root:modules/settings" as Pages
+import "."
 /**
  * Settings overlay — floating panel over the shell.
  * Navigation rail on the left, content pages on the right.

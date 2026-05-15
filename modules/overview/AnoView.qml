@@ -12,6 +12,7 @@ import qs.modules.common.widgets
 import qs.services
 import "root:layouts" as Layouts
 import "root:modules/overview" as Ov
+import "."
 /**
  * AnoView — Compositor-agnostic window overview with 10 selectable layouts.
  * Works on both Hyprland (via Hyprland.toplevels) and Niri (via NiriService.windows + ToplevelManager).

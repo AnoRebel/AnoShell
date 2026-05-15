@@ -8,6 +8,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import "root:modules/sidebarLeft" as Sb
+import "."
 /**
  * Left sidebar — slides in from the left edge.
  * Contains notifications center and media player.

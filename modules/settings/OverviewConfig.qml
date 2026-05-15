@@ -4,6 +4,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import "root:layouts" as Layouts
 import qs.services
+import "."
 
 /**
  * AnoView overview settings — elaborate layout selection with visual previews

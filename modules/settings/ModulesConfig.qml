@@ -5,6 +5,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.services
+import "."
 
 /**
  * Modules configuration — master enable/disable panel for every shell module.

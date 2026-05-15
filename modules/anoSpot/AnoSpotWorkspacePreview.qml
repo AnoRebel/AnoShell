@@ -7,6 +7,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import "."
 
 /**
  * Hover-popup showing live thumbnails of windows on the active workspace.

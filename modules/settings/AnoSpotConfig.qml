@@ -4,6 +4,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.services
+import "."
 
 /**
  * AnoSpot settings page — toggle, position selector (4-way), per-widget toggles,

@@ -6,6 +6,7 @@ import Quickshell.Widgets
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Dock settings — elaborate with visual position preview, style selector

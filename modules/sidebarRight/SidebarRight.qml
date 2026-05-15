@@ -8,6 +8,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import "root:modules/sidebarRight" as Sb
+import "."
 /**
  * Right sidebar — slides in from the right edge.
  * Contains quick toggles, sliders, notifications, calendar, system info.

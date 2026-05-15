@@ -8,6 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import "."
 
 /**
  * AI Chat view — the main chat UI in the left sidebar.

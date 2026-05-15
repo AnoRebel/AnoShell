@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Left sidebar content — tabbed view: AI Chat | Notifications + media player.
@@ -158,7 +159,8 @@ Rectangle {
 
                         ColumnLayout {
                             id: mediaCol
-                            anchors { fill: parent; margins: 8 }; spacing: 4
+                            anchors { fill: parent; margins: 8 }
+                            spacing: 4
                             RowLayout {
                                 Layout.fillWidth: true; spacing: 8
                                 StyledText { text: MprisController.activeTrack?.title ?? ""; font.pixelSize: Appearance?.font.pixelSize.small ?? 14; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }

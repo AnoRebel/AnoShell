@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Settings page header — title row with a "Reset this page" button on

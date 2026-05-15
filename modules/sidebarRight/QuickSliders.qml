@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Volume + Brightness sliders, inspired by ilyamiro's battery popup sliders.

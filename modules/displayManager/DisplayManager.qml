@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import qs.modules.common
 import qs.services
 import "root:modules/displayManager" as DM
+import "."
 /**
  * Display Manager — visual monitor configuration overlay.
  * Adapted from ilyamiro's MonitorPopup for Ano Shell.

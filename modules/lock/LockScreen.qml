@@ -8,6 +8,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * Lock screen — only active on Niri (Hyprland uses hyprlock).

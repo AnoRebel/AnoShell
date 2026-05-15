@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.modules.common
 import qs.services
+import "."
 
 /**
  * FocusTime content — the actual UI for the time tracker.

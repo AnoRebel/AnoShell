@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
+import "."
 
 /**
  * Ctrl+K command palette over the Settings UI.

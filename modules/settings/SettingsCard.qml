@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import "."
 
 /**
  * A collapsible settings card with icon, title, subtitle, and expandable content.

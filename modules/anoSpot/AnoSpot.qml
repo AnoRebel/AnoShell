@@ -7,6 +7,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "."
 
 /**
  * AnoSpot — dynamic-island-style overlay aggregating Mpris, Notifications,

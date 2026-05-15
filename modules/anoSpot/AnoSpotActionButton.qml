@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import "."
 
 /**
  * Compact icon+label button used in the AnoSpot stash popout's action

@@ -2,6 +2,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
 import QtQuick.Layouts
+import "."
 
 /**
  * A rounded pill container for bar module groups.

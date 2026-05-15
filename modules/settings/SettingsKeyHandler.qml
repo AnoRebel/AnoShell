@@ -1,5 +1,6 @@
 import QtQuick
 import qs
+import "."
 
 /**
  * Shared keyboard navigation for both Settings shells (overlay + standalone).

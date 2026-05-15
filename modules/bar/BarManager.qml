@@ -7,6 +7,7 @@ import qs
 import qs.modules.common
 import qs.services
 import "root:modules/bar" as Bar
+import "."
 /**
  * BarManager — Creates and manages N bars per monitor.
  * Reads bar definitions from config.json "bars" array.

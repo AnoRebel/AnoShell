@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.modules.common
 import qs.services
+import "."
 
 Item {
     id: window
@@ -198,8 +199,10 @@ Item {
                             anchors.top: standBase.bottom
                             anchors.horizontalCenter: parent.horizontalCenter
                             color: window.mantle; border.color: window.surface0; border.width: 1
-                            Rectangle { width: 24; height: 350; radius: 4; color: window.crust; anchors { top: parent.bottom; topMargin: -5; left: parent.left; leftMargin: 100 }; z: -1 }
-                            Rectangle { width: 24; height: 350; radius: 4; color: window.crust; anchors { top: parent.bottom; topMargin: -5; right: parent.right; rightMargin: 100 }; z: -1 }
+                            Rectangle { width: 24; height: 350; radius: 4; color: window.crust; anchors { top: parent.bottom; topMargin: -5; left: parent.left; leftMargin: 100 }
+                            z: -1 }
+                            Rectangle { width: 24; height: 350; radius: 4; color: window.crust; anchors { top: parent.bottom; topMargin: -5; right: parent.right; rightMargin: 100 }
+                            z: -1 }
                         }
                         Rectangle {
                             id: standBase

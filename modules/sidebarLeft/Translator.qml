@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import qs.modules.sidebarLeft.translator
+import "."
 
 /**
  * Translator widget. Uses `trans` CLI tool (translate-shell) for translation

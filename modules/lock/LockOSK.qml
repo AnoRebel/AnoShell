@@ -3,6 +3,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Layouts
+import "."
 
 /**
  * Minimal on-screen keyboard for the lock screen. Sends synthesized

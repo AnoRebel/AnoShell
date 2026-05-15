@@ -3,6 +3,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Layouts
+import "."
 
 /**
  * Notification list rendered on the lock screen. Subscribes to
