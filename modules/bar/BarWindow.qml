@@ -47,8 +47,11 @@ PanelWindow {
         right: (edge === "right" || !isVertical)
     }
 
-    implicitWidth: isVertical ? effectiveThickness : undefined
-    implicitHeight: isVertical ? undefined : effectiveThickness
+    // Only the thickness axis needs an implicit size; the other axis is
+    // governed by the 3-edge layershell anchors. (undefined → int warns
+    // in Quickshell 0.3.0; 0 is overridden by the anchors anyway.)
+    implicitWidth: isVertical ? effectiveThickness : 0
+    implicitHeight: isVertical ? 0 : effectiveThickness
 
     margins {
         top: (edge !== "top" && !isVertical) ? 0 : globalMargin
@@ -100,8 +103,10 @@ PanelWindow {
                 right: barRoot.isRight || !barRoot.isVertical ? parent.right : undefined
             }
 
-            implicitWidth: barRoot.isVertical ? barRoot.barThickness : undefined
-            implicitHeight: barRoot.isVertical ? undefined : barRoot.barThickness
+            // Thickness axis only; the other is governed by the edge anchors
+            // above (undefined → double warns in Quickshell 0.3.0).
+            implicitWidth: barRoot.isVertical ? barRoot.barThickness : 0
+            implicitHeight: barRoot.isVertical ? 0 : barRoot.barThickness
 
             // Auto-hide slide
             property real hideOffset: barRoot.autoHide && !barRoot.mustShow ? -barRoot.barThickness : 0

@@ -82,7 +82,12 @@ Item {
 
                         Component.onCompleted: {
                             for (let i = contentHolder.data.length - 1; i >= 0; --i) {
-                                contentHolder.data[i].parent = contentContainer;
+                                const child = contentHolder.data[i];
+                                // Only visual items (QQuickItem) expose a `parent`.
+                                // Non-visual children (Connections, Timer, models)
+                                // return undefined and are left in place.
+                                if (child && child.parent !== undefined)
+                                    child.parent = contentContainer;
                             }
                         }
                     }

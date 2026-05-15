@@ -11,6 +11,12 @@ Item {
     id: root
     property bool vertical: false
     property real padding: 5
+    // Background is configurable so callers tune it via properties instead
+    // of injecting a child Rectangle (the default alias routes children into
+    // the inner GridLayout, where anchored items are undefined behavior).
+    property bool showBackground: true
+    property color backgroundColor: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+    property real backgroundRadius: Appearance?.rounding.small ?? 8
     default property alias items: gridLayout.children
 
     implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : (gridLayout.implicitWidth + padding * 2)
@@ -24,8 +30,9 @@ Item {
             leftMargin: root.vertical ? 4 : 0
             rightMargin: root.vertical ? 4 : 0
         }
-        color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-        radius: Appearance?.rounding.small ?? 8
+        visible: root.showBackground
+        color: root.backgroundColor
+        radius: root.backgroundRadius
     }
 
     GridLayout {

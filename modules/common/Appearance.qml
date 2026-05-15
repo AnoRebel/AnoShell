@@ -48,8 +48,15 @@ Singleton {
         return Math.max(0, Math.min(0.22, y)) - 0.12 * (m3colors.darkmode ? 0 : 1);
     }
     property real autoContentTransparency: 0.9
-    property real backgroundTransparency: Config?.options.appearance.transparency.enable ? Config?.options.appearance.transparency.automatic ? autoBackgroundTransparency : Config?.options.appearance.transparency.backgroundTransparency : 0
-    property real contentTransparency: Config?.options.appearance.transparency.automatic ? autoContentTransparency : Config?.options.appearance.transparency.contentTransparency
+    // Optional-chained throughout: during initial load these bindings fire
+    // before Config.options.appearance.transparency is populated, and an
+    // undefined here NaN-poisons the entire colLayer* color pipeline (bar
+    // backgrounds vanish). Default to a fully opaque, non-automatic state.
+    readonly property var _transparency: Config?.options?.appearance?.transparency
+    property real backgroundTransparency: (_transparency?.enable ?? false)
+        ? ((_transparency?.automatic ?? false) ? autoBackgroundTransparency : (_transparency?.backgroundTransparency ?? 0))
+        : 0
+    property real contentTransparency: (_transparency?.automatic ?? false) ? autoContentTransparency : (_transparency?.contentTransparency ?? 0)
 
     // ═══════════════════════════════════════════════════════════════════════
     // Material Design 3 Color Tokens (defaults — overridden by MaterialThemeLoader)

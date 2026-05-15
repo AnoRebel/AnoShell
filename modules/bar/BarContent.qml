@@ -109,8 +109,11 @@ Item {
         Layout.rightMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
         Layout.fillHeight: !isVertical
         Layout.fillWidth: isVertical
-        implicitWidth: isVertical ? undefined : 1
-        implicitHeight: isVertical ? 1 : undefined
+        // The filled axis is driven by Layout.fill*; keep both implicits at a
+        // concrete 1px (assigning undefined to implicitWidth/Height warns and
+        // can zero the dimension in Quickshell 0.3.0).
+        implicitWidth: 1
+        implicitHeight: 1
         color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
         opacity: 0.3
     }
@@ -172,11 +175,12 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     Item {
         id: middleSection
+        // top+bottom already pin the vertical extent; adding verticalCenter
+        // on top of them is an over-specified anchor conflict.
         anchors {
             top: isVertical ? leftSection.bottom : parent.top
             bottom: isVertical ? rightSection.top : parent.bottom
-            horizontalCenter: isVertical ? parent.horizontalCenter : parent.horizontalCenter
-            verticalCenter: isVertical ? undefined : parent.verticalCenter
+            horizontalCenter: parent.horizontalCenter
         }
         implicitWidth: isVertical ? parent.width : centerRow.implicitWidth
         implicitHeight: isVertical ? centerRow.implicitHeight : parent.height
@@ -203,18 +207,11 @@ Item {
                 id: centerGroup
                 padding: root.centerGroupPadding
                 visible: centerModules.length > 0
+                vertical: root.isVertical
 
-                // Override the background color/radius if configured
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.topMargin: isVertical ? 0 : 4
-                    anchors.bottomMargin: isVertical ? 0 : 4
-                    anchors.leftMargin: isVertical ? 4 : 0
-                    anchors.rightMargin: isVertical ? 4 : 0
-                    color: root.showCenterBackground ? (Appearance?.colors.colLayer1 ?? "#E5E1EC") : "transparent"
-                    radius: root.centerGroupRadius
-                    z: -1
-                }
+                showBackground: root.showCenterBackground
+                backgroundColor: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+                backgroundRadius: root.centerGroupRadius
 
                 Repeater {
                     model: root.centerModules
