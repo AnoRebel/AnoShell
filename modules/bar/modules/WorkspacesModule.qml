@@ -48,7 +48,7 @@ Item {
                 if (direction > 0) NiriService.focusWorkspaceDown()
                 else NiriService.focusWorkspaceUp()
             } else {
-                Quickshell.execDetached(["hyprctl", "dispatch", direction > 0 ? "workspace r+1" : "workspace r-1"])
+                Quickshell.execDetached(["hyprctl", "dispatch", direction > 0 ? `hl.dsp.focus({ workspace = "r+1" })` : `hl.dsp.focus({ workspace = "r-1" })`])
             }
         }
         onPressed: (event) => {
@@ -128,7 +128,9 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(index + 1)
-                    else Quickshell.execDetached(["hyprctl", "dispatch", `workspace ${index + 1}`])
+                    // Lua config: `hyprctl dispatch workspace N` is parsed as Lua
+                    // and fails — dispatchers must be hl.dsp.* expressions.
+                    else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${index + 1}" })`])
                 }
                 Rectangle {
                     anchors.centerIn: parent

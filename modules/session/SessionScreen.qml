@@ -123,7 +123,7 @@ Scope {
                             holdDuration: 1200
                             onActivated: {
                                 GlobalStates.sessionOpen = false
-                                if (CompositorService.compositor === "hyprland") Quickshell.execDetached(["hyprctl", "dispatch", "exit"])
+                                if (CompositorService.compositor === "hyprland") Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exit()"])
                                 else Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
                             }
                         }

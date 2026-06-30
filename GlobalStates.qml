@@ -126,7 +126,9 @@ Singleton {
     property real screenZoom: 1
     onScreenZoomChanged: {
         if (!CompositorService.isHyprland) return;
-        Quickshell.execDetached(["hyprctl", "keyword", "cursor:zoom_factor", root.screenZoom.toString()]);
+        // Lua config: `hyprctl keyword …` is rejected by the non-legacy parser;
+        // set the value through hl.config via `hyprctl eval` instead.
+        Quickshell.execDetached(["hyprctl", "eval", `hl.config({ cursor = { zoom_factor = ${root.screenZoom} } })`]);
     }
     Behavior on screenZoom {
         animation: NumberAnimation {

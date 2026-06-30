@@ -213,7 +213,7 @@ Scope {
                                         id: wsMA; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(index + 1)
-                                            else Quickshell.execDetached(["hyprctl", "dispatch", `workspace ${index + 1}`])
+                                            else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${index + 1}" })`])
                                         }
                                     }
                                 }

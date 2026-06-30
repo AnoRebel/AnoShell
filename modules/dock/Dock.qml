@@ -63,7 +63,7 @@ Scope {
             tl.activated = true
             if (CompositorService.compositor === "hyprland") {
                 const addr = tl.HyprlandToplevel?.address ?? ""
-                if (addr) Quickshell.execDetached(["hyprctl", "dispatch", `focuswindow address:0x${addr}`])
+                if (addr) Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ window = "address:0x${addr}" })`])
             } else if (CompositorService.compositor === "niri") {
                 // Niri focus by app-id
                 NiriService.focusWindowByAppId(appId)
