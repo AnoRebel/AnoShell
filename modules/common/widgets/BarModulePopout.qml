@@ -33,9 +33,52 @@ import qs.services
  */
 Item {
     id: root
+    // Fill the host bar module so this item has the icon's geometry; the popup
+    // anchors to it. Without a size it collapses to 0×0 at the module origin and
+    // the popup lands in the screen corner detached from its icon.
+    anchors.fill: parent ? parent : undefined
+
+    // `shown` is the caller's request (typically the bar icon's hover state).
+    // The popup actually stays visible a little longer — while the pointer is
+    // travelling from the icon onto the popup, and while it hovers the popup
+    // itself — so it doesn't flicker open/closed at the icon↔popup boundary.
     property bool shown: false
     property real popupWidth: 280
     property real popupHeight: 200
+
+    // Hover over the popup window itself (reported by the standard mode).
+    property bool popupHovered: false
+    // Grace period after the request drops before the popup hides, covering
+    // the gap between the icon and the popup surface.
+    property int closeDelay: 180
+
+    readonly property bool effectiveShown: root.shown || root.popupHovered || _graceActive
+    property bool _graceActive: false
+
+    onShownChanged: {
+        if (root.shown) {
+            _closeTimer.stop()
+            _graceActive = false
+        } else {
+            _graceActive = true
+            _closeTimer.restart()
+        }
+    }
+    onPopupHoveredChanged: {
+        if (root.popupHovered) {
+            _closeTimer.stop()
+            _graceActive = false
+        } else if (!root.shown) {
+            _graceActive = true
+            _closeTimer.restart()
+        }
+    }
+
+    Timer {
+        id: _closeTimer
+        interval: root.closeDelay
+        onTriggered: root._graceActive = false
+    }
 
     default property alias content: contentContainer.data
 
@@ -51,10 +94,14 @@ Item {
         return false
     }
 
-    // Content container (children go here regardless of mode)
+    // Content container (children go here regardless of mode). It is reparented
+    // into the active mode's content area; once parented somewhere real it must
+    // fill that area and be visible, otherwise the popup shows an empty frame.
     Item {
         id: contentContainer
-        visible: false // Hidden — content is reparented by the active mode
+        anchors.fill: parent ? parent : undefined
+        // Hidden only while still parked on `root` (before a mode reparents it).
+        visible: parent !== root
     }
 
     // ═══ Mode 1: Standard StyledPopup ════════════════════════════════════
@@ -64,16 +111,32 @@ Item {
         anchors.fill: parent
 
         sourceComponent: StyledPopup {
-            shown: root.shown
+            id: styledPopup
+            shown: root.effectiveShown
             popupWidth: root.popupWidth
             popupHeight: root.popupHeight
+            // Anchor explicitly to the popout root (which fills the bar icon)
+            // instead of letting StyledPopup guess via its own `parent`.
+            anchorItem: root
 
-            // Reparent content into the popup
+            // Feed the popup's own hover state back up so the grace logic can
+            // keep it open while the pointer is inside it.
+            Binding {
+                target: root
+                property: "popupHovered"
+                value: styledPopup.popupHovered
+                when: standardLoader.active && standardLoader.item
+            }
+
+            // Reparent the caller's content into StyledPopup's live card sink.
+            // contentParent points at the visible, sized card container once the
+            // popup window has loaded, so the content renders directly with no
+            // second hop or hidden parking item.
             Binding {
                 target: contentContainer
                 property: "parent"
-                value: standardLoader.item ? standardLoader.item.children[0] : contentContainer.parent
-                when: standardLoader.active && standardLoader.item
+                value: styledPopup.contentParent
+                when: standardLoader.active && styledPopup.contentParent
             }
         }
     }
@@ -87,7 +150,7 @@ Item {
         sourceComponent: Item {
             id: morphContainer
 
-            property bool showPopout: root.shown
+            property bool showPopout: root.effectiveShown
             property bool wasShown: false
 
             // Dynamic morph duration (from ilyamiro):

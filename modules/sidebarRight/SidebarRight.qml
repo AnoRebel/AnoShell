@@ -65,7 +65,11 @@ Scope {
                     x: GlobalStates.sidebarRightOpen ? 0 : (root.sidebarWidth + root.globalMargin)
                     Behavior on x {
                         enabled: !root.instantOpen
-                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                        NumberAnimation {
+                            duration: (Appearance?.animationCurves.expressiveDefaultSpatialDuration ?? 500) * (Appearance?.animSpeedMultiplier ?? 1)
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Appearance?.animationCurves.expressiveDefaultSpatial ?? [0.38, 1.21, 0.22, 1.00, 1, 1]
+                        }
                     }
                 }
 
