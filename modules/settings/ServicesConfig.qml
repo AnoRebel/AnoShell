@@ -205,7 +205,7 @@ ColumnLayout {
                     required property var modelData
                     spacing: 4; Layout.fillWidth: true
                     CircularProgress { implicitSize: 36; lineWidth: 3; value: modelData.value; Layout.alignment: Qt.AlignHCenter }
-                    StyledText { text: modelData.text; font.pixelSize: 11; font.family: Appearance?.font.family.mono; Layout.alignment: Qt.AlignHCenter }
+                    StyledText { text: modelData.text; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
                     StyledText { text: modelData.label; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                 }
             }
