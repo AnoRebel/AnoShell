@@ -328,23 +328,51 @@ ColumnLayout {
     SettingsCard {
         icon: "font_download"
         title: "Fonts"
-        subtitle: "Font families used across the shell"
+        subtitle: "Font families used across the shell — pick from installed fonts"
         configKeys: ["appearance.fonts"]
         expanded: false
 
-        ConfigRow {
+        FontPickerRow {
+            label: "Main font"
+            sublabel: "Primary UI text"
+            value: Config.options?.appearance?.fonts?.main ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.main", v)
+        }
+        FontPickerRow {
+            label: "Title font"
+            sublabel: "Headings and large labels"
+            value: Config.options?.appearance?.fonts?.title ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.title", v)
+        }
+        FontPickerRow {
+            label: "Numbers font"
+            sublabel: "Clock, percentages, counters"
+            value: Config.options?.appearance?.fonts?.numbers ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.numbers", v)
+        }
+        FontPickerRow {
+            label: "Monospace font"
+            sublabel: "Code, mono readouts (network speed, etc.)"
+            value: Config.options?.appearance?.fonts?.monospace ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.monospace", v)
+        }
+        FontPickerRow {
+            label: "Reading font"
+            sublabel: "Long-form text (AI chat, notes)"
+            value: Config.options?.appearance?.fonts?.reading ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.reading", v)
+        }
+        FontPickerRow {
             label: "Expressive font"
-            sublabel: "Used for stylized headings and accents"
-            StyledTextInput {
-                text: Config.options?.appearance?.fonts?.expressive ?? "Google Sans Flex"
-                onEditingFinished: Config.setNestedValue("appearance.fonts.expressive", text)
-                Layout.preferredWidth: 200
-            }
+            sublabel: "Stylized headings and accents"
+            value: Config.options?.appearance?.fonts?.expressive ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.expressive", v)
         }
 
         NoticeBox {
-            text: "Other fonts (main, numbers, title, monospace, reading) can be changed in config.json under appearance.fonts."
-            iconName: "info"
+            visible: !FontService.ready
+            text: "Scanning installed fonts…"
+            iconName: "hourglass_empty"
         }
     }
 
