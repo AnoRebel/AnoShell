@@ -554,6 +554,9 @@ hl.window_rule({ match = { class = "^(org.freedesktop.impl.portal.desktop.gtk)$"
 -- target that prefix. The old "ano.*" patterns matched nothing, so no surface
 -- was ever blurred.
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
+-- blur_popups: hover popups are layer-surface popups; decoration:blur:popups
+-- only blurs window popups, so this is needed to blur them.
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur_popups = true })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignorealpha = 0.1 })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = 0 })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
