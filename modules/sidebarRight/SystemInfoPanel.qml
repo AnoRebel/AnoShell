@@ -14,6 +14,8 @@ Rectangle {
     implicitHeight: infoCol.implicitHeight + 20
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+    border.width: 1
+    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
     ColumnLayout {
         id: infoCol
@@ -105,8 +107,12 @@ Rectangle {
         return `${(bytesPerSec / 1024 / 1024).toFixed(1)} MB/s`
     }
 
-    // Circular gauge component
+    // Circular gauge component. References are qualified via `gauge` (the
+    // component root) — bare `parent.value`/`gaugeColor` from nested children
+    // don't reliably resolve to the component instance and left the rings
+    // unfilled / default-coloured.
     component GaugeItem: ColumnLayout {
+        id: gauge
         property string label: ""
         property real value: 0
         property string valueText: ""
@@ -115,20 +121,21 @@ Rectangle {
 
         CircularProgress {
             Layout.alignment: Qt.AlignHCenter
-            implicitSize: 48; lineWidth: 3
-            value: parent.value
-            colPrimary: gaugeColor
+            implicitSize: 48; lineWidth: 4
+            value: gauge.value
+            colPrimary: gauge.gaugeColor
+            colSecondary: Appearance?.colors.colLayer2 ?? "#2B2930"
         }
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            text: valueText
+            text: gauge.valueText
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
             font.weight: Font.DemiBold
             font.family: Appearance?.font.family.mono ?? "monospace"
         }
         StyledText {
             Layout.alignment: Qt.AlignHCenter
-            text: label
+            text: gauge.label
             font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
             opacity: 0.5
         }

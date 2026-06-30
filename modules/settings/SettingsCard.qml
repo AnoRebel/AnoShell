@@ -31,7 +31,11 @@ Rectangle {
     border.width: 1
     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
-    Behavior on implicitHeight { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+    // NOTE: do NOT animate the card root's implicitHeight. The collapse is
+    // already animated by the inner content Item's Behavior on implicitHeight
+    // (below). Animating here too gives the card a second, differently-timed
+    // height animation, so the whole page visibly reflows/"flips" on collapse
+    // instead of just the section sliding shut. Let the root track instantly.
 
     ColumnLayout {
         id: cardColumn
