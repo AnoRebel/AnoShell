@@ -32,9 +32,12 @@ Item {
     implicitWidth: vertical ? buttonSize : (buttonSize * workspacesShown)
     implicitHeight: vertical ? (buttonSize * workspacesShown) : Appearance.sizes.barHeight
 
-    // Scroll to switch workspaces
+    // Scroll to switch workspaces + right-click overview.
+    // MUST sit BELOW the per-workspace Buttons (z:3) — at z:10 it covered them
+    // and ate left-clicks, so clicking a workspace did nothing. Wheel and
+    // right-click still reach it (the Buttons only consume left clicks).
     MouseArea {
-        z: 10
+        z: 0
         anchors.fill: parent
         acceptedButtons: Qt.RightButton
         onWheel: (event) => {
@@ -111,26 +114,28 @@ Item {
         Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
     }
 
-    // Buttons
+    // Per-workspace clickable cells. Plain MouseAreas (not Controls.Button)
+    // own the left-click directly, which avoids the z-order fight that left
+    // the previous Button grid unclickable.
     Grid {
         z: 3; anchors.fill: parent
         columns: vertical ? 1 : workspacesShown; rowSpacing: 0; columnSpacing: 0
         Repeater {
             model: workspacesShown
-            Button {
+            MouseArea {
                 implicitWidth: buttonSize; implicitHeight: vertical ? buttonSize : Appearance.sizes.barHeight
+                acceptedButtons: Qt.LeftButton
+                cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(index + 1)
                     else Quickshell.execDetached(["hyprctl", "dispatch", `workspace ${index + 1}`])
                 }
-                background: Item {
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: buttonSize * 0.18; height: width; radius: width / 2
-                        color: (currentWorkspaceNumber === index + 1)
-                            ? Appearance?.m3colors.m3onPrimary ?? "white"
-                            : (workspaceOccupied[index] ? Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" : Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0")
-                    }
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: buttonSize * 0.18; height: width; radius: width / 2
+                    color: (currentWorkspaceNumber === index + 1)
+                        ? Appearance?.m3colors.m3onPrimary ?? "white"
+                        : (workspaceOccupied[index] ? Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" : Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0")
                 }
             }
         }
