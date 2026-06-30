@@ -28,7 +28,8 @@ Rectangle {
             font.weight: Font.DemiBold
         }
 
-        // CPU + RAM + Battery gauges
+        // CPU + RAM + Swap + Battery gauges — each claims an equal share of the
+        // row (fillWidth + equal preferredWidth) and centres its content.
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -39,6 +40,7 @@ Rectangle {
                 value: ResourceUsage.cpuUsage
                 valueText: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
             }
 
             // RAM
@@ -47,20 +49,23 @@ Rectangle {
                 value: ResourceUsage.memoryUsedPercentage
                 valueText: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
             }
 
-            // Swap
+            // Swap (only when present)
             GaugeItem {
                 label: "Swap"
                 value: ResourceUsage.swapUsedPercentage
                 valueText: ResourceUsage.kbToGbString(ResourceUsage.swapUsed)
                 visible: ResourceUsage.swapTotal > 0
-                Layout.fillWidth: true
+                Layout.fillWidth: visible
+                Layout.preferredWidth: visible ? 1 : 0
             }
 
             // Battery (if laptop)
             Loader {
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 active: Battery.available
                 visible: active
                 sourceComponent: GaugeItem {
@@ -110,9 +115,12 @@ Rectangle {
     // Circular gauge component. References are qualified via `gauge` (the
     // component root) — bare `parent.value`/`gaugeColor` from nested children
     // don't reliably resolve to the component instance and left the rings
-    // unfilled / default-coloured. Each gauge claims an equal share of the row
-    // (preferredWidth 0 + fillWidth) so CPU/RAM/Swap/Battery are evenly spaced
-    // and centred rather than cramped left with battery shoved to the edge.
+    // unfilled / default-coloured.
+    //
+    // Do NOT put Layout.* on this component definition — Layout attached props
+    // belong on the INSTANCE in its parent layout. Putting fillWidth +
+    // preferredWidth:0 here collapsed every gauge to 0 width so the rings piled
+    // up on top of each other. Equal spacing is achieved on the instances below.
     component GaugeItem: ColumnLayout {
         id: gauge
         property string label: ""
@@ -120,8 +128,6 @@ Rectangle {
         property string valueText: ""
         property color gaugeColor: Appearance?.colors.colPrimary ?? "#65558F"
         spacing: 4
-        Layout.fillWidth: true
-        Layout.preferredWidth: 0
 
         CircularProgress {
             Layout.alignment: Qt.AlignHCenter

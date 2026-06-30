@@ -78,29 +78,47 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 10
 
-            // Album art (circular, spinning when playing)
+            // Album art (circular, spinning when playing). The spin targets ONLY
+            // the artwork image — never the Layout-managed Rectangle, since
+            // rotating a layout child corrupts the row's geometry and visibly
+            // tilts the sibling title text. Only spins when real art is present.
             Rectangle {
+                id: artHolder
                 Layout.preferredWidth: 48; Layout.preferredHeight: 48
                 radius: 24
                 color: Appearance?.colors.colLayer2 ?? "#2B2930"
                 clip: true
 
+                readonly property bool hasArt: (MprisController.activeTrack?.artUrl ?? "").length > 0
+
                 StyledImage {
+                    id: artImage
                     anchors.fill: parent
                     source: MprisController.activeTrack?.artUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
+                    visible: artHolder.hasArt
+                    transformOrigin: Item.Center
 
-                    RotationAnimator {
-                        target: parent
+                    RotationAnimator on rotation {
                         from: 0; to: 360; duration: 8000
-                        running: MprisController.isPlaying
+                        running: MprisController.isPlaying && artHolder.hasArt
                         loops: Animation.Infinite
                     }
                 }
 
-                // Vinyl hole
+                // Fallback note icon when there's no artwork.
+                MaterialSymbol {
+                    anchors.centerIn: parent
+                    visible: !artHolder.hasArt
+                    text: "music_note"
+                    iconSize: 22
+                    color: Appearance?.colors.colOnLayer2 ?? "#E6E1E5"
+                }
+
+                // Vinyl hole (only over real art)
                 Rectangle {
                     anchors.centerIn: parent
+                    visible: artHolder.hasArt
                     width: 10; height: 10; radius: 5
                     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
                 }
