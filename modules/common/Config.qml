@@ -415,21 +415,31 @@ Singleton {
                 property bool extraBackgroundTint: true
                 property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
 
+                // Defaults use free/libre, widely-available families so a fresh
+                // install renders correctly without proprietary fonts. Geist
+                // (OFL, Vercel) for UI; JetBrainsMono Nerd Font for mono/icons
+                // (the exact installed family name is "JetBrainsMono NF", NOT
+                // "JetBrains Mono NF"). Users can override per-machine in
+                // ~/.config/anoshell/config.json (e.g. Google Sans).
                 property JsonObject fonts: JsonObject {
-                    property string main: "Google Sans Flex"
-                    property string numbers: "Google Sans Flex"
-                    property string title: "Google Sans Flex"
-                    property string iconNerd: "JetBrains Mono NF"
-                    property string monospace: "JetBrains Mono NF"
+                    property string main: "Geist"
+                    property string numbers: "Geist"
+                    property string title: "Geist"
+                    property string iconNerd: "JetBrainsMono NF"
+                    property string monospace: "JetBrainsMono NF"
                     property string reading: "Readex Pro"
-                    property string expressive: "Space Grotesk"
+                    property string expressive: "Geist"
                 }
 
                 property JsonObject transparency: JsonObject {
                     property bool enable: true
-                    property bool automatic: true // auto-adjust based on wallpaper vibrancy
-                    property real backgroundTransparency: 0.15
-                    property real contentTransparency: 0.9
+                    // Automatic (wallpaper-vibrancy) mode pushed background up to
+                    // ~0.22 and content to 0.9, which made surfaces unreadable.
+                    // Use fixed, modest values — a subtle see-through that reads
+                    // well over the compositor blur, with fully opaque content.
+                    property bool automatic: false
+                    property real backgroundTransparency: 0.08
+                    property real contentTransparency: 0.0
                 }
 
                 property JsonObject colors: JsonObject {
@@ -461,11 +471,42 @@ Singleton {
                 property string position: "top" // top, bottom, left, right
                 property int cornerStyle: 0 // 0: Normal | 1: Floating (adds gaps)
                 property bool verbose: false // verbose mode shows more info in bar modules
+                property bool morphingPanels: false
+                property bool showBackground: true
+                property var screenList: []
                 // autoHide block matches the bundled config shape. Per-bar
                 // `bars[].autoHide` (a plain bool in bars[]) overrides this.
                 property JsonObject autoHide: JsonObject {
                     property bool enable: false
                     property int delay: 1000 // ms
+                }
+
+                property JsonObject workspaces: JsonObject {
+                    property int shown: 10
+                }
+
+                // Global layout defaults; per-bar bars[].* override these.
+                property JsonObject layout: JsonObject {
+                    property int height: 42
+                    property int radius: 12
+                    property int leftSpacing: 8
+                    property int centerSpacing: 4
+                    property int rightSpacing: 8
+                    property int edgePadding: 8
+                    property int centerGroupPadding: 5
+                    property int centerGroupRadius: 8
+                    property bool showCenterBackground: true
+                    property bool showSeparators: false
+                }
+
+                // Default click/scroll actions per section.
+                property JsonObject actions: JsonObject {
+                    property string leftClick: "sidebarLeft"
+                    property string rightClick: "sidebarRight"
+                    property string centerClick: "overview"
+                    property string scrollLeft: "brightness"
+                    property string scrollRight: "volume"
+                    property string scrollCenter: "workspace"
                 }
 
                 // Multi-bar: array of bar definitions per monitor.
@@ -566,6 +607,7 @@ Singleton {
             property JsonObject media: JsonObject {
                 property bool showEqualizer: true
                 property string preferredPlayer: "" // empty = auto
+                property bool filterDuplicatePlayers: true
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -611,8 +653,8 @@ Singleton {
             // Animations
             // ═══════════════════════════════════════════════════════════════
             property JsonObject animations: JsonObject {
-                property bool enabled: true
-                property real speedMultiplier: 1.0 // global speed factor
+                property bool enable: true
+                property real speed: 1.0 // global speed factor
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -650,6 +692,18 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
+            // Night light (colour temperature) — consumed by services/NightLight
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject nightLight: JsonObject {
+                property bool enable: false
+                property string mode: "manual" // "manual" | "auto" (lat/long sunset)
+                property int dayTemp: 6500
+                property int nightTemp: 4000
+                property real latitude: 0
+                property real longitude: 0
+            }
+
+            // ═══════════════════════════════════════════════════════════════
             // Sounds
             // ═══════════════════════════════════════════════════════════════
             property JsonObject sounds: JsonObject {
@@ -673,6 +727,247 @@ Singleton {
                     property int touchpadScrollFactor: 100
                     property int mouseScrollFactor: 50
                     property int mouseScrollDeltaThreshold: 120
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // The following top-level objects mirror keys already present in
+            // config.json. Without a matching schema entry the JsonAdapter
+            // rejects them ("Cannot assign to non-existent property …"), so the
+            // settings pages that read them throw and the features never apply.
+            // ═══════════════════════════════════════════════════════════════
+
+            // Default apps
+            property JsonObject apps: JsonObject {
+                property string terminal: "kitty"
+                property string fileManager: "nemo"
+                property string browser: "zen-browser"
+            }
+
+            // Logged-in user presentation
+            property JsonObject user: JsonObject {
+                property string avatarPath: ""
+            }
+
+            // Preferred shell selector
+            property JsonObject shell: JsonObject {
+                property string preferred: ""
+            }
+
+            // Multi-bar definitions (array of bar configs). Free-form — consumed
+            // by BarManager; keep as a plain list so per-bar keys stay flexible.
+            property var bars: []
+
+            // System tray
+            property JsonObject tray: JsonObject {
+                property bool filterPassive: false
+                property bool invertPinnedItems: false
+                property var pinnedItems: []
+                property bool showItemId: false
+            }
+
+            // Sidebars
+            property JsonObject sidebar: JsonObject {
+                property bool instantOpen: false
+                property bool keepLeftSidebarLoaded: true
+                property bool keepRightSidebarLoaded: true
+                property JsonObject quickSliders: JsonObject {
+                    property bool showBrightness: true
+                    property bool showVolume: true
+                    property bool showMic: false
+                }
+                property JsonObject right: JsonObject {
+                    property var enabledWidgets: [
+                        "systemButtons", "quickSliders", "quickToggles",
+                        "networkDetail", "media", "notifications", "calendar", "systemInfo"
+                    ]
+                }
+            }
+
+            // Dock
+            property JsonObject dock: JsonObject {
+                property bool enable: true
+                property string style: "pill"
+                property string position: "bottom"
+                property int height: 56
+                property int iconSize: 40
+                property bool pinnedOnStartup: false
+                property bool hoverToReveal: true
+                property bool showOnDesktop: true
+                property var screenList: []
+                property var pinnedApps: ["kitty", "nemo", "zen-browser", "brave-browser"]
+            }
+
+            // On-screen display
+            property JsonObject osd: JsonObject {
+                property int timeout: 1500
+                property string position: "bottom"
+                property JsonObject indicators: JsonObject {
+                    property bool volume: true
+                    property bool brightness: true
+                    property bool mic: true
+                    property bool media: true
+                    property bool keyboard: true
+                    property bool network: true
+                }
+            }
+
+            // On-screen keyboard
+            property JsonObject osk: JsonObject {
+                property string layout: ""
+            }
+
+            // Lock screen
+            property JsonObject lock: JsonObject {
+                property bool enable: true
+                property JsonObject notifications: JsonObject {
+                    property bool enable: false
+                    property int maxItems: 5
+                }
+                property JsonObject osk: JsonObject {
+                    property bool enable: false
+                }
+                property JsonObject statusRow: JsonObject {
+                    property bool enable: false
+                }
+                property JsonObject dim: JsonObject {
+                    property bool enable: true
+                    property int idleMs: 30000
+                    property real opacity: 0.6
+                }
+                property JsonObject passwordInput: JsonObject {
+                    property bool expandOnFocus: true
+                }
+            }
+
+            // Screen corners (hot corners)
+            property JsonObject screenCorners: JsonObject {
+                property bool enable: false
+                property int dwellMs: 300
+                property int hitSize: 2
+                property JsonObject actions: JsonObject {
+                    property string topLeft: "sidebarLeftOpen"
+                    property string topRight: "sidebarRightOpen"
+                    property string bottomLeft: "overviewOpen"
+                    property string bottomRight: "settingsOpen"
+                }
+            }
+
+            // Calendar + external sync
+            property JsonObject calendar: JsonObject {
+                property int upcomingDays: 7
+                property JsonObject externalSync: JsonObject {
+                    property bool enable: false
+                    property int refreshMinutes: 15
+                    property var sources: []
+                }
+            }
+
+            // Network usage + hotspot
+            property JsonObject network: JsonObject {
+                property JsonObject usage: JsonObject {
+                    property bool enable: false
+                    property int intervalMs: 1000
+                    property int historyLength: 30
+                }
+                property JsonObject hotspot: JsonObject {
+                    property string ssid: "AnoHotspot"
+                    property string password: ""
+                }
+            }
+
+            // VPN
+            property JsonObject vpn: JsonObject {
+                property bool enable: true
+                property bool notifyOnChange: true
+                property var providers: []
+            }
+
+            // Power profiles
+            property JsonObject powerProfiles: JsonObject {
+                property bool restoreOnStart: true
+                property string preferredProfile: ""
+            }
+
+            // Game mode
+            property JsonObject gameMode: JsonObject {
+                property bool enable: false
+                property int pollIntervalMs: 2000
+            }
+
+            // Focus time tracker
+            property JsonObject focusTime: JsonObject {
+                property bool enable: true
+                property var excludeApps: ["Quickshell", "Locked", "Desktop", "Unknown"]
+            }
+
+            // Display manager
+            property JsonObject displayManager: JsonObject {
+                property bool enable: true
+            }
+
+            // Alt-tab window switcher
+            property JsonObject altSwitcher: JsonObject {
+                property bool enableAnimation: true
+                property int animationDurationMs: 200
+                property bool useMostRecentFirst: true
+                property bool compactStyle: false
+                property real backgroundOpacity: 0.85
+                property int maxVisible: 7
+                property real scrimDim: 0.4
+            }
+
+            // Lyrics
+            property JsonObject lyrics: JsonObject {
+                property bool enable: false
+                property bool visible: true
+                property string backend: "Auto"
+                property string dir: "~/.config/anoshell/lyrics"
+            }
+
+            // AI assistant
+            property JsonObject ai: JsonObject {
+                property string defaultModel: "gemini-2.5-flash"
+                property real temperature: 0.5
+                property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell called Ano. Be concise and use markdown formatting."
+                property var models: ({})
+            }
+
+            // AnoSpot floating media/status pill
+            property JsonObject anoSpot: JsonObject {
+                property bool enable: false
+                property string position: "top"
+                property int widthPx: 420
+                property int heightPx: 36
+                property bool showMpris: true
+                property bool showNotification: true
+                property bool showRecording: true
+                property bool showClockWeather: true
+                property bool showBattery: true
+                property bool showWorkspace: true
+                property int notificationTimeoutMs: 4000
+                property JsonObject actions: JsonObject {
+                    property string leftClick: "mediaControls"
+                    property string rightClick: "controlPanel"
+                    property string middleClick: "anoview"
+                    property string scrollOnMpris: "audio"
+                }
+                property JsonObject eventBorder: JsonObject {
+                    property bool enable: true
+                    property int holdMs: 1500
+                    property var events: ["notification", "track", "recording", "workspace"]
+                }
+                property bool draggable: true
+                property bool acceptDrops: true
+                property string stashDir: ""
+                property var dropTargets: []
+                property bool showLyrics: false
+                property JsonObject workspaceHoverPreview: JsonObject {
+                    property bool enable: true
+                    property int openDelayMs: 200
+                    property int closeDelayMs: 300
+                    property int thumbnailWidth: 180
+                    property int thumbnailHeight: 110
                 }
             }
         }
