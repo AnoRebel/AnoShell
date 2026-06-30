@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -9,18 +10,24 @@ import qs.modules.common.widgets
 import qs.services
 
 /**
- * Workspaces bar module — shows workspace indicators with click-to-switch.
- * Works on both Hyprland and Niri.
+ * Workspaces bar module — dynamic, expandable indicators.
+ *
+ * By default only "interesting" workspaces are shown (occupied ones plus the
+ * current one) for a clean look; a trailing ••• button expands to all
+ * `workspacesShown` slots. Set bar.workspaces.alwaysShowAll to skip the
+ * collapsing behaviour entirely. Works on Hyprland and Niri.
  */
 Item {
     id: root
     property bool vertical: false
 
     readonly property int workspacesShown: Config.options?.bar?.workspaces?.shown ?? 10
+    readonly property bool alwaysShowAll: Config.options?.bar?.workspaces?.alwaysShowAll ?? false
+    property bool expanded: false
+
     readonly property int currentWorkspaceNumber: {
         if (CompositorService.compositor === "niri")
             return NiriService.getCurrentWorkspaceNumber()
-        // Hyprland
         const monitor = Hyprland.monitorFor(root.QsWindow.window?.screen)
         return monitor?.activeWorkspace?.id ?? 1
     }
@@ -29,13 +36,77 @@ Item {
     property int buttonSize: 26
     property real activeMargin: 2
 
-    implicitWidth: vertical ? buttonSize : (buttonSize * workspacesShown)
-    implicitHeight: vertical ? (buttonSize * workspacesShown) : Appearance.sizes.barHeight
+    // The workspace numbers to actually render. Collapsed mode keeps occupied
+    // workspaces and the current one (so you can always see where you are);
+    // expanded / alwaysShowAll modes show every slot 1..workspacesShown.
+    // Explicitly recomputed (not a reactive binding) to avoid a binding loop
+    // between this list, the GridLayout that consumes it, and the geometry it
+    // drives. recomputeVisible() is called from every input that affects it.
+    property var visibleWorkspaces: [1]
+    function recomputeVisible() {
+        if (alwaysShowAll || expanded) {
+            const all = []
+            for (let i = 1; i <= workspacesShown; i++) all.push(i)
+            visibleWorkspaces = all
+            return
+        }
+        const set = {}
+        for (let i = 0; i < workspaceOccupied.length; i++)
+            if (workspaceOccupied[i]) set[i + 1] = true
+        set[currentWorkspaceNumber] = true
+        const out = Object.keys(set).map(n => parseInt(n)).filter(n => n >= 1 && n <= workspacesShown)
+        out.sort((a, b) => a - b)
+        visibleWorkspaces = out.length > 0 ? out : [currentWorkspaceNumber]
+    }
+    onExpandedChanged: recomputeVisible()
+    onAlwaysShowAllChanged: recomputeVisible()
 
-    // Scroll to switch workspaces + right-click overview.
-    // MUST sit BELOW the per-workspace Buttons (z:3) — at z:10 it covered them
-    // and ate left-clicks, so clicking a workspace did nothing. Wheel and
-    // right-click still reach it (the Buttons only consume left clicks).
+    // Whether there are hidden workspaces the ••• button could reveal.
+    readonly property bool hasHidden: !alwaysShowAll && visibleWorkspaces.length < workspacesShown
+
+    // Size from the data (count of visible cells + the expand button), NOT from
+    // wsRow.implicitWidth — wsRow is centered in this Item, so deriving the
+    // Item's size from a centered child forms a binding loop.
+    readonly property int _cellCount: visibleWorkspaces.length + ((hasHidden || expanded) ? 1 : 0)
+    implicitWidth: vertical ? buttonSize : (_cellCount * buttonSize)
+    implicitHeight: vertical ? (_cellCount * buttonSize) : Appearance.sizes.barHeight
+
+    function updateOccupied() {
+        if (CompositorService.compositor === "niri") {
+            const wsList = NiriService.currentOutputWorkspaces || []
+            const windows = NiriService.windows || []
+            const occupiedIds = new Set(windows.map(w => w.workspace_id))
+            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) => {
+                const ws = wsList.find(w => w.idx === i + 1)
+                return ws ? occupiedIds.has(ws.id) : false
+            })
+        } else {
+            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) =>
+                Hyprland.workspaces.values.some(ws => ws.id === i + 1)
+            )
+        }
+        recomputeVisible()
+    }
+
+    function switchTo(n) {
+        if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(n)
+        // Lua Hyprland config: dispatchers must be hl.dsp.* expressions.
+        else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${n}" })`])
+    }
+
+    Component.onCompleted: updateOccupied()
+    Connections {
+        target: CompositorService.compositor === "hyprland" ? Hyprland.workspaces : null
+        function onValuesChanged() { updateOccupied() }
+    }
+    Connections {
+        target: CompositorService.compositor === "niri" ? NiriService : null
+        function onAllWorkspacesChanged() { updateOccupied() }
+        function onWindowsChanged() { updateOccupied() }
+    }
+    onCurrentWorkspaceNumberChanged: { updateOccupied(); recomputeVisible() }
+
+    // Scroll anywhere on the strip to switch; right-click toggles overview.
     MouseArea {
         z: 0
         anchors.fill: parent
@@ -56,89 +127,76 @@ Item {
         }
     }
 
-    function updateOccupied() {
-        if (CompositorService.compositor === "niri") {
-            const wsList = NiriService.currentOutputWorkspaces || []
-            const windows = NiriService.windows || []
-            const occupiedIds = new Set(windows.map(w => w.workspace_id))
-            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) => {
-                const ws = wsList.find(w => w.idx === i + 1)
-                return ws ? occupiedIds.has(ws.id) : false
-            })
-        } else {
-            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) =>
-                Hyprland.workspaces.values.some(ws => ws.id === i + 1)
-            )
-        }
-    }
+    // Dynamic pills laid out in order. Each is its own clickable cell with the
+    // dot indicator; the active one gets a filled pill behind it.
+    GridLayout {
+        id: wsRow
+        z: 3
+        anchors.centerIn: parent
+        flow: vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        columnSpacing: 2
+        rowSpacing: 2
 
-    Component.onCompleted: updateOccupied()
-    Connections {
-        target: CompositorService.compositor === "hyprland" ? Hyprland.workspaces : null
-        function onValuesChanged() { updateOccupied() }
-    }
-    Connections {
-        target: CompositorService.compositor === "niri" ? NiriService : null
-        function onAllWorkspacesChanged() { updateOccupied() }
-        function onWindowsChanged() { updateOccupied() }
-    }
-    onCurrentWorkspaceNumberChanged: updateOccupied()
-
-    // Occupied background
-    Grid {
-        z: 1; anchors.centerIn: parent
-        columns: vertical ? 1 : workspacesShown; rowSpacing: 0; columnSpacing: 0
         Repeater {
-            model: workspacesShown
-            Rectangle {
-                implicitWidth: buttonSize; implicitHeight: buttonSize; radius: width / 2
-                color: Appearance?.m3colors.m3secondaryContainer ?? "#E8DEF8"
-                opacity: (workspaceOccupied[index] && currentWorkspaceNumber !== index + 1) ? 0.6 : 0
-                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-            }
-        }
-    }
-
-    // Active indicator
-    Rectangle {
-        z: 2
-        radius: Appearance?.rounding.full ?? 9999
-        color: Appearance?.colors.colPrimary ?? "#65558F"
-        property int idx: currentWorkspaceNumber - 1
-        x: vertical ? activeMargin : idx * buttonSize + activeMargin
-        y: vertical ? idx * buttonSize + activeMargin : activeMargin
-        implicitWidth: vertical ? (buttonSize - activeMargin * 2) : (buttonSize - activeMargin * 2)
-        implicitHeight: vertical ? (buttonSize - activeMargin * 2) : (buttonSize - activeMargin * 2)
-        anchors.verticalCenter: vertical ? undefined : parent.verticalCenter
-        Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-        Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-    }
-
-    // Per-workspace clickable cells. Plain MouseAreas (not Controls.Button)
-    // own the left-click directly, which avoids the z-order fight that left
-    // the previous Button grid unclickable.
-    Grid {
-        z: 3; anchors.fill: parent
-        columns: vertical ? 1 : workspacesShown; rowSpacing: 0; columnSpacing: 0
-        Repeater {
-            model: workspacesShown
-            MouseArea {
-                implicitWidth: buttonSize; implicitHeight: vertical ? buttonSize : Appearance.sizes.barHeight
+            model: root.visibleWorkspaces
+            delegate: MouseArea {
+                id: cell
+                required property var modelData // the workspace number
+                readonly property bool isActive: root.currentWorkspaceNumber === modelData
+                readonly property bool isOccupied: root.workspaceOccupied[modelData - 1] ?? false
+                implicitWidth: buttonSize
+                implicitHeight: vertical ? buttonSize : Appearance.sizes.barHeight
                 acceptedButtons: Qt.LeftButton
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(index + 1)
-                    // Lua config: `hyprctl dispatch workspace N` is parsed as Lua
-                    // and fails — dispatchers must be hl.dsp.* expressions.
-                    else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${index + 1}" })`])
+                onClicked: root.switchTo(cell.modelData)
+
+                // Active / occupied background pill
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: buttonSize - activeMargin * 2
+                    height: width
+                    radius: width / 2
+                    color: cell.isActive
+                        ? (Appearance?.colors.colPrimary ?? "#65558F")
+                        : (Appearance?.m3colors.m3secondaryContainer ?? "#E8DEF8")
+                    opacity: cell.isActive ? 1 : (cell.isOccupied ? 0.5 : 0)
+                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
+
+                // Dot / number
                 Rectangle {
                     anchors.centerIn: parent
                     width: buttonSize * 0.18; height: width; radius: width / 2
-                    color: (currentWorkspaceNumber === index + 1)
-                        ? Appearance?.m3colors.m3onPrimary ?? "white"
-                        : (workspaceOccupied[index] ? Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" : Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0")
+                    visible: !cell.isActive
+                    color: cell.isOccupied
+                        ? (Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20")
+                        : (Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0")
                 }
+                StyledText {
+                    anchors.centerIn: parent
+                    visible: cell.isActive
+                    text: `${cell.modelData}`
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    font.weight: Font.DemiBold
+                    color: Appearance?.m3colors.m3onPrimary ?? "white"
+                }
+            }
+        }
+
+        // Expand / collapse affordance — only when there are hidden workspaces.
+        MouseArea {
+            visible: root.hasHidden || root.expanded
+            implicitWidth: visible ? Math.round(buttonSize * 0.7) : 0
+            implicitHeight: vertical ? Math.round(buttonSize * 0.7) : Appearance.sizes.barHeight
+            acceptedButtons: Qt.LeftButton
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.expanded = !root.expanded
+            MaterialSymbol {
+                anchors.centerIn: parent
+                text: root.expanded ? "chevron_left" : "more_horiz"
+                iconSize: 16
+                color: Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0"
             }
         }
     }

@@ -483,6 +483,9 @@ Singleton {
 
                 property JsonObject workspaces: JsonObject {
                     property int shown: 10
+                    // When false (default) only occupied + current workspaces
+                    // show, with a ••• button to expand; true shows all `shown`.
+                    property bool alwaysShowAll: false
                 }
 
                 // Global layout defaults; per-bar bars[].* override these.
