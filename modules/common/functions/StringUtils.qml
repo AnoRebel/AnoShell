@@ -56,6 +56,15 @@ Singleton {
         return (value * 100).toFixed(decimals) + "%";
     }
 
+    // Strip inline <img …> tags from notification-style body markup. A plain
+    // Text element can't resolve an img's base URL and logs "Invalid base url
+    // in img tag" for each one; bar/sidebar popups don't render inline images
+    // anyway. Other markup (<b>, <i>, <a>) is left intact.
+    function stripImgTags(str) {
+        if (typeof str !== "string") return "";
+        return str.replace(/<img\b[^>]*>/gi, "");
+    }
+
     // Simple template substitution: replaces {key} with values[key]
     function template(str, values) {
         if (typeof str !== "string") return "";

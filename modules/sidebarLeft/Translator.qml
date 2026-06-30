@@ -153,7 +153,9 @@ Item {
                 id: inputArea
                 anchors { fill: parent; margins: 8 }
                 placeholderText: "Type text to translate..."
-                wrapMode: TextArea.Wrap
+                // StyledTextArea already defaults wrapMode to TextArea.Wrap;
+                // referencing the TextArea enum here needs QtQuick.Controls
+                // imported into this file (it isn't) → ReferenceError.
                 background: null
                 onTextChanged: translateTimer.restart()
             }

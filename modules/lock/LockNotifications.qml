@@ -1,5 +1,6 @@
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import QtQuick
 import QtQuick.Layouts
@@ -87,7 +88,7 @@ ColumnLayout {
                 }
                 StyledText {
                     visible: text.length > 0
-                    text: modelData.body
+                    text: StringUtils.stripImgTags(modelData.body ?? "")
                     font.pixelSize: 11
                     color: "white"
                     opacity: 0.75

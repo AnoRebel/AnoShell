@@ -139,6 +139,7 @@ Item {
                 id: titleText
                 anchors.centerIn: parent; width: parent.width - 16
                 text: hWin?.title ?? ""; color: "white"
+                textFormat: Text.PlainText // window titles are arbitrary text
                 font.pixelSize: thumbContainer.hovered ? 13 : 12
                 elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter
             }

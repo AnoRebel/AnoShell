@@ -1,5 +1,6 @@
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import qs
 import QtQuick
@@ -71,7 +72,7 @@ Item {
                                 ColumnLayout {
                                     Layout.fillWidth: true; spacing: 0
                                     StyledText { text: modelData?.summary ?? ""; font.pixelSize: 12; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                                    StyledText { text: modelData?.body ?? ""; font.pixelSize: 10; opacity: 0.5; elide: Text.ElideRight; maximumLineCount: 1; Layout.fillWidth: true }
+                                    StyledText { text: StringUtils.stripImgTags(modelData?.body ?? ""); font.pixelSize: 10; opacity: 0.5; elide: Text.ElideRight; maximumLineCount: 1; Layout.fillWidth: true }
                                 }
                                 ToolbarButton { iconName: "close"; iconSize: 12; implicitWidth: 20; implicitHeight: 20; onClicked: Notifications.discardNotification(modelData.notificationId) }
                             }

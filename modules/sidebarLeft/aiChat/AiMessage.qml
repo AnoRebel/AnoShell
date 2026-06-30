@@ -16,8 +16,9 @@ Rectangle {
     property var messageData
     property var messageInputField
 
-    anchors.left: parent?.left
-    anchors.right: parent?.right
+    // Width is governed by the parent ColumnLayout (the usage site sets
+    // Layout.fillWidth: true). Don't also anchor left/right — anchors on a
+    // layout-managed item are undefined behavior in Qt 6 and log a warning.
     implicitHeight: columnLayout.implicitHeight + 14
 
     radius: Appearance?.rounding.normal ?? 12
