@@ -64,11 +64,13 @@ Rectangle {
 
             // Battery (if laptop)
             Loader {
+                id: batteryLoader
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 active: Battery.available
                 visible: active
                 sourceComponent: GaugeItem {
+                    anchors.fill: parent ? parent : undefined
                     label: Battery.isCharging ? "Charging" : "Battery"
                     value: Battery.percentage
                     valueText: `${Math.round(Battery.percentage * 100)}%`
@@ -121,33 +123,46 @@ Rectangle {
     // belong on the INSTANCE in its parent layout. Putting fillWidth +
     // preferredWidth:0 here collapsed every gauge to 0 width so the rings piled
     // up on top of each other. Equal spacing is achieved on the instances below.
-    component GaugeItem: ColumnLayout {
+    // A gauge is an Item that fills its row slot and CENTRES a column of
+    // ring+value+label inside it. Being a plain Item (not a ColumnLayout) it
+    // centres identically whether it's a direct RowLayout child or nested in a
+    // Loader (the Battery case) — fixing the "3 bunched left, battery far right"
+    // clustering. Its implicit size comes from the inner column so the row can
+    // still size itself when not given extra width.
+    component GaugeItem: Item {
         id: gauge
         property string label: ""
         property real value: 0
         property string valueText: ""
         property color gaugeColor: Appearance?.colors.colPrimary ?? "#65558F"
-        spacing: 4
+        implicitWidth: gaugeCol.implicitWidth
+        implicitHeight: gaugeCol.implicitHeight
 
-        CircularProgress {
-            Layout.alignment: Qt.AlignHCenter
-            implicitSize: 48; lineWidth: 4
-            value: gauge.value
-            colPrimary: gauge.gaugeColor
-            colSecondary: Appearance?.colors.colLayer2 ?? "#2B2930"
-        }
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            text: gauge.valueText
-            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-            font.weight: Font.DemiBold
-            font.family: Appearance?.font.family.mono ?? "monospace"
-        }
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            text: gauge.label
-            font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
-            opacity: 0.5
+        ColumnLayout {
+            id: gaugeCol
+            anchors.centerIn: parent
+            spacing: 4
+
+            CircularProgress {
+                Layout.alignment: Qt.AlignHCenter
+                implicitSize: 48; lineWidth: 4
+                value: gauge.value
+                colPrimary: gauge.gaugeColor
+                colSecondary: Appearance?.colors.colLayer2 ?? "#2B2930"
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: gauge.valueText
+                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                font.weight: Font.DemiBold
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: gauge.label
+                font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
+                opacity: 0.5
+            }
         }
     }
 }
