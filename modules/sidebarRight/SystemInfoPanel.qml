@@ -110,7 +110,9 @@ Rectangle {
     // Circular gauge component. References are qualified via `gauge` (the
     // component root) — bare `parent.value`/`gaugeColor` from nested children
     // don't reliably resolve to the component instance and left the rings
-    // unfilled / default-coloured.
+    // unfilled / default-coloured. Each gauge claims an equal share of the row
+    // (preferredWidth 0 + fillWidth) so CPU/RAM/Swap/Battery are evenly spaced
+    // and centred rather than cramped left with battery shoved to the edge.
     component GaugeItem: ColumnLayout {
         id: gauge
         property string label: ""
@@ -118,6 +120,8 @@ Rectangle {
         property string valueText: ""
         property color gaugeColor: Appearance?.colors.colPrimary ?? "#65558F"
         spacing: 4
+        Layout.fillWidth: true
+        Layout.preferredWidth: 0
 
         CircularProgress {
             Layout.alignment: Qt.AlignHCenter

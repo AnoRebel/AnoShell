@@ -21,6 +21,58 @@ Rectangle {
         anchors { fill: parent; margins: 8 }
         spacing: 6
 
+        // Source selector — shown when more than one media player is active so
+        // the user can pick which one to control. Sets MprisController's tracked
+        // player; the rest of the card follows MprisController.activePlayer.
+        Flow {
+            Layout.fillWidth: true
+            spacing: 4
+            visible: MprisController.players.length > 1
+
+            Repeater {
+                model: MprisController.players
+                delegate: Rectangle {
+                    id: srcChip
+                    required property var modelData
+                    readonly property bool isActive: MprisController.activePlayer === modelData
+                    readonly property color fg: isActive
+                        ? (Appearance?.m3colors.m3onPrimary ?? "white")
+                        : (Appearance?.colors.colOnLayer2 ?? "#E6E1E5")
+                    implicitWidth: srcRow.implicitWidth + 14
+                    implicitHeight: 24
+                    radius: height / 2
+                    color: isActive
+                        ? (Appearance?.colors.colPrimary ?? "#65558F")
+                        : (Appearance?.colors.colLayer2 ?? "#2B2930")
+
+                    RowLayout {
+                        id: srcRow
+                        anchors.centerIn: parent
+                        spacing: 4
+                        MaterialSymbol {
+                            text: "music_note"
+                            iconSize: 13
+                            color: srcChip.fg
+                        }
+                        StyledText {
+                            text: srcChip.modelData.identity || srcChip.modelData.desktopEntry || "Player"
+                            textFormat: Text.PlainText
+                            font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 90
+                            color: srcChip.fg
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: MprisController.trackedPlayer = srcChip.modelData
+                    }
+                }
+            }
+        }
+
         // Track info row
         RowLayout {
             Layout.fillWidth: true
