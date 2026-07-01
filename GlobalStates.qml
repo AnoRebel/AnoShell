@@ -106,6 +106,22 @@ Singleton {
         return Quickshell.screens[0]
     }
 
+    // Name of the currently focused monitor (compositor-agnostic). Used to open
+    // per-screen overlays (sidebars) only on the active monitor.
+    readonly property string focusedScreenName: {
+        if (CompositorService.compositor === "niri")
+            return NiriService.currentOutput ?? ""
+        return Hyprland.focusedMonitor?.name ?? ""
+    }
+    readonly property var focusedScreen: {
+        const n = focusedScreenName
+        if (n.length > 0) {
+            const s = Quickshell.screens.find(scr => scr.name === n)
+            if (s) return s
+        }
+        return primaryScreen
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Sidebar notification integration
     // ═══════════════════════════════════════════════════════════════════════

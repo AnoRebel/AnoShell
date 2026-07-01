@@ -774,6 +774,9 @@ Singleton {
                 property bool instantOpen: false
                 property bool keepLeftSidebarLoaded: true
                 property bool keepRightSidebarLoaded: true
+                // When true (default), a sidebar opens only on the focused
+                // monitor; false opens it on every monitor at once.
+                property bool onlyOnFocusedMonitor: true
                 property JsonObject quickSliders: JsonObject {
                     property bool showBrightness: true
                     property bool showVolume: true
