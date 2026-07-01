@@ -431,6 +431,15 @@ Singleton {
                     property string expressive: "Geist"
                 }
 
+                // Seamless connected-corner background: draws concave corners
+                // that join the bar to the screen edges so it "flows" from the
+                // shell (noctalia/caelestia-style). Opt-in — the normal bar
+                // background is used when disabled.
+                property JsonObject connectedCorners: JsonObject {
+                    property bool enable: false
+                    property real radius: 18
+                }
+
                 property JsonObject transparency: JsonObject {
                     property bool enable: true
                     // Automatic (wallpaper-vibrancy) mode pushed background up to
