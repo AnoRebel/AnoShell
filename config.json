@@ -23,6 +23,10 @@
     "colors": {
       "materialYou": true,
       "darkMode": true
+    },
+    "connectedCorners": {
+      "enable": false,
+      "radius": 18
     }
   },
   "animations": {

@@ -437,6 +437,46 @@ ColumnLayout {
         }
     }
 
+    // ═══ Connected Corners ═══
+    SettingsCard {
+        icon: "rounded_corner"
+        title: "Connected Corners"
+        subtitle: "Seamless concave corners join the bar to the screen edge"
+        configKeys: ["appearance.connectedCorners"]
+
+        ConfigSwitch {
+            id: ccSwitch
+            label: "Enable connected corners"
+            sublabel: "Draws the bar as if carved from the screen edge (top/bottom bars)"
+            checked: Config.options?.appearance?.connectedCorners?.enable ?? false
+            onCheckedChanged: {
+                Config.setNestedValue("appearance.connectedCorners.enable", checked)
+                // Turn the bars' own background off/on to match — otherwise the
+                // connected background and the bar background stack (double bg).
+                // Write the GLOBAL default (bar.showBackground) so it applies to
+                // every bar; a per-bar bars[N].showBackground would still override
+                // it, but the common case is a single global look.
+                Config.setNestedValue("bar.showBackground", !checked)
+            }
+        }
+
+        ConfigSlider {
+            label: "Corner radius"
+            sublabel: "Size of the concave curve joining the bar to the edge"
+            from: 4; to: 40; stepSize: 1
+            enabled: ccSwitch.checked
+            value: Config.options?.appearance?.connectedCorners?.radius ?? 18
+            onValueChanged: Config.setNestedValue("appearance.connectedCorners.radius", Math.round(value))
+            valueText: `${Math.round(value)}px`
+        }
+
+        NoticeBox {
+            visible: ccSwitch.checked
+            iconName: "info"
+            text: "Best with a top or bottom bar. Vertical bars aren't concave yet."
+        }
+    }
+
     // ═══ Animations ═══
     SettingsCard {
         icon: "animation"
