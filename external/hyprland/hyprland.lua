@@ -571,6 +571,9 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
 -- only blurs window popups, so this is needed to blur them.
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur_popups = true })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignorealpha = 0.1 })
+-- The connected-corner background is a full-screen transparent decorative layer;
+-- blurring the whole layer produces a misplaced blur strip. Exclude it.
+hl.layer_rule({ match = { namespace = "^quickshell:connectedBg$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = 0 })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
 
