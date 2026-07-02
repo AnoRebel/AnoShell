@@ -320,6 +320,19 @@ hl.animation({
 	style = "slidevert",
 })
 
+-- ╶ Layout-aware dispatch helper ──────────────────────────────────────────────
+-- Runs whichever message matches the CURRENT workspace's tiled layout, or a
+-- `default` fallback. Used by the scrolling-layout keybinds below (and safe on
+-- dwindle/master). Defined before first use — Lua locals must precede their use.
+local function layout_bind(bind_table)
+	return function()
+		local ws = hl.get_active_special_workspace() or hl.get_active_workspace()
+		if not ws then return end
+		local msg = bind_table[ws.tiled_layout] or bind_table.default
+		if msg then hl.dispatch(msg) end
+	end
+end
+
 -- ╶ Gestures (touchpad) ───────────────────────────────────────────────────────
 
 hl.gesture({ fingers = 3, direction = "swipe", action = "move" })
@@ -436,12 +449,12 @@ if hl.plugin and hl.plugin.hyprgrass then
 		},
 	})
   hl.plugin.hyprgrass.bind {
-    pattern = {kind = "pinch", fingers = 3, direction = "pinchin"}
-    action = hl.dsp.window.float({ action = "set" })),
+    pattern = {kind = "pinch", fingers = 3, direction = "pinchin"},
+    action = hl.dsp.window.float({ action = "set" }),
   }
   hl.plugin.hyprgrass.bind {
-    pattern = {kind = "pinch", fingers = 3, direction = "pinchout"}
-    action = hl.dsp.window.fullscreen({ mode = "fullscreen", action = "set" })), -- mode: maximized | fullscreen and action: set | unset | toggle
+    pattern = {kind = "pinch", fingers = 3, direction = "pinchout"},
+    action = hl.dsp.window.fullscreen({ mode = "fullscreen", action = "set" }), -- mode: maximized | fullscreen and action: set | unset | toggle
   }
   hl.plugin.hyprgrass.gesture {
     pattern = {kind = "swipe", fingers = 3, direction = "down"},
@@ -630,11 +643,25 @@ hl.bind(
 hl.bind(MAIN_MOD .. " + period", hl.dsp.exec_cmd("wofi-emoji"))
 
 -- Overview plugin
-hl.bind(mainMod .. "+grave", function()
+hl.bind(MAIN_MOD .. " + grave", function()
 	if hl.plugin and hl.plugin.scrolloverview then
 		hl.plugin.scrolloverview.overview("toggle")
 	end
 end) -- can be: toggle, select, off/disable or on/enable
+
+-- ╶ Scrolling-layout navigation (layout-aware) ────────────────────────────────
+-- The built-in `scrolling` layout (assigned to workspaces in SCROLLING_WORKSPACES
+-- near the workspace rules) is column based: horizontal = move between/scroll
+-- columns, vertical = focus within a column. These act only on scrolling
+-- workspaces and fall back sensibly elsewhere via layout_bind (defined above).
+hl.bind(MAIN_MOD .. " + CTRL + right", layout_bind({ scrolling = hl.dsp.layout("move +col") }))
+hl.bind(MAIN_MOD .. " + CTRL + left",  layout_bind({ scrolling = hl.dsp.layout("move -col") }))
+hl.bind(MAIN_MOD .. " + SHIFT + comma",  layout_bind({ scrolling = hl.dsp.layout("swapcol l"), dwindle = hl.dsp.layout("swapsplit") }))
+hl.bind(MAIN_MOD .. " + SHIFT + period", layout_bind({ scrolling = hl.dsp.layout("swapcol r"), dwindle = hl.dsp.layout("togglesplit") }))
+hl.bind(MAIN_MOD .. " + CTRL + f", layout_bind({ scrolling = hl.dsp.layout("fit active") }))
+hl.bind(MAIN_MOD .. " + CTRL + SHIFT + f", layout_bind({ scrolling = hl.dsp.layout("fit visible") }))
+hl.bind(MAIN_MOD .. " + CTRL + up",   layout_bind({ scrolling = hl.dsp.layout("promote") }))
+hl.bind(MAIN_MOD .. " + CTRL + down", layout_bind({ scrolling = hl.dsp.layout("expel") }))
 
 -- ─── Brightness & volume (OSD via QS, brightnessctl/wpctl fallback) ─────────
 -- bindle (locked + repeating) for keys that should fire while the screen
@@ -910,6 +937,21 @@ hl.define_submap("virtual-machine", function()
 	hl.bind(MAIN_MOD .. " + ALT + F1", hl.dsp.exec_cmd("notify-send 'Normal Mode' 'Keybinds re-enabled' -a 'Hyprland'"))
 	hl.bind(MAIN_MOD .. " + ALT + F1", hl.dsp.submap("reset"))
 end)
+
+-- ╶ Dynamic scrolling workspaces (modular) ────────────────────────────────────
+-- Each entry turns a workspace into a 2D scrolling workspace (built-in
+-- `scrolling` layout: horizontal column scroll + vertical intra-column stack).
+-- Add rows to enable it on more workspaces; the scrolling-layout keybinds above
+-- are layout-aware and apply automatically wherever the scrolling layout is used.
+--   workspace = id (string);  direction = "right"|"left"|"down"|"up"
+local SCROLLING_WORKSPACES = {
+	{ workspace = "4", direction = "right" },
+}
+
+for _, ws in ipairs(SCROLLING_WORKSPACES) do
+	hl.workspace_rule({ workspace = ws.workspace, layout = "scrolling" })
+	hl.workspace_rule({ workspace = ws.workspace, layout_opts = { direction = ws.direction } })
+end
 
 -- ╶ User overrides ────────────────────────────────────────────────────────────
 -- Loaded last so they win on any conflict with the defaults above. Each file
