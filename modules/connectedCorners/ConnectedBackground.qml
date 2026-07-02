@@ -39,7 +39,15 @@ Scope {
             screen: modelData
 
             WlrLayershell.namespace: "quickshell:connectedBg"
-            WlrLayershell.layer: WlrLayer.Bottom
+            // MUST be Top (above the wallpaper AND windows) — on Bottom the
+            // corners render behind the wallpaper and are invisible. Noctalia's
+            // MainScreen and caelestia's ContentWindow both draw their corners on
+            // WlrLayer.Top with ExclusionMode.Ignore + all-4 anchors to span the
+            // whole screen. NOTE: while a legacy bar (e.g. waybar) is running it
+            // reserves top space and this window is pushed down; in the real ano
+            // setup nothing reserves that space (ano's bar uses Ignore too), so
+            // this spans the full output and reaches the screen corners.
+            WlrLayershell.layer: WlrLayer.Top
             exclusiveZone: 0
             exclusionMode: ExclusionMode.Ignore
             color: "transparent"
