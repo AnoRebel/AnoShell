@@ -12,7 +12,12 @@ Scope {
     id: family
 
     // ─── Core Panels ─────────────────────────────────────────────────────
-    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/bar/BarManager.qml" } }
+    // Bar: either the classic per-bar windows (BarManager) OR, when connected
+    // corners are enabled, the unified AnoScreen that hosts the bars + rounded
+    // screen corners in one full-screen surface. Exactly one is active.
+    readonly property bool _unified: Config.options?.appearance?.connectedCorners?.enable ?? false
+    LazyLoader { active: Config.ready && !family._unified; component: Loader { source: "root:modules/bar/BarManager.qml" } }
+    LazyLoader { active: Config.ready && family._unified; component: Loader { source: "root:modules/anoScreen/AnoScreen.qml" } }
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/overview/AnoView.qml" } }
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/notificationPopup/NotificationPopup.qml" } }
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/osd/OSD.qml" } }
@@ -46,7 +51,7 @@ Scope {
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/calendar/CalendarPanel.qml" } }
     LazyLoader { active: Config.ready && (CompositorService.compositor === "niri"); component: Loader { source: "root:modules/lock/LockScreen.qml" } }
     LazyLoader { active: Config.ready && (Config.options?.bar?.morphingPanels ?? false); component: Loader { source: "root:modules/common/widgets/TopLayerPanel.qml" } }
-    LazyLoader { active: Config.ready && (Config.options?.appearance?.connectedCorners?.enable ?? false); component: Loader { source: "root:modules/connectedCorners/ConnectedBackground.qml" } }
+    // (ConnectedBackground superseded by AnoScreen, which hosts the corners.)
 
     // ─── Transition ──────────────────────────────────────────────────────
     LazyLoader {
