@@ -435,6 +435,7 @@ ColumnLayout {
 
     // ═══ Event border animation ═══
     SettingsCard {
+        id: eventBorderCard
         icon: "auto_awesome"
         title: "Event border animation"
         subtitle: "Pulsing gradient halo when configured events occur"
@@ -469,33 +470,35 @@ ColumnLayout {
             const idx = current.indexOf(name);
             if (on && idx < 0) current.push(name);
             else if (!on && idx >= 0) current.splice(idx, 1);
+            else return; // No change — writing anyway re-creates the array,
+                         // re-fires _hasEvent → checked → onCheckedChanged loop.
             Config.setNestedValue("anoSpot.eventBorder.events", current);
         }
 
         ConfigSwitch {
             label: "On notification"
-            checked: parent._hasEvent("notification")
+            checked: eventBorderCard._hasEvent("notification")
             enabled: borderEnable.checked
-            onCheckedChanged: parent._setEvent("notification", checked)
+            onCheckedChanged: eventBorderCard._setEvent("notification", checked)
         }
         ConfigSwitch {
             label: "On track change"
-            checked: parent._hasEvent("track")
+            checked: eventBorderCard._hasEvent("track")
             enabled: borderEnable.checked
-            onCheckedChanged: parent._setEvent("track", checked)
+            onCheckedChanged: eventBorderCard._setEvent("track", checked)
         }
         ConfigSwitch {
             label: "On recording start/stop"
-            checked: parent._hasEvent("recording")
+            checked: eventBorderCard._hasEvent("recording")
             enabled: borderEnable.checked
-            onCheckedChanged: parent._setEvent("recording", checked)
+            onCheckedChanged: eventBorderCard._setEvent("recording", checked)
         }
         ConfigSwitch {
             label: "On workspace change"
             sublabel: "Fires often if you switch workspaces frequently"
-            checked: parent._hasEvent("workspace")
+            checked: eventBorderCard._hasEvent("workspace")
             enabled: borderEnable.checked
-            onCheckedChanged: parent._setEvent("workspace", checked)
+            onCheckedChanged: eventBorderCard._setEvent("workspace", checked)
         }
     }
 }

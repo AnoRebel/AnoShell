@@ -27,15 +27,28 @@ Scope {
             required property var modelData
             screen: modelData
 
-            Component.onCompleted: visible = GlobalStates.sidebarRightOpen
+            // Whether THIS per-screen instance should show: the sidebar is open
+            // AND (all-monitors mode, or this is the focused monitor).
+            readonly property bool onFocusedOnly: Config.options?.sidebar?.onlyOnFocusedMonitor ?? true
+            readonly property bool isFocusedScreen: !onFocusedOnly
+                || (modelData?.name && modelData.name === GlobalStates.focusedScreenName)
+            readonly property bool shouldShow: GlobalStates.sidebarRightOpen && isFocusedScreen
+
+            Component.onCompleted: visible = shouldShow
 
             Connections {
                 target: GlobalStates
                 function onSidebarRightOpenChanged() {
-                    if (GlobalStates.sidebarRightOpen) { _closeTimer.stop(); sidebarRoot.visible = true }
+                    if (sidebarRoot.shouldShow) { _closeTimer.stop(); sidebarRoot.visible = true }
                     else if (root.instantOpen) { _closeTimer.stop(); sidebarRoot.visible = false }
                     else _closeTimer.restart()
                 }
+            }
+            // If focus moves between monitors while open, follow it.
+            onShouldShowChanged: {
+                if (shouldShow) { _closeTimer.stop(); visible = true }
+                else if (root.instantOpen) { _closeTimer.stop(); visible = false }
+                else _closeTimer.restart()
             }
             Timer { id: _closeTimer; interval: 300; onTriggered: sidebarRoot.visible = false }
             function hide() { GlobalStates.sidebarRightOpen = false }
@@ -65,7 +78,11 @@ Scope {
                     x: GlobalStates.sidebarRightOpen ? 0 : (root.sidebarWidth + root.globalMargin)
                     Behavior on x {
                         enabled: !root.instantOpen
-                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                        NumberAnimation {
+                            duration: (Appearance?.animationCurves.expressiveDefaultSpatialDuration ?? 500) * (Appearance?.animSpeedMultiplier ?? 1)
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Appearance?.animationCurves.expressiveDefaultSpatial ?? [0.38, 1.21, 0.22, 1.00, 1, 1]
+                        }
                     }
                 }
 

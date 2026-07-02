@@ -46,6 +46,7 @@ Scope {
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/calendar/CalendarPanel.qml" } }
     LazyLoader { active: Config.ready && (CompositorService.compositor === "niri"); component: Loader { source: "root:modules/lock/LockScreen.qml" } }
     LazyLoader { active: Config.ready && (Config.options?.bar?.morphingPanels ?? false); component: Loader { source: "root:modules/common/widgets/TopLayerPanel.qml" } }
+    LazyLoader { active: Config.ready && (Config.options?.appearance?.connectedCorners?.enable ?? false); component: Loader { source: "root:modules/connectedCorners/ConnectedBackground.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────
     LazyLoader {

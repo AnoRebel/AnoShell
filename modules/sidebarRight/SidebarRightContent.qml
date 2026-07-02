@@ -75,10 +75,20 @@ Rectangle {
                     RowLayout {
                         spacing: 4
                         ToolbarButton { iconName: "restart_alt"; iconSize: 18; toolTipText: "Reload shell"; onClicked: Quickshell.reload(true) }
-                        ToolbarButton { iconName: "settings"; iconSize: 18; toolTipText: "Settings" }
+                        ToolbarButton { iconName: "close"; iconSize: 18; toolTipText: "Close"; onClicked: GlobalStates.sidebarRightOpen = false }
+                        ToolbarButton {
+                            iconName: "settings"; iconSize: 18; toolTipText: "Settings"
+                            onClicked: {
+                                GlobalStates.sidebarRightOpen = false
+                                GlobalStates.settingsOpen = true
+                            }
+                        }
                         ToolbarButton {
                             iconName: "power_settings_new"; iconSize: 18; toolTipText: "Session"
-                            onClicked: GlobalStates.sessionOpen = true
+                            onClicked: {
+                                GlobalStates.sidebarRightOpen = false
+                                GlobalStates.sessionOpen = true
+                            }
                         }
                     }
                 }

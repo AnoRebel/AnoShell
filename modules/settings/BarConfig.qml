@@ -554,6 +554,7 @@ ColumnLayout {
 
     // ═══ Click & Scroll Actions ═══
     SettingsCard {
+        id: actionsCard
         icon: "touch_app"
         title: "Click & Scroll Actions"
         subtitle: "What happens when you click or scroll on each bar section"
@@ -595,6 +596,7 @@ ColumnLayout {
             ]
 
             ColumnLayout {
+                id: clickRow
                 required property var modelData
                 Layout.fillWidth: true
                 spacing: 4
@@ -605,14 +607,14 @@ ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 6
                     StyledText {
-                        text: parent.modelData.desc
+                        text: clickRow.modelData.desc
                         font.pixelSize: Appearance?.font.pixelSize.small ?? 13
                         font.weight: Font.DemiBold
                         Layout.fillWidth: true
                     }
                     StyledText {
-                        text: "→ " + _labelFor(actionChoices,
-                            Config.options?.bar?.actions?.[parent.parent.modelData.key] ?? parent.parent.modelData.default_)
+                        text: "→ " + actionsCard._labelFor(actionsCard.actionChoices,
+                            Config.options?.bar?.actions?.[clickRow.modelData.key] ?? clickRow.modelData.default_)
                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                         opacity: 0.7
                     }
@@ -622,9 +624,9 @@ ColumnLayout {
                     Layout.fillWidth: true
                     compact: true
                     itemSpacing: 4
-                    model: actionChoices
-                    current: Config.options?.bar?.actions?.[parent.modelData.key] ?? parent.modelData.default_
-                    onChose: value => Config.setNestedValue(`bar.actions.${parent.modelData.key}`, value)
+                    model: actionsCard.actionChoices
+                    current: Config.options?.bar?.actions?.[clickRow.modelData.key] ?? clickRow.modelData.default_
+                    onChose: value => Config.setNestedValue(`bar.actions.${clickRow.modelData.key}`, value)
                 }
             }
         }
@@ -637,7 +639,7 @@ ColumnLayout {
         ConfigRow {
             label: "Left section scroll"
             ChoiceRow {
-                model: scrollChoices
+                model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollLeft ?? "brightness"
                 onChose: value => Config.setNestedValue("bar.actions.scrollLeft", value)
             }
@@ -645,7 +647,7 @@ ColumnLayout {
         ConfigRow {
             label: "Right section scroll"
             ChoiceRow {
-                model: scrollChoices
+                model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollRight ?? "volume"
                 onChose: value => Config.setNestedValue("bar.actions.scrollRight", value)
             }
@@ -653,7 +655,7 @@ ColumnLayout {
         ConfigRow {
             label: "Center section scroll"
             ChoiceRow {
-                model: scrollChoices
+                model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollCenter ?? "workspace"
                 onChose: value => Config.setNestedValue("bar.actions.scrollCenter", value)
             }

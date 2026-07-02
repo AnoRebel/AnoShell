@@ -66,17 +66,21 @@ PanelWindow {
         id: hoverArea
         anchors.fill: parent
         hoverEnabled: true
+        // Track hover for auto-hide only — must NOT consume button presses, or
+        // it eats every click before it reaches the modules nested inside
+        // (workspaces, tray icons, sidebar buttons all became unclickable).
+        acceptedButtons: Qt.NoButton
 
         Item {
             id: hoverMask
-            anchors.fill: barContent
+            anchors.fill: barContentLoader
         }
 
         // Background
         Rectangle {
             id: barBackground
             anchors {
-                fill: barContent
+                fill: barContentLoader
             }
             visible: barRoot.showBackground
             color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
@@ -90,11 +94,20 @@ PanelWindow {
         }
 
         // Content
-        BarContent {
-            id: barContent
-            barConfig: barRoot.barConfig
-            isVertical: barRoot.isVertical
-            edge: barRoot.edge
+        //
+        // Loaded asynchronously: the bar's content is a deep item tree (3
+        // sections × RowLayout × Repeater × module Loaders, plus the center
+        // BarGroup). Attaching that whole tree synchronously while the
+        // layershell PanelWindow itself is still acquiring its surface drives
+        // a recursive QQuickItemPrivate::refWindow() → null QQuickItem::window()
+        // segfault in Quickshell 0.3.0 / Qt 6.11 (intermittent, ~70% of cold
+        // starts). Deferring instantiation to a later event-loop turn lets the
+        // window finish attaching first, so the content tree attaches to an
+        // already-windowed root. The Loader itself is a cheap, shallow item.
+        Loader {
+            id: barContentLoader
+            asynchronous: true
+            active: true
 
             anchors {
                 top: !barRoot.isBottom ? parent.top : undefined
@@ -103,10 +116,11 @@ PanelWindow {
                 right: barRoot.isRight || !barRoot.isVertical ? parent.right : undefined
             }
 
-            // Thickness axis only; the other is governed by the edge anchors
-            // above (undefined → double warns in Quickshell 0.3.0).
-            implicitWidth: barRoot.isVertical ? barRoot.barThickness : 0
-            implicitHeight: barRoot.isVertical ? 0 : barRoot.barThickness
+            // A Loader's implicit size is read-only (derived from the loaded
+            // item), so drive the thickness axis with explicit width/height.
+            // The other axis is governed by the 3-edge anchors above.
+            width: barRoot.isVertical ? barRoot.barThickness : undefined
+            height: barRoot.isVertical ? undefined : barRoot.barThickness
 
             // Auto-hide slide
             property real hideOffset: barRoot.autoHide && !barRoot.mustShow ? -barRoot.barThickness : 0
@@ -121,6 +135,12 @@ PanelWindow {
             anchors.bottomMargin: edge === "bottom" ? hideOffset : 0
             anchors.leftMargin: edge === "left" ? hideOffset : 0
             anchors.rightMargin: edge === "right" ? hideOffset : 0
+
+            sourceComponent: BarContent {
+                barConfig: barRoot.barConfig
+                isVertical: barRoot.isVertical
+                edge: barRoot.edge
+            }
         }
 
         // Round corner decorators (for edge-hugging bars)
@@ -129,8 +149,8 @@ PanelWindow {
             anchors {
                 left: !barRoot.isVertical ? parent.left : undefined
                 right: !barRoot.isVertical ? parent.right : undefined
-                top: (edge === "top") ? barContent.bottom : undefined
-                bottom: (edge === "bottom") ? barContent.top : undefined
+                top: (edge === "top") ? barContentLoader.bottom : undefined
+                bottom: (edge === "bottom") ? barContentLoader.top : undefined
             }
             height: active ? Appearance.rounding.screenRounding : 0
             sourceComponent: Item {

@@ -29,6 +29,10 @@ Item {
 
         StyledText {
             text: root.windowTitle || root.appId || ""
+            // Window titles are arbitrary external strings; render verbatim so a
+            // '<' or '<img …>' in a title isn't parsed as HTML (which logs
+            // "Invalid base url in img tag").
+            textFormat: Text.PlainText
             font.pixelSize: Appearance?.font.pixelSize.small ?? 14
             color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
             elide: Text.ElideRight

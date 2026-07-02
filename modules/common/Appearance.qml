@@ -233,6 +233,10 @@ Singleton {
             property string iconMaterial: "Material Symbols Rounded"
             property string iconNerd: Config.options.appearance.fonts.iconNerd
             property string monospace: Config.options.appearance.fonts.monospace
+            // Many call sites use `font.family.mono` — alias it to monospace so
+            // they get the configured mono font instead of always hitting their
+            // "monospace" string fallback.
+            property string mono: Config.options.appearance.fonts.monospace
             property string reading: Config.options.appearance.fonts.reading
             property string expressive: Config.options.appearance.fonts.expressive
         }
@@ -280,7 +284,7 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Animation Presets (ready-to-use animation configs with speed multiplier)
     // ═══════════════════════════════════════════════════════════════════════
-    readonly property real animSpeedMultiplier: Config?.options.animations.enabled ? (Config?.options.animations.speedMultiplier ?? 1.0) : 0.001
+    readonly property real animSpeedMultiplier: Config?.options.animations.enable ? (Config?.options.animations.speed ?? 1.0) : 0.001
 
     animation: QtObject {
         property QtObject elementMove: QtObject {

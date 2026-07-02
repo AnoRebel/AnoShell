@@ -31,7 +31,11 @@ Rectangle {
     border.width: 1
     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
-    Behavior on implicitHeight { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+    // NOTE: do NOT animate the card root's implicitHeight. The collapse is
+    // already animated by the inner content Item's Behavior on implicitHeight
+    // (below). Animating here too gives the card a second, differently-timed
+    // height animation, so the whole page visibly reflows/"flips" on collapse
+    // instead of just the section sliding shut. Let the root track instantly.
 
     ColumnLayout {
         id: cardColumn
@@ -83,14 +87,20 @@ Rectangle {
 
                 // Expand/collapse chevron
                 MaterialSymbol {
+                    id: chevron
                     visible: root.collapsible
                     text: root.expanded ? "expand_less" : "expand_more"
                     iconSize: 24
                     color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                    transformOrigin: Item.Center
 
+                    // Spin only the chevron on toggle. NOTE: `target: parent`
+                    // rotated the whole header RowLayout (icon+title+chevron) —
+                    // that was the "flip/rotate the whole page" effect. Target
+                    // the chevron itself.
                     Behavior on text { SequentialAnimation {
-                        NumberAnimation { target: parent; property: "rotation"; to: root.expanded ? -180 : 180; duration: 0 }
-                        NumberAnimation { target: parent; property: "rotation"; to: 0; duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: chevron; property: "rotation"; to: root.expanded ? -180 : 180; duration: 0 }
+                        NumberAnimation { target: chevron; property: "rotation"; to: 0; duration: 200; easing.type: Easing.OutCubic }
                     }}
                 }
             }

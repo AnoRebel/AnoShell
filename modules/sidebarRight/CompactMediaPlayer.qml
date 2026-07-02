@@ -21,34 +21,104 @@ Rectangle {
         anchors { fill: parent; margins: 8 }
         spacing: 6
 
+        // Source selector — shown when more than one media player is active so
+        // the user can pick which one to control. Sets MprisController's tracked
+        // player; the rest of the card follows MprisController.activePlayer.
+        Flow {
+            Layout.fillWidth: true
+            spacing: 4
+            visible: MprisController.players.length > 1
+
+            Repeater {
+                model: MprisController.players
+                delegate: Rectangle {
+                    id: srcChip
+                    required property var modelData
+                    readonly property bool isActive: MprisController.activePlayer === modelData
+                    readonly property color fg: isActive
+                        ? (Appearance?.m3colors.m3onPrimary ?? "white")
+                        : (Appearance?.colors.colOnLayer2 ?? "#E6E1E5")
+                    implicitWidth: srcRow.implicitWidth + 14
+                    implicitHeight: 24
+                    radius: height / 2
+                    color: isActive
+                        ? (Appearance?.colors.colPrimary ?? "#65558F")
+                        : (Appearance?.colors.colLayer2 ?? "#2B2930")
+
+                    RowLayout {
+                        id: srcRow
+                        anchors.centerIn: parent
+                        spacing: 4
+                        MaterialSymbol {
+                            text: "music_note"
+                            iconSize: 13
+                            color: srcChip.fg
+                        }
+                        StyledText {
+                            text: srcChip.modelData.identity || srcChip.modelData.desktopEntry || "Player"
+                            textFormat: Text.PlainText
+                            font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 90
+                            color: srcChip.fg
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: MprisController.trackedPlayer = srcChip.modelData
+                    }
+                }
+            }
+        }
+
         // Track info row
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
-            // Album art (circular, spinning when playing)
+            // Album art (circular, spinning when playing). The spin targets ONLY
+            // the artwork image — never the Layout-managed Rectangle, since
+            // rotating a layout child corrupts the row's geometry and visibly
+            // tilts the sibling title text. Only spins when real art is present.
             Rectangle {
+                id: artHolder
                 Layout.preferredWidth: 48; Layout.preferredHeight: 48
                 radius: 24
                 color: Appearance?.colors.colLayer2 ?? "#2B2930"
                 clip: true
 
+                readonly property bool hasArt: (MprisController.activeTrack?.artUrl ?? "").length > 0
+
                 StyledImage {
+                    id: artImage
                     anchors.fill: parent
                     source: MprisController.activeTrack?.artUrl ?? ""
                     fillMode: Image.PreserveAspectCrop
+                    visible: artHolder.hasArt
+                    transformOrigin: Item.Center
 
-                    RotationAnimator {
-                        target: parent
+                    RotationAnimator on rotation {
                         from: 0; to: 360; duration: 8000
-                        running: MprisController.isPlaying
+                        running: MprisController.isPlaying && artHolder.hasArt
                         loops: Animation.Infinite
                     }
                 }
 
-                // Vinyl hole
+                // Fallback note icon when there's no artwork.
+                MaterialSymbol {
+                    anchors.centerIn: parent
+                    visible: !artHolder.hasArt
+                    text: "music_note"
+                    iconSize: 22
+                    color: Appearance?.colors.colOnLayer2 ?? "#E6E1E5"
+                }
+
+                // Vinyl hole (only over real art)
                 Rectangle {
                     anchors.centerIn: parent
+                    visible: artHolder.hasArt
                     width: 10; height: 10; radius: 5
                     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
                 }

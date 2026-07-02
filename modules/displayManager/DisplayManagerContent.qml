@@ -536,9 +536,12 @@ Item {
                         if (monitorsModel.count === 0) return;
                         if (monitorsModel.count === 1) {
                             let mon = monitorsModel.get(0);
-                            let monitorStr = mon.name + "," + mon.resW + "x" + mon.resH + "@" + mon.rate + ",auto," + mon.sysScale;
+                            // Lua config: `hyprctl keyword monitor …` is rejected
+                            // ("keyword can't work with non-legacy parsers"). Use
+                            // hl.monitor({...}) via `hyprctl eval` instead.
+                            let lua = `hl.monitor({ output = "${mon.name}", mode = "${mon.resW}x${mon.resH}@${mon.rate}", position = "auto", scale = "${mon.sysScale}" })`;
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied: " + mon.resW + "x" + mon.resH + " @ " + mon.rate + "Hz"]);
-                            Quickshell.execDetached(["sh", "-c", "hyprctl keyword monitor " + monitorStr]);
+                            Quickshell.execDetached(["hyprctl", "eval", lua]);
                         } else {
                             let rects = [];
                             for (let i = 0; i < monitorsModel.count; i++) {
@@ -552,15 +555,16 @@ Item {
                             }
                             let finalMinX = 999999, finalMinY = 999999;
                             for (let i = 0; i < rects.length; i++) { if (rects[i].x < finalMinX) finalMinX = rects[i].x; if (rects[i].y < finalMinY) finalMinY = rects[i].y; }
-                            let batchCmds = [], summaryString = "";
+                            let luaCmds = [], summaryString = "";
                             for (let i = 0; i < rects.length; i++) {
                                 let r = rects[i];
                                 r.x = Math.round((r.x - finalMinX) + originalLayoutOriginX);
                                 r.y = Math.round((r.y - finalMinY) + originalLayoutOriginY);
-                                batchCmds.push("keyword monitor " + r.name + "," + r.resW + "x" + r.resH + "@" + r.rate + "," + r.x + "x" + r.y + "," + r.sysScale);
+                                // hl.monitor per display, chained in one eval (Lua config).
+                                luaCmds.push(`hl.monitor({ output = "${r.name}", mode = "${r.resW}x${r.resH}@${r.rate}", position = "${r.x}x${r.y}", scale = "${r.sysScale}" })`);
                                 summaryString += r.name + " ";
                             }
-                            Quickshell.execDetached(["sh", "-c", "hyprctl --batch '" + batchCmds.join(" ; ") + "'"]);
+                            Quickshell.execDetached(["hyprctl", "eval", luaCmds.join("; ")]);
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString]);
                         }
                         GlobalStates.displayManagerOpen = false;

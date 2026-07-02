@@ -15,10 +15,10 @@ Singleton {
     id: root
 
     // Whether animations are globally enabled
-    readonly property bool enabled: Config?.options.animations.enabled ?? true
+    readonly property bool enabled: Config?.options.animations.enable ?? true
 
     // Global speed multiplier (1.0 = normal, 0.5 = double speed, 2.0 = half speed)
-    readonly property real speedMultiplier: enabled ? (Config?.options.animations.speedMultiplier ?? 1.0) : 0.001
+    readonly property real speedMultiplier: enabled ? (Config?.options.animations.speed ?? 1.0) : 0.001
 
     // Convenience: apply speed multiplier to a duration
     function scaledDuration(baseDuration) {

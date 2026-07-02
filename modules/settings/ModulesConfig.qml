@@ -101,7 +101,7 @@ ColumnLayout {
             // category emits a header row + the matching module rows
             // beneath it. Empty categories collapse to nothing.
             model: {
-                const filtered = allModules.filter(modulesCard._matchesQuery)
+                const filtered = modulesCard.allModules.filter(modulesCard._matchesQuery)
                 const cats = []
                 const seen = {}
                 for (const m of filtered) {
@@ -290,6 +290,7 @@ ColumnLayout {
             ]
 
             ColumnLayout {
+                id: cornerRow
                 required property var modelData
                 Layout.fillWidth: true
                 spacing: 4
@@ -297,11 +298,11 @@ ColumnLayout {
                 RowLayout {
                     spacing: 6
                     MaterialSymbol {
-                        text: parent.modelData.icon; iconSize: 16
+                        text: cornerRow.modelData.icon; iconSize: 16
                         color: Appearance?.colors.colSubtext ?? "#CAC4D0"
                     }
                     StyledText {
-                        text: parent.modelData.label
+                        text: cornerRow.modelData.label
                         font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                         font.weight: Font.DemiBold
                     }
@@ -311,9 +312,9 @@ ColumnLayout {
                     Layout.fillWidth: true
                     compact: true
                     itemSpacing: 4
-                    model: cornerActions
-                    current: Config.options?.screenCorners?.actions?.[parent.modelData.corner] ?? ""
-                    onChose: value => Config.setNestedValue(`screenCorners.actions.${parent.modelData.corner}`, value)
+                    model: modulesCard.cornerActions
+                    current: Config.options?.screenCorners?.actions?.[cornerRow.modelData.corner] ?? ""
+                    onChose: value => Config.setNestedValue(`screenCorners.actions.${cornerRow.modelData.corner}`, value)
                 }
             }
         }
@@ -492,6 +493,7 @@ ColumnLayout {
 
     // ═══ Panel Families ═══
     SettingsCard {
+        id: familyCard
         icon: "swap_horiz"
         title: "Panel Families"
         subtitle: "Switch between different shell presets — changes which modules are active"
@@ -528,18 +530,18 @@ ColumnLayout {
             columns: 2; columnSpacing: 10; rowSpacing: 10
 
             Repeater {
-                model: familyDefs
+                model: familyCard.familyDefs
 
                 Rectangle {
                     required property var modelData
                     Layout.fillWidth: true
                     implicitHeight: familyCardCol.implicitHeight + 20
                     radius: Appearance?.rounding.normal ?? 12
-                    color: currentFamily === modelData.id
+                    color: familyCard.currentFamily === modelData.id
                         ? Qt.rgba(modelData.color.r ?? 0.4, modelData.color.g ?? 0.33, modelData.color.b ?? 0.56, 0.15)
                         : Appearance?.colors.colLayer2 ?? "#2B2930"
-                    border.width: currentFamily === modelData.id ? 2 : 1
-                    border.color: currentFamily === modelData.id
+                    border.width: familyCard.currentFamily === modelData.id ? 2 : 1
+                    border.color: familyCard.currentFamily === modelData.id
                         ? modelData.color
                         : Appearance?.colors.colOutlineVariant ?? "#44444488"
 
@@ -563,7 +565,7 @@ ColumnLayout {
                                     anchors.centerIn: parent
                                     text: modelData.icon; iconSize: 18
                                     color: modelData.color
-                                    fill: currentFamily === modelData.id ? 1 : 0
+                                    fill: familyCard.currentFamily === modelData.id ? 1 : 0
                                 }
                             }
                             ColumnLayout {
@@ -572,10 +574,10 @@ ColumnLayout {
                                     text: modelData.name
                                     font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                                     font.weight: Font.DemiBold
-                                    color: currentFamily === modelData.id ? modelData.color : Appearance?.m3colors.m3onBackground ?? "#E6E1E5"
+                                    color: familyCard.currentFamily === modelData.id ? modelData.color : Appearance?.m3colors.m3onBackground ?? "#E6E1E5"
                                 }
                                 Loader {
-                                    active: currentFamily === modelData.id; visible: active
+                                    active: familyCard.currentFamily === modelData.id; visible: active
                                     sourceComponent: StyledText {
                                         text: "Active"
                                         font.pixelSize: 10; color: modelData.color
@@ -599,7 +601,7 @@ ColumnLayout {
                         anchors.fill: parent; hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (currentFamily !== modelData.id) {
+                            if (familyCard.currentFamily !== modelData.id) {
                                 // Use IPC to trigger family transition with animation
                                 Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "panelFamily", "set", modelData.id])
                             }

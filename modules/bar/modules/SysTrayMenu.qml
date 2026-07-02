@@ -25,6 +25,11 @@ PopupWindow {
     color: "transparent"
     property real padding: 8
 
+    // Constrain the input region to the visible menu card. Without a mask the
+    // PopupWindow's input handling is unreliable here and the entries don't
+    // respond to clicks (the menu renders but items aren't actionable).
+    mask: Region { item: popupBackground }
+
     implicitHeight: {
         let result = 0;
         for (let child of stackView.children) {

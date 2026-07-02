@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -62,6 +63,14 @@ Rectangle {
                 toggled: root.currentTab === 2
                 onClicked: root.currentTab = 2
                 Layout.fillWidth: true
+            }
+
+            // Close the sidebar
+            ToolbarButton {
+                iconName: "close"
+                iconSize: 18
+                toolTipText: "Close"
+                onClicked: GlobalStates.sidebarLeftOpen = false
             }
         }
 

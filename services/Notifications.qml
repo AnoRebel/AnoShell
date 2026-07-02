@@ -126,7 +126,12 @@ Singleton {
         id: notifServer
         actionsSupported: true
         bodyHyperlinksSupported: true
-        bodyImagesSupported: true
+        // Inline <img> in body text is not rendered in the compact bar/sidebar
+        // popups (a plain Text element can't resolve the img base URL, which
+        // spams "Invalid base url in img tag" warnings). The separate
+        // notification image hint (imageSupported, shown as the notif icon) is
+        // still honoured.
+        bodyImagesSupported: false
         bodyMarkupSupported: true
         bodySupported: true
         imageSupported: true

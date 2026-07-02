@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import QtQuick
 import QtQuick.Layouts
@@ -78,7 +79,7 @@ Item {
                 }
 
                 StyledText {
-                    text: root.notification?.body ?? ""
+                    text: StringUtils.stripImgTags(root.notification?.body ?? "")
                     font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
                     wrapMode: Text.Wrap
                     maximumLineCount: root.compact ? 2 : 6

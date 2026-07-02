@@ -91,7 +91,7 @@ Item {
                 if (CompositorService.compositor === "niri") {
                     if (isUp) NiriService.focusWorkspaceUp(); else NiriService.focusWorkspaceDown()
                 } else if (CompositorService.compositor === "hyprland") {
-                    Quickshell.execDetached(["hyprctl", "dispatch", isUp ? "workspace r-1" : "workspace r+1"])
+                    Quickshell.execDetached(["hyprctl", "dispatch", isUp ? `hl.dsp.focus({ workspace = "r-1" })` : `hl.dsp.focus({ workspace = "r+1" })`])
                 }
                 break
             case "none": break
@@ -101,27 +101,24 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     // Separator component
     // ═══════════════════════════════════════════════════════════════════
+    // Anchor-positioned (never a Layout child) — Layout.* attached props here
+    // crash Quickshell 0.3.0 via recursive refWindow() during window attach.
     component BarSeparator: Rectangle {
         visible: root.showSeparators
-        Layout.topMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
-        Layout.bottomMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
-        Layout.leftMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
-        Layout.rightMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
-        Layout.fillHeight: !isVertical
-        Layout.fillWidth: isVertical
-        // The filled axis is driven by Layout.fill*; keep both implicits at a
-        // concrete 1px (assigning undefined to implicitWidth/Height warns and
-        // can zero the dimension in Quickshell 0.3.0).
-        implicitWidth: 1
-        implicitHeight: 1
+        width: 1
+        height: 1
         color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
         opacity: 0.3
+        anchors.topMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
+        anchors.bottomMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
+        anchors.leftMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
+        anchors.rightMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
     }
 
     // ═══════════════════════════════════════════════════════════════════
     // LEFT SECTION
     // ═══════════════════════════════════════════════════════════════════
-    MouseArea {
+    Item {
         id: leftSection
         anchors {
             top: parent.top
@@ -129,15 +126,22 @@ Item {
             bottom: isVertical ? undefined : parent.bottom
             right: isVertical ? parent.right : middleSection.left
         }
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onWheel: event => {
-            const delta = event.angleDelta.y
-            if (delta !== 0) performScrollAction(scrollLeftAction, delta > 0)
-        }
-        onClicked: event => {
-            if (event.button === Qt.LeftButton) performClickAction(leftClickAction)
+        // Section click/scroll catcher — sits BEHIND the modules (declared
+        // first → lowest in stacking). Module-level MouseAreas (tray icons,
+        // sidebar buttons, etc.) are later siblings and grab their own clicks;
+        // only clicks on empty section space fall through to this.
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onWheel: event => {
+                const delta = event.angleDelta.y
+                if (delta !== 0) performScrollAction(scrollLeftAction, delta > 0)
+            }
+            onClicked: event => {
+                if (event.button === Qt.LeftButton) performClickAction(leftClickAction)
+            }
         }
 
         RowLayout {
@@ -187,7 +191,10 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            // Only the right button is handled here (centerClickAction). Accepting
+            // the left button too would swallow it before the workspace buttons
+            // layered above could receive the click, making them non-clickable.
+            acceptedButtons: Qt.RightButton
             onWheel: event => {
                 const delta = event.angleDelta.y
                 if (delta !== 0) performScrollAction(scrollCenterAction, delta > 0)
@@ -238,7 +245,7 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     // RIGHT SECTION
     // ═══════════════════════════════════════════════════════════════════
-    MouseArea {
+    Item {
         id: rightSection
         anchors {
             top: isVertical ? undefined : parent.top
@@ -246,15 +253,19 @@ Item {
             left: isVertical ? parent.left : middleSection.right
             right: parent.right
         }
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onWheel: event => {
-            const delta = event.angleDelta.y
-            if (delta !== 0) performScrollAction(scrollRightAction, delta > 0)
-        }
-        onClicked: event => {
-            if (event.button === Qt.LeftButton) performClickAction(rightClickAction)
+        // Section click/scroll catcher behind the modules (see leftSection).
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onWheel: event => {
+                const delta = event.angleDelta.y
+                if (delta !== 0) performScrollAction(scrollRightAction, delta > 0)
+            }
+            onClicked: event => {
+                if (event.button === Qt.LeftButton) performClickAction(rightClickAction)
+            }
         }
 
         RowLayout {

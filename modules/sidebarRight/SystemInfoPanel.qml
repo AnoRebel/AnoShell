@@ -14,6 +14,8 @@ Rectangle {
     implicitHeight: infoCol.implicitHeight + 20
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+    border.width: 1
+    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
     ColumnLayout {
         id: infoCol
@@ -26,7 +28,8 @@ Rectangle {
             font.weight: Font.DemiBold
         }
 
-        // CPU + RAM + Battery gauges
+        // CPU + RAM + Swap + Battery gauges — each claims an equal share of the
+        // row (fillWidth + equal preferredWidth) and centres its content.
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -37,6 +40,7 @@ Rectangle {
                 value: ResourceUsage.cpuUsage
                 valueText: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
             }
 
             // RAM
@@ -45,23 +49,28 @@ Rectangle {
                 value: ResourceUsage.memoryUsedPercentage
                 valueText: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
             }
 
-            // Swap
+            // Swap (only when present)
             GaugeItem {
                 label: "Swap"
                 value: ResourceUsage.swapUsedPercentage
                 valueText: ResourceUsage.kbToGbString(ResourceUsage.swapUsed)
                 visible: ResourceUsage.swapTotal > 0
-                Layout.fillWidth: true
+                Layout.fillWidth: visible
+                Layout.preferredWidth: visible ? 1 : 0
             }
 
             // Battery (if laptop)
             Loader {
+                id: batteryLoader
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 active: Battery.available
                 visible: active
                 sourceComponent: GaugeItem {
+                    anchors.fill: parent ? parent : undefined
                     label: Battery.isCharging ? "Charging" : "Battery"
                     value: Battery.percentage
                     valueText: `${Math.round(Battery.percentage * 100)}%`
@@ -105,32 +114,55 @@ Rectangle {
         return `${(bytesPerSec / 1024 / 1024).toFixed(1)} MB/s`
     }
 
-    // Circular gauge component
-    component GaugeItem: ColumnLayout {
+    // Circular gauge component. References are qualified via `gauge` (the
+    // component root) — bare `parent.value`/`gaugeColor` from nested children
+    // don't reliably resolve to the component instance and left the rings
+    // unfilled / default-coloured.
+    //
+    // Do NOT put Layout.* on this component definition — Layout attached props
+    // belong on the INSTANCE in its parent layout. Putting fillWidth +
+    // preferredWidth:0 here collapsed every gauge to 0 width so the rings piled
+    // up on top of each other. Equal spacing is achieved on the instances below.
+    // A gauge is an Item that fills its row slot and CENTRES a column of
+    // ring+value+label inside it. Being a plain Item (not a ColumnLayout) it
+    // centres identically whether it's a direct RowLayout child or nested in a
+    // Loader (the Battery case) — fixing the "3 bunched left, battery far right"
+    // clustering. Its implicit size comes from the inner column so the row can
+    // still size itself when not given extra width.
+    component GaugeItem: Item {
+        id: gauge
         property string label: ""
         property real value: 0
         property string valueText: ""
         property color gaugeColor: Appearance?.colors.colPrimary ?? "#65558F"
-        spacing: 4
+        implicitWidth: gaugeCol.implicitWidth
+        implicitHeight: gaugeCol.implicitHeight
 
-        CircularProgress {
-            Layout.alignment: Qt.AlignHCenter
-            implicitSize: 48; lineWidth: 3
-            value: parent.value
-            colPrimary: gaugeColor
-        }
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            text: valueText
-            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-            font.weight: Font.DemiBold
-            font.family: Appearance?.font.family.mono ?? "monospace"
-        }
-        StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            text: label
-            font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
-            opacity: 0.5
+        ColumnLayout {
+            id: gaugeCol
+            anchors.centerIn: parent
+            spacing: 4
+
+            CircularProgress {
+                Layout.alignment: Qt.AlignHCenter
+                implicitSize: 48; lineWidth: 4
+                value: gauge.value
+                colPrimary: gauge.gaugeColor
+                colSecondary: Appearance?.colors.colLayer2 ?? "#2B2930"
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: gauge.valueText
+                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                font.weight: Font.DemiBold
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+            StyledText {
+                Layout.alignment: Qt.AlignHCenter
+                text: gauge.label
+                font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10
+                opacity: 0.5
+            }
         }
     }
 }

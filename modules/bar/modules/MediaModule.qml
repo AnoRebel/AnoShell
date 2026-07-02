@@ -28,6 +28,8 @@ Item {
         }
         StyledText {
             text: MprisController.activeTrack?.title ?? ""
+            // Track metadata is arbitrary external text — render verbatim.
+            textFormat: Text.PlainText
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
             color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
             elide: Text.ElideRight; Layout.maximumWidth: 150; Layout.alignment: Qt.AlignVCenter
@@ -62,9 +64,9 @@ Item {
                 }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 2
-                    StyledText { text: MprisController.activeTrack?.title ?? ""; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: MprisController.activeTrack?.artist ?? ""; font.pixelSize: 12; opacity: 0.5; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: MprisController.activeTrack?.album ?? ""; font.pixelSize: 11; opacity: 0.3; visible: (MprisController.activeTrack?.album ?? "").length > 0; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.title ?? ""; textFormat: Text.PlainText; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.artist ?? ""; textFormat: Text.PlainText; font.pixelSize: 12; opacity: 0.5; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.album ?? ""; textFormat: Text.PlainText; font.pixelSize: 11; opacity: 0.3; visible: (MprisController.activeTrack?.album ?? "").length > 0; elide: Text.ElideRight; Layout.fillWidth: true }
                 }
             }
 

@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -170,7 +171,7 @@ Scope {
                                 }
 
                                 StyledText {
-                                    text: modelData?.body ?? ""
+                                    text: StringUtils.stripImgTags(modelData?.body ?? "")
                                     font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                                     wrapMode: Text.Wrap; maximumLineCount: 3
                                     elide: Text.ElideRight; Layout.fillWidth: true

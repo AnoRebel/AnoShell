@@ -106,6 +106,19 @@ Singleton {
         return Quickshell.screens[0]
     }
 
+    // Name of the currently focused monitor (compositor-agnostic; delegated to
+    // CompositorService). Used to open per-screen overlays only on the active
+    // monitor.
+    readonly property string focusedScreenName: CompositorService.focusedMonitorName
+    readonly property var focusedScreen: {
+        const n = focusedScreenName
+        if (n.length > 0) {
+            const s = Quickshell.screens.find(scr => scr.name === n)
+            if (s) return s
+        }
+        return primaryScreen
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Sidebar notification integration
     // ═══════════════════════════════════════════════════════════════════════
@@ -126,7 +139,9 @@ Singleton {
     property real screenZoom: 1
     onScreenZoomChanged: {
         if (!CompositorService.isHyprland) return;
-        Quickshell.execDetached(["hyprctl", "keyword", "cursor:zoom_factor", root.screenZoom.toString()]);
+        // Lua config: `hyprctl keyword …` is rejected by the non-legacy parser;
+        // set the value through hl.config via `hyprctl eval` instead.
+        Quickshell.execDetached(["hyprctl", "eval", `hl.config({ cursor = { zoom_factor = ${root.screenZoom} } })`]);
     }
     Behavior on screenZoom {
         animation: NumberAnimation {

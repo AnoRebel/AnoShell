@@ -42,6 +42,16 @@ Singleton {
             ? (HyprlandData.activeWorkspace.name ?? "")
             : "")
 
+    // Name of the focused monitor (compositor-agnostic). Previously referenced
+    // by Brightness/OSD but never defined — so those silently got `undefined`
+    // and their per-monitor targeting was broken. Hyprland: Hyprland.focusedMonitor;
+    // niri: NiriService.currentOutput.
+    readonly property string focusedMonitorName: isNiri && NiriService
+        ? (NiriService.currentOutput ?? "")
+        : (isHyprland
+            ? (Hyprland.focusedMonitor?.name ?? "")
+            : "")
+
     // ═══════════════════════════════════════════════════════════════════════
     // Sorted toplevels (compositor-aware window list)
     // ═══════════════════════════════════════════════════════════════════════

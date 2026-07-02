@@ -328,23 +328,51 @@ ColumnLayout {
     SettingsCard {
         icon: "font_download"
         title: "Fonts"
-        subtitle: "Font families used across the shell"
+        subtitle: "Font families used across the shell — pick from installed fonts"
         configKeys: ["appearance.fonts"]
         expanded: false
 
-        ConfigRow {
+        FontPickerRow {
+            label: "Main font"
+            sublabel: "Primary UI text"
+            value: Config.options?.appearance?.fonts?.main ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.main", v)
+        }
+        FontPickerRow {
+            label: "Title font"
+            sublabel: "Headings and large labels"
+            value: Config.options?.appearance?.fonts?.title ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.title", v)
+        }
+        FontPickerRow {
+            label: "Numbers font"
+            sublabel: "Clock, percentages, counters"
+            value: Config.options?.appearance?.fonts?.numbers ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.numbers", v)
+        }
+        FontPickerRow {
+            label: "Monospace font"
+            sublabel: "Code, mono readouts (network speed, etc.)"
+            value: Config.options?.appearance?.fonts?.monospace ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.monospace", v)
+        }
+        FontPickerRow {
+            label: "Reading font"
+            sublabel: "Long-form text (AI chat, notes)"
+            value: Config.options?.appearance?.fonts?.reading ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.reading", v)
+        }
+        FontPickerRow {
             label: "Expressive font"
-            sublabel: "Used for stylized headings and accents"
-            StyledTextInput {
-                text: Config.options?.appearance?.fonts?.expressive ?? "Google Sans Flex"
-                onEditingFinished: Config.setNestedValue("appearance.fonts.expressive", text)
-                Layout.preferredWidth: 200
-            }
+            sublabel: "Stylized headings and accents"
+            value: Config.options?.appearance?.fonts?.expressive ?? ""
+            onChosen: v => Config.setNestedValue("appearance.fonts.expressive", v)
         }
 
         NoticeBox {
-            text: "Other fonts (main, numbers, title, monospace, reading) can be changed in config.json under appearance.fonts."
-            iconName: "info"
+            visible: !FontService.ready
+            text: "Scanning installed fonts…"
+            iconName: "hourglass_empty"
         }
     }
 
@@ -406,6 +434,46 @@ ColumnLayout {
             value: Config.options?.appearance?.bezel ?? 0
             onValueChanged: Config.setNestedValue("appearance.bezel", Math.round(value))
             valueText: `${Math.round(value)}px`
+        }
+    }
+
+    // ═══ Connected Corners ═══
+    SettingsCard {
+        icon: "rounded_corner"
+        title: "Connected Corners"
+        subtitle: "Seamless concave corners join the bar to the screen edge"
+        configKeys: ["appearance.connectedCorners"]
+
+        ConfigSwitch {
+            id: ccSwitch
+            label: "Enable connected corners"
+            sublabel: "Draws the bar as if carved from the screen edge (top/bottom bars)"
+            checked: Config.options?.appearance?.connectedCorners?.enable ?? false
+            onCheckedChanged: {
+                Config.setNestedValue("appearance.connectedCorners.enable", checked)
+                // Turn the bars' own background off/on to match — otherwise the
+                // connected background and the bar background stack (double bg).
+                // Write the GLOBAL default (bar.showBackground) so it applies to
+                // every bar; a per-bar bars[N].showBackground would still override
+                // it, but the common case is a single global look.
+                Config.setNestedValue("bar.showBackground", !checked)
+            }
+        }
+
+        ConfigSlider {
+            label: "Corner radius"
+            sublabel: "Size of the concave curve joining the bar to the edge"
+            from: 4; to: 40; stepSize: 1
+            enabled: ccSwitch.checked
+            value: Config.options?.appearance?.connectedCorners?.radius ?? 18
+            onValueChanged: Config.setNestedValue("appearance.connectedCorners.radius", Math.round(value))
+            valueText: `${Math.round(value)}px`
+        }
+
+        NoticeBox {
+            visible: ccSwitch.checked
+            iconName: "info"
+            text: "Best with a top or bottom bar. Vertical bars aren't concave yet."
         }
     }
 
