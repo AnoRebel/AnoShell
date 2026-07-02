@@ -37,7 +37,13 @@ PanelWindow {
 
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    exclusiveZone: autoHide && !mustShow ? 0 : barThickness + globalMargin
+    // Reserve the top space only once the (async) bar content has actually
+    // loaded — otherwise the exclusion zone appears a frame or two before the
+    // bar visuals, so the desktop reflows to make room while the strip is still
+    // blank (the "top space removed, then bar appears" flicker). Gating on
+    // contentLoaded makes the reserved space and the bar appear together.
+    readonly property bool contentLoaded: barContentLoader.status === Loader.Ready
+    exclusiveZone: (autoHide && !mustShow) || !contentLoaded ? 0 : barThickness + globalMargin
 
     // Anchoring based on edge
     anchors {
