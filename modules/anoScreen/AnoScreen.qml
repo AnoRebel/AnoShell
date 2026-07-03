@@ -6,7 +6,6 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
-import qs.modules.bar
 
 /**
  * AnoScreen — one unified full-screen surface per screen (noctalia MainScreen /
@@ -117,6 +116,7 @@ Scope {
             onVisibleChanged: if (visible) Qt.callLater(() => { if (win) win.ready = true })
             Component.onCompleted: if (visible) Qt.callLater(() => { if (win) win.ready = true })
 
+
             // The bar definitions that actually render on THIS screen.
             readonly property var screenBars: root.barDefs.filter(d =>
                 root.barOnScreen(d, screenName) && !(d?.morphingPanel ?? false))
@@ -139,41 +139,10 @@ Scope {
                 return { x: x, y: y, w: w, h: h, vertical: vertical, edge: edge, present: true, def: def }
             }
 
-            // ── Input mask: click-through except each visible bar. Points at
-            // cheap, always-present placeholder Items (maskSlots) rather than at
-            // scalars derived from the window size — that decouples the mask
-            // evaluation (which runs synchronously at surface commit) from the
-            // content subtree's size bindings, closing the residual refWindow
-            // crash. (Region.regions also can't take a Repeater, so fixed slots.)
-            mask: Region {
-                Region { item: maskSlot0 }
-                Region { item: maskSlot1 }
-                Region { item: maskSlot2 }
-                Region { item: maskSlot3 }
-            }
-
-            // Shallow placeholder Items describing each bar's interactive rect.
-            // Zero-size when the slot is absent or bars are hidden → no input.
-            Item {
-                id: maskSlot0
-                readonly property var g: root.barsShown ? win.barRect(0) : ({ x: 0, y: 0, w: 0, h: 0 })
-                x: g.x; y: g.y; width: g.w; height: g.h
-            }
-            Item {
-                id: maskSlot1
-                readonly property var g: root.barsShown ? win.barRect(1) : ({ x: 0, y: 0, w: 0, h: 0 })
-                x: g.x; y: g.y; width: g.w; height: g.h
-            }
-            Item {
-                id: maskSlot2
-                readonly property var g: root.barsShown ? win.barRect(2) : ({ x: 0, y: 0, w: 0, h: 0 })
-                x: g.x; y: g.y; width: g.w; height: g.h
-            }
-            Item {
-                id: maskSlot3
-                readonly property var g: root.barsShown ? win.barRect(3) : ({ x: 0, y: 0, w: 0, h: 0 })
-                x: g.x; y: g.y; width: g.w; height: g.h
-            }
+            // Fully click-through: AnoScreen is purely decorative now (corners +
+            // bar background). Bar input is handled by the separate BarWindow that
+            // sits over the bar area, so this window needs no interactive regions.
+            mask: Region {}
 
             // ── All visual content, attached ASYNCHRONOUSLY ───────────────
             // The corner Shapes + bar content are a deep item tree; attaching it
@@ -265,16 +234,14 @@ Scope {
                                 corner: barItem.isTop ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
                             }
 
-                            Loader {
-                                anchors.fill: parent
-                                asynchronous: true
-                                active: barItem.visible
-                                sourceComponent: BarContent {
-                                    barConfig: barItem.g.def
-                                    isVertical: barItem.g.vertical
-                                    edge: barItem.g.edge
-                                }
-                            }
+                            // NOTE: the bar CONTENT (widgets) is NOT hosted here.
+                            // Attaching that deep tree into this full-screen window
+                            // triggers the QS 0.3.0 refWindow segfault (~50% cold
+                            // starts). Noctalia hit the same wall and solved it by
+                            // keeping bar content in a SEPARATE thin window
+                            // (BarContentWindow) — so ano keeps its stable BarWindow
+                            // (loaded by BarManager) and AnoScreen draws only the
+                            // corners + bar background/frame beneath it.
                         }
                     }
                 }

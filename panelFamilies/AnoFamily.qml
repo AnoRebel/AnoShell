@@ -16,8 +16,15 @@ Scope {
     // Bar: either the classic per-bar windows (BarManager) OR, when connected
     // corners are enabled, the unified AnoScreen that hosts the bars + rounded
     // screen corners in one full-screen surface. Exactly one is active.
+    // BarManager (the stable per-bar windows) always loads — it hosts the bar
+    // CONTENT in its own thin window in BOTH modes. In connected mode, AnoScreen
+    // additionally draws the rounded screen corners + bar background/frame behind
+    // it (it does NOT host bar content — that deep tree in a full-screen window
+    // crashes QS 0.3.0; noctalia keeps content in a separate window for the same
+    // reason). The bar's own background turns off in connected mode (settings
+    // toggle sets bar.showBackground=false) so AnoScreen's frame shows through.
     readonly property bool _unified: Config.options?.appearance?.connectedCorners?.enable ?? false
-    LazyLoader { active: Config.ready && !family._unified; component: Loader { source: "root:modules/bar/BarManager.qml" } }
+    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/bar/BarManager.qml" } }
     LazyLoader { active: Config.ready && family._unified; component: Loader { source: "root:modules/anoScreen/AnoScreen.qml" } }
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/overview/AnoView.qml" } }
     LazyLoader { active: Config.ready; component: Loader { source: "root:modules/notificationPopup/NotificationPopup.qml" } }
