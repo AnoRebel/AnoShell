@@ -71,11 +71,10 @@ Rectangle {
 
                     Item { Layout.fillWidth: true }
 
-                    // Action buttons
+                    // Action buttons (reload / settings / session)
                     RowLayout {
                         spacing: 4
                         ToolbarButton { iconName: "restart_alt"; iconSize: 18; toolTipText: "Reload shell"; onClicked: Quickshell.reload(true) }
-                        ToolbarButton { iconName: "close"; iconSize: 18; toolTipText: "Close"; onClicked: GlobalStates.sidebarRightOpen = false }
                         ToolbarButton {
                             iconName: "settings"; iconSize: 18; toolTipText: "Settings"
                             onClicked: {
@@ -91,6 +90,11 @@ Rectangle {
                             }
                         }
                     }
+
+                    // Close pushed to the far end, separated from the action
+                    // group (mirrors the left sidebar's close placement).
+                    Item { implicitWidth: 12 }
+                    ToolbarButton { iconName: "close"; iconSize: 18; toolTipText: "Close"; onClicked: GlobalStates.sidebarRightOpen = false }
                 }
             }
 

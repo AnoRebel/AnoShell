@@ -38,11 +38,17 @@ RippleButton {
             GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen
     }
 
+    // Distinct icon per side so the two buttons don't look like a duplicated
+    // "more" menu: left = utilities/AI panel, right = system/quick-settings.
     contentItem: MaterialSymbol {
-        text: "more_vert"
+        text: root.side === "right" ? "tune" : "space_dashboard"
         iconSize: Appearance?.font.pixelSize.normal ?? 18
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+    }
+
+    StyledToolTip {
+        text: root.side === "right" ? "System panel — quick settings, media, calendar" : "Utility panel — AI chat, notifications, translate"
     }
 }

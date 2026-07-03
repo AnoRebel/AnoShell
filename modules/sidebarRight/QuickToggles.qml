@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell.Bluetooth
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -13,6 +14,7 @@ import "."
 Rectangle {
     id: root
     property bool nightLightExpanded: false
+    property bool networkExpanded: false
 
     implicitHeight: contentCol.implicitHeight + 16
     radius: Appearance?.rounding.normal ?? 12
@@ -28,13 +30,20 @@ Rectangle {
         Layout.fillWidth: true
         columns: 3; columnSpacing: 6; rowSpacing: 6
 
-        // WiFi
+        // WiFi — tap toggles, chevron opens the network detail panel (pick a
+        // network). Toggling here just turns the radio on/off.
         TogglePill {
             iconName: Network.materialSymbol
             label: Network.wifi ? Network.networkName : (Network.wifiEnabled ? "Disconnected" : "Off")
+            tooltip: Network.wifi
+                ? `Wi-Fi: ${Network.networkName} · tap to turn off, ▾ for networks`
+                : "Wi-Fi off · tap to turn on"
             active: Network.wifi
             activeColor: Appearance?.colors.colPrimary ?? "#65558F"
             onClicked: Network.toggleWifi()
+            showChevron: true
+            chevronRotation: root.networkExpanded ? 180 : 0
+            onChevronClicked: root.networkExpanded = !root.networkExpanded
             Layout.fillWidth: true
         }
 
@@ -44,19 +53,27 @@ Rectangle {
         TogglePill {
             iconName: Network.hotspotActive ? "wifi_tethering" : "wifi_tethering_off"
             label: Network.hotspotBusy ? "..." : (Network.hotspotActive ? "Hotspot" : "Off")
+            tooltip: Network.hotspotActive ? "Wi-Fi hotspot on · tap to stop" : "Wi-Fi hotspot off · tap to broadcast"
             active: Network.hotspotActive
             activeColor: "#FFA726"
             onClicked: Network.toggleHotspot()
             Layout.fillWidth: true
         }
 
-        // Bluetooth
+        // Bluetooth — tap toggles the adapter on/off (had no handler before).
         TogglePill {
             iconName: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
             label: BluetoothStatus.connected ? `${BluetoothStatus.activeDeviceCount} dev` : (BluetoothStatus.enabled ? "On" : "Off")
-            active: BluetoothStatus.connected
+            tooltip: BluetoothStatus.connected
+                ? `Bluetooth: ${BluetoothStatus.activeDeviceCount} connected · tap to turn off`
+                : (BluetoothStatus.enabled ? "Bluetooth on · tap to turn off" : "Bluetooth off · tap to turn on")
+            active: BluetoothStatus.connected || BluetoothStatus.enabled
             activeColor: "#B388FF"
             visible: BluetoothStatus.available
+            onClicked: {
+                const adapter = Bluetooth.defaultAdapter
+                if (adapter) adapter.enabled = !adapter.enabled
+            }
             Layout.fillWidth: true
         }
 
@@ -64,6 +81,7 @@ Rectangle {
         TogglePill {
             iconName: Notifications.silent ? "notifications_paused" : "notifications_active"
             label: Notifications.silent ? "Silent" : "Alerts"
+            tooltip: Notifications.silent ? "Do Not Disturb on · tap to allow alerts" : "Alerts on · tap for Do Not Disturb"
             active: Notifications.silent
             activeColor: "#FFB74D"
             onClicked: Notifications.silent = !Notifications.silent
@@ -74,6 +92,7 @@ Rectangle {
         TogglePill {
             iconName: Idle.inhibit ? "coffee" : "coffee_maker"
             label: Idle.inhibit ? "Awake" : "Idle"
+            tooltip: Idle.inhibit ? "Keeping screen awake · tap to allow idle" : "Screen may sleep · tap to keep awake"
             active: Idle.inhibit
             activeColor: "#4DB6AC"
             onClicked: Idle.toggleInhibit()
@@ -88,6 +107,7 @@ Rectangle {
                 : "Day"
             active: NightLight.enabled
             activeColor: "#FFB74D"
+            tooltip: NightLight.enabled ? `Night light on (${NightLight.nightTemp}K) · tap to turn off, ▾ to adjust` : "Night light off · tap to warm the screen"
             onClicked: NightLight.toggle()
             showChevron: true
             chevronRotation: root.nightLightExpanded ? 180 : 0
@@ -103,6 +123,7 @@ Rectangle {
             sourceComponent: TogglePill {
                 iconName: Battery.isCharging ? "battery_charging_full" : (Battery.percentage > 0.2 ? "battery_full" : "battery_alert")
                 label: `${Math.round(Battery.percentage * 100)}%`
+                tooltip: Battery.isCharging ? `Battery ${Math.round(Battery.percentage * 100)}% · charging` : `Battery ${Math.round(Battery.percentage * 100)}%`
                 active: Battery.isCharging
                 activeColor: "#81C784"
             }
@@ -116,10 +137,27 @@ Rectangle {
             sourceComponent: TogglePill {
                 iconName: "keyboard"
                 label: KeyboardLayoutService.currentLayoutCode.toUpperCase()
+                tooltip: `Keyboard layout: ${KeyboardLayoutService.currentLayoutName ?? KeyboardLayoutService.currentLayoutCode}`
                 active: false
             }
         }
     }
+
+        // ── Network inline expander ──
+        // The WiFi pill's chevron reveals the full network picker inline.
+        Item {
+            Layout.fillWidth: true
+            clip: true
+            implicitHeight: root.networkExpanded ? netExpander.implicitHeight + 8 : 0
+            opacity: root.networkExpanded ? 1 : 0
+            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+
+            NetworkDetailPanel {
+                id: netExpander
+                anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 4 }
+            }
+        }
 
         // ── Night light inline expander ──
         // Animated reveal of a temperature slider when the night-light pill's
@@ -177,6 +215,7 @@ Rectangle {
         id: pill
         property string iconName: ""
         property string label: ""
+        property string tooltip: ""       // hover hint — what this toggle is/does
         property bool active: false
         property color activeColor: Appearance?.colors.colPrimary ?? "#65558F"
         property bool showChevron: false
@@ -226,10 +265,17 @@ Rectangle {
 
         // Main click area excludes the chevron region when one is shown
         MouseArea {
+            id: pillMouse
             anchors.fill: parent
             anchors.rightMargin: pill.showChevron ? 26 : 0
+            hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: pill.clicked()
+
+            StyledToolTip {
+                text: pill.tooltip
+                extraVisibleCondition: pill.tooltip.length > 0 && pillMouse.containsMouse
+            }
         }
     }
 }
