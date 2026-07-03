@@ -34,7 +34,12 @@ Scope {
 
     readonly property bool enabled: Config.options?.appearance?.connectedCorners?.enable ?? false
     readonly property int cornerRadius: Math.max(1, Config.options?.appearance?.connectedCorners?.radius ?? 18)
+    // Bar surface colour.
     readonly property color frameColor: Appearance?.colors.colLayer0 ?? "#1C1B1F"
+    // Screen-corner colour: a bezel tone that reads on ANY wallpaper. Pure black
+    // (like a rounded display) so the desktop looks clipped to a rounded rect —
+    // colLayer0 was invisible against dark wallpaper edges.
+    readonly property color cornerColor: Appearance?.colors.colShadow ?? "#000000"
     readonly property real globalMargin: Config.options?.appearance?.bezel ?? 0
     readonly property bool barsShown: GlobalStates.barOpen && !GlobalStates.screenLocked
 
@@ -50,6 +55,36 @@ Scope {
         return def?.height
             ?? Config.options?.bar?.layout?.height
             ?? (barIsVertical(def) ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight)
+    }
+
+    // Space-reservation companions: the full-screen AnoScreen window uses
+    // ExclusionMode.Ignore (to reach the corners) so it reserves nothing. These
+    // invisible BarExclusionZone windows (one per bar, flattened across screens)
+    // restore the reservation so tiled windows don't slide under each bar
+    // (noctalia-style). Kept as its OWN top-level Variants — nesting Variants
+    // inside another Variants' Scope delegate silently instantiates nothing here.
+    readonly property var exclusionModel: {
+        const out = []
+        const screens = Quickshell.screens
+        for (const s of screens) {
+            for (const d of root.barDefs) {
+                if (root.barOnScreen(d, s?.name ?? "") && !(d?.morphingPanel ?? false))
+                    out.push({ screenObj: s, def: d })
+            }
+        }
+        return out
+    }
+
+    Variants {
+        model: root.exclusionModel
+        BarExclusionZone {
+            required property var modelData
+            screenObj: modelData.screenObj
+            edge: modelData.def?.edge ?? "top"
+            thickness: root.barThickness(modelData.def)
+            margin: root.globalMargin
+            reserve: root.enabled && root.barsShown && !(modelData.def?.autoHide ?? false)
+        }
     }
 
     Variants {
@@ -131,22 +166,22 @@ Scope {
                     // Rounded outer screen corners
                     RoundCorner {
                         anchors.top: parent.top; anchors.left: parent.left
-                        implicitSize: root.cornerRadius; color: root.frameColor
+                        implicitSize: root.cornerRadius; color: root.cornerColor
                         corner: RoundCorner.CornerEnum.TopLeft
                     }
                     RoundCorner {
                         anchors.top: parent.top; anchors.right: parent.right
-                        implicitSize: root.cornerRadius; color: root.frameColor
+                        implicitSize: root.cornerRadius; color: root.cornerColor
                         corner: RoundCorner.CornerEnum.TopRight
                     }
                     RoundCorner {
                         anchors.bottom: parent.bottom; anchors.left: parent.left
-                        implicitSize: root.cornerRadius; color: root.frameColor
+                        implicitSize: root.cornerRadius; color: root.cornerColor
                         corner: RoundCorner.CornerEnum.BottomLeft
                     }
                     RoundCorner {
                         anchors.bottom: parent.bottom; anchors.right: parent.right
-                        implicitSize: root.cornerRadius; color: root.frameColor
+                        implicitSize: root.cornerRadius; color: root.cornerColor
                         corner: RoundCorner.CornerEnum.BottomRight
                     }
 

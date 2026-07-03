@@ -1,0 +1,3 @@
+module qs.modules.anoScreen
+AnoScreen 1.0 AnoScreen.qml
+BarExclusionZone 1.0 BarExclusionZone.qml
