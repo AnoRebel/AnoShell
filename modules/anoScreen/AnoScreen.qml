@@ -126,28 +126,53 @@ Scope {
             function barRect(i) {
                 const def = win.screenBars[i]
                 if (!def) return { x: 0, y: 0, w: 0, h: 0, vertical: false, edge: "top", present: false }
-                const m = root.globalMargin
                 const vertical = root.barIsVertical(def)
                 const th = root.barThickness(def)
                 const edge = def?.edge ?? "top"
-                const x = edge === "right" ? (sw - th - m) : m
-                const y = edge === "bottom" ? (sh - th - m) : m
-                const w = vertical ? th : (sw - m * 2)
-                const h = vertical ? (sh - m * 2) : th
+                // Connected look: the bar is FLUSH to its screen edge and spans
+                // the full length (no bezel margin → no floating pill). It fuses
+                // into the frame; only the interior corners are rounded.
+                const x = edge === "right" ? (sw - th) : 0
+                const y = edge === "bottom" ? (sh - th) : 0
+                const w = vertical ? th : sw
+                const h = vertical ? sh : th
                 return { x: x, y: y, w: w, h: h, vertical: vertical, edge: edge, present: true, def: def }
             }
 
-            // ── Input mask: click-through except each visible bar. FIXED slots
-            // (Region.regions can't be populated by a Repeater). 4 bars is plenty.
+            // ── Input mask: click-through except each visible bar. Points at
+            // cheap, always-present placeholder Items (maskSlots) rather than at
+            // scalars derived from the window size — that decouples the mask
+            // evaluation (which runs synchronously at surface commit) from the
+            // content subtree's size bindings, closing the residual refWindow
+            // crash. (Region.regions also can't take a Repeater, so fixed slots.)
             mask: Region {
-                Region { readonly property var g: win.barShownRect(0); x: g.x; y: g.y; width: g.w; height: g.h }
-                Region { readonly property var g: win.barShownRect(1); x: g.x; y: g.y; width: g.w; height: g.h }
-                Region { readonly property var g: win.barShownRect(2); x: g.x; y: g.y; width: g.w; height: g.h }
-                Region { readonly property var g: win.barShownRect(3); x: g.x; y: g.y; width: g.w; height: g.h }
+                Region { item: maskSlot0 }
+                Region { item: maskSlot1 }
+                Region { item: maskSlot2 }
+                Region { item: maskSlot3 }
             }
-            // barRect gated by barsShown (mask must collapse when bars hidden).
-            function barShownRect(i) {
-                return root.barsShown ? win.barRect(i) : { x: 0, y: 0, w: 0, h: 0 }
+
+            // Shallow placeholder Items describing each bar's interactive rect.
+            // Zero-size when the slot is absent or bars are hidden → no input.
+            Item {
+                id: maskSlot0
+                readonly property var g: root.barsShown ? win.barRect(0) : ({ x: 0, y: 0, w: 0, h: 0 })
+                x: g.x; y: g.y; width: g.w; height: g.h
+            }
+            Item {
+                id: maskSlot1
+                readonly property var g: root.barsShown ? win.barRect(1) : ({ x: 0, y: 0, w: 0, h: 0 })
+                x: g.x; y: g.y; width: g.w; height: g.h
+            }
+            Item {
+                id: maskSlot2
+                readonly property var g: root.barsShown ? win.barRect(2) : ({ x: 0, y: 0, w: 0, h: 0 })
+                x: g.x; y: g.y; width: g.w; height: g.h
+            }
+            Item {
+                id: maskSlot3
+                readonly property var g: root.barsShown ? win.barRect(3) : ({ x: 0, y: 0, w: 0, h: 0 })
+                x: g.x; y: g.y; width: g.w; height: g.h
             }
 
             // ── All visual content, attached ASYNCHRONOUSLY ───────────────
@@ -202,13 +227,42 @@ Scope {
                             width: g.vertical ? th : g.w
                             height: g.vertical ? g.h : th
                             visible: root.barsShown && g.present
+                            readonly property bool isTop: g.edge === "top"
+                            readonly property bool isBottom: g.edge === "bottom"
 
+                            // Flush bar background (no rounding on the edge side).
                             Rectangle {
                                 anchors.fill: parent
-                                radius: root.cornerRadius
                                 color: root.frameColor
-                                border.width: 1
-                                border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                            }
+
+                            // Concave carves at the bar's INTERIOR corners so the
+                            // bar fuses into the screen edge (the connected look)
+                            // instead of reading as a floating rounded pill. For a
+                            // top bar these sit at the two bottom corners and curve
+                            // the frame colour outward into the edge.
+                            RoundCorner {
+                                visible: barItem.isTop || barItem.isBottom
+                                anchors.left: parent.left
+                                anchors.top: barItem.isBottom ? parent.top : undefined
+                                anchors.bottom: barItem.isTop ? parent.bottom : undefined
+                                // sit just OUTSIDE the bar's interior edge
+                                anchors.topMargin: barItem.isBottom ? -root.cornerRadius : 0
+                                anchors.bottomMargin: barItem.isTop ? -root.cornerRadius : 0
+                                implicitSize: root.cornerRadius
+                                color: root.frameColor
+                                corner: barItem.isTop ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
+                            }
+                            RoundCorner {
+                                visible: barItem.isTop || barItem.isBottom
+                                anchors.right: parent.right
+                                anchors.bottom: barItem.isTop ? parent.bottom : undefined
+                                anchors.top: barItem.isBottom ? parent.top : undefined
+                                anchors.topMargin: barItem.isBottom ? -root.cornerRadius : 0
+                                anchors.bottomMargin: barItem.isTop ? -root.cornerRadius : 0
+                                implicitSize: root.cornerRadius
+                                color: root.frameColor
+                                corner: barItem.isTop ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
                             }
 
                             Loader {
