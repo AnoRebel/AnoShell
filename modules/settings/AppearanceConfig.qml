@@ -437,43 +437,61 @@ ColumnLayout {
         }
     }
 
-    // ═══ Connected Corners ═══
+    // ═══ Shell Mode ═══
     SettingsCard {
+        id: shellModeCard
         icon: "rounded_corner"
-        title: "Connected Corners"
-        subtitle: "Seamless concave corners join the bar to the screen edge"
+        title: "Shell Mode"
+        subtitle: "Floating widgets, or a unified surface with rounded screen corners"
         configKeys: ["appearance.connectedCorners"]
 
-        ConfigSwitch {
-            id: ccSwitch
-            label: "Enable connected corners"
-            sublabel: "Draws the bar as if carved from the screen edge (top/bottom bars)"
-            checked: Config.options?.appearance?.connectedCorners?.enable ?? false
-            onCheckedChanged: {
-                Config.setNestedValue("appearance.connectedCorners.enable", checked)
-                // Turn the bars' own background off/on to match — otherwise the
-                // connected background and the bar background stack (double bg).
-                // Write the GLOBAL default (bar.showBackground) so it applies to
-                // every bar; a per-bar bars[N].showBackground would still override
-                // it, but the common case is a single global look.
-                Config.setNestedValue("bar.showBackground", !checked)
+        readonly property bool connected: Config.options?.appearance?.connectedCorners?.enable ?? false
+
+        ChoiceRow {
+            Layout.fillWidth: true
+            compact: false
+            itemSpacing: 4
+            model: [
+                { value: "floating", label: "Floating", icon: "widgets" },
+                { value: "connected", label: "Connected", icon: "rounded_corner" }
+            ]
+            current: shellModeCard.connected ? "connected" : "floating"
+            onChose: value => {
+                const connected = (value === "connected")
+                Config.setNestedValue("appearance.connectedCorners.enable", connected)
+                // Connected mode hosts the bar inside the unified surface and
+                // draws its own background, so turn the classic per-bar background
+                // off; floating mode restores it. (Global default — per-bar
+                // bars[N].showBackground still overrides if set.)
+                Config.setNestedValue("bar.showBackground", !connected)
             }
+        }
+
+        StyledText {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            font.pixelSize: 12
+            text: shellModeCard.connected
+                ? "Connected: bar + panels share one full-screen surface with rounded screen corners (noctalia-style)."
+                : "Floating: independent bar and widget windows with gaps between them (classic)."
         }
 
         ConfigSlider {
             label: "Corner radius"
-            sublabel: "Size of the concave curve joining the bar to the edge"
+            sublabel: "Size of the rounded screen corners / bar edge curve"
             from: 4; to: 40; stepSize: 1
-            enabled: ccSwitch.checked
+            enabled: shellModeCard.connected
             value: Config.options?.appearance?.connectedCorners?.radius ?? 18
             onValueChanged: Config.setNestedValue("appearance.connectedCorners.radius", Math.round(value))
             valueText: `${Math.round(value)}px`
         }
 
         NoticeBox {
-            visible: ccSwitch.checked
+            visible: shellModeCard.connected
             iconName: "info"
-            text: "Best with a top or bottom bar. Vertical bars aren't concave yet."
+            text: "Connected mode is best with a top or bottom bar. Vertical bars aren't concave yet."
         }
     }
 
