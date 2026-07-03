@@ -11,6 +11,7 @@ import qs.services
 Scope {
     id: family
 
+
     // ─── Core Panels ─────────────────────────────────────────────────────
     // Bar: either the classic per-bar windows (BarManager) OR, when connected
     // corners are enabled, the unified AnoScreen that hosts the bars + rounded

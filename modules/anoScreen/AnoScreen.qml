@@ -73,6 +73,15 @@ Scope {
             readonly property real sh: height
             readonly property string screenName: screen?.name ?? ""
 
+            // Realization latch: flip `ready` one event-loop turn AFTER the
+            // window is up and sized, so the heavy content subtree attaches to an
+            // already-windowed, already-sized root (this is the property that
+            // makes BarWindow crash-safe; `active: true` alone can fire mid-commit
+            // and hit the QS 0.3.0 refWindow segfault).
+            property bool ready: false
+            onVisibleChanged: if (visible) Qt.callLater(() => { if (win) win.ready = true })
+            Component.onCompleted: if (visible) Qt.callLater(() => { if (win) win.ready = true })
+
             // The bar definitions that actually render on THIS screen.
             readonly property var screenBars: root.barDefs.filter(d =>
                 root.barOnScreen(d, screenName) && !(d?.morphingPanel ?? false))
@@ -115,7 +124,7 @@ Scope {
             Loader {
                 anchors.fill: parent
                 asynchronous: true
-                active: true
+                active: win.ready
                 sourceComponent: Item {
                     anchors.fill: parent
 
@@ -148,7 +157,15 @@ Scope {
                             id: barItem
                             required property int index
                             readonly property var g: win.barRect(index)
-                            x: g.x; y: g.y; width: g.w; height: g.h
+                            // Constant thickness axis: derive the bar's thickness
+                            // from config (NOT the growing window), so BarContent's
+                            // Layout.fillHeight/Width resolves against a fixed size
+                            // and never re-lays-out chasing a 0→fullscreen parent
+                            // (the structural difference that crashes vs BarWindow).
+                            readonly property real th: g.present ? root.barThickness(g.def) : 0
+                            x: g.x; y: g.y
+                            width: g.vertical ? th : g.w
+                            height: g.vertical ? g.h : th
                             visible: root.barsShown && g.present
 
                             Rectangle {
