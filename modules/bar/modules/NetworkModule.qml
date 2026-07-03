@@ -22,13 +22,22 @@ Item {
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
 
+    // Left-click pins the popout open so the network picker is usable (hover
+    // alone would dismiss it as you move to the popup). Click again to unpin.
+    property bool pinned: false
+
     MouseArea {
-        id: netMA; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton
+        id: netMA
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.LeftButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.pinned = !root.pinned
     }
 
     BarModulePopout {
-        shown: root.hovered
-        popupWidth: 260; popupHeight: netPopupCol.implicitHeight + 24
+        shown: root.hovered || root.pinned
+        popupWidth: 280; popupHeight: netPopupCol.implicitHeight + 24
 
         ColumnLayout {
             id: netPopupCol
@@ -75,6 +84,16 @@ Item {
                 Layout.fillWidth: true; spacing: 8
                 StyledText { text: "WiFi"; font.pixelSize: 12; Layout.fillWidth: true }
                 StyledSwitch { checked: Network.wifiEnabled; onCheckedChanged: Network.enableWifi(checked) }
+            }
+
+            // Network picker — only when the popout is pinned (left-clicked), so
+            // the hover preview stays a lightweight status glance. Shared with
+            // the right-sidebar Wi-Fi expander (one component, two homes).
+            Loader {
+                Layout.fillWidth: true
+                active: root.pinned
+                visible: active
+                sourceComponent: WifiNetworkPicker {}
             }
         }
     }

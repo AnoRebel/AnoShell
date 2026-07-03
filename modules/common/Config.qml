@@ -513,8 +513,8 @@ Singleton {
 
                 // Default click/scroll actions per section.
                 property JsonObject actions: JsonObject {
-                    property string leftClick: "sidebarLeft"
-                    property string rightClick: "sidebarRight"
+                    property string leftClick: "none"
+                    property string rightClick: "none"
                     property string centerClick: "overview"
                     property string scrollLeft: "brightness"
                     property string scrollRight: "volume"

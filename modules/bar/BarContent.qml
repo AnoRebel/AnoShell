@@ -55,8 +55,13 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     // Click Actions (configurable per section)
     // ═══════════════════════════════════════════════════════════════════
-    readonly property string leftClickAction: barConfig?.leftClickAction ?? Config.options?.bar?.actions?.leftClick ?? "sidebarLeft"
-    readonly property string rightClickAction: barConfig?.rightClickAction ?? Config.options?.bar?.actions?.rightClick ?? "sidebarRight"
+    // Empty-space left-click defaults to "none": clicking bar background should
+    // do nothing, and icons handle their own left-click. (Previously these
+    // defaulted to sidebarLeft/Right, so any click that fell through an icon —
+    // most icons don't consume clicks — opened a sidebar unexpectedly.) Still
+    // user-configurable via bar.actions.leftClick / .rightClick.
+    readonly property string leftClickAction: barConfig?.leftClickAction ?? Config.options?.bar?.actions?.leftClick ?? "none"
+    readonly property string rightClickAction: barConfig?.rightClickAction ?? Config.options?.bar?.actions?.rightClick ?? "none"
     readonly property string centerClickAction: barConfig?.centerClickAction ?? Config.options?.bar?.actions?.centerClick ?? "overview"
     readonly property string scrollLeftAction: barConfig?.scrollLeftAction ?? Config.options?.bar?.actions?.scrollLeft ?? "brightness"
     readonly property string scrollRightAction: barConfig?.scrollRightAction ?? Config.options?.bar?.actions?.scrollRight ?? "volume"

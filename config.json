@@ -100,8 +100,8 @@
       "showSeparators": false
     },
     "actions": {
-      "leftClick": "sidebarLeft",
-      "rightClick": "sidebarRight",
+      "leftClick": "none",
+      "rightClick": "none",
       "centerClick": "overview",
       "scrollLeft": "brightness",
       "scrollRight": "volume",

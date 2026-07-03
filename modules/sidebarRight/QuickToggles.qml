@@ -15,6 +15,7 @@ Rectangle {
     id: root
     property bool nightLightExpanded: false
     property bool networkExpanded: false
+    property bool bluetoothExpanded: false
 
     implicitHeight: contentCol.implicitHeight + 16
     radius: Appearance?.rounding.normal ?? 12
@@ -74,6 +75,9 @@ Rectangle {
                 const adapter = Bluetooth.defaultAdapter
                 if (adapter) adapter.enabled = !adapter.enabled
             }
+            showChevron: true
+            chevronRotation: root.bluetoothExpanded ? 180 : 0
+            onChevronClicked: root.bluetoothExpanded = !root.bluetoothExpanded
             Layout.fillWidth: true
         }
 
@@ -143,18 +147,33 @@ Rectangle {
         }
     }
 
-        // ── Network inline expander ──
-        // The WiFi pill's chevron reveals the full network picker inline.
+        // ── Wi-Fi network picker (inline expander) ──
+        // The WiFi pill's chevron reveals the list of nearby networks to connect.
         Item {
             Layout.fillWidth: true
             clip: true
-            implicitHeight: root.networkExpanded ? netExpander.implicitHeight + 8 : 0
+            implicitHeight: root.networkExpanded ? netPicker.implicitHeight + 8 : 0
             opacity: root.networkExpanded ? 1 : 0
             Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
             Behavior on opacity { NumberAnimation { duration: 180 } }
 
-            NetworkDetailPanel {
-                id: netExpander
+            WifiNetworkPicker {
+                id: netPicker
+                anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 4 }
+            }
+        }
+
+        // ── Bluetooth device picker (inline expander) ──
+        Item {
+            Layout.fillWidth: true
+            clip: true
+            implicitHeight: root.bluetoothExpanded ? btPicker.implicitHeight + 8 : 0
+            opacity: root.bluetoothExpanded ? 1 : 0
+            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 180 } }
+
+            BluetoothDevicePicker {
+                id: btPicker
                 anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 4 }
             }
         }
@@ -253,21 +272,16 @@ Rectangle {
                 rotation: pill.chevronRotation
                 color: pill.active ? pill.activeColor : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
                 Behavior on rotation { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -6
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: pill.chevronClicked()
-                }
             }
         }
 
-        // Main click area excludes the chevron region when one is shown
+        // Main click area — covers the whole pill EXCEPT the right-edge chevron
+        // strip (when shown). Declared before the chevron area so the chevron
+        // strip, declared later, sits ABOVE it and wins clicks in its zone.
         MouseArea {
             id: pillMouse
             anchors.fill: parent
-            anchors.rightMargin: pill.showChevron ? 26 : 0
+            anchors.rightMargin: pill.showChevron ? 30 : 0
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: pill.clicked()
@@ -276,6 +290,16 @@ Rectangle {
                 text: pill.tooltip
                 extraVisibleCondition: pill.tooltip.length > 0 && pillMouse.containsMouse
             }
+        }
+
+        // Dedicated chevron hit strip on the pill's right edge, on TOP of the
+        // main area so a chevron tap expands instead of toggling.
+        MouseArea {
+            visible: pill.showChevron
+            anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
+            width: 30
+            cursorShape: Qt.PointingHandCursor
+            onClicked: pill.chevronClicked()
         }
     }
 }
