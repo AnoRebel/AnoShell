@@ -21,18 +21,21 @@ RippleButton {
     colBackground: "transparent"
     colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
 
-    // Resolve target side from the button centre's X in screen coordinates.
-    readonly property string side: {
+    // Resolve which side this button is on from its centre's X, mapped to the
+    // window. Computed FRESH on each click (a cached readonly binding resolved
+    // before layout settled → both buttons saw x≈0 → both said "left"). Depends
+    // on x/width so the icon/tooltip also stay correct after relayout.
+    function resolveSide() {
         const win = root.QsWindow?.window
-        const screenW = win?.screen?.width ?? 0
-        if (screenW <= 0)
-            return "left"
+        const winW = win?.width ?? win?.screen?.width ?? 0
+        if (winW <= 0) return "left"
         const centreX = root.mapToItem(null, root.width / 2, 0).x
-        return centreX > screenW / 2 ? "right" : "left"
+        return centreX > winW / 2 ? "right" : "left"
     }
+    readonly property string side: (root.x, root.width, resolveSide())
 
     releaseAction: () => {
-        if (root.side === "right")
+        if (root.resolveSide() === "right")
             GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen
         else
             GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen
