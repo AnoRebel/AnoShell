@@ -57,34 +57,11 @@ Scope {
     }
 
     // Space-reservation companions: the full-screen AnoScreen window uses
-    // ExclusionMode.Ignore (to reach the corners) so it reserves nothing. These
-    // invisible BarExclusionZone windows (one per bar, flattened across screens)
-    // restore the reservation so tiled windows don't slide under each bar
-    // (noctalia-style). Kept as its OWN top-level Variants — nesting Variants
-    // inside another Variants' Scope delegate silently instantiates nothing here.
-    readonly property var exclusionModel: {
-        const out = []
-        const screens = Quickshell.screens
-        for (const s of screens) {
-            for (const d of root.barDefs) {
-                if (root.barOnScreen(d, s?.name ?? "") && !(d?.morphingPanel ?? false))
-                    out.push({ screenObj: s, def: d })
-            }
-        }
-        return out
-    }
-
-    Variants {
-        model: root.exclusionModel
-        BarExclusionZone {
-            required property var modelData
-            screenObj: modelData.screenObj
-            edge: modelData.def?.edge ?? "top"
-            thickness: root.barThickness(modelData.def)
-            margin: root.globalMargin
-            reserve: root.enabled && root.barsShown && !(modelData.def?.autoHide ?? false)
-        }
-    }
+    // ExclusionMode.Ignore (to reach the corners) so it reserves nothing — but
+    // no separate BarExclusionZone is needed: BarManager's BarWindow loads in
+    // connected mode too and reserves the bar's space itself. Adding a second
+    // reservation here double-counted the space (an extra bar-height gap at the
+    // top). AnoScreen is now purely decorative.
 
     Variants {
         model: Quickshell.screens
