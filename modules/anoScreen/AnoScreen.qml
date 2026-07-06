@@ -156,71 +156,18 @@ Scope {
                         corner: RoundCorner.CornerEnum.BottomRight
                     }
 
-                    // Each bar, rendered in-window (fixed 4 slots)
-                    Repeater {
-                        model: 4
-                        Item {
-                            id: barItem
-                            required property int index
-                            readonly property var g: win.barRect(index)
-                            // Constant thickness axis: derive the bar's thickness
-                            // from config (NOT the growing window), so BarContent's
-                            // Layout.fillHeight/Width resolves against a fixed size
-                            // and never re-lays-out chasing a 0→fullscreen parent
-                            // (the structural difference that crashes vs BarWindow).
-                            readonly property real th: g.present ? root.barThickness(g.def) : 0
-                            x: g.x; y: g.y
-                            width: g.vertical ? th : g.w
-                            height: g.vertical ? g.h : th
-                            visible: root.barsShown && g.present
-                            readonly property bool isTop: g.edge === "top"
-                            readonly property bool isBottom: g.edge === "bottom"
-
-                            // Flush bar background (no rounding on the edge side).
-                            Rectangle {
-                                anchors.fill: parent
-                                color: root.frameColor
-                            }
-
-                            // Concave carves at the bar's INTERIOR corners so the
-                            // bar fuses into the screen edge (the connected look)
-                            // instead of reading as a floating rounded pill. For a
-                            // top bar these sit at the two bottom corners and curve
-                            // the frame colour outward into the edge.
-                            RoundCorner {
-                                visible: barItem.isTop || barItem.isBottom
-                                anchors.left: parent.left
-                                anchors.top: barItem.isBottom ? parent.top : undefined
-                                anchors.bottom: barItem.isTop ? parent.bottom : undefined
-                                // sit just OUTSIDE the bar's interior edge
-                                anchors.topMargin: barItem.isBottom ? -root.cornerRadius : 0
-                                anchors.bottomMargin: barItem.isTop ? -root.cornerRadius : 0
-                                implicitSize: root.cornerRadius
-                                color: root.frameColor
-                                corner: barItem.isTop ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.BottomLeft
-                            }
-                            RoundCorner {
-                                visible: barItem.isTop || barItem.isBottom
-                                anchors.right: parent.right
-                                anchors.bottom: barItem.isTop ? parent.bottom : undefined
-                                anchors.top: barItem.isBottom ? parent.top : undefined
-                                anchors.topMargin: barItem.isBottom ? -root.cornerRadius : 0
-                                anchors.bottomMargin: barItem.isTop ? -root.cornerRadius : 0
-                                implicitSize: root.cornerRadius
-                                color: root.frameColor
-                                corner: barItem.isTop ? RoundCorner.CornerEnum.TopRight : RoundCorner.CornerEnum.BottomRight
-                            }
-
-                            // NOTE: the bar CONTENT (widgets) is NOT hosted here.
-                            // Attaching that deep tree into this full-screen window
-                            // triggers the QS 0.3.0 refWindow segfault (~50% cold
-                            // starts). Noctalia hit the same wall and solved it by
-                            // keeping bar content in a SEPARATE thin window
-                            // (BarContentWindow) — so ano keeps its stable BarWindow
-                            // (loaded by BarManager) and AnoScreen draws only the
-                            // corners + bar background/frame beneath it.
-                        }
-                    }
+                    // NOTE: AnoScreen draws ONLY the rounded screen corners.
+                    // It does NOT draw the bar (background OR content):
+                    //  - Bar CONTENT stays in the separate BarWindow (attaching a
+                    //    deep tree into this full-screen window crashes QS 0.3.0;
+                    //    noctalia keeps content in its own window for the same
+                    //    reason).
+                    //  - Bar BACKGROUND is also left to BarWindow (showBackground
+                    //    stays on in connected mode). AnoScreen is stacked ABOVE
+                    //    bar:main, so drawing an opaque bar background here would
+                    //    OCCLUDE the bar content (blank blurred strip, hover-only
+                    //    popups — the reported bug). BarWindow's own flush/rounded
+                    //    background renders correctly beneath its content.
                 }
             }
         }

@@ -21,18 +21,21 @@ RippleButton {
     colBackground: "transparent"
     colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
 
-    // Resolve which side this button is on from its centre's X, mapped to the
-    // window. Computed FRESH on each click (a cached readonly binding resolved
-    // before layout settled → both buttons saw x≈0 → both said "left"). Depends
-    // on x/width so the icon/tooltip also stay correct after relayout.
+    // Which bar section this button lives in — set explicitly by BarContent's
+    // section loader (onLoaded → barSection = "left"/"right"). This is reliable;
+    // the old pixel-X guess resolved before layout settled and made BOTH buttons
+    // read "left". Falls back to pixel detection only if barSection is unset.
+    property string barSection: ""
+
     function resolveSide() {
+        if (barSection === "left" || barSection === "right") return barSection
         const win = root.QsWindow?.window
         const winW = win?.width ?? win?.screen?.width ?? 0
         if (winW <= 0) return "left"
         const centreX = root.mapToItem(null, root.width / 2, 0).x
         return centreX > winW / 2 ? "right" : "left"
     }
-    readonly property string side: (root.x, root.width, resolveSide())
+    readonly property string side: (root.barSection, root.x, root.width, resolveSide())
 
     releaseAction: () => {
         if (root.resolveSide() === "right")

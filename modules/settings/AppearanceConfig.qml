@@ -459,11 +459,11 @@ ColumnLayout {
             onChose: value => {
                 const connected = (value === "connected")
                 Config.setNestedValue("appearance.connectedCorners.enable", connected)
-                // Connected mode hosts the bar inside the unified surface and
-                // draws its own background, so turn the classic per-bar background
-                // off; floating mode restores it. (Global default — per-bar
-                // bars[N].showBackground still overrides if set.)
-                Config.setNestedValue("bar.showBackground", !connected)
+                // Bar keeps its own background in BOTH modes — AnoScreen only
+                // adds the rounded screen corners (it's stacked above the bar, so
+                // it must NOT draw the bar background or it would occlude the
+                // content). So showBackground stays true.
+                Config.setNestedValue("bar.showBackground", true)
             }
         }
 

@@ -164,6 +164,9 @@ Item {
                     Layout.fillWidth: isVertical
                     Layout.alignment: Qt.AlignVCenter
                     sourceComponent: BarModuleLoader.getModule(modelData)
+                    // Tell position-aware modules (sidebarButton) which section
+                    // they live in — reliable, unlike guessing from pixel X.
+                    onLoaded: if (item && item.hasOwnProperty("barSection")) item.barSection = "left"
                 }
             }
             Item { Layout.fillWidth: true }
@@ -288,6 +291,7 @@ Item {
                     Layout.fillWidth: isVertical
                     Layout.alignment: Qt.AlignVCenter
                     sourceComponent: BarModuleLoader.getModule(modelData)
+                    onLoaded: if (item && item.hasOwnProperty("barSection")) item.barSection = "right"
                 }
             }
             Item { Layout.fillWidth: true }
