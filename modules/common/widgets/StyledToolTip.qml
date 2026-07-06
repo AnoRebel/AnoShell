@@ -16,7 +16,11 @@ ToolTip {
     // Anchor BELOW the hovered widget (Qt's default centres it ON the parent, so
     // a bar-icon tooltip covered the icon). ToolTip.y is measured from the parent
     // origin; push it past the parent's bottom edge.
-    y: (parent?.height ?? 0) + 4
+    // Qt ToolTip resets a plain `y` binding to 0 (parent origin = top of the
+    // icon) when it opens, so the tip sat ON the icon. Re-apply the below-parent
+    // offset whenever it becomes visible.
+    onVisibleChanged: if (visible) y = (parent?.height ?? 0) + 4
+    onOpened: y = (parent?.height ?? 0) + 4
     font {
         family: Appearance.font.family.main
         variableAxes: Appearance.font.variableAxes.main
