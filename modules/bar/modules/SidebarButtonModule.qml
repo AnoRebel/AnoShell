@@ -54,12 +54,7 @@ RippleButton {
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
 
-    // Tooltip anchored BELOW the button (y = button height + gap) so its popup
-    // never overlaps the button and can't intercept the click. Gated on the
-    // RippleButton's own `hovered` so it shows only on hover.
     StyledToolTip {
-        extraVisibleCondition: root.hovered
-        y: root.height + 4
         text: root.side === "right" ? "System panel — quick settings, media, calendar" : "Utility panel — AI chat, notifications, translate"
     }
 }

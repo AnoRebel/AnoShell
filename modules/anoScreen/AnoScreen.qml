@@ -116,10 +116,13 @@ Scope {
                 return { x: x, y: y, w: w, h: h, vertical: vertical, edge: edge, present: true, def: def }
             }
 
-            // Fully click-through: AnoScreen is purely decorative now (corners +
-            // bar background). Bar input is handled by the separate BarWindow that
-            // sits over the bar area, so this window needs no interactive regions.
-            mask: Region {}
+            // Fully click-through: AnoScreen is purely decorative (screen
+            // corners). An EMPTY `Region {}` is NOT click-through in Quickshell —
+            // it defaults to the whole window being the input region, so this
+            // full-screen Top-layer window would swallow EVERY click (bar buttons,
+            // tray icons, the desktop). `Region { item: null }` = empty input
+            // region = truly click-through (same pattern as PopupToolTip).
+            mask: Region { item: null }
 
             // ── All visual content, attached ASYNCHRONOUSLY ───────────────
             // The corner Shapes + bar content are a deep item tree; attaching it
