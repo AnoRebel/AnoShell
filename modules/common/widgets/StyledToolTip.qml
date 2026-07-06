@@ -13,11 +13,10 @@ ToolTip {
     horizontalPadding: 10
     background: null
 
-    // Drop BELOW the hovered widget instead of Qt's default (centred ON it),
-    // so a bar-icon tooltip doesn't cover the icon you're pointing at. Centred
-    // horizontally on the parent.
+    // Anchor BELOW the hovered widget (Qt's default centres it ON the parent, so
+    // a bar-icon tooltip covered the icon). ToolTip.y is measured from the parent
+    // origin; push it past the parent's bottom edge.
     y: (parent?.height ?? 0) + 4
-    x: ((parent?.width ?? 0) - width) / 2
     font {
         family: Appearance.font.family.main
         variableAxes: Appearance.font.variableAxes.main
