@@ -54,7 +54,20 @@ RippleButton {
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
 
-    StyledToolTip {
-        text: root.side === "right" ? "System panel — quick settings, media, calendar" : "Utility panel — AI chat, notifications, translate"
+    // Tooltip attached to a hover-only overlay that does NOT accept buttons, so
+    // it never swallows the click meant for the RippleButton beneath it.
+    // (A StyledToolTip as a direct Button child rendered permanently and blocked
+    // the button.)
+    MouseArea {
+        id: ttHover
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
+        StyledToolTip {
+            // parent (the MouseArea) has no `hovered`, which would make the tip
+            // permanently visible — gate explicitly on containsMouse instead.
+            extraVisibleCondition: ttHover.containsMouse
+            text: root.side === "right" ? "System panel — quick settings, media, calendar" : "Utility panel — AI chat, notifications, translate"
+        }
     }
 }
