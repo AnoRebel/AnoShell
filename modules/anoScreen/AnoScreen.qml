@@ -166,18 +166,98 @@ Scope {
                         corner: RoundCorner.CornerEnum.BottomRight
                     }
 
-                    // NOTE: AnoScreen draws ONLY the rounded screen corners.
-                    // It does NOT draw the bar (background OR content):
-                    //  - Bar CONTENT stays in the separate BarWindow (attaching a
-                    //    deep tree into this full-screen window crashes QS 0.3.0;
-                    //    noctalia keeps content in its own window for the same
-                    //    reason).
-                    //  - Bar BACKGROUND is also left to BarWindow (showBackground
-                    //    stays on in connected mode). AnoScreen is stacked ABOVE
-                    //    bar:main, so drawing an opaque bar background here would
-                    //    OCCLUDE the bar content (blank blurred strip, hover-only
-                    //    popups — the reported bug). BarWindow's own flush/rounded
-                    //    background renders correctly beneath its content.
+                    // ── Bar → frame concave joins ──────────────────────────
+                    // AnoScreen never hosts bar content/background (that lives in
+                    // BarWindow; hosting it here crashes QS 0.3.0, and AnoScreen is
+                    // stacked ABOVE the bar so it would occlude it). But we CAN
+                    // draw small concave carves in the GAP between the bar's outer
+                    // corners and the screen edge — that space has no bar content,
+                    // so it doesn't occlude, and it makes the bar read as fused
+                    // into the frame instead of a floating pill.
+                    Repeater {
+                        model: win.screenBars
+                        Item {
+                            id: barJoin
+                            required property var modelData
+                            anchors.fill: parent
+                            readonly property real m: root.globalMargin
+                            readonly property real th: root.barThickness(modelData)
+                            readonly property real br: root.cornerRadius
+                            readonly property string edge: modelData?.edge ?? "top"
+                            readonly property bool isTop: edge === "top"
+                            readonly property bool isBottom: edge === "bottom"
+                            // Only horizontal (top/bottom) bars fused for now.
+                            visible: (isTop || isBottom) && root.barsShown
+
+                            // The bar band's inner edge (toward the desktop).
+                            readonly property real yInner: isTop ? (m + th) : (win.sh - m - th)
+
+                            // Concave carves in the frame colour, tucked at the two
+                            // interior corners of the bar so it flows into the
+                            // frame. A TopLeft RoundCorner placed just below the bar
+                            // rounds the gap between the bar's left underside and
+                            // the desktop; mirror for the right.
+                            RoundCorner {
+                                implicitSize: barJoin.br
+                                color: root.cornerColor
+                                x: barJoin.m
+                                y: barJoin.isTop ? barJoin.yInner : (barJoin.yInner - barJoin.br)
+                                corner: barJoin.isTop ? RoundCorner.CornerEnum.TopLeft
+                                                      : RoundCorner.CornerEnum.BottomLeft
+                            }
+                            RoundCorner {
+                                implicitSize: barJoin.br
+                                color: root.cornerColor
+                                x: win.sw - barJoin.m - barJoin.br
+                                y: barJoin.isTop ? barJoin.yInner : (barJoin.yInner - barJoin.br)
+                                corner: barJoin.isTop ? RoundCorner.CornerEnum.TopRight
+                                                      : RoundCorner.CornerEnum.BottomRight
+                            }
+                        }
+                    }
+
+                    // ── Registered-panel → frame concave joins ─────────────
+                    // Sidebars/popups/trays publish their content rect + edge to
+                    // PanelRegistry; draw concave carves at the panel's two corners
+                    // that face the desktop, so the panel fuses into the frame.
+                    Repeater {
+                        model: PanelRegistry.panelsForScreen(win.screenName)
+                        Item {
+                            id: panelJoin
+                            required property var modelData
+                            anchors.fill: parent
+                            readonly property real r: root.cornerRadius
+                            readonly property string edge: modelData?.edge ?? "right"
+                            readonly property bool vertical: edge === "left" || edge === "right"
+                            readonly property real px: modelData?.x ?? 0
+                            readonly property real py: modelData?.y ?? 0
+                            readonly property real pw: modelData?.w ?? 0
+                            readonly property real ph: modelData?.h ?? 0
+                            // Interior x (desktop-facing edge of the panel).
+                            readonly property real inX: edge === "right" ? px : (px + pw)
+                            visible: vertical && root.enabled
+
+                            // For a right sidebar (edge="right"), the desktop-facing
+                            // edge is its LEFT side (inX = px). Concave carves at the
+                            // top and bottom of that edge fuse it into the frame.
+                            RoundCorner {
+                                implicitSize: panelJoin.r
+                                color: root.cornerColor
+                                x: panelJoin.edge === "right" ? (panelJoin.inX - panelJoin.r) : panelJoin.inX
+                                y: panelJoin.py
+                                corner: panelJoin.edge === "right" ? RoundCorner.CornerEnum.TopRight
+                                                                   : RoundCorner.CornerEnum.TopLeft
+                            }
+                            RoundCorner {
+                                implicitSize: panelJoin.r
+                                color: root.cornerColor
+                                x: panelJoin.edge === "right" ? (panelJoin.inX - panelJoin.r) : panelJoin.inX
+                                y: panelJoin.py + panelJoin.ph - panelJoin.r
+                                corner: panelJoin.edge === "right" ? RoundCorner.CornerEnum.BottomRight
+                                                                   : RoundCorner.CornerEnum.BottomLeft
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -51,6 +51,26 @@ Scope {
             Timer { id: _closeTimer; interval: 300; onTriggered: sidebarRoot.visible = false }
             function hide() { GlobalStates.sidebarLeftOpen = false }
 
+            // Register content rect with PanelRegistry for connected-corners joins.
+            readonly property string _regKey: "sidebarLeft:" + (modelData?.name ?? "")
+            readonly property bool _regActive: GlobalStates.sidebarLeftOpen && sidebarRoot.visible
+            function _updateReg() {
+                if (_regActive) {
+                    const m = root.globalMargin
+                    const sh = screen?.height ?? 0
+                    PanelRegistry.register(_regKey, {
+                        "kind": "sidebar", "screenName": modelData?.name ?? "", "edge": "left",
+                        "x": m, "y": m,
+                        "w": root.sidebarWidth - m * 2, "h": sh - m * 2
+                    })
+                } else {
+                    PanelRegistry.unregister(_regKey)
+                }
+            }
+            on_RegActiveChanged: _updateReg()
+            Component.onCompleted: _updateReg()
+            Component.onDestruction: PanelRegistry.unregister(_regKey)
+
             exclusiveZone: 0
             implicitWidth: screen?.width ?? 1920
             WlrLayershell.namespace: "quickshell:sidebarLeft"
