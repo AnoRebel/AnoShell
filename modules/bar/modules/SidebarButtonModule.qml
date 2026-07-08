@@ -53,8 +53,4 @@ RippleButton {
         verticalAlignment: Text.AlignVCenter
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
-
-    StyledToolTip {
-        text: root.side === "right" ? "System panel — quick settings, media, calendar" : "Utility panel — AI chat, notifications, translate"
-    }
 }
