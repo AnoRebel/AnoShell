@@ -38,7 +38,14 @@ Scope {
     // Screen-corner colour: a bezel tone that reads on ANY wallpaper. Pure black
     // (like a rounded display) so the desktop looks clipped to a rounded rect —
     // colLayer0 was invisible against dark wallpaper edges.
-    readonly property color cornerColor: Appearance?.colors.colShadow ?? "#000000"
+    // Match the shell surface (same as the bar/panels) so the rounded corners
+    // read as part of the theme, seamless with the rest of the shell. Force it
+    // OPAQUE — colLayer0 may carry transparency, which would make the corners
+    // faint/invisible; the corner is a solid carve.
+    readonly property color cornerColor: Qt.rgba(
+        (Appearance?.colors.colLayer0.r ?? 0.11),
+        (Appearance?.colors.colLayer0.g ?? 0.11),
+        (Appearance?.colors.colLayer0.b ?? 0.12), 1.0)
     readonly property real globalMargin: Config.options?.appearance?.bezel ?? 0
     readonly property bool barsShown: GlobalStates.barOpen && !GlobalStates.screenLocked
 
