@@ -34,7 +34,7 @@ Scope {
                 || (modelData?.name && modelData.name === GlobalStates.focusedScreenName)
             readonly property bool shouldShow: GlobalStates.sidebarRightOpen && isFocusedScreen
 
-            Component.onCompleted: visible = shouldShow
+            Component.onCompleted: { visible = shouldShow; _updateReg() }
 
             Connections {
                 target: GlobalStates
@@ -74,7 +74,6 @@ Scope {
                 }
             }
             on_RegActiveChanged: _updateReg()
-            Component.onCompleted: _updateReg()
             Component.onDestruction: PanelRegistry.unregister(_regKey)
 
             exclusiveZone: 0
