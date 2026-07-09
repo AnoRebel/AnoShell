@@ -27,6 +27,11 @@
     "connectedCorners": {
       "enable": false,
       "radius": 18
+    },
+    "shadows": {
+      "enable": false,
+      "intensity": 1.0,
+      "opacity": 1.0
     }
   },
   "animations": {

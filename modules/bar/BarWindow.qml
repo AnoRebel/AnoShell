@@ -82,6 +82,20 @@ PanelWindow {
             anchors.fill: barContentLoader
         }
 
+        // Material 3 elevation shadow behind the bar (SDF shader; no-op when
+        // appearance.shadows.enable is false). Declared BEFORE the background so
+        // it renders underneath it.
+        Loader {
+            active: barRoot.showBackground && (Config.options?.appearance?.shadows?.enable ?? false)
+            anchors.fill: barBackground
+            sourceComponent: ElevationShadow {
+                level: 2
+                direction: barRoot.edge === "bottom" ? "bottom" : "top"
+                targetColor: "transparent"   // the Rectangle above paints the fill
+                targetRadius: barRoot.barRadius
+            }
+        }
+
         // Background
         Rectangle {
             id: barBackground

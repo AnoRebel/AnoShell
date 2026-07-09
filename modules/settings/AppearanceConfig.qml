@@ -495,6 +495,44 @@ ColumnLayout {
         }
     }
 
+    // ═══ Shadows (Material 3 elevation) ═══
+    SettingsCard {
+        id: shadowsCard
+        icon: "layers"
+        title: "Shadows"
+        subtitle: "Material 3 elevation shadows behind shell surfaces"
+        configKeys: ["appearance.shadows"]
+
+        readonly property bool shadowsOn: Config.options?.appearance?.shadows?.enable ?? false
+
+        ConfigSwitch {
+            label: "Enable elevation shadows"
+            sublabel: "Drawn with a GPU signed-distance-field shader (cheap; no blur passes)"
+            checked: shadowsCard.shadowsOn
+            onCheckedChanged: Config.setNestedValue("appearance.shadows.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Intensity"
+            sublabel: "Scales the shadow's blur radius"
+            from: 0.25; to: 2.0; stepSize: 0.05
+            enabled: shadowsCard.shadowsOn
+            value: Config.options?.appearance?.shadows?.intensity ?? 1.0
+            onValueChanged: Config.setNestedValue("appearance.shadows.intensity", value)
+            valueText: `${value.toFixed(2)}×`
+        }
+
+        ConfigSlider {
+            label: "Opacity"
+            sublabel: "Scales how dark the shadow is"
+            from: 0.1; to: 2.0; stepSize: 0.05
+            enabled: shadowsCard.shadowsOn
+            value: Config.options?.appearance?.shadows?.opacity ?? 1.0
+            onValueChanged: Config.setNestedValue("appearance.shadows.opacity", value)
+            valueText: `${value.toFixed(2)}×`
+        }
+    }
+
     // ═══ Animations ═══
     SettingsCard {
         icon: "animation"

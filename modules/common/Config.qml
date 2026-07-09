@@ -440,6 +440,15 @@ Singleton {
                     property real radius: 18
                 }
 
+                // Material 3 elevation shadows (SDF shader). Default off — when
+                // disabled the shader zeroes both shadow terms and the padding
+                // collapses, so it costs nearly nothing.
+                property JsonObject shadows: JsonObject {
+                    property bool enable: false
+                    property real intensity: 1.0   // scales blur radius
+                    property real opacity: 1.0     // scales shadow alpha
+                }
+
                 property JsonObject transparency: JsonObject {
                     property bool enable: true
                     // Automatic (wallpaper-vibrancy) mode pushed background up to
