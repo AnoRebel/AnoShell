@@ -26,7 +26,7 @@ import Quickshell
  *       x, y, w, h,                       // the surface body rect
  *       surfaceRadius,                    // its own convex rounding (optional)
  *       omitStartConnector, omitEndConnector }   // flush against a frame corner
- * At most 4 (the shader's fixed slot capacity); extras are dropped.
+ * At most 8 (the shader's slot capacity); extras are dropped.
  */
 Item {
     id: root
@@ -54,7 +54,7 @@ Item {
     property real shadowOpacity: Config.options?.appearance?.shadows?.opacity ?? 1.0
     property color shadowColor: "#000000"
 
-    /// Up to 4 surface descriptors to fuse into the frame.
+    /// Up to 8 surface descriptors to fuse into the frame.
     property var surfaces: []
 
     // Cutout edges in px: left, top, right, bottom. Clamped so a thick frame on
@@ -66,8 +66,11 @@ Item {
     readonly property real _cutRadius: Math.max(0, Math.min(cornerRadius,
         Math.floor(Math.min(_cutR - _cutL, _cutB - _cutT) / 2)))
 
-    /// Pack the descriptors into the shader's four fixed slots.
-    /// Mirrors DMS FrameWindow._sdfSlots. Plain arrays in, vector4d out.
+    readonly property int slotCount: 8
+
+    /// Pack the descriptors into the shader's slots, one mat4 per slot whose
+    /// columns are rect, corner radii, junction k and (active, 0, 0, 0).
+    /// Mirrors DMS FrameWindow._sdfSlots.
     readonly property var _slots: {
         const dpr = Screen.devicePixelRatio || 1
         const src = root.surfaces ?? []
@@ -78,15 +81,15 @@ Item {
             dpr: dpr
         }
         const out = []
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < root.slotCount; i++) {
             const s = (i < src.length) ? src[i] : null
             const p = s ? SurfaceGeometry.packSlot(s, ctx) : SurfaceGeometry.emptySlot()
-            out.push({
-                rect: Qt.vector4d(p.rect[0], p.rect[1], p.rect[2], p.rect[3]),
-                corner: Qt.vector4d(p.corner[0], p.corner[1], p.corner[2], p.corner[3]),
-                k: Qt.vector4d(p.k[0], p.k[1], p.k[2], p.k[3]),
-                param: Qt.vector4d(p.active, 0, 0, 0)
-            })
+            const r = p.rect, c = p.corner, k = p.k
+            // Qt.matrix4x4 takes rows; the shader reads columns.
+            out.push(Qt.matrix4x4(r[0], c[0], k[0], p.active,
+                                  r[1], c[1], k[1], 0,
+                                  r[2], c[2], k[2], 0,
+                                  r[3], c[3], k[3], 0))
         }
         return out
     }
@@ -116,21 +119,13 @@ Item {
         property vector4d ambientParam: Qt.vector4d(
             20 * root.shadowIntensity, 0, root.shadowEnabled ? 0.15 * root.shadowOpacity : 0, 0)
 
-        property vector4d chromeRect0: root._slots[0].rect
-        property vector4d chromeCorner0: root._slots[0].corner
-        property vector4d chromeK0: root._slots[0].k
-        property vector4d chromeParam0: root._slots[0].param
-        property vector4d chromeRect1: root._slots[1].rect
-        property vector4d chromeCorner1: root._slots[1].corner
-        property vector4d chromeK1: root._slots[1].k
-        property vector4d chromeParam1: root._slots[1].param
-        property vector4d chromeRect2: root._slots[2].rect
-        property vector4d chromeCorner2: root._slots[2].corner
-        property vector4d chromeK2: root._slots[2].k
-        property vector4d chromeParam2: root._slots[2].param
-        property vector4d chromeRect3: root._slots[3].rect
-        property vector4d chromeCorner3: root._slots[3].corner
-        property vector4d chromeK3: root._slots[3].k
-        property vector4d chromeParam3: root._slots[3].param
+        property matrix4x4 slot0: root._slots[0]
+        property matrix4x4 slot1: root._slots[1]
+        property matrix4x4 slot2: root._slots[2]
+        property matrix4x4 slot3: root._slots[3]
+        property matrix4x4 slot4: root._slots[4]
+        property matrix4x4 slot5: root._slots[5]
+        property matrix4x4 slot6: root._slots[6]
+        property matrix4x4 slot7: root._slots[7]
     }
 }

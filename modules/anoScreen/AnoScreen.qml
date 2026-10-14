@@ -212,7 +212,7 @@ Scope {
             }
             readonly property var frameSurfaces: {
                 const bars = win.barSurfaces
-                const room = Math.max(0, 4 - bars.length)
+                const room = Math.max(0, 8 - bars.length)
                 return bars.concat(PanelRegistry.surfacesForScreen(win.screenName, room))
             }
 

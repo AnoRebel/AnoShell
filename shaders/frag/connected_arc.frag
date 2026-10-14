@@ -16,25 +16,18 @@ layout(std140, binding = 0) uniform buf {
     vec4 shadowColor;   // straight rgba; a = 0 disables both shadow terms
     vec4 shadowParam;   // key: x = blur px, y = spread px, z,w = offset px
     vec4 ambientParam;  // ambient: x = blur px, y = spread px, z = alpha
-    // Up to four chrome slots. rect = x,y,w,h (px). corner = per-corner radii,
-    // k = per-corner junction fillet radii (both topLeft, topRight, bottomRight,
-    // bottomLeft; a corner is sharp exactly where its k > 0). param = active, 0, 0, 0
-    vec4 chromeRect0;
-    vec4 chromeCorner0;
-    vec4 chromeK0;
-    vec4 chromeParam0;
-    vec4 chromeRect1;
-    vec4 chromeCorner1;
-    vec4 chromeK1;
-    vec4 chromeParam1;
-    vec4 chromeRect2;
-    vec4 chromeCorner2;
-    vec4 chromeK2;
-    vec4 chromeParam2;
-    vec4 chromeRect3;
-    vec4 chromeCorner3;
-    vec4 chromeK3;
-    vec4 chromeParam3;
+    // Eight chrome slots, one mat4 each (ShaderEffect has no array uniforms).
+    // Columns: [0] rect = x,y,w,h px; [1] corner = per-corner radii; [2] k =
+    // per-corner junction fillet radii (both topLeft, topRight, bottomRight,
+    // bottomLeft; a corner is sharp exactly where its k > 0); [3] x = active.
+    mat4 slot0;
+    mat4 slot1;
+    mat4 slot2;
+    mat4 slot3;
+    mat4 slot4;
+    mat4 slot5;
+    mat4 slot6;
+    mat4 slot7;
 } ubuf;
 
 float sdBox(vec2 p, vec2 c, vec2 hs) {
@@ -72,6 +65,19 @@ float chromeK(vec2 px, vec4 rect, vec4 ks) {
     return (p.x >= 0.0) ? (p.y >= 0.0 ? ks.z : ks.y) : (p.y >= 0.0 ? ks.w : ks.x);
 }
 
+// Smooth-union one slot into d (no-op when inactive).
+float addSlot(float d, vec2 px, mat4 s) {
+    if (s[3].x < 0.5)
+        return d;
+    return smin(d, chromeDist(px, s[0], s[1]), chromeK(px, s[0], s[2]));
+}
+
+float addChrome(float d, vec2 px, mat4 s) {
+    if (s[3].x < 0.5)
+        return d;
+    return min(d, chromeDist(px, s[0], s[1]));
+}
+
 float sceneDist(vec2 px) {
     vec2 sc = vec2(ubuf.widthPx, ubuf.heightPx) * 0.5;
     float dOuter = sdBox(px, sc, sc);
@@ -79,15 +85,14 @@ float sceneDist(vec2 px) {
     vec2 cutH = vec2((ubuf.cutout.z - ubuf.cutout.x) * 0.5, (ubuf.cutout.w - ubuf.cutout.y) * 0.5);
     float dCut = sdRoundBox(px, cutC, cutH, ubuf.cutoutRadius);
     float d = max(dOuter, -dCut);
-
-    if (ubuf.chromeParam0.x > 0.5)
-        d = smin(d, chromeDist(px, ubuf.chromeRect0, ubuf.chromeCorner0), chromeK(px, ubuf.chromeRect0, ubuf.chromeK0));
-    if (ubuf.chromeParam1.x > 0.5)
-        d = smin(d, chromeDist(px, ubuf.chromeRect1, ubuf.chromeCorner1), chromeK(px, ubuf.chromeRect1, ubuf.chromeK1));
-    if (ubuf.chromeParam2.x > 0.5)
-        d = smin(d, chromeDist(px, ubuf.chromeRect2, ubuf.chromeCorner2), chromeK(px, ubuf.chromeRect2, ubuf.chromeK2));
-    if (ubuf.chromeParam3.x > 0.5)
-        d = smin(d, chromeDist(px, ubuf.chromeRect3, ubuf.chromeCorner3), chromeK(px, ubuf.chromeRect3, ubuf.chromeK3));
+    d = addSlot(d, px, ubuf.slot0);
+    d = addSlot(d, px, ubuf.slot1);
+    d = addSlot(d, px, ubuf.slot2);
+    d = addSlot(d, px, ubuf.slot3);
+    d = addSlot(d, px, ubuf.slot4);
+    d = addSlot(d, px, ubuf.slot5);
+    d = addSlot(d, px, ubuf.slot6);
+    d = addSlot(d, px, ubuf.slot7);
     return d;
 }
 
@@ -95,19 +100,17 @@ float sceneDist(vec2 px) {
 // excluded. The shadow is derived from this rather than from sceneDist(): the
 // ring is the outermost surface, so nothing sits above the desktop for it to cast
 // onto, and a ring-derived shadow just bleeds inward across the screen edge and
-// darkens whatever window is underneath (a light/dark halo hugging the frame's
-// inner edge). The chrome surfaces DO sit above the desktop, so they still cast.
-// Returns a large positive (= far outside, no coverage) when no chrome is active.
+// darkens whatever window is underneath. Large positive when no chrome is active.
 float chromeOnlyDist(vec2 px) {
     float d = 1.0e6;
-    if (ubuf.chromeParam0.x > 0.5)
-        d = min(d, chromeDist(px, ubuf.chromeRect0, ubuf.chromeCorner0));
-    if (ubuf.chromeParam1.x > 0.5)
-        d = min(d, chromeDist(px, ubuf.chromeRect1, ubuf.chromeCorner1));
-    if (ubuf.chromeParam2.x > 0.5)
-        d = min(d, chromeDist(px, ubuf.chromeRect2, ubuf.chromeCorner2));
-    if (ubuf.chromeParam3.x > 0.5)
-        d = min(d, chromeDist(px, ubuf.chromeRect3, ubuf.chromeCorner3));
+    d = addChrome(d, px, ubuf.slot0);
+    d = addChrome(d, px, ubuf.slot1);
+    d = addChrome(d, px, ubuf.slot2);
+    d = addChrome(d, px, ubuf.slot3);
+    d = addChrome(d, px, ubuf.slot4);
+    d = addChrome(d, px, ubuf.slot5);
+    d = addChrome(d, px, ubuf.slot6);
+    d = addChrome(d, px, ubuf.slot7);
     return d;
 }
 
