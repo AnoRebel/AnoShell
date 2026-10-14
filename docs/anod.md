@@ -19,14 +19,19 @@ Requires Go ≥ 1.27. Set `PREFIX` to install elsewhere (`$PREFIX/bin`).
 
 Without Go (or with `--prebuilt`), `install.sh` installs prebuilt static
 binaries instead: from `anod/dist/linux-<arch>/` when you built them with
-`anod/dist.sh`, otherwise from the latest GitHub release
-(`anoshell-linux-<arch>.tar.gz`, amd64 and arm64), checked against the release's
-`SHA256SUMS` before anything is installed. `ANO_RELEASE=v0.2.0` picks a release;
-`ANO_RELEASE_URL` points at a mirror.
+`anod/dist.sh`, otherwise from a GitHub release (`anoshell-linux-<arch>.tar.gz`, amd64 and
+arm64), checked against the release's `SHA256SUMS` before anything is installed.
 
-Releases are built by `.github/workflows/release.yml`: every push and pull
-request runs vet, tests and the cross-build; pushing a `v*` tag publishes a
-release with the tarballs and checksums.
+| Channel | Built from | Pick it with |
+|---|---|---|
+| `stable` | every push to `main` (the latest stable build; the default) | `ANO_CHANNEL=stable` |
+| `dev` | every push to `dev` (development builds; the default when this checkout is on `dev`) | `ANO_CHANNEL=dev` |
+| a version | a pushed `v*` tag | `ANO_RELEASE=v0.2.0` |
+
+`ANO_RELEASE_URL` points at a mirror. The channels are published by
+`.github/workflows/release.yml`, which also runs vet, tests and the cross-build
+on every pull request. `stable` and `dev` are rolling releases: each push moves
+their tag and replaces the tarballs.
 
 ## Autostart
 

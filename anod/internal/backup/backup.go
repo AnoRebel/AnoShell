@@ -92,9 +92,12 @@ func (c Category) owns(rel string) bool {
 	return false
 }
 
+// Progress, when set, is called after each file is archived (done of total).
+type Progress func(done, total int)
+
 // Create writes the categories' files under home into a new archive at dest.
 // Missing paths are skipped; symlinks are not followed.
-func Create(home, dest string, cats []Category, now time.Time) (Manifest, error) {
+func Create(home, dest string, cats []Category, now time.Time, progress ...Progress) (Manifest, error) {
 	host, _ := os.Hostname()
 	m := Manifest{Version: 1, Created: now, Host: host}
 	var files []string
@@ -145,9 +148,12 @@ func Create(home, dest string, cats []Category, now time.Time) (Manifest, error)
 	if err := writeEntry(tw, manifestName, 0o644, now, mb); err != nil {
 		return m, err
 	}
-	for _, rel := range files {
+	for i, rel := range files {
 		if err := addFile(tw, home, rel); err != nil {
 			return m, err
+		}
+		for _, p := range progress {
+			p(i+1, len(files))
 		}
 	}
 	if err := tw.Close(); err != nil {

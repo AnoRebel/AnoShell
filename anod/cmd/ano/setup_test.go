@@ -47,3 +47,25 @@ func TestTUIScreens(t *testing.T) {
 		t.Errorf("result screen should show output and the error")
 	}
 }
+
+// Live output streams in line by line and the run ends on the job's status.
+func TestTUIStreamsOutput(t *testing.T) {
+	m := newTUI()
+	m.Update(tea.WindowSizeMsg{Width: 100, Height: 40})
+	m.cur, m.scr = actions[2], scrRunning
+	j := &job{lines: make(chan string, 4), done: make(chan error, 1)}
+	m.job = j
+	j.lines <- "→ build anod + ano"
+	j.lines <- "installed"
+	close(j.lines)
+	j.done <- nil
+	for msg := j.next()(); ; msg = j.next()() {
+		m.Update(msg)
+		if _, ok := msg.(ranMsg); ok {
+			break
+		}
+	}
+	if m.scr != scrResult || len(m.lines) != 2 || !strings.Contains(m.View().Content, "installed") {
+		t.Fatalf("screen %d, lines %v", m.scr, m.lines)
+	}
+}

@@ -5,12 +5,15 @@ package main
 // `ano setup <action>` subcommand, which also works without it.
 
 import (
+	"bufio"
 	"fmt"
 	"image/color"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
+	"time"
 
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
@@ -112,11 +115,25 @@ const (
 	scrResult
 )
 
+// lineMsg is one line of live output; ranMsg ends a run (out is set only
+// when the whole output arrives at once, as in tests).
+type lineMsg string
+
 type ranMsg struct {
 	out    string
 	err    error
 	dryRun bool
 }
+
+// job is a running `ano …` child whose output streams into the TUI.
+type job struct {
+	cmd    *exec.Cmd
+	lines  chan string
+	done   chan error
+	dryRun bool
+}
+
+const maxLines = 5000 // live output kept for scrolling
 
 type tui struct {
 	scr     screen
@@ -128,6 +145,12 @@ type tui struct {
 	cur     action
 	lastErr error
 	w, h    int
+
+	job       *job
+	lines     []string
+	started   time.Time
+	elapsed   time.Duration
+	cancelled bool
 }
 
 func newTUI() *tui {
@@ -149,17 +172,89 @@ func newTUI() *tui {
 	return m
 }
 
-// run executes `ano <args>` with captured output. The binary re-invokes
-// itself so the TUI and the plain commands share one implementation.
-func run(args []string, dryRun bool) tea.Cmd {
-	return func() tea.Msg {
-		self, err := os.Executable()
-		if err != nil {
-			return ranMsg{err: err}
-		}
-		out, err := exec.Command(self, args...).CombinedOutput()
-		return ranMsg{out: string(out), err: err, dryRun: dryRun}
+// start runs `ano <args>` (the binary re-invokes itself, so the TUI and the
+// plain commands share one implementation) in its own process group, with
+// stdout and stderr streamed line by line.
+func start(args []string, dryRun bool) (*job, error) {
+	self, err := os.Executable()
+	if err != nil {
+		return nil, err
 	}
+	pr, pw := io.Pipe()
+	c := exec.Command(self, args...)
+	c.Stdout, c.Stderr = pw, pw
+	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // cancel stops its children too
+	if err := c.Start(); err != nil {
+		return nil, err
+	}
+	j := &job{cmd: c, lines: make(chan string, 64), done: make(chan error, 1), dryRun: dryRun}
+	go func() {
+		sc := bufio.NewScanner(pr)
+		sc.Buffer(make([]byte, 64*1024), 1024*1024)
+		for sc.Scan() {
+			j.lines <- sc.Text()
+		}
+		close(j.lines)
+	}()
+	go func() { err := c.Wait(); pw.Close(); j.done <- err }()
+	return j, nil
+}
+
+// next waits for the job's next line, or its end once the output is drained.
+func (j *job) next() tea.Cmd {
+	return func() tea.Msg {
+		if l, ok := <-j.lines; ok {
+			return lineMsg(l)
+		}
+		return ranMsg{err: <-j.done, dryRun: j.dryRun}
+	}
+}
+
+type tickMsg struct{}
+
+func tick() tea.Cmd { return tea.Tick(time.Second, func(time.Time) tea.Msg { return tickMsg{} }) }
+
+func (m *tui) run(args []string, dryRun bool) tea.Cmd {
+	m.scr, m.lines, m.cancelled, m.lastErr = scrRunning, nil, false, nil
+	m.started, m.elapsed = time.Now(), 0
+	m.out.SetContent("")
+	j, err := start(args, dryRun)
+	if err != nil {
+		return func() tea.Msg { return ranMsg{err: err} }
+	}
+	m.job = j
+	return tea.Batch(m.spin.Tick, tick(), j.next())
+}
+
+// render colours step headings, commands and failures in the output.
+func (m *tui) render() string {
+	out := make([]string, len(m.lines))
+	for i, l := range m.lines {
+		t := strings.TrimSpace(l)
+		switch {
+		case strings.HasPrefix(t, "→ "):
+			out[i] = m.st.header.Render(l)
+		case strings.HasPrefix(t, "OK "), strings.HasPrefix(t, "✓"):
+			out[i] = m.st.success.Render(l)
+		case strings.HasPrefix(t, "WARN"):
+			out[i] = m.st.cursor.Render(l)
+		case strings.HasPrefix(t, "$ "):
+			out[i] = m.st.muted.Render(l)
+		case strings.HasPrefix(t, "✘"), strings.Contains(t, "FAIL"), strings.HasPrefix(strings.ToLower(t), "error"), strings.HasPrefix(t, "ano setup:"):
+			out[i] = m.st.danger.Render(l)
+		default:
+			out[i] = l
+		}
+	}
+	return strings.Join(out, "\n")
+}
+
+// resize fits the menu and the output panel to the terminal.
+func (m *tui) resize() {
+	m.menu.SetSize(min(max(30, m.w-2), 100), min(len(actions)*3, max(6, m.h-8)))
+	m.out.SetWidth(max(20, m.w-6))
+	m.out.SetHeight(max(4, m.h-12))
+	m.help.SetWidth(m.w)
 }
 
 // The terminal's background picks the light or dark palette (v2 only reports
@@ -172,17 +267,37 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.st = newStyles(newPalette(msg.IsDark()))
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
-		m.out.SetWidth(max(20, msg.Width-6))
-		m.out.SetHeight(max(5, msg.Height-12))
-		m.help.SetWidth(msg.Width)
+		m.resize()
+	case lineMsg:
+		m.lines = append(m.lines, string(msg))
+		if len(m.lines) > maxLines {
+			m.lines = m.lines[len(m.lines)-maxLines:]
+		}
+		m.out.SetContent(m.render())
+		m.out.GotoBottom() // follow the live output
+		if m.job != nil {
+			return m, m.job.next()
+		}
+		return m, nil
+	case tickMsg:
+		if m.scr == scrRunning {
+			m.elapsed = time.Since(m.started).Round(time.Second)
+			return m, tick()
+		}
+		return m, nil
 	case ranMsg:
-		m.lastErr = msg.err
-		m.out.SetContent(strings.TrimRight(msg.out, "\n"))
-		m.out.GotoTop()
-		if msg.dryRun {
+		m.job, m.lastErr = nil, msg.err
+		m.elapsed = time.Since(m.started).Round(100 * time.Millisecond)
+		if msg.out != "" {
+			m.lines = strings.Split(strings.TrimRight(msg.out, "\n"), "\n")
+		}
+		m.out.SetContent(m.render())
+		if msg.dryRun && msg.err == nil {
 			m.scr = scrReview
+			m.out.GotoTop()
 		} else {
 			m.scr = scrResult
+			m.out.GotoBottom()
 		}
 		return m, nil
 	case spinner.TickMsg:
@@ -193,6 +308,11 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.KeyPressMsg:
 		switch {
+		case m.scr == scrRunning && msg.String() == "ctrl+c" && m.job != nil:
+			// Stop the whole process group; the run ends with its exit status.
+			m.cancelled = true
+			syscall.Kill(-m.job.cmd.Process.Pid, syscall.SIGINT)
+			return m, nil
 		case key.Matches(msg, keys.Quit):
 			if m.scr != scrRunning {
 				return m, tea.Quit
@@ -206,15 +326,13 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.scr {
 			case scrMenu:
 				m.cur = m.menu.SelectedItem().(action)
-				m.scr = scrRunning
 				args := m.cur.args
 				if m.cur.changes {
 					args = append(append([]string{}, args...), "--dry-run")
 				}
-				return m, tea.Batch(m.spin.Tick, run(args, m.cur.changes))
+				return m, m.run(args, m.cur.changes)
 			case scrReview:
-				m.scr = scrRunning
-				return m, tea.Batch(m.spin.Tick, run(m.cur.args, false))
+				return m, m.run(m.cur.args, false)
 			case scrResult:
 				m.scr = scrMenu
 				return m, nil
@@ -225,7 +343,7 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.scr {
 	case scrMenu:
 		m.menu, cmd = m.menu.Update(msg)
-	case scrReview, scrResult:
+	case scrReview, scrResult, scrRunning:
 		m.out, cmd = m.out.Update(msg)
 	}
 	return m, cmd
@@ -242,17 +360,27 @@ func (m *tui) View() tea.View {
 		body = m.st.panel.Render(m.out.View())
 		footer = m.st.muted.Render("enter runs these steps · esc goes back")
 	case scrRunning:
-		header = m.cur.title
-		body = m.spin.View() + " running ano " + strings.Join(m.cur.args, " ") + " …"
+		header = fmt.Sprintf("%s %s · %s", m.spin.View(), m.cur.title, m.elapsed)
+		body = m.st.panel.Render(m.out.View())
+		if len(m.lines) == 0 {
+			body = m.st.panel.Render(m.st.muted.Render("starting ano " + strings.Join(m.cur.args, " ") + " …"))
+		}
+		footer = m.st.muted.Render("running · ctrl+c cancels")
+		if m.cancelled {
+			footer = m.st.danger.Render("cancelling …")
+		}
 	case scrResult:
 		header = m.cur.title
 		body = m.st.panel.Render(m.out.View())
-		if m.lastErr != nil {
+		switch {
+		case m.cancelled:
+			footer = m.st.danger.Render("✘ cancelled")
+		case m.lastErr != nil:
 			footer = m.st.danger.Render("✘ " + m.lastErr.Error())
-		} else {
+		default:
 			footer = m.st.success.Render("✓ done")
 		}
-		footer += m.st.muted.Render("  · enter/esc back to the menu")
+		footer += m.st.muted.Render(fmt.Sprintf(" in %s · enter/esc back to the menu", m.elapsed))
 	}
 	v := tea.NewView(lipgloss.JoinVertical(lipgloss.Left,
 		m.st.title.Render("AnoShell setup · ano "+versionString()),

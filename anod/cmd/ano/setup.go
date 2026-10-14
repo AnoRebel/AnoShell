@@ -103,9 +103,14 @@ func (r *runner) run(dir, name string, argv ...string) error {
 	c := exec.Command(argv[0], argv[1:]...)
 	c.Dir = dir
 	c.Stdout, c.Stderr = os.Stdout, os.Stderr
-	if err := c.Run(); err != nil {
+	t0 := time.Now()
+	err := c.Run()
+	took := time.Since(t0).Round(100 * time.Millisecond)
+	if err != nil {
+		fmt.Printf("✘ %s failed after %s\n", name, took)
 		return fmt.Errorf("%s: %w", name, err)
 	}
+	fmt.Printf("✓ %s (%s)\n", name, took)
 	return nil
 }
 

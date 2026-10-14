@@ -87,7 +87,21 @@ func backupCmd(args []string) int {
 		if dest == "" {
 			dest = filepath.Join(backup.DefaultDir(home), "anoshell-"+stamp+".tar.gz")
 		}
-		m, err := backup.Create(home, dest, cats, now)
+		// A live file count on a terminal (wallpapers can be large).
+		var prog []backup.Progress
+		if fi, err := os.Stdout.Stat(); err == nil && fi.Mode()&os.ModeCharDevice != 0 {
+			last := time.Time{}
+			prog = append(prog, func(done, total int) {
+				if done == total || time.Since(last) > 100*time.Millisecond {
+					fmt.Printf("\r  archiving %d/%d file(s)…", done, total)
+					last = time.Now()
+				}
+				if done == total {
+					fmt.Print("\r\033[K")
+				}
+			})
+		}
+		m, err := backup.Create(home, dest, cats, now, prog...)
 		if err != nil {
 			return fail(err)
 		}

@@ -1,10 +1,14 @@
-# Builds anod + ano on every push and pull request; a `v*` tag also publishes a
-# GitHub release whose tarballs `anod/install.sh` downloads on machines without Go.
+# Builds and tests anod + ano on every push and pull request, and publishes
+# release channels that `anod/install.sh` downloads on machines without Go:
+#   main   -> rolling "stable" release (latest stable; marked Latest)
+#   dev    -> rolling "dev" pre-release (development builds)
+#   v*     -> a pinned versioned release (vX.Y.Z)
+# Rolling channels move their tag to the built commit and replace the assets.
 name: build and release
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
@@ -12,9 +16,17 @@ on:
 permissions:
   contents: read
 
+# One publish per channel at a time; a newer push supersedes a queued one.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.channel.outputs.channel }}
+      version: ${{ steps.channel.outputs.version }}
     defaults:
       run:
         working-directory: anod
@@ -28,6 +40,28 @@ jobs:
           go-version-file: anod/go.mod
           cache-dependency-path: anod/go.sum
 
+      - name: pick the channel and version
+        id: channel
+        env:
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          base="$(sed -n 's/^var Version = "\(.*\)"/\1/p' internal/version/version.go)"
+          sha="$(git rev-parse --short HEAD)"
+          channel=none
+          version="$base+$sha"
+          if [ "$EVENT" = push ]; then
+            case "$REF" in
+              refs/tags/v*)      channel=tag;    version="${REF_NAME#v}" ;;
+              refs/heads/main)   channel=stable; version="$base+main.$sha" ;;
+              refs/heads/dev)    channel=dev;    version="$base-dev+$sha" ;;
+            esac
+          fi
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "channel $channel, version $version"
+
       - name: vet and test
         run: |
           go vet ./...
@@ -35,11 +69,8 @@ jobs:
 
       - name: cross-build release tarballs
         env:
-          # On a tag the version is the tag without its leading "v".
-          ANO_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
-        run: |
-          if [ -n "$ANO_VERSION" ]; then export ANO_VERSION="${ANO_VERSION#v}"; else unset ANO_VERSION; fi
-          ./dist.sh
+          ANO_VERSION: ${{ steps.channel.outputs.version }}
+        run: ./dist.sh
 
       - uses: actions/upload-artifact@v7
         with:
@@ -50,21 +81,51 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
+    if: needs.build.outputs.channel != 'none'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+
       - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
 
-      - uses: softprops/action-gh-release@v3
+      - name: move the rolling channel tag to this commit
+        if: needs.build.outputs.channel != 'tag'
+        env:
+          CHANNEL: ${{ needs.build.outputs.channel }}
+        run: |
+          git tag -f "$CHANNEL" "$GITHUB_SHA"
+          git push -f origin "refs/tags/$CHANNEL"
+
+      - name: publish a versioned release
+        if: needs.build.outputs.channel == 'tag'
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             dist/anoshell-linux-*.tar.gz
             dist/SHA256SUMS
           generate_release_notes: true
+          fail_on_unmatched_files: true
+          make_latest: "false" # "Latest" is the stable channel
+
+      - name: publish the rolling channel
+        if: needs.build.outputs.channel != 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.build.outputs.channel }}
+          name: ${{ needs.build.outputs.channel == 'stable' && 'Stable (main)' || 'Development (dev)' }}
+          body: |
+            Rolling ${{ needs.build.outputs.channel }} build of ${{ github.ref_name }} at ${{ github.sha }}.
+            Version ${{ needs.build.outputs.version }}. Replaced on every push to ${{ github.ref_name }}.
+          prerelease: ${{ needs.build.outputs.channel == 'dev' }}
+          make_latest: ${{ needs.build.outputs.channel == 'stable' && 'true' || 'false' }}
+          files: |
+            dist/anoshell-linux-*.tar.gz
+            dist/SHA256SUMS
+          overwrite_files: true
           fail_on_unmatched_files: true

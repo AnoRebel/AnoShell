@@ -4,8 +4,12 @@
 #     --test      run go test ./... before building
 #     --prebuilt  install prebuilt binaries instead of building (automatic when
 #                 Go isn't installed): dist/linux-<arch>/ if present, else the
-#                 GitHub release tarball (checksum-verified). ANO_RELEASE=vX.Y.Z
-#                 picks a release (default: latest); ANO_RELEASE_URL a mirror.
+#                 GitHub release tarball (checksum-verified) from a channel:
+#                   ANO_RELEASE=vX.Y.Z   a tagged version
+#                   ANO_CHANNEL=stable   rolling build of main (the default)
+#                   ANO_CHANNEL=dev      rolling build of dev (the default when
+#                                        this checkout is on the dev branch)
+#                 ANO_RELEASE_URL points at a mirror.
 set -euo pipefail
 cd "$(dirname "$0")"
 bin="${PREFIX:-$HOME/.local}/bin"
@@ -29,13 +33,20 @@ if (( prebuilt )); then
     if [[ ! -x "$src/ano" || ! -x "$src/anod" ]]; then
         # No local build: fetch the release tarball and verify its checksum.
         repo="https://github.com/AnoRebel/AnoShell/releases"
-        rel="${ANO_RELEASE:-latest}"
-        if [[ "$rel" == latest ]]; then url="$repo/latest/download"; else url="$repo/download/$rel"; fi
-        url="${ANO_RELEASE_URL:-$url}" # a mirror, or a local server for testing
+        branch="$(git -C .. symbolic-ref --short HEAD 2>/dev/null || true)"
+        [[ "$branch" == dev ]] && default_channel=dev || default_channel=stable
+        rel="${ANO_RELEASE:-${ANO_CHANNEL:-$default_channel}}"
+        url="${ANO_RELEASE_URL:-$repo/download/$rel}" # a mirror, or a local server for testing
         asset="anoshell-linux-$arch.tar.gz"
         tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
-        fetch() { if command -v curl >/dev/null; then curl -fsSL -o "$2" "$1"; else wget -qO "$2" "$1"; fi; }
-        echo "downloading $asset ($rel)"
+        # A progress bar on a terminal, quiet otherwise.
+        fetch() {
+            if command -v curl >/dev/null; then
+                if [[ -t 2 ]]; then curl -fL --progress-bar -o "$2" "$1"; else curl -fsSL -o "$2" "$1"; fi
+            elif [[ -t 2 ]]; then wget -q --show-progress -O "$2" "$1"
+            else wget -qO "$2" "$1"; fi
+        }
+        echo "downloading $asset ($rel) from $url"
         fetch "$url/$asset" "$tmp/$asset" && fetch "$url/SHA256SUMS" "$tmp/SHA256SUMS" \
             || { echo "download failed from $url (no release yet? install Go instead)" >&2; exit 1; }
         (cd "$tmp" && grep " $asset\$" SHA256SUMS | sha256sum -c --quiet -) \
