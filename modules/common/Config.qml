@@ -688,6 +688,8 @@ Singleton {
             property JsonObject animations: JsonObject {
                 property bool enable: true
                 property real speed: 1.0 // global speed factor
+                property bool reducedMotion: false // no looping/ambient motion; transitions stay
+                property bool batterySaver: false  // no looping/ambient motion while on battery
             }
 
             // ═══════════════════════════════════════════════════════════════

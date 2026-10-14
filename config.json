@@ -40,7 +40,9 @@
   },
   "animations": {
     "enable": true,
-    "speed": 1.0
+    "speed": 1.0,
+    "reducedMotion": false,
+    "batterySaver": false
   },
   "bars": [
     {

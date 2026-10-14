@@ -281,6 +281,19 @@ Singleton {
         readonly property real expressiveEffectsDuration: 200
     }
 
+    // Spring tokens (Qt SpringAnimation: spring = stiffness, damping 0..1).
+    // Springs retarget smoothly mid-flight, which is what makes shape motion
+    // feel liquid. Speed scales stiffness (slower motion = softer spring).
+    readonly property QtObject springs: QtObject {
+        readonly property real _k: 1 / Math.pow(AnimationConfig.speed, 2)
+        // Surfaces growing out of an edge / morphing shapes: soft, slight give.
+        readonly property QtObject liquid: QtObject { readonly property real spring: 3.2 * root.springs._k; readonly property real damping: 0.28; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
+        // Retracting into an edge: settles flush without bouncing past it.
+        readonly property QtObject settle: QtObject { readonly property real spring: 4.2 * root.springs._k; readonly property real damping: 0.42; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
+        // Small UI elements (chips, toggles, indicators).
+        readonly property QtObject snappy: QtObject { readonly property real spring: 6.0 * root.springs._k; readonly property real damping: 0.55; readonly property real mass: 0.8; readonly property real epsilon: 0.25 }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Animation Presets (ready-to-use animation configs with speed multiplier)
     // ═══════════════════════════════════════════════════════════════════════
