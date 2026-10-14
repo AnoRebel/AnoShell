@@ -8,7 +8,8 @@ Sources:
   schema   modules/common/Config.qml (JsonObject tree inside the JsonAdapter)
   bundled  config.json
   written  Config.setNestedValue("…") / `prefix.${…}` / configKeys in the Settings UI
-  read     Config.options?.a?.b chains in runtime code (everything outside modules/settings/)
+  read     Config.options?.a?.b chains in runtime code (everything outside modules/settings/),
+           plus config paths anod's Go code reads
 
 A read of an object path (chain ending at a JsonObject) counts as reading every key
 under it, because the code may then access the keys through a local alias.
@@ -50,8 +51,9 @@ def strip_comments(src: str) -> str:
     return "".join(out)
 
 
-def parse_schema(path: Path):
-    """Return (leaves, objects): dotted leaf keys and dotted JsonObject paths."""
+def parse_schema(path: Path, types=None):
+    """Return (leaves, objects): dotted leaf keys and dotted JsonObject paths.
+    When `types` is a dict it is filled with leaf -> QML type (bool, int, string, var…)."""
     src = strip_comments(path.read_text())
     start = re.search(r"\bJsonAdapter\s*\{", src).end() - 1
     body = STR_RE.sub('""', src[start + 1:])
@@ -84,6 +86,8 @@ def parse_schema(path: Path):
                 objects.add(key); pending_obj = pname
             else:
                 leaves.add(key)
+                if types is not None:
+                    types[key] = ptype
         i = m.end()
     return leaves, objects
 
@@ -133,6 +137,17 @@ def collect():
             for m in CONFIGKEYS_RE.finditer(src):
                 for k in re.findall(r'"([A-Za-z0-9_.]+)"', m.group(1)):
                     writes.setdefault(k, set()).add(rel + " (configKeys)")
+    # anod reads config too: literal dot paths ("hooks.enable") and
+    # concatenated prefixes ("hooks." + key) in its non-test Go sources.
+    for p in (ROOT / "anod").rglob("*.go"):
+        if p.name.endswith("_test.go"):
+            continue
+        rel = p.relative_to(ROOT).as_posix()
+        src = p.read_text(errors="replace")
+        for m in re.finditer(r'"([a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+)"', src):
+            reads.setdefault(m.group(1), set()).add(rel)
+        for m in re.finditer(r'"([a-z][A-Za-z0-9.]*)\."\s*\+', src):
+            reads.setdefault(m.group(1), set()).add(rel)
     return reads, writes, write_prefixes, unresolved
 
 
@@ -152,6 +167,11 @@ def main(argv):
     declared = leaves | objects
     bundled = flatten_json(json.loads((ROOT / "config.json").read_text()))
     reads, writes, wprefix, unresolved = collect()
+    # Go string literals also name old keys (migration sources); they only
+    # count as reads of keys the schema declares.
+    for k in [k for k, srcs in reads.items() if all(r.startswith("anod/") for r in srcs)]:
+        if k not in declared:
+            del reads[k]
     read_keys = set(reads)
 
     def is_read(k):

@@ -1,0 +1,7 @@
+{
+  "hud": { "enabled": false },
+  "activSpot": { "enable": true },
+  "appearance": { "theme": { "static": "nord" } },
+  "bar": { "bars": [ { "id": "main", "edge": "top" } ], "modulesLeft": ["clock"] },
+  "bars": [ { "id": "main", "autoHide": true, "showBackground": false } ]
+}

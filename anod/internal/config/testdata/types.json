@@ -1,0 +1,6 @@
+{
+  "bar": { "showBackground": "yes", "autoHide": { "delay": 1.5, "enable": null } },
+  "hooks": { "timeoutSeconds": 10, "started": "notify-send hi" },
+  "dock": 3,
+  "bogus": { "x": 1 }
+}
