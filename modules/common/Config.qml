@@ -53,6 +53,11 @@ Singleton {
 
         // 1. Live in-memory mutation — UI sees the change this tick
         const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
+        // No-op when nothing changes. Controls echo their initial value
+        // through onValueChanged/onCheckedChanged at creation; without this
+        // every such echo was persisted into the user delta (defaults written
+        // into an untouched config on first start).
+        if (JSON.stringify(liveParent[liveLeaf]) === JSON.stringify(convertedValue)) return;
         liveParent[liveLeaf] = convertedValue;
 
         // 2. User delta mutation — persists to disk
