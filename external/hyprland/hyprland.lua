@@ -175,7 +175,6 @@ hl.config({
 	},
 
 	dwindle = {
-		pseudotile = true,
 		preserve_split = true,
 		smart_split = false,
 		smart_resizing = false,
@@ -202,12 +201,11 @@ hl.config({
 			vibrancy_darkness = 0.5,
 			popups = true, -- blur bar hover popups / menus (PopupWindow surfaces)
 			input_methods = true,
-			["input_methods:ignorealpha"] = 0.8,
+			input_methods_ignorealpha = 0.8, -- 0.56 key (the "input_methods:ignorealpha" spelling is rejected)
 		},
 
 		shadow = {
 			enabled = true,
-			ignore_window = true,
 			range = 50,
 			offset = "0 4",
 			render_power = 10,
@@ -240,7 +238,6 @@ hl.config({
 		disable_hyprland_logo = true,
 		disable_splash_rendering = true,
 		disable_autoreload = false,
-		vfr = 1,
 		mouse_move_enables_dpms = true,
 		key_press_enables_dpms = true,
 		animate_manual_resizes = false,
@@ -578,20 +575,26 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
 -- blur_popups: hover popups are layer-surface popups; decoration:blur:popups
 -- only blurs window popups, so this is needed to blur them.
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur_popups = true })
-hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignorealpha = 0.1 })
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.1 })
 -- The connected-corner frame (AnoScreen) is a full-screen, click-through,
 -- almost-entirely-transparent decorative layer: it paints only the rounded
 -- screen corners, the frame band, and the surfaces fused into them. Blurring the
 -- whole layer produces a misplaced blur strip across the screen, and the
 -- `ignorealpha = 0.1` rule above would additionally blur the soft alpha gradient
--- of its elevation shadow — a dark halo around every edge. Exclude it from both.
+-- of its elevation shadow — a dark halo around every edge. Exclude it from the
+-- rule blur. Its blur comes from the shaped ext-background-effect region
+-- instead, and Hyprland gates that by ignore_alpha too, so this must be 0
+-- (the same rule the shell applies at runtime; a `hyprctl reload` drops that).
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, blur = false })
-hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, ignorealpha = 1.0 })
+hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, ignore_alpha = 0 })
 -- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
 -- the rectangular rule blur would show as a square halo around them.
 hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })
-hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = 0 })
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
+-- rofi: its rounded corners are alpha 0, and one launcher theme is deliberately
+-- black/10% (alpha 0.1). 0.05 blurs that theme and still skips the corners.
+hl.layer_rule({ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.05 })
 
 -- Bar — no entry animation, keep the blur
 hl.layer_rule({ match = { namespace = "^quickshell:bar.*" }, no_anim = true })
@@ -616,8 +619,9 @@ hl.bind(
 	hl.dsp.exec_cmd(qs_or("TEST_ALIVE", "", "pkill rofi || rofi -modi run,window,combi,ssh -show drun -show-icons"))
 )
 
--- Cancel the search-release if any other key/click happens while Super is held
-hl.bind("SUPER + catchall", hl.dsp.global("quickshell:searchToggleReleaseInterrupt"), { non_consuming = true })
+-- Cancel the search-release if a modifier combo or click happens while Super is
+-- held. (`catchall` is only valid inside a submap in 0.56; as a global
+-- "SUPER + catchall" bind it throws and aborted the rest of this file.)
 hl.bind("CTRL + Super_L", hl.dsp.global("quickshell:searchToggleReleaseInterrupt"))
 hl.bind("CTRL + Super_R", hl.dsp.global("quickshell:searchToggleReleaseInterrupt"))
 hl.bind("SUPER + mouse:272", hl.dsp.global("quickshell:searchToggleReleaseInterrupt"))
