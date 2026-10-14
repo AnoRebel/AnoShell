@@ -89,26 +89,26 @@ Singleton {
         connected: CompositorService.isNiri
     }
 
-    Process {
-        id: fetchOutputsProcess
-        command: ["niri", "msg", "-j", "outputs"]
-
-        stdout: StdioCollector {
-            id: fetchOutputsCollector
-            onStreamFinished: {
+    // One-shot "Outputs" request on its own connection (no `niri msg`
+    // process): send the request, read the single reply line, disconnect.
+    Socket {
+        id: outputsSocket
+        path: root.socketPath
+        parser: SplitParser {
+            onRead: line => {
+                outputsSocket.connected = false
                 try {
-                    const outputsData = JSON.parse(fetchOutputsCollector.text)
+                    const outputsData = JSON.parse(line)?.Ok?.Outputs
+                    if (!outputsData) { console.warn("NiriService: Outputs request failed:", line); return }
                     outputs = outputsData
-                    console.info("NiriService: Loaded", Object.keys(outputsData).length, "outputs")
                     updateDisplayScales()
-                    if (windows.length > 0) {
-                        windows = sortWindowsByLayout(windows)
-                    }
+                    if (windows.length > 0) windows = sortWindowsByLayout(windows)
                 } catch (e) {
                     console.warn("NiriService: Failed to parse outputs:", e)
                 }
             }
         }
+        onConnectedChanged: if (connected) { write('"Outputs"\n'); flush() }
     }
 
     // Debounce timer for fetchOutputs
@@ -117,7 +117,7 @@ Singleton {
         interval: 200
         onTriggered: {
             if (CompositorService.isNiri)
-                fetchOutputsProcess.running = true
+                outputsSocket.connected = true
         }
     }
 
