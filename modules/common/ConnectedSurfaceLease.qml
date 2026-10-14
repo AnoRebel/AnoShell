@@ -29,6 +29,8 @@ QtObject {
     property real h: 0
     property real progress: 1
     property real reserve: 0        // exclusive zone this surface holds on its edge
+    property bool detached: false   // an island off its edge: joins by a liquid neck
+    property var neckK: undefined   // neck smoothing radius (default connectedRadius)
     property int priority: 0
     property var surfaceRadius: undefined
     property bool omitStartConnector: false
@@ -48,6 +50,7 @@ QtObject {
             "kind": root.kind, "screenName": root.screenName, "edge": root.edge,
             "x": root.x, "y": root.y, "w": root.w, "h": root.h,
             "progress": Math.max(0, Math.min(1, root.progress)), "reserve": root.reserve,
+            "detached": root.detached, "neckK": root.neckK,
             "priority": root.priority, "surfaceRadius": root.surfaceRadius,
             "omitStartConnector": root.omitStartConnector, "omitEndConnector": root.omitEndConnector
         })
@@ -65,6 +68,8 @@ QtObject {
     onHChanged: _schedule()
     onProgressChanged: _schedule()
     onReserveChanged: _schedule()
+    onDetachedChanged: _schedule()
+    onNeckKChanged: _schedule()
     onScreenNameChanged: { _release(); _schedule() }
     onKeyChanged: { _release(); _schedule() }
     onEdgeChanged: _schedule()

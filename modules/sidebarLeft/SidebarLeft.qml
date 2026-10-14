@@ -47,7 +47,18 @@ Scope {
                 else if (root.instantOpen) { _closeTimer.stop(); visible = false }
                 else _closeTimer.restart()
             }
-            Timer { id: _closeTimer; interval: 300; onTriggered: sidebarRoot.visible = false }
+            // Hide once the spring has retracted the body into its edge (a fixed
+            // delay cut the retract short).
+            Timer {
+                id: _closeTimer; interval: 100
+                onTriggered: {
+                    if (sidebarRoot.shouldShow) return
+                    // Open on another monitor: nothing retracts here, hide now.
+                    if (GlobalStates.sidebarLeftOpen
+                        || Math.abs(Math.abs(slide.x) - (root.sidebarWidth + root.globalMargin)) < 1) sidebarRoot.visible = false
+                    else restart()
+                }
+            }
             function hide() { GlobalStates.sidebarLeftOpen = false }
 
             // Fuse into the connected frame, following the slide: the body's
@@ -94,11 +105,7 @@ Scope {
                     x: GlobalStates.sidebarLeftOpen ? 0 : -(root.sidebarWidth + root.globalMargin)
                     Behavior on x {
                         enabled: !root.instantOpen
-                        NumberAnimation {
-                            duration: (Appearance?.animationCurves.expressiveDefaultSpatialDuration ?? 500) * (Appearance?.animSpeedMultiplier ?? 1)
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Appearance?.animationCurves.expressiveDefaultSpatial ?? [0.38, 1.21, 0.22, 1.00, 1, 1]
-                        }
+                        MotionSpring { token: GlobalStates.sidebarLeftOpen ? "liquid" : "settle" }
                     }
                 }
 

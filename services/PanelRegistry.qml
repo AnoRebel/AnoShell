@@ -84,6 +84,8 @@ Singleton {
             "x": geom.x ?? 0, "y": geom.y ?? 0, "w": geom.w, "h": geom.h,
             "progress": geom.progress ?? 1,
             "reserve": geom.reserve ?? 0,
+            "detached": geom.detached ?? false,
+            "neckK": geom.neckK,
             "priority": geom.priority ?? 0,
             "surfaceRadius": geom.surfaceRadius,
             "omitStartConnector": geom.omitStartConnector ?? false,
@@ -142,6 +144,8 @@ Singleton {
             "side": p.edge,
             "x": p.x, "y": p.y, "w": p.w, "h": p.h,
             "progress": p.progress,
+            "detached": p.detached,
+            "neckK": p.neckK,
             "surfaceRadius": p.surfaceRadius,
             "omitStartConnector": p.omitStartConnector,
             "omitEndConnector": p.omitEndConnector

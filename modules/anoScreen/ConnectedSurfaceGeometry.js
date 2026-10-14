@@ -78,6 +78,17 @@ function connectorRadii(descriptor, rect, connectedRadius, surfaceRadius) {
  * Omitting a connector means that end is flush with a frame corner, so it takes
  * the body's convex radius there instead of a concave fillet.
  */
+// Liquid motion (Liquid look). While a surface grows out of its edge
+// (0 < progress < 1) its junction fillets swell like a meniscus and settle back
+// to connectedRadius when fully open. ponytail: fixed swell; looks (W3) will
+// provide it as a motion token.
+var MENISCUS_SWELL = 0.6;
+
+function meniscusK(base, progress) {
+    var p = Math.max(0, Math.min(1, progress === undefined ? 1 : progress));
+    return p >= 1 ? base : base * (1 + MENISCUS_SWELL * Math.sin(Math.PI * p));
+}
+
 function packSlot(descriptor, ctx) {
     var dpr = ctx.dpr || 1;
     var side = descriptor.side || "top";
@@ -88,11 +99,33 @@ function packSlot(descriptor, ctx) {
         width: Math.max(0, snap(descriptor.w, dpr)),
         height: Math.max(0, snap(descriptor.h, dpr))
     };
-    var b = clampNear(side, raw, ctx);
+    // A detached surface (an island) keeps its own near edge instead of
+    // growing out of the frame; the smooth-min k between it and the frame
+    // then draws a liquid neck that thins and breaks as the gap opens.
+    var detached = !!descriptor.detached;
+    var b = detached ? raw : clampNear(side, raw, ctx);
     var active = (b.width > 0 && b.height > 0) ? 1 : 0;
 
     var bodyR = descriptor.surfaceRadius !== undefined ? descriptor.surfaceRadius : ctx.surfaceRadius;
-    var radii = connectorRadii(descriptor, b, ctx.connectedRadius, bodyR);
+    var radii = connectorRadii(descriptor, b, meniscusK(ctx.connectedRadius, descriptor.progress), bodyR);
+    if (descriptor.progress !== undefined && descriptor.progress < 1) {
+        // The swell is wider than the young body is deep; don't clamp it to the
+        // extent, or the meniscus collapses exactly when it should show.
+        var cross = isHorizontal(side) ? b.width : b.height;
+        var k = Math.min(meniscusK(ctx.connectedRadius, descriptor.progress), cross / 2);
+        radii.startCr = descriptor.omitStartConnector ? 0 : k;
+        radii.endCr = descriptor.omitEndConnector ? 0 : k;
+    }
+    if (detached) {
+        // Fully round island; k on every corner so the neck forms evenly.
+        var nk = descriptor.neckK !== undefined ? descriptor.neckK : ctx.connectedRadius;
+        return {
+            rect: [b.x, b.y, b.width, b.height],
+            corner: [bodyR, bodyR, bodyR, bodyR],
+            k: [nk, nk, nk, nk],
+            active: active
+        };
+    }
 
     var extent = isHorizontal(side) ? b.height : b.width;
     var fc = Math.min(radii.far, extent);
