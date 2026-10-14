@@ -3,11 +3,12 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import qs.modules.notifications
 import "."
 
 /**
- * Compact notification center for right sidebar.
- * Shows recent notifications grouped by app.
+ * Compact notification center for right sidebar: notifications grouped by
+ * app, each group stacked until expanded (NotificationDisplay).
  */
 Rectangle {
     id: root
@@ -41,19 +42,10 @@ Rectangle {
             }
         }
 
-        // Show max 5 most recent
-        Repeater {
-            model: Notifications.list.slice(-5).reverse()
-
-            NotificationItem {
-                required property var modelData
-                notification: modelData
-                compact: true
-                showActions: false
-                Layout.fillWidth: true
-                onDismissed: id => Notifications.discardNotification(id)
-                onActionInvoked: (id, identifier) => Notifications.attemptInvokeAction(id, identifier)
-            }
+        NotificationDisplay {
+            Layout.fillWidth: true
+            compact: true
+            showHeader: false
         }
     }
 }

@@ -36,6 +36,7 @@ Rectangle {
                 StyledSlider {
                     Layout.fillWidth: true
                     configuration: StyledSlider.Configuration.M
+                    trackWidth: 24; trackRadius: 8 // a touch slimmer than M
                     value: root.brightnessMonitor?.brightness ?? 0
                     onMoved: root.brightnessMonitor?.setBrightness(value)
                     stopIndicatorValues: []
@@ -64,6 +65,7 @@ Rectangle {
                 StyledSlider {
                     Layout.fillWidth: true
                     configuration: StyledSlider.Configuration.M
+                    trackWidth: 24; trackRadius: 8 // a touch slimmer than M
                     value: Audio.sink?.audio?.volume ?? 0
                     onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }
                     stopIndicatorValues: []

@@ -653,7 +653,7 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject notifications: JsonObject {
                 property int timeout: 7000  // ms — bundled `notifications.timeout` (NotificationPopup reads this)
-                property string position: "topRight"
+                property string position: "topRight" // top|bottom + Left|Center|Right
                 property int edgeMargin: 8
                 property bool expressiveAnimations: true
                 property bool silent: false // no popups; notifications still reach the history

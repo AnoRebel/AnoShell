@@ -315,6 +315,49 @@ ColumnLayout {
         subtitle: "Popup behavior, timeout, and sounds"
         configKeys: ["notifications"]
 
+        // Where popups appear: click a spot on the miniature screen.
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            readonly property string current: Config.options?.notifications?.position ?? "topRight"
+            id: notifPos
+            StyledText {
+                text: "Popup position"
+                font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+            }
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: 200; implicitHeight: 120
+                radius: 8
+                color: Appearance?.colors.colLayer2 ?? "#2B2930"
+                border.width: 1
+                border.color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
+                StyledText { anchors.centerIn: parent; text: "Screen"; font.pixelSize: 11; opacity: 0.3 }
+                Repeater {
+                    model: [
+                        { pos: "topLeft", x: 8, y: 8 }, { pos: "topCenter", x: 76, y: 8 }, { pos: "topRight", x: 144, y: 8 },
+                        { pos: "bottomLeft", x: 8, y: 96 }, { pos: "bottomCenter", x: 76, y: 96 }, { pos: "bottomRight", x: 144, y: 96 }
+                    ]
+                    Rectangle {
+                        required property var modelData
+                        readonly property bool on: notifPos.current === modelData.pos
+                        x: modelData.x; y: modelData.y; width: 48; height: 16
+                        radius: 5
+                        color: on ? Appearance?.colors.colPrimary ?? "#65558F" : "transparent"
+                        border.width: 1
+                        border.color: on ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOutlineVariant ?? "#44444488"
+                        opacity: on ? 1 : 0.4
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Config.setNestedValue("notifications.position", modelData.pos)
+                        }
+                    }
+                }
+            }
+        }
+
         ConfigSlider {
             label: "Auto-dismiss timeout"
             configKey: "notifications.timeout"

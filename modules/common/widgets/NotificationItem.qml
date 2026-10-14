@@ -8,12 +8,17 @@ import QtQuick.Layouts
 
 /**
  * A single notification item with icon, summary, body, actions, and dismiss.
+ * Expandable: clicking the card (or its chevron) shows the full body and, in
+ * compact lists, the actions.
  */
 Item {
     id: root
     required property var notification
     property bool compact: false
     property bool showActions: true
+    property bool expanded: false
+    readonly property bool expandable: root.expanded || bodyText.truncated
+        || (root.compact && root.showActions && (root.notification?.actions?.length ?? 0) > 0)
 
     signal dismissed(int notificationId)
     signal actionInvoked(int notificationId, string identifier)
@@ -25,6 +30,14 @@ Item {
         anchors.fill: parent
         radius: Appearance?.rounding.normal ?? 12
         color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+
+        // Behind the content: buttons above it keep their own clicks.
+        MouseArea {
+            anchors.fill: parent
+            enabled: root.expandable
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.expanded = !root.expanded
+        }
 
         RowLayout {
             id: layout
@@ -79,10 +92,11 @@ Item {
                 }
 
                 StyledText {
+                    id: bodyText
                     text: StringUtils.stripImgTags(root.notification?.body ?? "")
                     font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
                     wrapMode: Text.Wrap
-                    maximumLineCount: root.compact ? 2 : 6
+                    maximumLineCount: root.expanded ? 40 : root.compact ? 2 : 4
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                     visible: text.length > 0
@@ -91,7 +105,7 @@ Item {
                 // Actions
                 RowLayout {
                     spacing: 4
-                    visible: root.showActions && (root.notification?.actions?.length ?? 0) > 0
+                    visible: root.showActions && (!root.compact || root.expanded) && (root.notification?.actions?.length ?? 0) > 0
                     Layout.fillWidth: true
                     Repeater {
                         model: root.notification?.actions ?? []
@@ -105,6 +119,16 @@ Item {
                         }
                     }
                 }
+            }
+
+            ToolbarButton {
+                Layout.alignment: Qt.AlignTop
+                visible: root.expandable
+                iconName: root.expanded ? "expand_less" : "expand_more"
+                iconSize: 16
+                implicitWidth: 28; implicitHeight: 28
+                toolTipText: root.expanded ? "Show less" : "Show more"
+                onClicked: root.expanded = !root.expanded
             }
 
             // Dismiss

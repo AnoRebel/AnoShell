@@ -4,6 +4,7 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import qs.modules.notifications
 import "."
 
 /**
@@ -129,35 +130,9 @@ Rectangle {
                             id: notifColumn
                             width: parent.width; spacing: 6
 
-                            StyledText {
-                                visible: Notifications.list.length === 0
-                                text: "No notifications"
-                                font.pixelSize: Appearance?.font.pixelSize.small ?? 14; opacity: 0.5
-                                Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 40
-                            }
-
-                            Repeater {
-                                model: Notifications.appNameList
-                                ColumnLayout {
-                                    required property string modelData
-                                    Layout.fillWidth: true; spacing: 4
-                                    StyledText {
-                                        text: modelData
-                                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                                        font.weight: Font.DemiBold
-                                        color: Appearance?.colors.colPrimary ?? "#65558F"
-                                        Layout.fillWidth: true
-                                    }
-                                    Repeater {
-                                        model: Notifications.groupsByAppName[modelData]?.notifications ?? []
-                                        NotificationItem {
-                                            required property var modelData
-                                            notification: modelData; Layout.fillWidth: true
-                                            onDismissed: id => Notifications.discardNotification(id)
-                                            onActionInvoked: (id, identifier) => Notifications.attemptInvokeAction(id, identifier)
-                                        }
-                                    }
-                                }
+                            NotificationDisplay {
+                                Layout.fillWidth: true
+                                showHeader: false
                             }
                         }
                     }

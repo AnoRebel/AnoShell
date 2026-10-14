@@ -17,12 +17,21 @@ Scope {
     id: root
 
     readonly property string position: Config.options?.notifications?.position ?? "topRight"
+    // topLeft | topCenter | topRight | bottomLeft | bottomCenter | bottomRight
     readonly property bool isTop: position.startsWith("top")
     readonly property bool isLeft: position.endsWith("Left")
+    readonly property bool isRight: position.endsWith("Right")
     // Connected mode: the stack hangs flush from its edge and the frame paints
     // it as one fused body (cards drop their own fill, border and shadow).
     readonly property bool connected: PanelRegistry.enabled
     readonly property int edgeMargin: connected ? 0 : (Config.options?.notifications?.edgeMargin ?? 8)
+    // Centred popups share the pill's spot when it is on the same edge: hang
+    // below (or above) it instead of covering it.
+    readonly property real pillClear: {
+        const a = Config.options?.anoSpot
+        if (isLeft || isRight || !(a?.enable ?? false) || (a?.position ?? "top") !== (isTop ? "top" : "bottom")) return 0
+        return (a?.heightPx ?? 36) + (a?.floating || !connected ? 12 : 0)
+    }
 
     PanelWindow {
         id: popupWindow
@@ -44,14 +53,14 @@ Scope {
             top: root.isTop
             bottom: !root.isTop
             left: root.isLeft
-            right: !root.isLeft
+            right: root.isRight
         }
 
         margins {
-            top: root.isTop ? root.edgeMargin : 0
-            bottom: !root.isTop ? root.edgeMargin : 0
+            top: root.isTop ? root.edgeMargin + root.pillClear : 0
+            bottom: !root.isTop ? root.edgeMargin + root.pillClear : 0
             left: root.isLeft ? root.edgeMargin : 0
-            right: !root.isLeft ? root.edgeMargin : 0
+            right: root.isRight ? root.edgeMargin : 0
         }
 
         mask: Region { item: stackClip }
@@ -62,12 +71,11 @@ Scope {
             screenName: popupWindow.screen?.name ?? ""
             active: popupWindow.visible && stackClip.height > 0.5
             progress: stackClip.height / Math.max(1, notifColumn.implicitHeight + root.edgeMargin * 2)
-            // The window is pushed in by exclusive zones (the bar) on its edges.
-            readonly property string _scr: popupWindow.screen?.name ?? ""
-            x: root.isLeft ? PanelRegistry.inset(_scr, "left") + root.edgeMargin + stackClip.x
-                : (popupWindow.screen?.width ?? 0) - PanelRegistry.inset(_scr, "right") - root.edgeMargin - popupWindow.width + stackClip.x
-            y: root.isTop ? PanelRegistry.inset(_scr, "top") + root.edgeMargin + stackClip.y
-                : (popupWindow.screen?.height ?? 0) - PanelRegistry.inset(_scr, "bottom") - root.edgeMargin - popupWindow.height + stackClip.y
+            // Where the layer shell puts the window (pushed in by the bar, centred
+            // for the *Center positions).
+            readonly property point _o: PanelRegistry.windowOrigin(popupWindow)
+            x: _o.x + stackClip.x
+            y: _o.y + stackClip.y
             w: stackClip.width; h: stackClip.height
         }
 
@@ -96,7 +104,8 @@ Scope {
                 top: root.isTop ? parent.top : undefined
                 bottom: !root.isTop ? parent.bottom : undefined
                 left: root.isLeft ? parent.left : undefined
-                right: !root.isLeft ? parent.right : undefined
+                right: root.isRight ? parent.right : undefined
+                horizontalCenter: !root.isLeft && !root.isRight ? parent.horizontalCenter : undefined
                 margins: root.edgeMargin
             }
             width: popupWindow.implicitWidth - root.edgeMargin * 2
@@ -123,7 +132,7 @@ Scope {
                     }
 
                     // Entry animation — slide in from edge + fade
-                    property real slideOffset: root.isLeft ? -20 : 20
+                    property real slideOffset: root.isLeft ? -20 : root.isRight ? 20 : 0
                     property real entryOpacity: 0
 
                     Component.onCompleted: {
