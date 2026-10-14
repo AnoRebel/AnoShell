@@ -66,6 +66,11 @@ Scope {
                     }))
                 }
 
+                function getCurrentWorkspaceId() {
+                    const name = tvRoot.screen?.name ?? ""
+                    return CompositorService.workspaces.find(w => w.active && (!name || w.output === name))?.number ?? -1
+                }
+
                 function activateWindow(win) {
                     GlobalStates.taskViewOpen = false
                     CompositorService.focusWindow(win)
@@ -116,11 +121,13 @@ Scope {
                                     anchors.fill: parent
                                     active: !!modelData.win?.toplevel
                                     sourceComponent: ScreencopyView {
+                                        id: tvThumb
                                         anchors.fill: parent
                                         captureSource: modelData.win?.toplevel ?? null
                                         live: false; paintCursor: false
                                         layer.enabled: true
-                                        layer.effect: OpacityMask { maskSource: Rectangle { width: parent.width; height: parent.height; radius: 12 } }
+                                        // Sized by id: the mask Rectangle has no parent, so parent.width was 0 (blank thumbnails).
+                                        layer.effect: OpacityMask { maskSource: Rectangle { width: tvThumb.width; height: tvThumb.height; radius: 12 } }
                                     }
                                 }
 
@@ -172,7 +179,7 @@ Scope {
                                         : wsMA.containsMouse ? Appearance?.colors.colLayer1 ?? "#E5E1EC" : "transparent"
                                     border.width: 1
                                     border.color: tvRoot.getCurrentWorkspaceId() === index + 1 ? "transparent" : "#33ffffff"
-                                    StyledText { anchors.centerIn: parent; text: `${index + 1}`; font.pixelSize: 11; color: tvRoot.getCurrentWorkspaceId() === index + 1 ? "white" : "#aaa" }
+                                    StyledText { anchors.centerIn: parent; text: `${index + 1}`; font.pixelSize: 11; color: tvRoot.getCurrentWorkspaceId() === index + 1 ? Appearance?.colors.colOnPrimary ?? "white" : "#aaa" }
                                     MouseArea {
                                         id: wsMA; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                         onClicked: {

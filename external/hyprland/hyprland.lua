@@ -577,6 +577,9 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignorealpha = 0.1 })
 -- of its elevation shadow — a dark halo around every edge. Exclude it from both.
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, ignorealpha = 1.0 })
+-- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
+-- the rectangular rule blur would show as a square halo around them.
+hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = 0 })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
 

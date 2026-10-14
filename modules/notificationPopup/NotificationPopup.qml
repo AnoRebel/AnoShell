@@ -52,6 +52,15 @@ Scope {
 
         mask: Region { item: notifColumn }
 
+        // Blur follows each rounded card (ext-background-effect-v1); the
+        // compositor's rectangular layer-rule blur is opted out for this
+        // namespace in the bundled hyprland.lua.
+        BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol ? cardsRegion : null
+        Region {
+            id: cardsRegion
+            regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r) }
+        }
+
         ColumnLayout {
             id: notifColumn
             anchors {
@@ -67,6 +76,7 @@ Scope {
 
             // Staggered notification items
             Repeater {
+                id: notifRepeater
                 model: Notifications.popupList
 
                 Item {
@@ -76,7 +86,8 @@ Scope {
 
                     Layout.fillWidth: true
                     implicitHeight: notifCard.implicitHeight
-                    clip: true
+                    // No clip: it cut the card's drop shadow into straight edges.
+                    property Region blurShape: Region { item: notifCard; radius: notifCard.radius }
 
                     // Entry animation — slide in from edge + fade
                     property real slideOffset: root.isLeft ? -20 : 20

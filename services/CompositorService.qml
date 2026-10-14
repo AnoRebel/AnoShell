@@ -170,18 +170,26 @@ Singleton {
         function windows(): string {
             root.acquireWindows("ipc")
             ipcLeaseTimer.restart()
-            return JSON.stringify(root.windows.map(w => ({ title: w.title.slice(0, 40), appId: w.appId,
+            return JSON.stringify(root.windows.map(w => ({ id: String(w.id), title: w.title.slice(0, 40), appId: w.appId,
                 workspace: w.workspace, output: w.output, focused: w.focused, fullscreen: w.fullscreen,
                 geometry: [w.x, w.y, w.width, w.height], toplevel: !!w.toplevel })))
         }
+        // Actions through the same contract the UI uses (tests, the `ano` CLI).
+        function focusWorkspace(number: int): bool { return root.backend?.focusWorkspace(number, root.focusedMonitorName) ?? false }
+        function focusWindow(id: string): bool {
+            const w = root.windows.find(x => String(x.id) === id)
+            return w ? root.focusWindow(w) : false
+        }
     }
 
-    // Accepts a Toplevel or a window from `windows`. The foreign-toplevel
-    // handle works everywhere; without one the backend uses its own id.
+    // Accepts a Toplevel or a window from `windows`. The backend's own focus
+    // comes first: Hyprland ignores foreign-toplevel activate unless
+    // misc:focus_on_activate is set. The toplevel handle is the fallback.
     function focusWindow(win) {
+        if (win?.id !== undefined && root.backend?.focusWindowById(win.id)) return true
         const tl = win?.toplevel ?? (win?.activate ? win : null)
         if (tl) { tl.activate(); return true }
-        return root.backend?.focusWindowById(win?.id) ?? false
+        return false
     }
     function closeWindow(win) {
         const tl = win?.toplevel ?? (win?.close ? win : null)
