@@ -81,6 +81,14 @@ ShellRoot {
         onLoaded: root._log(`Loaded panel family: ${Config.options?.panelFamily ?? "ano"}`)
     }
 
+    // Family-switch transition. Hosted here, outside the families, so it
+    // survives the very family swap it is animating (inside a family it was
+    // destroyed mid-transition and the switch never finished).
+    FamilyTransitionOverlay {
+        onExitComplete: root.applyPendingFamily()
+        onEnterComplete: root.finishFamilyTransition()
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Family Transition
     // ═══════════════════════════════════════════════════════════════════════
@@ -122,7 +130,7 @@ ShellRoot {
     }
 
     function _applyFamily(family: string) {
-        Config.options.panelFamily = family;
+        Config.setNestedValue("panelFamily", family);
         // Apply family-specific overrides
         switch (family) {
             case "hefty":
@@ -162,8 +170,6 @@ ShellRoot {
         target: "shell"
         function reload(): void { Quickshell.reload(true) }
         function quit(): void { Quickshell.quit() }
-        function _applyPending(): void { root.applyPendingFamily() }
-        function _finishTransition(): void { root.finishFamilyTransition() }
     }
 
     // Launch standalone settings window

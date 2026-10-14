@@ -312,11 +312,11 @@ Scope {
     IpcHandler {
         target: "anoview"
         function toggle(layout: string): void {
-            if (layout) Config.options.overview.layout = layout
+            if (layout) Config.setNestedValue("overview.layout", layout)
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen
         }
         function open(layout: string): void {
-            if (layout) Config.options.overview.layout = layout
+            if (layout) Config.setNestedValue("overview.layout", layout)
             GlobalStates.overviewOpen = true
         }
         function close(): void { GlobalStates.overviewOpen = false }

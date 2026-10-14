@@ -94,7 +94,6 @@ Singleton {
                 if (root.layoutCodes.length <= 1) return
                 const dataString = event.data
                 root.currentLayoutName = dataString.substring(dataString.indexOf(",") + 1)
-                Config.options.osk.layout = root.currentLayoutName.split(" (")[0]
             } else if (event.name === "configreloaded") {
                 root.needsLayoutRefresh = true
             }

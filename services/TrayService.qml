@@ -40,15 +40,15 @@ Singleton {
     function pin(item) {
         if (!Config.options?.tray) return
         const uniqueId = getUniqueId(item)
-        const pins = Config.options.tray.pinnedItems
+        const pins = Config.options.tray.pinnedItems ?? []
         if (pins.includes(uniqueId)) return
-        Config.options.tray.pinnedItems.push(uniqueId)
+        Config.setNestedValue("tray.pinnedItems", pins.concat([uniqueId]))
     }
 
     function unpin(item) {
         if (!Config.options?.tray) return
         const uniqueId = getUniqueId(item)
-        Config.options.tray.pinnedItems = Config.options.tray.pinnedItems.filter(id => id !== uniqueId)
+        Config.setNestedValue("tray.pinnedItems", (Config.options.tray.pinnedItems ?? []).filter(id => id !== uniqueId))
     }
 
     function isPinned(item) {

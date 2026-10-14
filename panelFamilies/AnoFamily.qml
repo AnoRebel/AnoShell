@@ -60,21 +60,5 @@ Scope {
     LazyLoader { active: Config.ready && (CompositorService.compositor === "niri"); component: Loader { source: "root:modules/lock/LockScreen.qml" } }
     LazyLoader { active: Config.ready && (Config.options?.bar?.morphingPanels ?? false); component: Loader { source: "root:modules/common/widgets/TopLayerPanel.qml" } }
     // (ConnectedBackground superseded by AnoScreen, which hosts the corners.)
-
-    // ─── Transition ──────────────────────────────────────────────────────
-    LazyLoader {
-        active: Config.ready
-        component: Loader {
-            source: "root:modules/common/FamilyTransitionOverlay.qml"
-            onLoaded: {
-                // Wire transition signals back to shell.qml via IPC
-                item.exitComplete.connect(() => {
-                    Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "shell", "_applyPending"])
-                })
-                item.enterComplete.connect(() => {
-                    Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "shell", "_finishTransition"])
-                })
-            }
-        }
-    }
+    // (The family-transition overlay lives in shell.qml, outside the families.)
 }

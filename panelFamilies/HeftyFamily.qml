@@ -54,5 +54,4 @@ Scope {
     LazyLoader { active: Config.ready && (CompositorService.compositor === "niri"); component: Loader { source: "root:modules/lock/LockScreen.qml" } }
 
     // ─── Transition ──────────────────────────────────────────────────────
-    LazyLoader { active: Config.ready; component: Loader { source: "root:modules/common/FamilyTransitionOverlay.qml" } }
 }
