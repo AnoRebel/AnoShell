@@ -125,7 +125,16 @@ Singleton {
     function powerOnMonitors() { return root.backend?.powerOnMonitors() ?? false }
     // Runtime only: the outer gap (windows ↔ screen edge); connected mode sets 0.
     function setOuterGaps(px) { return root.backend?.setOuterGaps(px) ?? false }
-    // Layer-rule blur fallback for compositors without ext-background-effect-v1.
+    // Blur behind shell surfaces. Preferred: the surface sets
+    //   BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol ? Region { item: body; radius: r } : null
+    // (ext-background-effect-v1: blur follows the drawn shape, no halo).
+    // requestBlur() covers the rest: a no-op when the protocol is there (the
+    // surface's region does it), otherwise the compositor's layer-rule fallback.
+    function requestBlur(namespaceRegex, enabled, ignoreAlpha) {
+        if (root.supports.blurProtocol) return true
+        return root.backend?.setLayerBlur(namespaceRegex, enabled, ignoreAlpha) ?? false
+    }
+    // Layer-rule blur, for callers that specifically need the rule.
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return root.backend?.setLayerBlur(namespaceRegex, enabled, ignoreAlpha) ?? false }
     readonly property var outputs: backend?.outputs ?? []
     function applyOutputs(configs) { return root.backend?.applyOutputs(configs) ?? false }

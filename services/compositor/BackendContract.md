@@ -53,6 +53,16 @@ otherwise from the environment:
 
 Unsupported operations return `false` and log once; they never throw.
 
+## Blur
+
+Surfaces request blur with Quickshell's `BackgroundEffect.blurRegion` when
+`supports.blurProtocol` is true (ext-background-effect-v1). The blur then follows
+the region's shape, rounded corners included. Verified on Hyprland 0.56.2 with a
+probe layer that no blur layer rule matched. niri 26.04 also implements the
+protocol. `CompositorService.requestBlur(ns, enabled, ignoreAlpha)` is the
+fallback: a no-op where the protocol exists, a layer rule (`setLayerBlur`) where
+it doesn't.
+
 ## Windows
 
 Windows are Quickshell `Toplevel` objects (`ToplevelManager.toplevels`). Focus and close
