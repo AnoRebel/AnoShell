@@ -177,6 +177,9 @@ cursor {
 // Guard: kill any lingering legacy bars/notifiers before spawning the shell.
 spawn-sh-at-startup "pkill -x waybar; pkill -x swaync; pkill -x swayosd; true"
 spawn-sh-at-startup "qs -c ano &"
+// anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
+// For crash supervision, replace both lines with: anod --supervise (it starts qs).
+spawn-sh-at-startup "A=$(command -v anod || echo \"$HOME/.local/bin/anod\"); [ -x \"$A\" ] && exec \"$A\""
 
 // XWayland support for Niri — runs as a background daemon, no visible window.
 // Required for X11 apps (Discord, Steam, older Electron) to work under Niri.

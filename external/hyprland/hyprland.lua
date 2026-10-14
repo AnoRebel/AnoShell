@@ -98,8 +98,18 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 	hl.exec_cmd("sleep 1 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 
-	-- QuickShell (Ano UI) — the main shell
-	hl.exec_cmd("qs -c " .. QS_CONFIG .. " &")
+	-- QuickShell (Ano UI) — the main shell — and anod, its companion daemon
+	-- (docs/anod.md). With ANOD_SUPERVISE, anod starts qs itself and restarts it
+	-- after crashes; otherwise both start here. Skipped if anod isn't installed
+	-- (build it with anod/install.sh).
+	local ANOD_SUPERVISE = false
+	local ANOD = 'A=$(command -v anod || echo "$HOME/.local/bin/anod"); [ -x "$A" ] && exec "$A"'
+	if ANOD_SUPERVISE then
+		hl.exec_cmd(ANOD .. " --supervise || exec qs -c " .. QS_CONFIG)
+	else
+		hl.exec_cmd("qs -c " .. QS_CONFIG .. " &")
+		hl.exec_cmd(ANOD)
+	end
 
 	-- Core components
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
