@@ -55,6 +55,10 @@ is not restarted.
 | `ano setup install [--repo URL] [--branch B]` | clones the shell into `~/.config/quickshell/ano` if it isn't there, builds anod + ano, then runs `ano doctor` |
 | `ano setup update [--force]` | fast-forwards the checkout from its remote (refuses with uncommitted changes or diverged local commits), then refreshes. `--force` stashes your changes (untracked files too), keeps any local commits on an `ano-backup/<time>` branch, resets to the remote's latest and refreshes; nothing is deleted |
 | `ano setup refresh` | rebuilds anod + ano, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
+| `ano backup categories` | lists what can be backed up: `config`, `themes`, `widgets`, `data` (the defaults), plus opt-in `secrets`, `compositor` (hypr/niri configs), `wallpapers` and `avatar` |
+| `ano backup create [--only a,b] [--add a,b] [-o FILE]` | archives the default categories, only the ones named, or the defaults plus opt-in ones, to `~/.local/share/anoshell/backups/anoshell-<time>.tar.gz` (mode 0600; secrets keep 0600 inside) |
+| `ano backup list` | lists the backups in that folder with their categories |
+| `ano backup restore FILE [--only a,b] [--dry-run] [--no-snapshot]` | restores every category in the backup, or only the named ones. The files it will replace are first saved to `pre-restore-<time>.tar.gz`. It never writes outside your home, never overwrites a symlink, and follows a symlinked folder (stow-style dotfiles) only if it stays inside your home |
 | `ano version` | prints the version |
 
 `ano setup` with no command, run in a terminal, opens an interactive menu

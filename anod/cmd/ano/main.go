@@ -28,6 +28,7 @@ const usage = `usage: ano <command> [args]
   config validate [--file F] [--json]
   config migrate  [--file F] [--prune-unknown] [--dry-run]
   setup status|install|update|refresh [flags]   manage the checkout and binaries (ano setup help)
+  backup categories|create|list|restore [flags]  back up and restore your setup (ano backup)
   version
 `
 
@@ -55,6 +56,8 @@ func main() {
 		os.Exit(configCmd(args))
 	case "setup":
 		os.Exit(setupCmd(args))
+	case "backup":
+		os.Exit(backupCmd(args))
 	case "help", "-h", "--help":
 		fmt.Printf(usage, eventList())
 	default:
