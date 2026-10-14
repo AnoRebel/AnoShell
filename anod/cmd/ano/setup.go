@@ -30,11 +30,14 @@ const setupUsage = `usage: ano setup [<command> [flags]]   (no command on a term
 
   status  [--fetch] [--json]          checkout, upstream and binary versions
   install [--repo URL] [--branch B]   clone the shell if missing, build anod + ano, run doctor
-  update                              fast-forward the checkout from its remote, then refresh
+  update  [--force]                   fast-forward the checkout from its remote, then refresh;
+                                      --force stashes local changes, keeps local commits on a
+                                      backup branch and resets to the remote's latest
   refresh                             rebuild, migrate the user config (backup), restart anod / reload the shell
 
-  install, update and refresh take --dry-run (print the steps only) and
-  --no-restart (leave anod and the shell running as they are).
+  install, update and refresh take --dry-run (print the steps only),
+  --no-restart (leave anod and the shell running as they are) and --prebuilt
+  (use the bundled binaries in anod/dist; automatic when Go isn't installed).
 `
 
 func setupCmd(args []string) int {
@@ -53,9 +56,11 @@ func setupCmd(args []string) int {
 	asJSON := fs.Bool("json", false, "machine-readable output (status)")
 	repo := fs.String("repo", defaultRepo, "git URL to clone (install)")
 	branch := fs.String("branch", "main", "branch to clone (install)")
+	prebuilt := fs.Bool("prebuilt", false, "use the bundled binaries instead of building (automatic without Go)")
+	force := fs.Bool("force", false, "stash changes, back up local commits, reset to the remote (update)")
 	fs.Parse(args[1:])
 
-	r := &runner{dry: *dry, dir: config.ShellDir()}
+	r := &runner{dry: *dry, dir: config.ShellDir(), prebuilt: *prebuilt}
 	var err error
 	switch args[0] {
 	case "status":
@@ -63,7 +68,7 @@ func setupCmd(args []string) int {
 	case "install":
 		err = setupInstall(r, *repo, *branch)
 	case "update":
-		err = setupUpdate(r)
+		err = setupUpdate(r, *force)
 		if err == nil {
 			err = setupRefresh(r, *noRestart)
 		}
@@ -85,8 +90,9 @@ func setupCmd(args []string) int {
 
 // runner prints each step and runs it unless dry.
 type runner struct {
-	dry bool
-	dir string
+	dry      bool
+	dir      string
+	prebuilt bool // install the bundled dist/ binaries instead of building
 }
 
 func (r *runner) run(dir, name string, argv ...string) error {
@@ -232,11 +238,13 @@ func setupInstall(r *runner, repo, branch string) error {
 	return nil
 }
 
-func setupUpdate(r *runner) error {
-	if dirty, err := git(r.dir, "status", "--porcelain"); err != nil {
+func setupUpdate(r *runner, force bool) error {
+	dirty, err := git(r.dir, "status", "--porcelain")
+	if err != nil {
 		return fmt.Errorf("%s is not a git checkout", r.dir)
-	} else if dirty != "" {
-		return errors.New("the checkout has uncommitted changes; commit or stash them first")
+	}
+	if dirty != "" && !force {
+		return errors.New("the checkout has uncommitted changes; commit or stash them first, or use --force")
 	}
 	u, err := upstream(r.dir)
 	if err != nil {
@@ -244,12 +252,30 @@ func setupUpdate(r *runner) error {
 	}
 	remote, _, _ := strings.Cut(u, "/")
 	before, _ := git(r.dir, "rev-parse", "--short", "HEAD")
+	stamp := time.Now().Format("20060102-150405")
+	if dirty != "" {
+		// Untracked files too: a reset must not be blocked by, or clobber, them.
+		if err := r.run(r.dir, "stash local changes", "git", "stash", "push", "--include-untracked", "-m", "ano setup update --force "+stamp); err != nil {
+			return err
+		}
+	}
 	if err := r.run(r.dir, "fetch "+remote, "git", "fetch", "--quiet", remote); err != nil {
 		return err
 	}
-	// Fast-forward only: local commits are never rewritten or merged.
-	if err := r.run(r.dir, "fast-forward to "+u, "git", "merge", "--ff-only", u); err != nil {
-		return fmt.Errorf("%w (local commits diverge from %s; rebase or merge by hand)", err, u)
+	if force {
+		// Local commits stay reachable on a backup branch before the reset.
+		if ahead, _ := git(r.dir, "rev-list", "--count", u+"..HEAD"); ahead != "0" && ahead != "" {
+			backup := "ano-backup/" + stamp
+			if err := r.run(r.dir, "keep "+ahead+" local commit(s) on "+backup, "git", "branch", backup); err != nil {
+				return err
+			}
+		}
+		if err := r.run(r.dir, "reset to "+u, "git", "reset", "--hard", u); err != nil {
+			return err
+		}
+	} else if err := r.run(r.dir, "fast-forward to "+u, "git", "merge", "--ff-only", u); err != nil {
+		// Fast-forward only: local commits are never rewritten or merged.
+		return fmt.Errorf("%w (local commits diverge from %s; rebase or merge by hand, or use --force)", err, u)
 	}
 	if !r.dry {
 		after, _ := git(r.dir, "rev-parse", "--short", "HEAD")
@@ -258,13 +284,18 @@ func setupUpdate(r *runner) error {
 		} else {
 			fmt.Printf("updated %s → %s\n", before, after)
 		}
+		if dirty != "" {
+			fmt.Println("your changes are in `git stash list` (restore with `git stash pop`)")
+		}
 	}
 	return nil
 }
 
+// build installs anod + ano: built from source, or the bundled binaries when
+// asked or when Go isn't installed (install.sh makes the same choice).
 func build(r *runner) error {
-	if !have("go") {
-		return errors.New("go is required to build anod and ano")
+	if r.prebuilt || !have("go") {
+		return r.run(filepath.Join(r.dir, "anod"), "install the bundled anod + ano", "bash", "install.sh", "--prebuilt")
 	}
 	return r.run(filepath.Join(r.dir, "anod"), "build anod + ano", "bash", "install.sh")
 }

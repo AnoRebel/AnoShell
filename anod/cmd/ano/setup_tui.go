@@ -1,6 +1,6 @@
 package main
 
-// Interactive front end for `ano setup` (Bubble Tea v2, styled like
+// Interactive AnoShell setup: the front end for `ano setup` (Bubble Tea v2, styled like
 // btrfs-migrate). It is a convenience layer: every action runs the same
 // `ano setup <action>` subcommand, which also works without it.
 
@@ -67,6 +67,7 @@ func (a action) FilterValue() string { return a.title }
 var actions = []action{
 	{"Status", "checkout, remote, versions and config", []string{"setup", "status", "--fetch"}, false},
 	{"Update", "fast-forward from the remote, rebuild, migrate, restart", []string{"setup", "update"}, true},
+	{"Force update", "stash local changes, keep local commits on a backup branch, reset to the remote", []string{"setup", "update", "--force"}, true},
 	{"Refresh", "rebuild, migrate the config, restart (no pull)", []string{"setup", "refresh"}, true},
 	{"Install", "clone the shell if missing, build, run doctor", []string{"setup", "install"}, true},
 	{"Doctor", "check dependencies, config, sockets and crashes", []string{"doctor"}, false},
@@ -143,6 +144,7 @@ func newTUI() *tui {
 	m.menu.SetShowHelp(false)
 	m.menu.SetShowTitle(false)
 	m.out = viewport.New(viewport.WithWidth(80), viewport.WithHeight(16))
+	m.out.SoftWrap = true // long status/plan lines wrap instead of being cut
 	return m
 }
 
@@ -159,7 +161,9 @@ func run(args []string, dryRun bool) tea.Cmd {
 	}
 }
 
-func (m *tui) Init() tea.Cmd { return nil }
+// The terminal's background picks the light or dark palette (v2 only reports
+// it when asked).
+func (m *tui) Init() tea.Cmd { return tea.RequestBackgroundColor }
 
 func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -250,7 +254,7 @@ func (m *tui) View() tea.View {
 		footer += m.st.muted.Render("  · enter/esc back to the menu")
 	}
 	v := tea.NewView(lipgloss.JoinVertical(lipgloss.Left,
-		m.st.title.Render("ano setup "+versionString()),
+		m.st.title.Render("AnoShell setup · ano "+versionString()),
 		"",
 		m.st.header.Render(header),
 		"",
@@ -260,6 +264,7 @@ func (m *tui) View() tea.View {
 		m.st.helpBar.Render(m.help.View(keys)),
 	))
 	v.AltScreen = true
+	v.WindowTitle = "AnoShell setup"
 	return v
 }
 

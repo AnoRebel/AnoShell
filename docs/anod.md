@@ -17,6 +17,10 @@ audio, notifications) keeps working and daemon features show as unavailable.
 
 Requires Go ≥ 1.27. Set `PREFIX` to install elsewhere (`$PREFIX/bin`).
 
+Without Go, `install.sh` installs the bundled static binaries from
+`anod/dist/linux-<arch>/` instead (amd64 and arm64; also with `--prebuilt`).
+`anod/dist.sh` builds them on a machine that has Go.
+
 ## Autostart
 
 The bundled `external/hyprland/hyprland.lua` and `external/niri/ano.kdl` start
@@ -42,7 +46,7 @@ is not restarted.
 | `ano config migrate [--file F] [--prune-unknown] [--dry-run]` | rewrites old keys (`hud.enabled`, `activSpot`, `appearance.theme.static`, `bar.bars`, and `bars[0].autoHide`/`showBackground`, which shadowed the global switches). It writes a new `config.json.bak-YYYYMMDD-HHMMSS` first (never overwriting an older backup), follows a symlinked config, and keeps the file's permissions. `--prune-unknown` also removes keys the shell ignores |
 | `ano setup status [--fetch] [--json]` | the shell checkout (branch, commit, uncommitted changes), how far it is ahead/behind its remote, and the CLI, anod and user-config state |
 | `ano setup install [--repo URL] [--branch B]` | clones the shell into `~/.config/quickshell/ano` if it isn't there, builds anod + ano, then runs `ano doctor` |
-| `ano setup update` | fast-forwards the checkout from its remote (refuses with uncommitted changes or diverged local commits; never rewrites history), then refreshes |
+| `ano setup update [--force]` | fast-forwards the checkout from its remote (refuses with uncommitted changes or diverged local commits), then refreshes. `--force` stashes your changes (untracked files too), keeps any local commits on an `ano-backup/<time>` branch, resets to the remote's latest and refreshes; nothing is deleted |
 | `ano setup refresh` | rebuilds anod + ano, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
 | `ano version` | prints the version |
 
@@ -51,7 +55,8 @@ is not restarted.
 It runs the same subcommands, so scripts can keep using them directly.
 
 `install`, `update` and `refresh` take `--dry-run` (print each step without running
-it) and `--no-restart`. They don't touch your compositor config.
+it), `--no-restart` and `--prebuilt` (use the bundled binaries; automatic
+without Go). They don't touch your compositor config.
 
 `--file` defaults to `~/.config/anoshell/config.json`, your sparse delta over the
 bundled `config.json`.
