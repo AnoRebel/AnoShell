@@ -1,4 +1,5 @@
 import QtQuick
+import qs
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -11,6 +12,9 @@ import "."
  */
 Rectangle {
     id: root
+    // ResourceUsage polls only while a visible consumer holds a lease.
+    ServiceLease { service: ResourceUsage; name: "sidebarSystemInfo"; active: GlobalStates.sidebarRightOpen }
+
     implicitHeight: infoCol.implicitHeight + 20
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"

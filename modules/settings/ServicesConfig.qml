@@ -15,6 +15,9 @@ import "."
 ColumnLayout {
     spacing: 16
 
+    // ResourceUsage polls only while a visible consumer holds a lease.
+    ServiceLease { service: ResourceUsage; name: "settingsServices"; active: true }
+
     SettingsPageHeader {
         title: "Services"
         subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather"
@@ -41,6 +44,7 @@ ColumnLayout {
 
             RowLayout {
                 id: modelStatusRow
+
                 anchors { fill: parent; margins: 8 }
                 spacing: 12
 

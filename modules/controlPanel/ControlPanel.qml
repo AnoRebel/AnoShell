@@ -20,6 +20,9 @@ import qs.services
 Scope {
     id: root
 
+    // ResourceUsage polls only while a visible consumer holds a lease.
+    ServiceLease { service: ResourceUsage; name: "controlPanel"; active: GlobalStates.controlPanelOpen }
+
     IpcHandler {
         target: "controlPanel"
         function toggle(): void { GlobalStates.controlPanelOpen = !GlobalStates.controlPanelOpen }

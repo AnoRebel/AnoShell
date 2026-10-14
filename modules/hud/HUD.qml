@@ -21,6 +21,9 @@ import qs.services
 Scope {
     id: root
 
+    // ResourceUsage polls only while a visible consumer holds a lease.
+    ServiceLease { service: ResourceUsage; name: "hud"; active: GlobalStates.hudVisible }
+
     readonly property bool hudEnabled: Config.options?.hud?.enable ?? true
 
     PanelWindow {

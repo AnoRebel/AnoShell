@@ -33,6 +33,13 @@ Singleton {
     property string maxAvailableCpuString: "--"
 
     readonly property int historyLength: Config?.options.resources.historyLength ?? 60
+
+    // Polling runs only while a visible consumer holds a lease (ServiceLease).
+    property var _leases: ({})
+    property int leaseCount: 0
+    function acquire(name) { if (!root._leases[name]) { root._leases[name] = true; root.leaseCount++ } }
+    function release(name) { if (root._leases[name]) { delete root._leases[name]; root.leaseCount-- } }
+    onLeaseCountChanged: if (leaseCount === 0) pollTimer.interval = 1 // fresh sample on next resume
     property list<real> cpuUsageHistory: []
     property list<real> memoryUsageHistory: []
     property list<real> swapUsageHistory: []
@@ -53,8 +60,9 @@ Singleton {
     }
 
     Timer {
-        interval: 1
-        running: true
+        id: pollTimer
+        interval: 1 // first sample immediately, then the configured interval
+        running: root.leaseCount > 0
         repeat: true
         onTriggered: {
             fileMeminfo.reload()

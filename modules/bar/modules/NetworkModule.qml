@@ -10,6 +10,9 @@ import QtQuick.Layouts
  */
 Item {
     id: root
+    // ResourceUsage polls only while a visible consumer holds a lease.
+    ServiceLease { service: ResourceUsage; name: "barNetworkPopup"; active: root.hovered }
+
     implicitWidth: icon.implicitWidth + 8
     implicitHeight: Appearance.sizes.barHeight
     property bool hovered: netMA.containsMouse

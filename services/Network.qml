@@ -140,14 +140,6 @@ Singleton {
             }
         }
     }
-    // Refresh hotspot state on a slow interval (cheap nmcli call).
-    Timer {
-        interval: 5000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: hotspotPollProc.running = true
-    }
 
     function changePassword(network, password, username = ""): void {
         network.askingPassword = false
@@ -194,11 +186,21 @@ Singleton {
         updateNetworkStrength.running = true
     }
 
+    // `nmcli monitor` prints events in bursts; each refresh spawns several
+    // nmcli queries, so coalesce a burst into one refresh (hotspot included).
+    // Also runs once at startup. (Replaces a 5 s hotspot poll.)
+    Timer {
+        id: updateDebounce
+        interval: 300
+        running: true
+        onTriggered: { root.update(); hotspotPollProc.running = true }
+    }
+
     Process {
         id: subscriber
         running: true
         command: ["nmcli", "monitor"]
-        stdout: SplitParser { onRead: root.update() }
+        stdout: SplitParser { onRead: updateDebounce.restart() }
     }
 
     Process {
