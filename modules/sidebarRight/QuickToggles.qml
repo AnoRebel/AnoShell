@@ -267,6 +267,7 @@ Rectangle {
                 color: pill.active ? pill.activeColor : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
             }
             MaterialSymbol {
+                id: chevronIcon
                 visible: pill.showChevron
                 text: "expand_more"; iconSize: 16
                 rotation: pill.chevronRotation
@@ -275,31 +276,31 @@ Rectangle {
             }
         }
 
-        // Main click area — covers the whole pill EXCEPT the right-edge chevron
-        // strip (when shown). Declared before the chevron area so the chevron
-        // strip, declared later, sits ABOVE it and wins clicks in its zone.
+        // ONE hit area for the whole pill: left-click expands (when there's an
+        // expander), right-click toggles. Splitting the pill into a toggle zone and
+        // a chevron strip was a coin toss to aim at — the RowLayout is
+        // centreInParent, so the visible chevron never lined up with a fixed
+        // right-edge band and clicks landed on the wrong action. Button-based
+        // dispatch removes the geometry from the equation.
         MouseArea {
             id: pillMouse
             anchors.fill: parent
-            anchors.rightMargin: pill.showChevron ? 30 : 0
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: pill.clicked()
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: event => {
+                if (event.button === Qt.LeftButton && pill.showChevron)
+                    pill.chevronClicked()
+                else
+                    pill.clicked()
+            }
 
             StyledToolTip {
-                text: pill.tooltip
+                text: pill.showChevron && pill.tooltip.length > 0
+                    ? `${pill.tooltip} — right-click to toggle`
+                    : pill.tooltip
                 extraVisibleCondition: pill.tooltip.length > 0 && pillMouse.containsMouse
             }
-        }
-
-        // Dedicated chevron hit strip on the pill's right edge, on TOP of the
-        // main area so a chevron tap expands instead of toggling.
-        MouseArea {
-            visible: pill.showChevron
-            anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
-            width: 30
-            cursorShape: Qt.PointingHandCursor
-            onClicked: pill.chevronClicked()
         }
     }
 }
