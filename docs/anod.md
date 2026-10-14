@@ -17,9 +17,16 @@ audio, notifications) keeps working and daemon features show as unavailable.
 
 Requires Go ≥ 1.27. Set `PREFIX` to install elsewhere (`$PREFIX/bin`).
 
-Without Go, `install.sh` installs the bundled static binaries from
-`anod/dist/linux-<arch>/` instead (amd64 and arm64; also with `--prebuilt`).
-`anod/dist.sh` builds them on a machine that has Go.
+Without Go (or with `--prebuilt`), `install.sh` installs prebuilt static
+binaries instead: from `anod/dist/linux-<arch>/` when you built them with
+`anod/dist.sh`, otherwise from the latest GitHub release
+(`anoshell-linux-<arch>.tar.gz`, amd64 and arm64), checked against the release's
+`SHA256SUMS` before anything is installed. `ANO_RELEASE=v0.2.0` picks a release;
+`ANO_RELEASE_URL` points at a mirror.
+
+Releases are built by `.github/workflows/release.yml`: every push and pull
+request runs vet, tests and the cross-build; pushing a `v*` tag publishes a
+release with the tarballs and checksums.
 
 ## Autostart
 

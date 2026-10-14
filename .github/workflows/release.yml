@@ -1,0 +1,70 @@
+# Builds anod + ano on every push and pull request; a `v*` tag also publishes a
+# GitHub release whose tarballs `anod/install.sh` downloads on machines without Go.
+name: build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: anod
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # git describe for dev version strings
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: anod/go.mod
+          cache-dependency-path: anod/go.sum
+
+      - name: vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: cross-build release tarballs
+        env:
+          # On a tag the version is the tag without its leading "v".
+          ANO_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+        run: |
+          if [ -n "$ANO_VERSION" ]; then export ANO_VERSION="${ANO_VERSION#v}"; else unset ANO_VERSION; fi
+          ./dist.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: |
+            anod/dist/anoshell-linux-*.tar.gz
+            anod/dist/SHA256SUMS
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/anoshell-linux-*.tar.gz
+            dist/SHA256SUMS
+          generate_release_notes: true
+          fail_on_unmatched_files: true

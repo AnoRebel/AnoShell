@@ -2,8 +2,10 @@
 # install.sh — install anod and the ano CLI into ~/.local/bin (or $PREFIX/bin).
 #   usage: anod/install.sh [--test] [--prebuilt]
 #     --test      run go test ./... before building
-#     --prebuilt  copy the bundled binaries from dist/linux-<arch>/ instead of
-#                 building (automatic when Go isn't installed)
+#     --prebuilt  install prebuilt binaries instead of building (automatic when
+#                 Go isn't installed): dist/linux-<arch>/ if present, else the
+#                 GitHub release tarball (checksum-verified). ANO_RELEASE=vX.Y.Z
+#                 picks a release (default: latest); ANO_RELEASE_URL a mirror.
 set -euo pipefail
 cd "$(dirname "$0")"
 bin="${PREFIX:-$HOME/.local}/bin"
@@ -24,9 +26,24 @@ if (( prebuilt )); then
         *) echo "no bundled binaries for $(uname -m); install Go and rerun" >&2; exit 1 ;;
     esac
     src="dist/linux-$arch"
-    [[ -x "$src/ano" && -x "$src/anod" ]] || { echo "no bundled binaries in anod/$src (run anod/dist.sh on a machine with Go, or install Go)" >&2; exit 1; }
+    if [[ ! -x "$src/ano" || ! -x "$src/anod" ]]; then
+        # No local build: fetch the release tarball and verify its checksum.
+        repo="https://github.com/AnoRebel/AnoShell/releases"
+        rel="${ANO_RELEASE:-latest}"
+        if [[ "$rel" == latest ]]; then url="$repo/latest/download"; else url="$repo/download/$rel"; fi
+        url="${ANO_RELEASE_URL:-$url}" # a mirror, or a local server for testing
+        asset="anoshell-linux-$arch.tar.gz"
+        tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+        fetch() { if command -v curl >/dev/null; then curl -fsSL -o "$2" "$1"; else wget -qO "$2" "$1"; fi; }
+        echo "downloading $asset ($rel)"
+        fetch "$url/$asset" "$tmp/$asset" && fetch "$url/SHA256SUMS" "$tmp/SHA256SUMS" \
+            || { echo "download failed from $url (no release yet? install Go instead)" >&2; exit 1; }
+        (cd "$tmp" && grep " $asset\$" SHA256SUMS | sha256sum -c --quiet -) \
+            || { echo "checksum mismatch for $asset; not installing" >&2; exit 1; }
+        src="$tmp/x"; mkdir -p "$src"; tar -C "$src" -xzf "$tmp/$asset"
+    fi
     install -m 0755 "$src/anod" "$src/ano" "$bin/"
-    echo "installed bundled anod + ano $(cat "$src/VERSION" 2>/dev/null) to $bin"
+    echo "installed prebuilt anod + ano $(cat "$src/VERSION" 2>/dev/null) to $bin"
 else
     (( test )) && go test ./...
     base="$(sed -n 's/^var Version = "\(.*\)"/\1/p' internal/version/version.go)"
