@@ -3,7 +3,7 @@
   "enabledPanels": [],
   "familyTransitionAnimation": true,
   "compositor": {
-    "defaultCompositor": "hyprland"
+    "backend": "auto"
   },
   "display": {
     "primaryMonitor": ""

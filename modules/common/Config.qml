@@ -426,7 +426,9 @@ Singleton {
             // Compositor
             // ═══════════════════════════════════════════════════════════════
             property JsonObject compositor: JsonObject {
-                property string defaultCompositor: "hyprland" // fallback when env detection fails
+                // "auto" = detect from the session environment; otherwise force a
+                // backend: "hyprland" | "niri" | "generic".
+                property string backend: "auto"
             }
 
             // ═══════════════════════════════════════════════════════════════

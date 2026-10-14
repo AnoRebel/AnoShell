@@ -454,19 +454,29 @@ ColumnLayout {
         expanded: false
 
         ConfigRow {
-            label: "Current compositor"
-            StyledText { text: CompositorService.compositor; font.family: Appearance?.font.family.mono ?? "monospace"; font.weight: Font.DemiBold }
+            label: "Compositor backend"
+            sublabel: CompositorService.experimental ? "Experimental backend — some features may be missing" : "Detected from the session"
+            RowLayout {
+                spacing: 6
+                StyledText { text: CompositorService.backendName; font.family: Appearance?.font.family.mono ?? "monospace"; font.weight: Font.DemiBold }
+                Rectangle {
+                    visible: CompositorService.experimental
+                    implicitWidth: expLabel.implicitWidth + 12; implicitHeight: 20; radius: 10
+                    color: Appearance?.colors.colTertiaryContainer ?? "#633B48"
+                    StyledText { id: expLabel; anchors.centerIn: parent; text: "experimental"; font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10 }
+                }
+            }
         }
 
         ConfigRow {
-            label: "Default compositor"
-            configKey: "compositor.defaultCompositor"
-            sublabel: "Fallback when auto-detection fails"
+            label: "Force backend"
+            configKey: "compositor.backend"
+            sublabel: "auto, hyprland, niri or generic — auto detects from the session"
             RowLayout {
                 spacing: 6
                 StyledTextInput {
-                    text: Config.options?.compositor?.defaultCompositor ?? "hyprland"
-                    onEditingFinished: Config.setNestedValue("compositor.defaultCompositor", text)
+                    text: Config.options?.compositor?.backend ?? "auto"
+                    onEditingFinished: Config.setNestedValue("compositor.backend", text.trim() || "auto")
                     Layout.preferredWidth: 120
                     font.family: Appearance?.font.family.mono ?? "monospace"
                 }

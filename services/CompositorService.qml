@@ -3,109 +3,49 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import qs.modules.common
+import "compositor"
 
-// CompositorService: Runtime compositor auto-detection with config-time default fallback.
-// Detects Hyprland, Niri, or GNOME from environment variables.
-// If none detected, falls back to Config.options.compositor.defaultCompositor.
-//
-// Extension point: A C++ plugin could extend this to support additional compositors
-// (e.g., Sway/i3 via Quickshell.I3, KWin, etc.)
+// CompositorService — the one compositor API the UI uses (see
+// compositor/BackendContract.md). It picks a backend at startup
+// (compositor.backend, else the session environment) and forwards to it.
+// Hyprland/niri specifics live only in services/compositor/ and NiriService.
 Singleton {
     id: root
 
-    property bool isHyprland: false
-    property bool isNiri: false
-    property bool isGnome: false
-    property string compositor: "unknown"
-
-    // Environment variable probes
+    // Backend selection ─────────────────────────────────────────────────────
     readonly property string hyprlandSignature: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
     readonly property string niriSocket: Quickshell.env("NIRI_SOCKET")
-    readonly property string xdgCurrentDesktop: Quickshell.env("XDG_CURRENT_DESKTOP")
+
+    property QtObject backend: null
+    readonly property string backendName: backend?.name ?? "generic"
+    readonly property bool experimental: backend?.experimental ?? true
+    readonly property var supports: backend?.supports ?? ({})
+
+    // Legacy flags (pre-contract consumers; prefer backendName/supports).
+    readonly property bool isHyprland: backendName === "hyprland"
+    readonly property bool isNiri: backendName === "niri"
+    readonly property string compositor: backendName
 
     // Niri toplevel sorting (delegated to NiriService when available)
     property bool useNiriSorting: isNiri && NiriService
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // Active workspace abstraction (compositor-agnostic accessor)
-    // ═══════════════════════════════════════════════════════════════════════
-    readonly property int activeWorkspaceIndex: isNiri && NiriService
-        ? NiriService.focusedWorkspaceIndex
-        : (isHyprland && HyprlandData?.activeWorkspace
-            ? (HyprlandData.activeWorkspace.id ?? 0)
-            : 0)
-    readonly property string activeWorkspaceName: isNiri && NiriService
-        ? (NiriService.focusedWorkspaceId ?? "")
-        : (isHyprland && HyprlandData?.activeWorkspace
-            ? (HyprlandData.activeWorkspace.name ?? "")
-            : "")
+    // State (forwarded) ─────────────────────────────────────────────────────
+    readonly property int activeWorkspaceIndex: backend?.activeWorkspaceNumber ?? 0
+    readonly property string activeWorkspaceName: backend?.activeWorkspaceName ?? ""
+    readonly property string focusedMonitorName: backend?.focusedOutput ?? ""
+    readonly property var workspaces: backend?.workspaces ?? []
+    readonly property string keyboardLayout: backend?.keyboardLayout ?? ""
+    readonly property var keyboardLayouts: backend?.keyboardLayouts ?? []
 
-    // Name of the focused monitor (compositor-agnostic). Previously referenced
-    // by Brightness/OSD but never defined — so those silently got `undefined`
-    // and their per-monitor targeting was broken. Hyprland: Hyprland.focusedMonitor;
-    // niri: NiriService.currentOutput.
-    readonly property string focusedMonitorName: isNiri && NiriService
-        ? (NiriService.currentOutput ?? "")
-        : (isHyprland
-            ? (Hyprland.focusedMonitor?.name ?? "")
-            : "")
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // Fullscreen tracking (compositor-agnostic) — so surfaces (e.g. the bar) can
-    // hide while a window is fullscreen on their screen.
-    // ═══════════════════════════════════════════════════════════════════════
-    // Set of monitor names that currently have a fullscreen window.
-    property var fullscreenScreens: ({})
-    // Bumped whenever fullscreen state might have changed, so bindings recompute.
-    property int fullscreenRevision: 0
-
+    // Outputs currently showing a fullscreen window (bar/frame hide there).
+    readonly property var fullscreenScreens: backend?.fullscreenOutputs ?? ({})
+    readonly property int fullscreenRevision: backend?.revision ?? 0
     function hasFullscreenOnScreen(screenName): bool {
         return !!root.fullscreenScreens[screenName]
-    }
-
-    function _recomputeFullscreen(): void {
-        const out = ({})
-        if (isHyprland) {
-            // Use HyprlandData, which re-runs `hyprctl clients -j` on every raw
-            // event, so its window list is never stale (Hyprland workspace
-            // `lastIpcObject.hasfullscreen` is NOT refreshed on fullscreen events,
-            // which made an earlier attempt flaky). fullscreen: 0=none, 1=maximize,
-            // 2=fullscreen — only true fullscreen (>=2) hides the bar. `monitor` is
-            // a monitor id; map it to a name via HyprlandData.monitors.
-            const monById = ({})
-            for (const m of (HyprlandData.monitors || [])) monById[m.id] = m.name
-            for (const w of (HyprlandData.windowList || [])) {
-                if ((w.fullscreen ?? 0) >= 2) {
-                    const name = monById[w.monitor] ?? ""
-                    if (name) out[name] = true
-                }
-            }
-        } else if (isNiri && NiriService) {
-            const wins = NiriService.windows?.values
-                ? Array.from(NiriService.windows.values) : (NiriService.windows || [])
-            for (const w of wins) {
-                if (w && w.is_fullscreen) {
-                    const o = w.output ?? w.workspace?.output ?? ""
-                    if (o) out[o] = true
-                }
-            }
-        }
-        root.fullscreenScreens = out
-        root.fullscreenRevision++
-    }
-
-    // Recompute whenever HyprlandData refreshes (it already listens to raw events
-    // and re-queries hyprctl), or when Niri's window state changes.
-    Connections {
-        target: root.isHyprland ? HyprlandData : null
-        function onWindowListChanged() { root._recomputeFullscreen() }
-    }
-    Connections {
-        target: (root.isNiri && NiriService) ? NiriService : null
-        function onActiveWindowChanged() { root._recomputeFullscreen() }
-        function onWindowsChanged() { root._recomputeFullscreen() }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -395,110 +335,65 @@ Singleton {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Compositor Detection (with config default fallback)
+    // Backend selection
     // ═══════════════════════════════════════════════════════════════════════
+    Component { id: hyprlandBackend; HyprlandBackend {} }
+    Component { id: niriBackend; NiriBackend {} }
+    Component { id: genericBackend; GenericBackend {} }
+
+    function _pickBackend(): string {
+        const forced = (Config.options?.compositor?.backend ?? "auto").trim()
+        if (forced && forced !== "auto") return forced
+        if (root.hyprlandSignature) return "hyprland"
+        if (root.niriSocket) return "niri"
+        return "generic"
+    }
+
+    // Re-pick once the user config is loaded (compositor.backend may force one).
+    Connections {
+        target: Config
+        function onReadyChanged() {
+            if (Config.ready && root._pickBackend() !== root.backendName) root.detectCompositor()
+        }
+    }
+
     function detectCompositor() {
-        // 1. Try environment variables first
-        if (hyprlandSignature && hyprlandSignature.length > 0) {
-            isHyprland = true; isNiri = false; isGnome = false
-            compositor = "hyprland"
-            console.info("CompositorService: Detected Hyprland")
-            try { Hyprland.refreshToplevels() } catch(e) {}
-            return
-        }
-
-        if (niriSocket && niriSocket.length > 0) {
-            isNiri = true; isHyprland = false; isGnome = false
-            compositor = "niri"
-            console.info("CompositorService: Detected Niri with socket:", niriSocket)
-            return
-        }
-
-        if (xdgCurrentDesktop && (xdgCurrentDesktop.includes("GNOME") || xdgCurrentDesktop.includes("gnome"))) {
-            isHyprland = false; isNiri = false; isGnome = true
-            compositor = "gnome"
-            console.info("CompositorService: Detected GNOME Shell")
-            return
-        }
-
-        // 2. Fall back to config default
-        // Note: Config may not be ready yet at this point, so we also
-        // accept a re-detect call after Config.ready changes
-        let configDefault = "hyprland" // hardcoded fallback if config not ready
-        try {
-            if (Config && Config.ready && Config.options && Config.options.compositor) {
-                configDefault = Config.options.compositor.defaultCompositor || "hyprland"
-            }
-        } catch (e) {}
-
-        if (configDefault === "hyprland") {
-            isHyprland = true; isNiri = false; isGnome = false
-            compositor = "hyprland"
-            console.info("CompositorService: No compositor detected from env, defaulting to Hyprland (from config)")
-        } else if (configDefault === "niri") {
-            isNiri = true; isHyprland = false; isGnome = false
-            compositor = "niri"
-            console.info("CompositorService: No compositor detected from env, defaulting to Niri (from config)")
-        } else {
-            isHyprland = false; isNiri = false; isGnome = false
-            compositor = "unknown"
-            console.warn("CompositorService: Could not detect compositor")
-        }
+        const name = root._pickBackend()
+        const comp = { "hyprland": hyprlandBackend, "niri": niriBackend }[name] ?? genericBackend
+        root.backend?.destroy()
+        root.backend = comp.createObject(root)
+        console.info(`CompositorService: ${root.backend.name} backend${root.backend.experimental ? " (experimental)" : ""}`)
+        if (root.isHyprland) { try { Hyprland.refreshToplevels() } catch (e) {} }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Compositor-agnostic actions
+    // Actions (forwarded; unsupported ones return false)
     // ═══════════════════════════════════════════════════════════════════════
-    function powerOffMonitors() {
-        if (isNiri) return NiriService.powerOffMonitors()
-        if (isHyprland) return Hyprland.dispatch("dpms off")
-        console.warn("CompositorService: Cannot power off monitors, unknown compositor")
-    }
-
-    function powerOnMonitors() {
-        if (isNiri) return NiriService.powerOnMonitors()
-        if (isHyprland) return Hyprland.dispatch("dpms on")
-        console.warn("CompositorService: Cannot power on monitors, unknown compositor")
-    }
-
-    // Set the compositor's OUTER gap (the space between windows and the screen
-    // edge) at runtime. Connected shell mode uses this to drop the outer gap to 0
-    // so windows sit flush against the painted frame band; inner gaps (between
-    // windows) are left untouched.
-    //
-    // Hyprland runs a Lua config backend here, where `hyprctl keyword` and
-    // `dispatch keyword` are both rejected ("can't work with non-legacy
-    // parsers") — the working runtime path is `hyprctl eval 'hl.config{...}'`.
-    // Niri has no runtime gap IPC, so this is a no-op there (Niri's connected
-    // look is governed by its own config).
-    //
-    // NOTE: runtime-only. It does not persist across a compositor reload, which
-    // is fine — AnoScreen re-applies it whenever connected mode is active.
-    function setOuterGaps(px) {
-        const v = Math.max(0, Math.round(px))
-        if (isHyprland) {
-            Quickshell.execDetached(["hyprctl", "eval", `hl.config({ general = { gaps_out = ${v} } })`])
-            return
+    function focusWorkspace(number) { return root.backend?.focusWorkspace(number) ?? false }
+    function focusWorkspaceRelative(delta) { return root.backend?.focusWorkspaceRelative(delta) ?? false }
+    function exit() { return root.backend?.exit() ?? false }
+    function powerOffMonitors() { return root.backend?.powerOffMonitors() ?? false }
+    function powerOnMonitors() { return root.backend?.powerOnMonitors() ?? false }
+    // Runtime only: the outer gap (windows ↔ screen edge); connected mode sets 0.
+    function setOuterGaps(px) { return root.backend?.setOuterGaps(px) ?? false }
+    // Layer-rule blur fallback for compositors without ext-background-effect-v1.
+    function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return root.backend?.setLayerBlur(namespaceRegex, enabled, ignoreAlpha) ?? false }
+    function setCursorZoom(factor) { return root.backend?.setCursorZoom(factor) ?? false }
+    function switchKeyboardLayout(delta) { return root.backend?.switchKeyboardLayout(delta) ?? false }
+    // Read-only snapshot for scripts, tests and `ano doctor`.
+    IpcHandler {
+        target: "compositor"
+        function status(): string {
+            return JSON.stringify({
+                backend: root.backendName, experimental: root.experimental, supports: root.supports,
+                focusedOutput: root.focusedMonitorName, activeWorkspace: root.activeWorkspaceIndex,
+                workspaces: root.workspaces, fullscreen: Object.keys(root.fullscreenScreens),
+                keyboardLayout: root.keyboardLayout
+            })
         }
-        if (isNiri) return   // no runtime gap control; configured in niri's own config
-        console.warn("CompositorService: Cannot set outer gaps, unknown compositor")
     }
 
-    // Turn compositor blur on/off for one layer surface, by namespace regex.
-    // Used by the connected frame so a translucent frame shows a BLURRED desktop
-    // behind it rather than a raw see-through panel. Runtime-only, like
-    // setOuterGaps — the caller re-applies it whenever its config changes.
-    // `ignoreAlpha` is the alpha threshold below which pixels are NOT blurred;
-    // keep it at 0 for surfaces whose own translucent fill must be blurred (a
-    // higher value would skip them and they'd render flat-transparent).
-    function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) {
-        if (isHyprland) {
-            const a = (ignoreAlpha === undefined) ? 0 : ignoreAlpha
-            Quickshell.execDetached(["hyprctl", "eval",
-                `hl.layer_rule({ match = { namespace = "${namespaceRegex}" }, blur = ${enabled ? "true" : "false"}, ignore_alpha = ${a} })`])
-            return
-        }
-        if (isNiri) return   // niri has no per-layer blur IPC
-        console.warn("CompositorService: Cannot set layer blur, unknown compositor")
-    }
+    // Windows are foreign-toplevel handles: focus/close work on every backend.
+    function focusWindow(toplevel) { toplevel?.activate(); return !!toplevel }
+    function closeWindow(toplevel) { toplevel?.close(); return !!toplevel }
 }

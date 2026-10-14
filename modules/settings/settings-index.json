@@ -490,10 +490,10 @@
  {
   "page": 1,
   "card": "",
-  "label": "Default compositor",
-  "sublabel": "Fallback when auto-detection fails",
+  "label": "Force backend",
+  "sublabel": "auto, hyprland, niri or generic — auto detects from the session",
   "keys": [
-   "compositor.defaultCompositor"
+   "compositor.backend"
   ]
  },
  {
