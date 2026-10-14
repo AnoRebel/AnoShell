@@ -20,8 +20,12 @@ Item {
     // growing upward — off the top of the screen for a top bar — so the
     // compositor clamped popups to arbitrary positions where they detached from
     // their icons and overlapped each other.
-    property var anchorEdges: Edges.Bottom
-    property var anchorGravity: Edges.Bottom
+    // On a bottom/left/right bar it hangs off the icon's side facing the screen.
+    readonly property string _barEdge: PanelRegistry.windowEdge(root.anchorItem?.QsWindow?.window) || "top"
+    property var anchorEdges: root._barEdge === "bottom" ? Edges.Top
+        : root._barEdge === "left" ? Edges.Right
+        : root._barEdge === "right" ? Edges.Left : Edges.Bottom
+    property var anchorGravity: root.anchorEdges
     // Item the popup anchors to. Defaults to this popup's own parent, but
     // callers should set it explicitly to the visible icon/widget — relying on
     // `parent` is fragile when the popup is nested inside Loaders.
@@ -75,7 +79,8 @@ Item {
     function _measure() {
         const w = root.anchorItem?.QsWindow?.window
         if (!root.anchorItem || !w) return
-        const a = root.anchorItem.mapToItem(null, 0, 0)
+        const o = PanelRegistry.windowOrigin(w), ai = root.anchorItem.mapToItem(null, 0, 0)
+        const a = Qt.point(o.x + ai.x, o.y + ai.y)
         const sw = w.screen?.width ?? w.width ?? 0, sh = w.screen?.height ?? w.height ?? 0
         const m = root.popupMargin, pw = root.popupWidth, ph = root.popupHeight
         let x, y

@@ -182,8 +182,8 @@ Item {
             function _updateReg() {
                 const w = morphBg.Window.window
                 if (!morphContainer.showPopout || !w) return
-                const p = morphBg.mapToItem(null, 0, 0)
-                morphContainer._rect = Qt.rect(p.x, p.y, morphBg.width, morphBg.height)
+                const o = PanelRegistry.windowOrigin(w), p = morphBg.mapToItem(null, 0, 0)
+                morphContainer._rect = Qt.rect(o.x + p.x, o.y + p.y, morphBg.width, morphBg.height)
                 morphContainer._screenName = w.screen?.name ?? ""
             }
             ConnectedSurfaceLease {
@@ -203,11 +203,12 @@ Item {
                 z: 100
 
                 x: -(root.popupWidth - (root.parent?.width ?? 50)) / 2
-                y: (root.parent?.height ?? 40) + 8
+                // Connected mode: flush on the bar, and the frame paints the fill.
+                y: (root.parent?.height ?? 40) + (PanelRegistry.enabled ? 0 : 8)
                 width: root.popupWidth
                 height: root.popupHeight
 
-                color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
+                color: PanelRegistry.enabled ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
                 // The polygon below is a normalized unit RECTANGLE meant to cover
                 // this whole canvas, so it must stretch per-axis. ShapeCanvas
                 // otherwise scales uniformly by min(w,h), which drew the shape as a

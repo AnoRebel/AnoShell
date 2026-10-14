@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs
 import qs.modules.common
+import qs.modules.common.widgets
 import qs.modules.anoScreen
 import qs.services
 
@@ -90,8 +91,10 @@ Scope {
     on_ShapedBlurChanged: _applyFrameBlur()
     on_FrameBlurIgnoreAlphaChanged: _applyFrameBlur()
 
+    // Applied on start in both modes: a killed/crashed connected shell never
+    // ran onDestruction, so the compositor may still hold gaps_out 0.
     Component.onCompleted: {
-        if (root.enabled && _manageGaps) CompositorService.setOuterGaps(0)
+        if (_manageGaps) CompositorService.setOuterGaps(_targetGapsOut)
         root._applyFrameBlur()
     }
     Component.onDestruction: {
@@ -163,7 +166,11 @@ Scope {
                 void CompositorService.fullscreenRevision
                 return CompositorService.hasFullscreenOnScreen(screenName)
             }
-            visible: root.enabled && !screenFullscreen
+            // The band and corners retract on a spring rather than vanishing;
+            // the window unmaps once fully retracted.
+            property real shown: screenFullscreen ? 0 : 1
+            Behavior on shown { MotionSpring { token: win.screenFullscreen ? "settle" : "liquid" } }
+            visible: root.enabled && (!screenFullscreen || shown > 0.001)
 
             readonly property real sw: width
             readonly property real sh: height
@@ -213,8 +220,8 @@ Scope {
                 active: win.ready
                 sourceComponent: ConnectedFrame {
                     anchors.fill: parent
-                    cornerRadius: root.cornerRadius
-                    frameThickness: root.frameThickness
+                    cornerRadius: root.cornerRadius * Math.max(0, win.shown)
+                    frameThickness: root.frameThickness * Math.max(0, win.shown)
                     connectedRadius: root.cornerRadius
                     surfaceRadius: Appearance?.rounding.normal ?? 12
                     surfaceColor: root.cornerColor

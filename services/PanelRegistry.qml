@@ -129,6 +129,37 @@ Singleton {
         for (const p of root.panels) if (p.screenName === screenName && p.edge === edge) n += p.reserve
         return n
     }
+    /// Screen-space origin of a layer-shell window (Qt.point), for surfaces
+    /// that map items to their window and need screen coordinates. Models the
+    /// layer shell's placement: unless it ignores exclusion, the window is laid
+    /// out in the area left by the other edges' reserved space (its own zone
+    /// doesn't push itself), pinned to anchored sides, centred otherwise.
+    /// ponytail: no compositor stacking order; exact while one surface per
+    /// edge reserves, ask the compositor for layer positions if that breaks.
+    function windowOrigin(w) {
+        const a = w?.anchors, m = w?.margins, sc = w?.screen
+        if (!a || !sc) return Qt.point(0, 0)
+        const own = root.windowEdge(w)
+        const pushed = w.exclusionMode !== ExclusionMode.Ignore
+        const zone = Math.max(0, w.exclusiveZone ?? 0)
+        const ins = e => pushed ? Math.max(0, root.inset(sc.name, e) - (e === own ? zone : 0)) : 0
+        const axis = (lo, hi, eLo, eHi, mLo, mHi, size, total) => {
+            const s = ins(eLo), t = total - ins(eHi)
+            return lo && !hi ? s + (mLo ?? 0) : hi && !lo ? t - size - (mHi ?? 0) : s + (t - s - size) / 2
+        }
+        return Qt.point(axis(a.left, a.right, "left", "right", m?.left, m?.right, w.width, sc.width),
+                        axis(a.top, a.bottom, "top", "bottom", m?.top, m?.bottom, w.height, sc.height))
+    }
+
+    /// The screen edge a layer-shell window hugs ("" if none), from its anchors:
+    /// the anchored side whose opposite side is free.
+    function windowEdge(w) {
+        const a = w?.anchors
+        if (!a) return ""
+        return a.top && !a.bottom ? "top" : a.bottom && !a.top ? "bottom"
+            : a.left && !a.right ? "left" : a.right && !a.left ? "right" : ""
+    }
+
     readonly property real frameThickness: root.enabled ? Math.max(0, Config.options?.appearance?.connectedCorners?.thickness ?? 0) : 0
 
     function panelsForScreen(screenName) {

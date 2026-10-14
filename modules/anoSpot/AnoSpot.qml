@@ -153,11 +153,10 @@ Scope {
                 screenName: spotWindow.modelData?.name ?? ""
                 active: spotWindow.visible
                 surfaceRadius: Math.min(spotWindow.width, spotWindow.height) / 2
-                readonly property real _sw: spotWindow.screen?.width ?? 0
-                readonly property real _sh: spotWindow.screen?.height ?? 0
-                readonly property real _in: PanelRegistry.inset(screenName, root.position)
-                x: root.position === "left" ? _in : root.position === "right" ? _sw - _in - spotWindow.width : (_sw - spotWindow.width) / 2
-                y: root.position === "top" ? _in : root.position === "bottom" ? _sh - _in - spotWindow.height : (_sh - spotWindow.height) / 2
+                // Where the layer shell actually puts the window (centred in
+                // the space other edges leave, e.g. beside a left bar).
+                readonly property point _o: PanelRegistry.windowOrigin(spotWindow)
+                x: _o.x; y: _o.y
                 w: spotWindow.width; h: spotWindow.height
             }
 

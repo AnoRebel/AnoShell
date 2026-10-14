@@ -153,8 +153,9 @@ Item {
                 anchor {
                     window: trayIcon.QsWindow.window
                     item: trayIcon
-                    gravity: Edges.Bottom
-                    edges: Edges.Bottom
+                    edges: barEdge === "bottom" ? Edges.Top : barEdge === "left" ? Edges.Right
+                        : barEdge === "right" ? Edges.Left : Edges.Bottom
+                    gravity: anchor.edges
                 }
                 onMenuOpened: (window) => trayIcon.menuOpened(window)
                 onMenuClosed: menuLoader.active = false

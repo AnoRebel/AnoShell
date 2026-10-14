@@ -29,6 +29,10 @@ PopupWindow {
     // item coordinates are not screen space, so the menu can't be placed in
     // the frame there: it keeps its own background instead of fusing.
     readonly property var _iconWindow: root.anchor.item?.QsWindow?.window ?? null
+    // The bar edge the menu hangs from (via the overflow popup's parent window).
+    readonly property string barEdge: PanelRegistry.windowEdge(root._iconWindow)
+        || PanelRegistry.windowEdge(root._iconWindow?.anchor?.window) || "top"
+    readonly property bool _vertical: root.barEdge === "left" || root.barEdge === "right"
     readonly property bool _fused: PanelRegistry.enabled && root._iconWindow !== null && root._iconWindow.anchor === undefined
 
     // Constrain the input region to the visible menu card. Without a mask the
@@ -74,16 +78,21 @@ PopupWindow {
         Rectangle {
             id: popupBackground
             readonly property real padding: 4
-            // Grows down out of the tray icon (it hangs below a top bar), pinned
-            // to the bar edge; the menu entries are uncovered, not relaid out.
+            // Grows out of the tray icon away from the bar, pinned to the bar
+            // edge; the menu entries are uncovered, not relaid out.
             anchors {
-                top: parent.top; left: parent.left; right: parent.right
+                top: root.barEdge !== "bottom" ? parent.top : undefined
+                bottom: root.barEdge !== "top" ? parent.bottom : undefined
+                left: root.barEdge !== "right" ? parent.left : undefined
+                right: root.barEdge !== "left" ? parent.right : undefined
                 margins: root.padding
             }
             property real reveal: 0
             Behavior on reveal { MotionSpring { token: "liquid" } }
             Component.onCompleted: reveal = 1
-            height: Math.max(0, (parent.height - root.padding * 2) * Math.min(reveal, 1.04))
+            readonly property real _grow: Math.max(0, Math.min(reveal, 1.04))
+            height: root._vertical ? undefined : (parent.height - root.padding * 2) * _grow
+            width: root._vertical ? (parent.width - root.padding * 2) * _grow : undefined
 
             // Connected mode: the frame paints the menu fused into the bar.
             readonly property bool connected: root._fused
@@ -95,19 +104,32 @@ PopupWindow {
 
             ConnectedSurfaceLease {
                 key: "trayMenu:" + root.trayItemId
-                kind: "trayMenu"; edge: "top"; priority: 10
+                kind: "trayMenu"; edge: root.barEdge; priority: 10
                 active: root.visible && root._fused
                 progress: popupBackground.reveal
                 surfaceRadius: popupBackground.radius
                 // Screen rect from the anchor icon (the popup's own origin is
-                // not screen space); centred under the icon, clamped on-screen.
+                // not screen space); centred on the icon along the bar, clamped
+                // on-screen, pinned to the icon's side facing away from the bar.
                 readonly property Item _icon: root.anchor.item
                 readonly property var _win: root._iconWindow
                 screenName: _win?.screen?.name ?? ""
-                readonly property point _a: { void root.visible; return _icon ? _icon.mapToItem(null, 0, 0) : Qt.point(0, 0) }
+                readonly property point _a: {
+                    void root.visible
+                    if (!_icon) return Qt.point(0, 0)
+                    const o = PanelRegistry.windowOrigin(_win), p = _icon.mapToItem(null, 0, 0)
+                    return Qt.point(o.x + p.x, o.y + p.y)
+                }
                 readonly property real _sw: _win?.screen?.width ?? 0
-                x: Math.max(0, Math.min(_a.x + (_icon?.width ?? 0) / 2 - root.implicitWidth / 2, _sw - root.implicitWidth)) + root.padding
-                y: _a.y + (_icon?.height ?? 0) + root.padding
+                readonly property real _sh: _win?.screen?.height ?? 0
+                readonly property real _iw: _icon?.width ?? 0
+                readonly property real _ih: _icon?.height ?? 0
+                x: root.barEdge === "left" ? _a.x + _iw + root.padding
+                    : root.barEdge === "right" ? _a.x - root.padding - w
+                    : Math.max(0, Math.min(_a.x + _iw / 2 - root.implicitWidth / 2, _sw - root.implicitWidth)) + root.padding
+                y: root.barEdge === "top" ? _a.y + _ih + root.padding
+                    : root.barEdge === "bottom" ? _a.y - root.padding - h
+                    : Math.max(0, Math.min(_a.y + _ih / 2 - root.implicitHeight / 2, _sh - root.implicitHeight)) + root.padding
                 w: popupBackground.width
                 h: popupBackground.height
             }
