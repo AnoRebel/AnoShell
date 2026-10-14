@@ -704,5 +704,16 @@ ColumnLayout {
             checked: Config.options?.media?.filterDuplicatePlayers ?? true
             onCheckedChanged: Config.setNestedValue("media.filterDuplicatePlayers", checked)
         }
+
+        ConfigRow {
+            label: "Preferred player"
+            sublabel: "Name to track first when nothing is playing (e.g. spotify); empty = automatic"
+            StyledTextInput {
+                text: Config.options?.media?.preferredPlayer ?? ""
+                onEditingFinished: Config.setNestedValue("media.preferredPlayer", text.trim())
+                Layout.preferredWidth: 160
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+        }
     }
 }

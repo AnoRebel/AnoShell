@@ -1,0 +1,2113 @@
+[
+ {
+  "page": 0,
+  "card": "Audio",
+  "label": "Audio",
+  "sublabel": "Volume protection, system sounds, and audio behavior",
+  "keys": [
+   "audio"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Volume protection (Earbang guard)",
+  "sublabel": "Blocks sudden volume jumps that could damage hearing",
+  "keys": [
+   "audio.protection.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Max allowed increase per step",
+  "sublabel": "Maximum % the volume can jump in a single change",
+  "keys": [
+   "audio.protection.maxAllowedIncrease"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Hard volume limit",
+  "sublabel": "Absolute maximum volume percentage (pavucontrol allows up to 153%)",
+  "keys": [
+   "audio.protection.maxAllowed"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Battery",
+  "label": "Battery",
+  "sublabel": "Warning thresholds, auto-suspend, and power notifications",
+  "keys": [
+   "battery",
+   "sounds.battery"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Low battery warning",
+  "sublabel": "Show notification when battery drops below this level",
+  "keys": [
+   "battery.low"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Critical battery warning",
+  "sublabel": "Urgent notification with sound",
+  "keys": [
+   "battery.critical"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Auto-suspend threshold",
+  "sublabel": "System suspends automatically below this level",
+  "keys": [
+   "battery.suspend"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Enable automatic suspend",
+  "sublabel": "Suspend the system when battery reaches the threshold above",
+  "keys": [
+   "battery.automaticSuspend"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Full battery notification",
+  "sublabel": "Notify to unplug when charged above this level",
+  "keys": [
+   "battery.full"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Battery sounds",
+  "sublabel": "Play sounds for charging, low battery, and full events",
+  "keys": [
+   "sounds.battery"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Time & Clock",
+  "label": "Time & Clock",
+  "sublabel": "Clock format, date format, and second precision",
+  "keys": [
+   "time"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Second precision",
+  "sublabel": "Update clock every second (slightly more CPU usage)",
+  "keys": [
+   "time.secondPrecision"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Notifications",
+  "label": "Notifications",
+  "sublabel": "Popup behavior, timeout, and sounds",
+  "keys": [
+   "notifications"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Auto-dismiss timeout",
+  "sublabel": "How long popup notifications stay visible",
+  "keys": [
+   "notifications.timeout"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Silent mode",
+  "sublabel": "No popups — notifications still go to the history",
+  "keys": [
+   "notifications.silent"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Popups on screen",
+  "sublabel": "Newest popups shown at once; older ones wait in the history",
+  "keys": [
+   "notifications.maxVisible"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Session",
+  "label": "Session",
+  "sublabel": "Confirmation for logout and shutdown",
+  "keys": [
+   "session"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Hold to confirm logout",
+  "sublabel": "Off: a single click logs out",
+  "keys": [
+   "session.confirmLogout"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Hold to confirm shutdown",
+  "sublabel": "Off: a single click powers off",
+  "keys": [
+   "session.confirmShutdown"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Scrolling & Interactions",
+  "label": "Scrolling & Interactions",
+  "sublabel": "Touchpad and mouse scroll speed",
+  "keys": [
+   "interactions"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Faster touchpad scrolling",
+  "sublabel": "Enhanced scroll speed for high-res touchpads",
+  "keys": [
+   "interactions.scrolling.fasterTouchpadScroll"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Touchpad scroll factor",
+  "sublabel": "",
+  "keys": [
+   "interactions.scrolling.touchpadScrollFactor"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Mouse scroll factor",
+  "sublabel": "",
+  "keys": [
+   "interactions.scrolling.mouseScrollFactor"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Enabled Modules",
+  "label": "Enabled Modules",
+  "sublabel": "",
+  "keys": [
+   "enabledPanels"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "OSD Indicators",
+  "label": "OSD Indicators",
+  "sublabel": "Choose which on-screen display indicators are shown",
+  "keys": [
+   "osd"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Auto-hide timeout",
+  "sublabel": "How long the OSD pill stays visible",
+  "keys": [
+   "osd.timeout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "OSD position",
+  "sublabel": "",
+  "keys": [
+   "osd.position"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Top",
+  "sublabel": "",
+  "keys": [
+   "osd.position"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Bottom",
+  "sublabel": "",
+  "keys": [
+   "osd.position"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Hot Screen Corners",
+  "label": "Hot Screen Corners",
+  "sublabel": "Trigger actions by moving cursor to screen corners",
+  "keys": [
+   "screenCorners"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Enable hot corners",
+  "sublabel": "",
+  "keys": [
+   "screenCorners.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Dwell time",
+  "sublabel": "How long cursor must stay in corner before activation",
+  "keys": [
+   "screenCorners.dwellMs"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Hit zone size",
+  "sublabel": "Size of the invisible corner trigger area in pixels",
+  "keys": [
+   "screenCorners.hitSize"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Alt-Tab Window Switcher",
+  "label": "Alt-Tab Window Switcher",
+  "sublabel": "Window switching overlay appearance and behavior",
+  "keys": [
+   "altSwitcher"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Enable animations",
+  "sublabel": "",
+  "keys": [
+   "altSwitcher.enableAnimation"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Animation duration",
+  "sublabel": "",
+  "keys": [
+   "altSwitcher.animationDurationMs"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Most recent first (MRU)",
+  "sublabel": "Order windows by most recently used instead of creation order",
+  "keys": [
+   "altSwitcher.useMostRecentFirst"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Compact style",
+  "sublabel": "Smaller thumbnails, more windows visible",
+  "keys": [
+   "altSwitcher.compactStyle"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Background opacity",
+  "sublabel": "",
+  "keys": [
+   "altSwitcher.backgroundOpacity"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Scrim dimming",
+  "sublabel": "",
+  "keys": [
+   "altSwitcher.scrimDim"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Max visible windows",
+  "sublabel": "",
+  "keys": [
+   "altSwitcher.maxVisible"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Task View",
+  "label": "Task View",
+  "sublabel": "Current workspace window layout",
+  "keys": [
+   "taskView"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Layout algorithm",
+  "sublabel": "How windows are arranged in task view",
+  "keys": [
+   "taskView.layout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Hero",
+  "sublabel": "",
+  "keys": [
+   "taskView.layout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Grid",
+  "sublabel": "",
+  "keys": [
+   "taskView.layout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Justified",
+  "sublabel": "",
+  "keys": [
+   "taskView.layout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Masonry",
+  "sublabel": "",
+  "keys": [
+   "taskView.layout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "App Launcher",
+  "label": "App Launcher",
+  "sublabel": "Application search and recent apps",
+  "keys": [
+   "apps"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Default Applications",
+  "label": "Default Applications",
+  "sublabel": "Preferred applications for various actions",
+  "keys": [
+   "apps"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Terminal",
+  "sublabel": "",
+  "keys": [
+   "apps.terminal"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "File Manager",
+  "sublabel": "",
+  "keys": [
+   "apps.fileManager"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Browser",
+  "sublabel": "",
+  "keys": [
+   "apps.browser"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Compositor",
+  "label": "Compositor",
+  "sublabel": "Wayland compositor settings",
+  "keys": [
+   "compositor",
+   "display.primaryMonitor"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Default compositor",
+  "sublabel": "Fallback when auto-detection fails",
+  "keys": [
+   "compositor.defaultCompositor"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Primary monitor",
+  "sublabel": "Leave empty for auto",
+  "keys": [
+   "display.primaryMonitor"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Panel Families",
+  "label": "Panel Families",
+  "sublabel": "Switch between different shell presets — changes which modules are active",
+  "keys": [
+   "panelFamily",
+   "familyTransitionAnimation"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Family transition animation",
+  "sublabel": "Animated ripple effect when switching between panel families",
+  "keys": [
+   "familyTransitionAnimation"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Focus Time",
+  "label": "Focus Time",
+  "sublabel": "App usage tracking with daily and weekly statistics",
+  "keys": [
+   "focusTime"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Enable Focus Time",
+  "sublabel": "Track time spent in each application",
+  "keys": [
+   "focusTime.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Excluded apps",
+  "sublabel": "Comma-separated list of apps to ignore",
+  "keys": [
+   "focusTime.excludeApps"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Display Manager",
+  "label": "Display Manager",
+  "sublabel": "Monitor configuration panel (Hyprland only)",
+  "keys": [
+   "displayManager"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Enable Display Manager",
+  "sublabel": "Show monitor resolution/refresh rate controls",
+  "keys": [
+   "displayManager.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "Advanced",
+  "label": "Advanced",
+  "sublabel": "Debug settings and workarounds",
+  "keys": [
+   "hacks",
+   "media",
+   "sounds.theme",
+   "bar.morphingPanels"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Race condition delay",
+  "sublabel": "Delay (ms) for file reload operations to avoid race conditions",
+  "keys": [
+   "hacks.arbitraryRaceConditionDelay"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Sound theme",
+  "sublabel": "",
+  "keys": [
+   "sounds.theme"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Morphing bar panels",
+  "sublabel": "ano",
+  "keys": [
+   "bar.morphingPanels"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Duplicate player filter",
+  "sublabel": "Filter duplicate MPRIS players from browser integrations",
+  "keys": [
+   "media.filterDuplicatePlayers"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Preferred player",
+  "sublabel": "Name to track first when nothing is playing (e.g. spotify); empty = automatic",
+  "keys": [
+   "media.preferredPlayer"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Position & Style",
+  "label": "Position & Style",
+  "sublabel": "Bar edge, auto-hide, background, and margin",
+  "keys": [
+   "bar.cornerStyle",
+   "bar.autoHide",
+   "bar.showBackground",
+   "bars"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Auto hide",
+  "sublabel": "autoHide",
+  "keys": [
+   "bar.autoHide.enable"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Auto-hide delay",
+  "sublabel": "How long the bar stays after the pointer leaves",
+  "keys": [
+   "bar.autoHide.delay"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Show background",
+  "sublabel": "showBackground",
+  "keys": [
+   "bar.showBackground"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Corner style",
+  "sublabel": "0 = floating (default), 1 = edge-to-edge with bezel padding",
+  "keys": [
+   "bar.cornerStyle"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Floating",
+  "sublabel": "",
+  "keys": [
+   "bar.cornerStyle"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Edge-to-edge",
+  "sublabel": "",
+  "keys": [
+   "bar.cornerStyle"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Bar Modules",
+  "label": "Bar Modules",
+  "sublabel": "Drop modules into the left, center, and right sections. Reorder with the ◂ ▸ buttons.",
+  "keys": [
+   "bars"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Layout & Sizing",
+  "label": "Layout & Sizing",
+  "sublabel": "Bar height, corner radius, module spacing, padding, and decorations",
+  "keys": [
+   "bar.layout"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Bar height",
+  "sublabel": "Total thickness of the bar in pixels",
+  "keys": [
+   "bar.layout.height"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Corner radius",
+  "sublabel": "Rounding of the bar background corners",
+  "keys": [
+   "bar.layout.radius"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Left section spacing",
+  "sublabel": "Gap between modules in the left section",
+  "keys": [
+   "bar.layout.leftSpacing"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Center section spacing",
+  "sublabel": "Gap between modules in the center group",
+  "keys": [
+   "bar.layout.centerSpacing"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Right section spacing",
+  "sublabel": "Gap between modules in the right section",
+  "keys": [
+   "bar.layout.rightSpacing"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Edge padding",
+  "sublabel": "Distance from screen edge to first/last module",
+  "keys": [
+   "bar.layout.edgePadding"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Center group padding",
+  "sublabel": "Inner padding of the center pill container",
+  "keys": [
+   "bar.layout.centerGroupPadding"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Center group radius",
+  "sublabel": "Corner rounding of the center pill container",
+  "keys": [
+   "bar.layout.centerGroupRadius"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Show center group background",
+  "sublabel": "Visible pill background behind center modules (workspaces)",
+  "keys": [
+   "bar.layout.showCenterBackground"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Show section separators",
+  "sublabel": "Thin vertical lines between left, center, and right sections",
+  "keys": [
+   "bar.layout.showSeparators"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Click & Scroll Actions",
+  "label": "Click & Scroll Actions",
+  "sublabel": "What happens when you click or scroll on each bar section",
+  "keys": [
+   "bar.actions"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Left section scroll",
+  "sublabel": "",
+  "keys": [
+   "bar.actions.scrollLeft"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Right section scroll",
+  "sublabel": "",
+  "keys": [
+   "bar.actions.scrollRight"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Center section scroll",
+  "sublabel": "",
+  "keys": [
+   "bar.actions.scrollCenter"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Workspaces",
+  "label": "Workspaces",
+  "sublabel": "Workspace indicator count and style",
+  "keys": [
+   "bar.workspaces"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Number of workspaces shown",
+  "sublabel": "How many workspace dots appear in the bar",
+  "keys": [
+   "bar.workspaces.shown"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "Weather",
+  "label": "Weather",
+  "sublabel": "Weather data in bar and sidebar",
+  "keys": [
+   "bar.weather"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Show weather module in bar",
+  "sublabel": "",
+  "keys": [
+   "bar.weather.enable"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "City name",
+  "sublabel": "",
+  "keys": [
+   "bar.weather.city"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Use Fahrenheit (USCS)",
+  "sublabel": "Imperial units (°F, mph, inches)",
+  "keys": [
+   "bar.weather.useUSCS"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Enable GPS positioning",
+  "sublabel": "Auto-detect location for weather",
+  "keys": [
+   "bar.weather.enableGPS"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Fetch interval",
+  "sublabel": "How often weather data refreshes",
+  "keys": [
+   "bar.weather.fetchInterval"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "System Tray",
+  "label": "System Tray",
+  "sublabel": "Tray icon filtering and pin management",
+  "keys": [
+   "tray"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Filter passive items",
+  "sublabel": "Hide tray items with 'passive' status (reduces clutter)",
+  "keys": [
+   "tray.filterPassive"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Invert pinned items",
+  "sublabel": "Swap which items are shown as pinned vs overflow",
+  "keys": [
+   "tray.invertPinnedItems"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Show item ID in tooltip",
+  "sublabel": "Useful for identifying which items to pin",
+  "keys": [
+   "tray.showItemId"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Dock",
+  "label": "Dock",
+  "sublabel": "Application dock with pinned and running apps",
+  "keys": [
+   "dock.enable"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Position",
+  "label": "Position",
+  "sublabel": "Which screen edge the dock appears on",
+  "keys": [
+   "dock.position"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Style",
+  "label": "Style",
+  "sublabel": "Visual appearance of the dock",
+  "keys": [
+   "dock.style"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Sizing",
+  "label": "Sizing",
+  "sublabel": "Dock height and icon dimensions",
+  "keys": [
+   "dock.height",
+   "dock.iconSize"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Dock height",
+  "sublabel": "Total height of the dock container",
+  "keys": [
+   "dock.height"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Icon size",
+  "sublabel": "Size of individual app icons inside the dock",
+  "keys": [
+   "dock.iconSize"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Behavior",
+  "label": "Behavior",
+  "sublabel": "Auto-hide, hover reveal, and desktop-only visibility",
+  "keys": [
+   "dock.pinnedOnStartup",
+   "dock.hoverToReveal",
+   "dock.showOnDesktop"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Start pinned",
+  "sublabel": "Dock is always visible when shell starts (no auto-hide initially)",
+  "keys": [
+   "dock.pinnedOnStartup"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Hover to reveal",
+  "sublabel": "Show dock when mouse enters the dock edge area",
+  "keys": [
+   "dock.hoverToReveal"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Show on empty desktop",
+  "sublabel": "Always show dock when no window is focused (like macOS)",
+  "keys": [
+   "dock.showOnDesktop"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Pinned Apps",
+  "label": "Pinned Apps",
+  "sublabel": "Apps that always appear in the dock, even when not running",
+  "keys": [
+   "dock.pinnedApps"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "Screen Filter",
+  "label": "Screen Filter",
+  "sublabel": "Restrict dock to specific monitors",
+  "keys": [
+   "dock.screenList"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Screen whitelist",
+  "sublabel": "Comma-separated monitor names (empty = all screens)",
+  "keys": [
+   "dock.screenList"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "Sidebar Behavior",
+  "label": "Sidebar Behavior",
+  "sublabel": "Animation, loading, and dismissal settings",
+  "keys": [
+   "sidebar.instantOpen",
+   "sidebar.keepLeftSidebarLoaded",
+   "sidebar.keepRightSidebarLoaded"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Instant open (skip animation)",
+  "sublabel": "Sidebars appear immediately without slide-in transition",
+  "keys": [
+   "sidebar.instantOpen"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Keep left sidebar loaded",
+  "sublabel": "Faster re-open at the cost of ~20MB memory",
+  "keys": [
+   "sidebar.keepLeftSidebarLoaded"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Keep right sidebar loaded",
+  "sublabel": "Faster re-open at the cost of ~15MB memory",
+  "keys": [
+   "sidebar.keepRightSidebarLoaded"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "Left Sidebar",
+  "label": "Left Sidebar",
+  "sublabel": "AI Chat and Notifications panel",
+  "keys": []
+ },
+ {
+  "page": 4,
+  "card": "Right Sidebar Widgets",
+  "label": "Right Sidebar Widgets",
+  "sublabel": "Choose which modules appear in the right sidebar",
+  "keys": [
+   "sidebar.right"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "Quick Sliders",
+  "label": "Quick Sliders",
+  "sublabel": "",
+  "keys": [
+   "sidebar.quickSliders"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Show brightness slider",
+  "sublabel": "",
+  "keys": [
+   "sidebar.quickSliders.showBrightness"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Show volume slider",
+  "sublabel": "",
+  "keys": [
+   "sidebar.quickSliders.showVolume"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Show microphone slider",
+  "sublabel": "Additional slider for microphone input volume",
+  "keys": [
+   "sidebar.quickSliders.showMic"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "AnoSpot",
+  "label": "AnoSpot",
+  "sublabel": "Dynamic-island-style overlay for now playing, notifications, recording, clock",
+  "keys": [
+   "anoSpot.enable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Enable AnoSpot",
+  "sublabel": "Compositor-agnostic. Works on Hyprland and Niri.",
+  "keys": [
+   "anoSpot.enable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Position",
+  "label": "Position",
+  "sublabel": "Which screen edge the overlay anchors to",
+  "keys": [
+   "anoSpot.position",
+   "anoSpot.draggable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Allow drag to reposition",
+  "sublabel": "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge",
+  "keys": [
+   "anoSpot.draggable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Widgets",
+  "label": "Widgets",
+  "sublabel": "Which slots to render",
+  "keys": [
+   "anoSpot.showMpris",
+   "anoSpot.showNotification",
+   "anoSpot.showRecording",
+   "anoSpot.showClockWeather",
+   "anoSpot.showWorkspace",
+   "anoSpot.showBattery",
+   "anoSpot.showLyrics"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Now playing (Mpris)",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.showMpris"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Latest notification",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.showNotification"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Recording indicator",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.showRecording"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Clock & weather",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.showClockWeather"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Workspace",
+  "sublabel": "Active workspace number/name (click → overview)",
+  "keys": [
+   "anoSpot.showWorkspace"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Battery",
+  "sublabel": "Hidden automatically on desktops without a battery",
+  "keys": [
+   "anoSpot.showBattery"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Drag and drop",
+  "label": "Drag and drop",
+  "sublabel": "Stage files dropped on AnoSpot for triage and actions",
+  "keys": [
+   "anoSpot.acceptDrops",
+   "anoSpot.stashDir"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Accept drops",
+  "sublabel": "When off, drags pass through AnoSpot to whatever is below",
+  "keys": [
+   "anoSpot.acceptDrops"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Stash directory",
+  "sublabel": "Empty = auto ($XDG_RUNTIME_DIR/anoSpot, falls back to /tmp/anoSpot-<UID>)",
+  "keys": [
+   "anoSpot.stashDir"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Custom drop actions",
+  "label": "Custom drop actions",
+  "sublabel": "User-defined commands shown as buttons in the stash popout",
+  "keys": [
+   "anoSpot.dropTargets"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Event border animation",
+  "label": "Event border animation",
+  "sublabel": "Pulsing gradient halo when configured events occur",
+  "keys": [
+   "anoSpot.eventBorder"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.eventBorder.enable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Hold duration",
+  "sublabel": "How long the halo stays visible before fading out",
+  "keys": [
+   "anoSpot.eventBorder.holdMs"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Theme source",
+  "label": "Theme source",
+  "sublabel": "Dynamic Material You (wallpaper-derived) or pick a static theme",
+  "keys": [
+   "appearance.theme",
+   "appearance.colors"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Source",
+  "sublabel": "materialYou",
+  "keys": [
+   "appearance.theme.source"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Theme Colors",
+  "label": "Theme Colors",
+  "sublabel": "Live color swatches from the active palette",
+  "keys": [
+   "appearance.colors"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Fonts",
+  "label": "Fonts",
+  "sublabel": "Font families used across the shell — pick from installed fonts",
+  "keys": [
+   "appearance.fonts"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Main font",
+  "sublabel": "Primary UI text",
+  "keys": [
+   "appearance.fonts.main"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Title font",
+  "sublabel": "Headings and large labels",
+  "keys": [
+   "appearance.fonts.title"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Numbers font",
+  "sublabel": "Clock, percentages, counters",
+  "keys": [
+   "appearance.fonts.numbers"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Monospace font",
+  "sublabel": "Code, mono readouts (network speed, etc.)",
+  "keys": [
+   "appearance.fonts.monospace"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Reading font",
+  "sublabel": "Long-form text (AI chat, notes)",
+  "keys": [
+   "appearance.fonts.reading"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Expressive font",
+  "sublabel": "Stylized headings and accents",
+  "keys": [
+   "appearance.fonts.expressive"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Background Tint",
+  "label": "Background Tint",
+  "sublabel": "Apply extra color tinting to layer backgrounds",
+  "keys": [
+   "appearance.extraBackgroundTint"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Extra background tint",
+  "sublabel": "Adds a subtle color overlay to surfaces for a warmer feel",
+  "keys": [
+   "appearance.extraBackgroundTint"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Global Margin (Bezel)",
+  "label": "Global Margin (Bezel)",
+  "sublabel": "Floating mode: gap between shell elements and the screen edge",
+  "keys": [
+   "appearance.bezel"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Bezel size",
+  "sublabel": "Insets floating bars, sidebars, and overlay panels from the screen edge. Ignored in Connected shell mode, which uses Frame thickness instead.",
+  "keys": [
+   "appearance.bezel"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Shell Mode",
+  "label": "Shell Mode",
+  "sublabel": "Floating widgets, or a unified surface with rounded screen corners",
+  "keys": [
+   "appearance.connectedCorners"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Corner radius",
+  "sublabel": "Size of the rounded screen corners / bar edge curve",
+  "keys": [
+   "appearance.connectedCorners.radius"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Frame thickness",
+  "sublabel": "Connected mode's counterpart to Bezel: width of the painted frame band at each screen edge. 0 shows only the rounded corners; raise it for a wider frame (lower it if the band overlaps window borders).",
+  "keys": [
+   "appearance.connectedCorners.thickness"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Windows sit flush against the frame",
+  "sublabel": "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept).",
+  "keys": [
+   "appearance.connectedCorners.manageGaps"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Frame opacity",
+  "sublabel": "Below 100% the frame becomes translucent. Turn on Frame blur too, or you'll see straight through it.",
+  "keys": [
+   "appearance.connectedCorners.opacity"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Frame blur",
+  "sublabel": "Blurs the desktop behind a translucent frame (frosted glass). No visible effect at 100% opacity.",
+  "keys": [
+   "appearance.connectedCorners.blur"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Shadows",
+  "label": "Shadows",
+  "sublabel": "Material 3 elevation shadows behind shell surfaces",
+  "keys": [
+   "appearance.shadows"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Enable elevation shadows",
+  "sublabel": "Drawn with a GPU signed-distance-field shader (cheap; no blur passes)",
+  "keys": [
+   "appearance.shadows.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Intensity",
+  "sublabel": "Scales the shadow's blur radius",
+  "keys": [
+   "appearance.shadows.intensity"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Opacity",
+  "sublabel": "Scales how dark the shadow is",
+  "keys": [
+   "appearance.shadows.opacity"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Animations",
+  "label": "Animations",
+  "sublabel": "Enable/disable and control animation speed",
+  "keys": [
+   "animations"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Enable animations",
+  "sublabel": "Disable for better performance on low-end hardware",
+  "keys": [
+   "animations.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Animation speed multiplier",
+  "sublabel": "1.0 = normal, 0.5 = faster, 2.0 = slower",
+  "keys": [
+   "animations.speed"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Wallpaper Rotation",
+  "label": "Wallpaper Rotation",
+  "sublabel": "Automatically cycle through wallpapers from a directory",
+  "keys": [
+   "background.randomize",
+   "background.wallpaperPath"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Enable random wallpaper rotation",
+  "sublabel": "Periodically change wallpaper from a directory",
+  "keys": [
+   "background.randomize.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Wallpaper directory",
+  "sublabel": "Path to folder containing wallpapers (supports ~)",
+  "keys": [
+   "background.randomize.directory"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Rotation interval",
+  "sublabel": "Time between wallpaper changes",
+  "keys": [
+   "background.randomize.interval"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Wallpaper Transitions",
+  "label": "Wallpaper Transitions",
+  "sublabel": "Animation when switching between wallpapers (from inir backdrop)",
+  "keys": [
+   "background.transition"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Enable wallpaper transitions",
+  "sublabel": "Smooth crossfade or slide when changing wallpapers",
+  "keys": [
+   "background.transition.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Transition type",
+  "sublabel": "Visual style of the wallpaper change",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Crossfade",
+  "sublabel": "",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Slide",
+  "sublabel": "",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Zoom",
+  "sublabel": "",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "None",
+  "sublabel": "",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Transition duration",
+  "sublabel": "How long the crossfade/slide animation takes",
+  "keys": [
+   "background.transition.duration"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Slide direction",
+  "sublabel": "Only applies to slide transition type",
+  "keys": [
+   "background.transition.direction"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "→",
+  "sublabel": "",
+  "keys": [
+   "background.transition.direction"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "←",
+  "sublabel": "",
+  "keys": [
+   "background.transition.direction"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "↓",
+  "sublabel": "",
+  "keys": [
+   "background.transition.direction"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "↑",
+  "sublabel": "",
+  "keys": [
+   "background.transition.direction"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "AnoView Layout",
+  "label": "AnoView Layout",
+  "sublabel": "Choose how windows are arranged in the overview",
+  "keys": [
+   "overview"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "AI Chat",
+  "label": "AI Chat",
+  "sublabel": "Model configuration, API keys, system prompt, and temperature",
+  "keys": [
+   "ai"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Default model ID",
+  "sublabel": "One of: ",
+  "keys": [
+   "ai.defaultModel"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Temperature",
+  "sublabel": "Creativity/randomness: 0 = deterministic, 2 = very creative",
+  "keys": [
+   "ai.temperature"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Resources Monitor",
+  "label": "Resources Monitor",
+  "sublabel": "CPU, RAM, network polling frequency and history",
+  "keys": [
+   "resources"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Update interval",
+  "sublabel": "How often /proc is polled for CPU/RAM/network data",
+  "keys": [
+   "resources.updateInterval"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "History length",
+  "sublabel": "Number of data points stored for graph display",
+  "keys": [
+   "resources.historyLength"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Brightness",
+  "label": "Brightness",
+  "sublabel": "Backlight device override",
+  "keys": [
+   "light"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Device name",
+  "sublabel": "Leave empty for auto-detect. Use 'brightnessctl -l' to list devices.",
+  "keys": [
+   "light.device"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "GameMode",
+  "label": "GameMode",
+  "sublabel": "Detects when gamemoded is active so the bar can show a 'gaming' indicator. Read-only — activation is handled by your existing ~/.config/hypr/scripts/gamemode helper or by libgamemode-aware games.",
+  "keys": [
+   "gameMode"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable detection",
+  "sublabel": "",
+  "keys": [
+   "gameMode.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Poll interval",
+  "sublabel": "How often `gamemoded -s` is checked",
+  "keys": [
+   "gameMode.pollIntervalMs"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Power profiles",
+  "label": "Power profiles",
+  "sublabel": "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`.",
+  "keys": [
+   "powerProfiles"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Restore on start",
+  "sublabel": "When off, power-profiles-daemon decides at boot",
+  "keys": [
+   "powerProfiles.restoreOnStart"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Night light",
+  "label": "Night light",
+  "sublabel": "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway).",
+  "keys": [
+   "nightLight"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "nightLight.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Mode",
+  "sublabel": "Manual holds a fixed temperature; schedule transitions at sunrise/sunset",
+  "keys": [
+   "nightLight.mode"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Night temperature",
+  "sublabel": "Lower = warmer / more orange",
+  "keys": [
+   "nightLight.nightTemp"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Day temperature",
+  "sublabel": "Used in schedule mode at noon",
+  "keys": [
+   "nightLight.dayTemp"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Latitude",
+  "sublabel": "",
+  "keys": [
+   "nightLight.latitude"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Longitude",
+  "sublabel": "",
+  "keys": [
+   "nightLight.longitude"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Network usage tracking",
+  "label": "Network usage tracking",
+  "sublabel": "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface.",
+  "keys": [
+   "network"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "network.usage.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Poll interval",
+  "sublabel": "",
+  "keys": [
+   "network.usage.intervalMs"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "History length",
+  "sublabel": "Number of samples kept for sparkline display",
+  "keys": [
+   "network.usage.historyLength"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "VPN",
+  "label": "VPN",
+  "sublabel": "Connection status + control for tailscale, netbird, warp, wireguard, or a custom CLI. The active provider is the first entry below with `enabled: true`.",
+  "keys": [
+   "vpn"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable VPN service",
+  "sublabel": "When off, no provider CLI is queried regardless of `providers` content",
+  "keys": [
+   "vpn.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Notify on state change",
+  "sublabel": "Reserved — surfaces can subscribe to statusChanged for their own toasts",
+  "keys": [
+   "vpn.notifyOnChange"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Calendar sync",
+  "label": "Calendar sync",
+  "sublabel": "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered.",
+  "keys": [
+   "calendar"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "calendar.externalSync.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Refresh interval",
+  "sublabel": "",
+  "keys": [
+   "calendar.externalSync.refreshMinutes"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Lyrics",
+  "label": "Lyrics",
+  "sublabel": "Synchronized lyrics for the active media player. Reads local .lrc files, falls back to LRCLIB and NetEase online sources.",
+  "keys": [
+   "lyrics"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "lyrics.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Visible by default",
+  "sublabel": "When off, surfaces start collapsed and the user has to toggle",
+  "keys": [
+   "lyrics.visible"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Backend",
+  "sublabel": "",
+  "keys": [
+   "lyrics.backend"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Lyrics directory",
+  "sublabel": "Path for local .lrc files. Supports `~` expansion.",
+  "keys": [
+   "lyrics.dir"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Shell",
+  "label": "Shell",
+  "sublabel": "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter.",
+  "keys": [
+   "shell"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Preferred shell",
+  "sublabel": "",
+  "keys": [
+   "shell.preferred"
+  ]
+ },
+ {
+  "page": 9,
+  "card": "User Profile",
+  "label": "User Profile",
+  "sublabel": "Avatar, display name, and account settings",
+  "keys": [
+   "user"
+  ]
+ },
+ {
+  "page": 9,
+  "card": "",
+  "label": "Custom avatar path",
+  "sublabel": "Override ~/.face with a custom path (leave empty for default)",
+  "keys": [
+   "user.avatarPath"
+  ]
+ },
+ {
+  "page": 9,
+  "card": "Ano Shell",
+  "label": "Ano Shell",
+  "sublabel": "A comprehensive QuickShell desktop shell",
+  "keys": []
+ },
+ {
+  "page": 9,
+  "card": "System Details",
+  "label": "System Details",
+  "sublabel": "Runtime environment and paths",
+  "keys": []
+ },
+ {
+  "page": 9,
+  "card": "Features",
+  "label": "Features",
+  "sublabel": "What this shell can do",
+  "keys": []
+ },
+ {
+  "page": 9,
+  "card": "Credits & Sources",
+  "label": "Credits & Sources",
+  "sublabel": "Built from patterns across the QuickShell community",
+  "keys": []
+ }
+]

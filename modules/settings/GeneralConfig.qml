@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"
-        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery"]
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"]
     }
 
     // ═══ Audio ═══
@@ -312,6 +312,44 @@ ColumnLayout {
             value: Config.options?.notifications?.timeout ?? 7000
             onValueChanged: Config.setNestedValue("notifications.timeout", Math.round(value))
             valueText: Format.formatDuration(value)
+        }
+
+        ConfigSwitch {
+            label: "Silent mode"
+            sublabel: "No popups — notifications still go to the history"
+            checked: Config.options?.notifications?.silent ?? false
+            onCheckedChanged: Config.setNestedValue("notifications.silent", checked)
+        }
+
+        ConfigSlider {
+            label: "Popups on screen"
+            sublabel: "Newest popups shown at once; older ones wait in the history"
+            from: 1; to: 10; stepSize: 1
+            value: Config.options?.notifications?.maxVisible ?? 5
+            onValueChanged: Config.setNestedValue("notifications.maxVisible", Math.round(value))
+            valueText: `${Math.round(value)}`
+        }
+    }
+
+    // ═══ Session ═══
+    SettingsCard {
+        icon: "power_settings_new"
+        title: "Session"
+        subtitle: "Confirmation for logout and shutdown"
+        configKeys: ["session"]
+
+        ConfigSwitch {
+            label: "Hold to confirm logout"
+            sublabel: "Off: a single click logs out"
+            checked: Config.options?.session?.confirmLogout ?? true
+            onCheckedChanged: Config.setNestedValue("session.confirmLogout", checked)
+        }
+
+        ConfigSwitch {
+            label: "Hold to confirm shutdown"
+            sublabel: "Off: a single click powers off"
+            checked: Config.options?.session?.confirmShutdown ?? true
+            onCheckedChanged: Config.setNestedValue("session.confirmShutdown", checked)
         }
     }
 

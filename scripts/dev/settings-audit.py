@@ -182,8 +182,14 @@ def main(argv):
     report["name-mismatch"] = sorted(mism)
     report["unresolved-dynamic-writes"] = sorted(unresolved)
 
+    # The palette's label index must match the Settings pages.
+    import subprocess
+    stale = subprocess.run([sys.executable, "-I", str(ROOT / "scripts/dev/settings-index.py"), "--check"],
+                           capture_output=True, text=True).returncode != 0
+    report["stale-settings-index"] = ["modules/settings/settings-index.json"] if stale else []
+
     blocking = ["written-not-read", "written-not-declared",
-                "read-not-declared", "bundled-not-declared"]
+                "read-not-declared", "bundled-not-declared", "stale-settings-index"]
     if as_json:
         print(json.dumps(report, indent=2))
     else:

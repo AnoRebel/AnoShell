@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.modules.bar.modules
 import qs.services
 import "."
@@ -133,6 +134,16 @@ ColumnLayout {
             sublabel: root.overrideNote("autoHide", "Bar slides away when not hovered, revealing more screen")
             checked: Config.options?.bar?.autoHide?.enable ?? false
             onCheckedChanged: Config.setNestedValue("bar.autoHide.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Auto-hide delay"
+            sublabel: "How long the bar stays after the pointer leaves"
+            enabled: Config.options?.bar?.autoHide?.enable ?? false
+            from: 0; to: 3000; stepSize: 100
+            value: Config.options?.bar?.autoHide?.delay ?? 1000
+            onValueChanged: Config.setNestedValue("bar.autoHide.delay", Math.round(value))
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSwitch {

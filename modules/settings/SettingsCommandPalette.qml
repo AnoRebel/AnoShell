@@ -195,14 +195,14 @@ Loader {
                                     Layout.fillWidth: true
                                     spacing: 0
                                     StyledText {
-                                        text: paletteDelegate.modelData.key
+                                        text: paletteDelegate.modelData.label || paletteDelegate.modelData.key
                                         font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                                         font.family: Appearance?.font.family.mono ?? "monospace"
                                         elide: Text.ElideMiddle
                                         Layout.fillWidth: true
                                     }
                                     StyledText {
-                                        text: paletteDelegate.modelData.pageName
+                                        text: paletteDelegate.modelData.label ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName
                                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 11
                                         opacity: 0.55
                                     }
