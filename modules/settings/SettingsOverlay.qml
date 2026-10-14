@@ -21,7 +21,8 @@ Scope {
     // the overlay has been closed for closeGrace (reopening within it is instant).
     LazyLoader {
         active: GlobalStates.settingsOpen || closeGrace.running
-        source: Qt.resolvedUrl("SettingsOverlayWindow.qml")
+        // Loader (not LazyLoader.source) so nothing is compiled until first open.
+        component: Loader { source: Qt.resolvedUrl("SettingsOverlayWindow.qml") }
     }
     Timer { id: closeGrace; interval: 30000 }
     Connections {

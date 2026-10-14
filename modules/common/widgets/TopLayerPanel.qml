@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.widgets.shapes
 import "root:modules/common/widgets/shapes/material-shapes.js" as MaterialShapes
 import "root:modules/common/widgets/shapes/shapes/corner-rounding.js" as CornerRounding
 import "root:modules/common/widgets/shapes/geometry/offset.js" as Offset
@@ -31,7 +32,8 @@ import qs.services
  */
 Scope {
     id: root
-    readonly property bool morphingEnabled: Config.options?.bar?.morphingPanels ?? false
+    // Effective value: always on in Hefty, off in Clean/Minimal, the setting in Ano.
+    readonly property bool morphingEnabled: PanelGate.morphingPanels
 
     Variants {
         model: morphingEnabled ? Quickshell.screens : []
@@ -56,7 +58,9 @@ Scope {
 
             // Combined mask from all panels
             mask: Region {
-                regions: topPanel.morphedPanels.flatMap(p => p.maskItems.map(item => regionComp.createObject(this, { "item": item })))
+                // QML lists are not JS arrays, and this JS engine lacks flatMap.
+                regions: Array.from(topPanel.morphedPanels ?? []).reduce((acc, p) =>
+                    acc.concat(Array.from(p.maskItems ?? []).map(item => regionComp.createObject(this, { "item": item }))), [])
             }
 
             Component { id: regionComp; Region {} }

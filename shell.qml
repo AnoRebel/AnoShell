@@ -15,8 +15,8 @@ import Quickshell.Io
 // Ano Shell — Entry Point
 // 175 QML components. Compositor-agnostic: Hyprland + Niri.
 //
-// Panel families are defined in panelFamilies/*.qml
-// The active family is loaded dynamically based on Config.options.panelFamily
+// Modules and the panel families that host them are defined in
+// modules/common/PanelGate.qml (Config.options.panelFamily picks the family).
 // ═══════════════════════════════════════════════════════════════════════════
 ShellRoot {
     id: root
@@ -57,30 +57,22 @@ ShellRoot {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Panel Families — loaded from panelFamilies/*.qml
+    // Panel Families — see PanelGate.familyModules
     // ═══════════════════════════════════════════════════════════════════════
     property list<string> families: ["ano", "minimal", "hefty", "clean"]
 
-    // Map family ID → QML source file
-    readonly property var familySources: ({
-        "ano": "panelFamilies/AnoFamily.qml",
-        "minimal": "panelFamilies/MinimalFamily.qml",
-        "hefty": "panelFamilies/HeftyFamily.qml",
-        "clean": "panelFamilies/CleanFamily.qml",
-    })
-
-    // The active family loader — loads one family QML file at a time
-    Loader {
-        id: familyLoader
-        active: Config.ready
-        source: {
-            const family = Config.options?.panelFamily ?? "ano"
-            const src = root.familySources[family]
-            if (src) return src
-            root._log(`Unknown family "${family}", falling back to ano`)
-            return root.familySources["ano"]
+    // Every shell module, each behind PanelGate.enabled(id). A family is just
+    // the set of ids it hosts (PanelGate.familyModules), so a family switch
+    // loads/unloads only the modules that differ.
+    Instantiator {
+        model: PanelGate.modules
+        // component: Loader{source} (not LazyLoader.source) so a disabled
+        // module's file is never even compiled.
+        delegate: LazyLoader {
+            required property var modelData
+            active: PanelGate.enabled(modelData.id)
+            component: Loader { source: Qt.resolvedUrl(modelData.source) }
         }
-        onLoaded: root._log(`Loaded panel family: ${Config.options?.panelFamily ?? "ano"}`)
     }
 
     // Family-switch transition. Hosted here, outside the families, so it
@@ -132,25 +124,9 @@ ShellRoot {
     }
 
     function _applyFamily(family: string) {
+        // Family-specific behaviour (which modules exist, morphing panels) is
+        // computed by PanelGate — nothing else is written to the user config.
         Config.setNestedValue("panelFamily", family);
-        // Apply family-specific overrides
-        switch (family) {
-            case "hefty":
-                Config.setNestedValue("bar.morphingPanels", true);
-                break;
-            case "minimal":
-                Config.setNestedValue("dock.enable", false);
-                Config.setNestedValue("screenCorners.enable", false);
-                Config.setNestedValue("bar.morphingPanels", false);
-                break;
-            case "clean":
-                Config.setNestedValue("dock.enable", false);
-                Config.setNestedValue("bar.morphingPanels", false);
-                break;
-            default:
-                Config.setNestedValue("bar.morphingPanels", false);
-                break;
-        }
         root._log(`Applied family: ${family}`);
     }
 

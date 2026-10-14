@@ -120,6 +120,9 @@ def collect():
             for m in READ_RE.finditer(src):
                 key = re.sub(r"\?", "", m.group(1)).lstrip(".")
                 reads.setdefault(key, set()).add(rel)
+        if rel == "modules/common/PanelGate.qml":  # feature keys read via _keyValue(path)
+            for m in re.finditer(r'\bkey:\s*"([A-Za-z0-9_.]+)"', src):
+                reads.setdefault(m.group(1), set()).add(rel)
         for m in WRITE_LIT_RE.finditer(src):
             writes.setdefault(m.group(1), set()).add(rel)
         for m in WRITE_TPL_RE.finditer(src):

@@ -205,14 +205,16 @@ Per-bar fields (null = use global): `morphingPanel`, `height`, `radius`, all spa
 Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`
 
 ### Panel Families
-Switch entire layout presets atomically. Each family loads a different combination of panels via `panelFamilies/*.qml`:
+Switch entire layout presets atomically. A family is the set of modules it hosts, declared in `modules/common/PanelGate.qml` (`familyModules`); switching only loads/unloads the modules that differ. Turning a module off in Settings → Modules (or its own enable key) works in every family:
 
 | Family   | Includes                                                                  | Best for                          |
 |----------|---------------------------------------------------------------------------|-----------------------------------|
-| `ano`    | Bar + Dock + both Sidebars + HUD + AI + Overview + everything             | Default daily driver              |
-| `hefty`  | Same as `ano`, plus morphing polygon bar panels                           | Maximalist visual                 |
-| `clean`  | Bar + Sidebars + essentials. No dock, no hot corners, no HUD              | Focused work                      |
+| `ano`    | Bar + Dock + both Sidebars + HUD + AI + Overview + Focus Time + Display Manager + everything | Default daily driver |
+| `hefty`  | Same as `ano` minus Focus Time/Display Manager; morphing panels always on | Maximalist visual                 |
+| `clean`  | Bar + Sidebars + clipboard/cheatsheet/calendar. No dock, hot corners, HUD | Focused work                      |
 | `minimal`| Bar + bare overlays only. No sidebars, no dock, no HUD                    | Lightweight / external launchers  |
+
+Connected mode and AnoSpot are available in every family.
 
 Set via `panelFamily: "ano"|"hefty"|"clean"|"minimal"` in `config.json`, cycle with `Ctrl+Super+P`, or via `qs -c ano ipc call panelFamily cycle`. Switching plays a configurable ripple-transition animation (`familyTransitionAnimation: true`).
 
@@ -629,13 +631,6 @@ ano/
 │   └── anoSpot/                    # Dynamic-island pill + drag/drop stash + workspace hover-preview
 │
 ├── services/                       # 42 service singletons (see Services section)
-│
-├── panelFamilies/                  # 4 layout presets + PanelLoader
-│   ├── PanelLoader.qml
-│   ├── AnoFamily.qml               # Default — everything enabled
-│   ├── HeftyFamily.qml             # Morphing bar panels
-│   ├── CleanFamily.qml             # Bar + sidebars + essentials
-│   └── MinimalFamily.qml           # Bar + bare overlays
 │
 ├── assets/themes/                  # 24 bundled static themes
 ├── layouts/                        # 11 overview layout algorithms

@@ -49,36 +49,8 @@ ColumnLayout {
             return arr.length === 0 ? allModules.length : arr.length
         }
 
-        readonly property var allModules: [
-            // Bars & status surfaces
-            { id: "anoBar", name: "Bar", icon: "dock_to_bottom", desc: "Status bar with configurable modules", category: "Bars" },
-            { id: "anoDock", name: "Dock", icon: "space_dashboard", desc: "Application dock with pinned apps", category: "Bars" },
-            { id: "anoHUD", name: "HUD", icon: "dashboard", desc: "System dashboard overlay", category: "Bars" },
-            { id: "anoOnScreenDisplay", name: "OSD", icon: "volume_up", desc: "Volume/brightness/media indicators", category: "Bars" },
-            { id: "anoNotificationPopup", name: "Notification Popups", icon: "notifications", desc: "Floating notification bubbles", category: "Bars" },
-            // Overlays & panels
-            { id: "anoOverview", name: "AnoView Overview", icon: "overview", desc: "Window overview with 10 layout algorithms", category: "Overlays" },
-            { id: "anoTaskView", name: "Task View", icon: "view_comfy", desc: "Current workspace window view", category: "Overlays" },
-            { id: "anoAltSwitcher", name: "Alt-Tab Switcher", icon: "tab", desc: "Window switcher with thumbnails", category: "Overlays" },
-            { id: "anoSearch", name: "App Launcher", icon: "search", desc: "Application search and launch", category: "Overlays" },
-            { id: "anoControlPanel", name: "Control Panel", icon: "tune", desc: "Quick-access system controls", category: "Overlays" },
-            { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel", category: "Overlays" },
-            { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information", category: "Overlays" },
-            { id: "anoCheatsheet", name: "Keybind Cheatsheet", icon: "keyboard", desc: "Searchable keyboard shortcuts", category: "Overlays" },
-            { id: "anoSessionScreen", name: "Session Screen", icon: "power_settings_new", desc: "Lock/logout/suspend/reboot/shutdown", category: "Overlays" },
-            { id: "anoSettings", name: "Settings Overlay", icon: "settings", desc: "This settings panel", category: "Overlays" },
-            // Sidebars
-            { id: "anoSidebarLeft", name: "Left Sidebar", icon: "view_sidebar", desc: "AI Chat, Notifications, Translator", category: "Sidebars" },
-            { id: "anoSidebarRight", name: "Right Sidebar", icon: "view_sidebar", desc: "Quick controls, media, calendar, system info", category: "Sidebars" },
-            // Utilities & integrations
-            { id: "anoClipboard", name: "Clipboard Manager", icon: "content_paste", desc: "Clipboard history browser", category: "Utilities" },
-            { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers", category: "Utilities" },
-            { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities" },
-            { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities" },
-            { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor configuration (Hyprland only)", category: "Utilities" },
-            { id: "anoFamilyTransition", name: "Family Transition", icon: "swap_horiz", desc: "Panel family switch animation", category: "Utilities" },
-            { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities" },
-        ]
+        // Shared catalogue (PanelGate) — the same list shell.qml loads from.
+        readonly property var allModules: PanelGate.modules.filter(m => m.listed !== false)
 
         // Search filter — case-insensitive substring match against name + desc.
         function _matchesQuery(mod) {
@@ -152,11 +124,17 @@ ColumnLayout {
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 0
                     StyledText { text: moduleRow.modelData.name; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-                    StyledText { text: moduleRow.modelData.desc; font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10; opacity: 0.4; Layout.fillWidth: true; elide: Text.ElideRight }
+                    StyledText {
+                        readonly property string why: PanelGate.reason(moduleRow.modelData.id)
+                        text: why.length > 0 ? why : moduleRow.modelData.desc
+                        font.pixelSize: Appearance?.font.pixelSize.smallest ?? 10; opacity: 0.4; Layout.fillWidth: true; elide: Text.ElideRight
+                    }
                 }
 
                 StyledSwitch {
                     id: moduleSwitch
+                    // Unavailable in this family/compositor, or always required: shown, not toggleable.
+                    enabled: PanelGate.reason(moduleRow.modelData.id) === "" && !(moduleRow.modelData.required ?? false)
                     checked: (Config.options?.enabledPanels ?? []).includes(moduleRow.modelData.id) || (Config.options?.enabledPanels ?? []).length === 0
 
                     // toggled() only fires on user-driven changes (mouse
@@ -710,7 +688,10 @@ ColumnLayout {
             ConfigSwitch {
                 Layout.fillWidth: true
                 label: "Morphing bar panels"
-                sublabel: "Use polygon-based ShapeCanvas bars (experimental, from hefty-hype)"
+                sublabel: PanelGate.family === "ano"
+                    ? "Use polygon-based ShapeCanvas bars (experimental, from hefty-hype)"
+                    : (PanelGate.family === "hefty" ? "Always on in the Hefty family" : `Not available in the ${PanelGate.family} family`)
+                enabled: PanelGate.family === "ano"
                 checked: Config.options?.bar?.morphingPanels ?? false
                 onCheckedChanged: Config.setNestedValue("bar.morphingPanels", checked)
             }
