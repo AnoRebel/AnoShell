@@ -36,6 +36,8 @@ Singleton {
     property bool settingsOverlayOpen: false
     property bool settingsOpen: false
     property bool settingsCommandPaletteOpen: false
+    // Settings overlay page index (kept here so it survives the window being unloaded).
+    property int settingsPage: 0
     property bool regionSelectorOpen: false
     property bool searchOpen: false
     property bool weatherPanelOpen: false

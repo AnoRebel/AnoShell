@@ -41,6 +41,7 @@ Loader {
 
     active: GlobalStates.settingsCommandPaletteOpen
     visible: active
+    onActiveChanged: if (active) SettingsRegistry.ensureIndex()
 
     sourceComponent: paletteComponent
 

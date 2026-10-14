@@ -20,6 +20,7 @@ Scope {
     property string searchQuery: ""
 
     readonly property var filteredEntries: {
+        if (!GlobalStates.clipboardOpen) return []
         if (searchQuery.length === 0) return Cliphist.entries
         const q = searchQuery.toLowerCase()
         return Cliphist.entries.filter(entry => {
@@ -129,104 +130,100 @@ Scope {
                     }
                 }
 
-                // Entry list
-                StyledFlickable {
+                // Entry list — virtualized: history can hold hundreds of entries,
+                // and building every row up front froze the shell for seconds.
+                ListView {
+                    id: entryList
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    contentHeight: entryColumn.implicitHeight; clip: true
+                    clip: true; spacing: 4
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: root.filteredEntries
 
-                    ColumnLayout {
-                        id: entryColumn
-                        width: parent.width; spacing: 4
+                    StyledText {
+                        visible: root.filteredEntries.length === 0
+                        text: root.searchQuery.length > 0 ? "No matching entries" : "Clipboard is empty"
+                        font.pixelSize: 14; opacity: 0.4
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: 40
+                    }
 
-                        StyledText {
-                            visible: root.filteredEntries.length === 0
-                            text: root.searchQuery.length > 0 ? "No matching entries" : "Clipboard is empty"
-                            font.pixelSize: 14; opacity: 0.4
-                            Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 40
+                    delegate: Rectangle {
+                        required property string modelData
+                        required property int index
+                        width: entryList.width
+                        implicitHeight: entryContent.implicitHeight + 12
+                        radius: Appearance?.rounding.small ?? 8
+                        color: entryMA.containsMouse ? Appearance?.colors.colLayer1Hover ?? "#E5DFED" : (index % 2 === 0 ? Qt.rgba(1,1,1,0.02) : "transparent")
+                        border.width: entryMA.containsMouse ? 1 : 0
+                        border.color: Appearance?.colors.colPrimary ?? "#65558F"
+
+                        property bool isImage: Cliphist.entryIsImage(modelData)
+                        property string displayText: modelData.split("\t").slice(1).join("\t")
+
+                        RowLayout {
+                            id: entryContent
+                            anchors { fill: parent; margins: 6 }
+                            spacing: 8
+
+                            // Type indicator
+                            MaterialSymbol {
+                                text: isImage ? "image" : "text_snippet"
+                                iconSize: 18; opacity: 0.4
+                                color: isImage ? "#81C784" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                                Layout.alignment: Qt.AlignTop
+                            }
+
+                            // Content preview
+                            ColumnLayout {
+                                Layout.fillWidth: true; spacing: 2
+
+                                // For images: show image indicator
+                                StyledText {
+                                    visible: isImage
+                                    text: displayText
+                                    font.pixelSize: 13; font.italic: true
+                                    opacity: 0.6; Layout.fillWidth: true
+                                }
+
+                                // For text: show content
+                                StyledText {
+                                    visible: !isImage
+                                    text: displayText.substring(0, 300) + (displayText.length > 300 ? "..." : "")
+                                    font.pixelSize: 13
+                                    wrapMode: Text.Wrap; maximumLineCount: 4
+                                    elide: Text.ElideRight; Layout.fillWidth: true
+                                }
+                            }
+
+                            // Actions
+                            RowLayout {
+                                spacing: 2; Layout.alignment: Qt.AlignTop
+                                ToolbarButton {
+                                    iconName: "content_copy"; iconSize: 14
+                                    toolTipText: "Copy to clipboard"
+                                    onClicked: Cliphist.copy(modelData)
+                                }
+                                ToolbarButton {
+                                    iconName: "content_paste"; iconSize: 14
+                                    toolTipText: "Paste"
+                                    onClicked: { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
+                                }
+                                ToolbarButton {
+                                    iconName: "delete"; iconSize: 14
+                                    toolTipText: "Delete entry"
+                                    onClicked: Cliphist.deleteEntry(modelData)
+                                }
+                            }
                         }
 
-                        Repeater {
-                            model: root.filteredEntries
-
-                            Rectangle {
-                                required property string modelData
-                                required property int index
-                                Layout.fillWidth: true
-                                implicitHeight: entryContent.implicitHeight + 12
-                                radius: Appearance?.rounding.small ?? 8
-                                color: entryMA.containsMouse ? Appearance?.colors.colLayer1Hover ?? "#E5DFED" : (index % 2 === 0 ? Qt.rgba(1,1,1,0.02) : "transparent")
-                                border.width: entryMA.containsMouse ? 1 : 0
-                                border.color: Appearance?.colors.colPrimary ?? "#65558F"
-
-                                property bool isImage: Cliphist.entryIsImage(modelData)
-                                property string displayText: modelData.split("\t").slice(1).join("\t")
-
-                                RowLayout {
-                                    id: entryContent
-                                    anchors { fill: parent; margins: 6 }
-                                    spacing: 8
-
-                                    // Type indicator
-                                    MaterialSymbol {
-                                        text: isImage ? "image" : "text_snippet"
-                                        iconSize: 18; opacity: 0.4
-                                        color: isImage ? "#81C784" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
-                                        Layout.alignment: Qt.AlignTop
-                                    }
-
-                                    // Content preview
-                                    ColumnLayout {
-                                        Layout.fillWidth: true; spacing: 2
-
-                                        // For images: show image indicator
-                                        StyledText {
-                                            visible: isImage
-                                            text: displayText
-                                            font.pixelSize: 13; font.italic: true
-                                            opacity: 0.6; Layout.fillWidth: true
-                                        }
-
-                                        // For text: show content
-                                        StyledText {
-                                            visible: !isImage
-                                            text: displayText.substring(0, 300) + (displayText.length > 300 ? "..." : "")
-                                            font.pixelSize: 13
-                                            wrapMode: Text.Wrap; maximumLineCount: 4
-                                            elide: Text.ElideRight; Layout.fillWidth: true
-                                        }
-                                    }
-
-                                    // Actions
-                                    RowLayout {
-                                        spacing: 2; Layout.alignment: Qt.AlignTop
-                                        ToolbarButton {
-                                            iconName: "content_copy"; iconSize: 14
-                                            toolTipText: "Copy to clipboard"
-                                            onClicked: Cliphist.copy(modelData)
-                                        }
-                                        ToolbarButton {
-                                            iconName: "content_paste"; iconSize: 14
-                                            toolTipText: "Paste"
-                                            onClicked: { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
-                                        }
-                                        ToolbarButton {
-                                            iconName: "delete"; iconSize: 14
-                                            toolTipText: "Delete entry"
-                                            onClicked: Cliphist.deleteEntry(modelData)
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: entryMA
-                                    anchors.fill: parent; hoverEnabled: true; z: -1
-                                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: event => {
-                                        if (event.button === Qt.RightButton) Cliphist.copy(modelData)
-                                        else { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
-                                    }
-                                }
+                        MouseArea {
+                            id: entryMA
+                            anchors.fill: parent; hoverEnabled: true; z: -1
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: event => {
+                                if (event.button === Qt.RightButton) Cliphist.copy(modelData)
+                                else { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
                             }
                         }
                     }
