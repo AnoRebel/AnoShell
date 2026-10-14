@@ -1,3 +1,4 @@
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -19,6 +20,10 @@ Item {
     id: root
     property real padding: 4
     property string commandPrefix: "/"
+
+    // Discover local/remote models the first time the chat is really on screen.
+    readonly property bool _shown: GlobalStates.sidebarLeftOpen && root.visible
+    on_ShownChanged: if (root._shown) Ai.ensureModels()
 
     onFocusChanged: focus => { if (focus) messageInputField.forceActiveFocus() }
 

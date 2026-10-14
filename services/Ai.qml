@@ -168,10 +168,17 @@ Singleton {
                 const id = root.safeModelName(m.model ?? m.name ?? "custom")
                 root.addModel(id, m)
             }
-            // Try loading Ollama and OpenRouter
-            getOllamaModels.running = true
-            getOpenRouterModels.running = true
         }
+    }
+
+    // Ollama/OpenRouter discovery hits localhost and the network, so it runs
+    // once, the first time the AI chat is actually shown — not at startup.
+    property bool _discoveryStarted: false
+    function ensureModels() {
+        if (root._discoveryStarted) return
+        root._discoveryStarted = true
+        getOllamaModels.running = true
+        getOpenRouterModels.running = true
     }
 
     property var modelList: Object.keys(models)
