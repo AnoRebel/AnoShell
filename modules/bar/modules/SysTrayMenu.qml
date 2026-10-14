@@ -25,6 +25,12 @@ PopupWindow {
     color: "transparent"
     property real padding: 8
 
+    // The icon's window. Inside the tray overflow popout it is a popup, whose
+    // item coordinates are not screen space, so the menu can't be placed in
+    // the frame there: it keeps its own background instead of fusing.
+    readonly property var _iconWindow: root.anchor.item?.QsWindow?.window ?? null
+    readonly property bool _fused: PanelRegistry.enabled && root._iconWindow !== null && root._iconWindow.anchor === undefined
+
     // Constrain the input region to the visible menu card. Without a mask the
     // PopupWindow's input handling is unreliable here and the entries don't
     // respond to clicks (the menu renders but items aren't actionable).
@@ -80,7 +86,7 @@ PopupWindow {
             height: Math.max(0, (parent.height - root.padding * 2) * Math.min(reveal, 1.04))
 
             // Connected mode: the frame paints the menu fused into the bar.
-            readonly property bool connected: PanelRegistry.enabled
+            readonly property bool connected: root._fused
             color: connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
             radius: Appearance?.rounding.normal ?? 12
             border.width: connected ? 0 : 1
@@ -90,13 +96,13 @@ PopupWindow {
             ConnectedSurfaceLease {
                 key: "trayMenu:" + root.trayItemId
                 kind: "trayMenu"; edge: "top"; priority: 10
-                active: root.visible
+                active: root.visible && root._fused
                 progress: popupBackground.reveal
                 surfaceRadius: popupBackground.radius
                 // Screen rect from the anchor icon (the popup's own origin is
                 // not screen space); centred under the icon, clamped on-screen.
                 readonly property Item _icon: root.anchor.item
-                readonly property var _win: _icon?.QsWindow?.window ?? null
+                readonly property var _win: root._iconWindow
                 screenName: _win?.screen?.name ?? ""
                 readonly property point _a: { void root.visible; return _icon ? _icon.mapToItem(null, 0, 0) : Qt.point(0, 0) }
                 readonly property real _sw: _win?.screen?.width ?? 0
