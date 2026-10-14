@@ -6,7 +6,7 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * Anti-Flashbang Shader Service (Hyprland-only).
+ * Anti-Flashbang Shader Service (backends with supports.screenShader).
  * Applies a GLSL shader that darkens bright screens to prevent eye strain at night.
  * Ported from end-4/ii.
  */
@@ -16,18 +16,13 @@ Singleton {
     readonly property string shaderPath: Quickshell.shellPath("services/antiFlashbang/anti-flashbang.glsl")
     property bool enabled: false
 
+    // (The old `hyprctl keyword` calls are rejected by Hyprland's Lua config.)
     function enable(): void {
-        Quickshell.execDetached(["hyprctl", "--batch",
-            "keyword decoration:screen_shader " + root.shaderPath +
-            " ; keyword debug:damage_tracking 1"
-        ]);
-        root.enabled = true;
+        if (CompositorService.setScreenShader(root.shaderPath)) root.enabled = true;
     }
 
     function disable(): void {
-        Quickshell.execDetached(["hyprctl", "--batch",
-            "keyword decoration:screen_shader [[EMPTY]] ; keyword debug:damage_tracking 2"
-        ]);
+        CompositorService.setScreenShader("");
         root.enabled = false;
     }
 

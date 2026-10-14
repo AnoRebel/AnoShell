@@ -34,7 +34,7 @@ otherwise from the environment:
 | `keyboardLayouts` | array | all layout names |
 
 `supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
-`outerGaps`, `cursorZoom`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`.
+`outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`.
 
 ## Functions
 
@@ -47,6 +47,8 @@ otherwise from the environment:
 | `setOuterGaps(px)` | runtime only |
 | `setLayerBlur(namespaceRegex, enabled, ignoreAlpha)` | layer-rule fallback where `ext-background-effect-v1` is missing |
 | `setCursorZoom(factor)` | |
+| `setScreenShader(path)` | full-screen GLSL shader; `""` clears |
+| `applyOutputs(configs)` | `[{ name, width, height, rate, scale, x, y }]`, x/y `null` = auto; reads `outputs` (backend-native monitor objects) |
 | `switchKeyboardLayout(delta)` | |
 
 Unsupported operations return `false` and log once; they never throw.

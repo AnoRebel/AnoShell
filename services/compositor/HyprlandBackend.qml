@@ -21,7 +21,7 @@ QtObject {
     readonly property bool experimental: false
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
-        outerGaps: true, cursorZoom: true, dpms: true, outputConfig: true, exit: true,
+        outerGaps: true, cursorZoom: true, screenShader: true, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true
     })
 
@@ -111,6 +111,15 @@ QtObject {
             toplevel: byAddress[c.address] ?? null
         }))
     }
+    // Outputs as reported by j/monitors; applyOutputs takes
+    // [{ name, width, height, rate, scale, x, y }] (x/y null = "auto").
+    readonly property var outputs: root.monitors
+    function applyOutputs(configs) {
+        const lua = configs.map(c => `hl.monitor({ output = "${c.name}", mode = "${c.width}x${c.height}@${c.rate}", `
+            + `position = "${(c.x === null || c.x === undefined) ? "auto" : `${Math.round(c.x)}x${Math.round(c.y)}`}", scale = "${c.scale}" })`)
+        return lua.length > 0 ? root._eval(lua.join("; ")) : false
+    }
+
     function focusWindowById(id) { return id ? root._lua(`hl.dsp.focus({ window = "address:${id}" })`) : false }
     function closeWindowById(id) { return id ? root._lua(`hl.dsp.window.close({ window = "address:${id}" })`) : false }
 
@@ -180,6 +189,10 @@ QtObject {
     function setOuterGaps(px) { return root._eval(`hl.config({ general = { gaps_out = ${Math.max(0, Math.round(px))} } })`) }
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) {
         return root._eval(`hl.layer_rule({ match = { namespace = "${namespaceRegex}" }, blur = ${enabled ? "true" : "false"}, ignore_alpha = ${ignoreAlpha ?? 0} })`)
+    }
+    // Full-screen GLSL shader ("" clears). damage_tracking must be off (1 = monitor) while set.
+    function setScreenShader(path) {
+        return root._eval(`hl.config({ decoration = { screen_shader = "${path ?? ""}" }, debug = { damage_tracking = ${path ? 1 : 2} } })`)
     }
     function setCursorZoom(factor) { return root._eval(`hl.config({ cursor = { zoom_factor = ${Number(factor)} } })`) }
     // Not a dispatcher in 0.56: `hyprctl switchxkblayout <device> next|prev` (user action only).

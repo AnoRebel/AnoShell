@@ -13,7 +13,7 @@ import "."
 /**
  * Display Manager — visual monitor configuration overlay.
  * Adapted from ilyamiro's MonitorPopup for Ano Shell.
- * Hyprland-only (uses hyprctl for monitor queries and apply).
+ * Needs a backend with supports.outputConfig (Hyprland today; niri with task 10.2).
  */
 PanelWindow {
     id: panel
@@ -26,7 +26,7 @@ PanelWindow {
     property int panelHeight: Math.min(420, panel.screen?.height * 0.45 ?? 420)
 
     screen: GlobalStates.primaryScreen
-    visible: GlobalStates.displayManagerOpen && CompositorService.isHyprland
+    visible: GlobalStates.displayManagerOpen && (CompositorService.supports.outputConfig ?? false)
     exclusionMode: ExclusionMode.Ignore
     aboveWindows: true
 

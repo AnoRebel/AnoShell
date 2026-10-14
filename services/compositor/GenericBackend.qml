@@ -17,7 +17,7 @@ QtObject {
     readonly property bool experimental: true
     readonly property var supports: ({
         workspaces: false, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
-        outerGaps: false, cursorZoom: false, dpms: false, outputConfig: false, exit: false,
+        outerGaps: false, cursorZoom: false, screenShader: false, dpms: false, outputConfig: false, exit: false,
         keyboardLayouts: false
     })
 
@@ -34,6 +34,9 @@ QtObject {
             focused: !!t.activated, floating: false, fullscreen: !!t.fullscreen, toplevel: t
         }))
     }
+    readonly property var outputs: []
+    function applyOutputs(configs) { return false }
+
     function focusWindowById(id) { return false }
     function closeWindowById(id) { return false }
     readonly property var workspaces: []
@@ -65,6 +68,7 @@ QtObject {
     function powerOnMonitors() { return root._unsupported("dpms") }
     function setOuterGaps(px) { return false }
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return false }
+    function setScreenShader(path) { return false }
     function setCursorZoom(factor) { return false }
     function switchKeyboardLayout(delta) { return root._unsupported("switchKeyboardLayout") }
 }

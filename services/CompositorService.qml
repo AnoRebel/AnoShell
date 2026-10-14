@@ -121,6 +121,9 @@ Singleton {
     function setOuterGaps(px) { return root.backend?.setOuterGaps(px) ?? false }
     // Layer-rule blur fallback for compositors without ext-background-effect-v1.
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return root.backend?.setLayerBlur(namespaceRegex, enabled, ignoreAlpha) ?? false }
+    readonly property var outputs: backend?.outputs ?? []
+    function applyOutputs(configs) { return root.backend?.applyOutputs(configs) ?? false }
+    function setScreenShader(path) { return root.backend?.setScreenShader(path) ?? false }
     function setCursorZoom(factor) { return root.backend?.setCursorZoom(factor) ?? false }
     function switchKeyboardLayout(delta) { return root.backend?.switchKeyboardLayout(delta) ?? false }
     Timer { id: ipcLeaseTimer; interval: 10000; onTriggered: root.releaseWindows("ipc") }

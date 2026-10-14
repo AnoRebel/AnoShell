@@ -53,7 +53,7 @@ Item {
     }
 
     property real introState: 0.0
-    Component.onCompleted: introState = 1.0
+    Component.onCompleted: { introState = 1.0; loadOutputs() }
     Behavior on introState { NumberAnimation { duration: 800; easing.type: Easing.OutQuint } }
 
     property bool applyHovered: false
@@ -107,41 +107,30 @@ Item {
     }
 
     // ─── System Query ───────────────────────────────────────────────────
-    Process {
-        id: displayPoller
-        command: ["hyprctl", "monitors", "-j"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    let data = JSON.parse(this.text.trim());
-                    monitorsModel.clear();
-                    let minX = 999999, minY = 999999;
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i].x < minX) minX = data[i].x;
-                        if (data[i].y < minY) minY = data[i].y;
-                    }
-                    window.originalLayoutOriginX = minX !== 999999 ? minX : 0;
-                    window.originalLayoutOriginY = minY !== 999999 ? minY : 0;
-                    for (let i = 0; i < data.length; i++) {
-                        let scl = data[i].scale !== undefined ? data[i].scale : 1.0;
-                        let normalizedX = (data[i].x - minX) * window.uiScale;
-                        let normalizedY = (data[i].y - minY) * window.uiScale;
-                        monitorsModel.append({
-                            name: data[i].name,
-                            resW: data[i].width, resH: data[i].height,
-                            sysScale: scl,
-                            rate: Math.round(data[i].refreshRate).toString(),
-                            uiX: normalizedX, uiY: normalizedY
-                        });
-                        if (data[i].focused) window.activeEditIndex = i;
-                    }
-                    window.forceLayoutUpdate();
-                } catch(e) {}
-            }
+    // Outputs come from the compositor backend (Hyprland: j/monitors).
+    function loadOutputs() {
+        const data = CompositorService.outputs ?? []
+        monitorsModel.clear();
+        let minX = 999999, minY = 999999;
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].x < minX) minX = data[i].x;
+            if (data[i].y < minY) minY = data[i].y;
         }
+        window.originalLayoutOriginX = minX !== 999999 ? minX : 0;
+        window.originalLayoutOriginY = minY !== 999999 ? minY : 0;
+        for (let i = 0; i < data.length; i++) {
+            let scl = data[i].scale !== undefined ? data[i].scale : 1.0;
+            monitorsModel.append({
+                name: data[i].name,
+                resW: data[i].width, resH: data[i].height,
+                sysScale: scl,
+                rate: Math.round(data[i].refreshRate).toString(),
+                uiX: (data[i].x - minX) * window.uiScale, uiY: (data[i].y - minY) * window.uiScale
+            });
+            if (data[i].focused) window.activeEditIndex = i;
+        }
+        window.forceLayoutUpdate();
     }
-
     // ─── UI ─────────────────────────────────────────────────────────────
     Item {
         anchors.fill: parent
@@ -536,12 +525,8 @@ Item {
                         if (monitorsModel.count === 0) return;
                         if (monitorsModel.count === 1) {
                             let mon = monitorsModel.get(0);
-                            // Lua config: `hyprctl keyword monitor …` is rejected
-                            // ("keyword can't work with non-legacy parsers"). Use
-                            // hl.monitor({...}) via `hyprctl eval` instead.
-                            let lua = `hl.monitor({ output = "${mon.name}", mode = "${mon.resW}x${mon.resH}@${mon.rate}", position = "auto", scale = "${mon.sysScale}" })`;
+                            CompositorService.applyOutputs([{ name: mon.name, width: mon.resW, height: mon.resH, rate: mon.rate, scale: mon.sysScale, x: null, y: null }]);
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied: " + mon.resW + "x" + mon.resH + " @ " + mon.rate + "Hz"]);
-                            Quickshell.execDetached(["hyprctl", "eval", lua]);
                         } else {
                             let rects = [];
                             for (let i = 0; i < monitorsModel.count; i++) {
@@ -555,16 +540,15 @@ Item {
                             }
                             let finalMinX = 999999, finalMinY = 999999;
                             for (let i = 0; i < rects.length; i++) { if (rects[i].x < finalMinX) finalMinX = rects[i].x; if (rects[i].y < finalMinY) finalMinY = rects[i].y; }
-                            let luaCmds = [], summaryString = "";
+                            let configs = [], summaryString = "";
                             for (let i = 0; i < rects.length; i++) {
                                 let r = rects[i];
-                                r.x = Math.round((r.x - finalMinX) + originalLayoutOriginX);
-                                r.y = Math.round((r.y - finalMinY) + originalLayoutOriginY);
-                                // hl.monitor per display, chained in one eval (Lua config).
-                                luaCmds.push(`hl.monitor({ output = "${r.name}", mode = "${r.resW}x${r.resH}@${r.rate}", position = "${r.x}x${r.y}", scale = "${r.sysScale}" })`);
+                                configs.push({ name: r.name, width: r.resW, height: r.resH, rate: r.rate, scale: r.sysScale,
+                                               x: Math.round((r.x - finalMinX) + originalLayoutOriginX),
+                                               y: Math.round((r.y - finalMinY) + originalLayoutOriginY) });
                                 summaryString += r.name + " ";
                             }
-                            Quickshell.execDetached(["hyprctl", "eval", luaCmds.join("; ")]);
+                            CompositorService.applyOutputs(configs);
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString]);
                         }
                         GlobalStates.displayManagerOpen = false;

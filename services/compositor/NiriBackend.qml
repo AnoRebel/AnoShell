@@ -17,7 +17,7 @@ QtObject {
     readonly property bool experimental: false
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
-        outerGaps: false, cursorZoom: false, dpms: true, outputConfig: true, exit: true,
+        outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
         keyboardLayouts: true
     })
 
@@ -89,6 +89,10 @@ QtObject {
             }
         })
     }
+    // Runtime output config on niri comes with the Displays page (task 10.2).
+    readonly property var outputs: []
+    function applyOutputs(configs) { return false }
+
     function focusWindowById(id) { if (id === undefined || id === null) return false; NiriService.focusWindow(id); return true }
     function closeWindowById(id) { if (id === undefined || id === null) return false; NiriService.closeWindow(id); return true }
 
@@ -106,6 +110,7 @@ QtObject {
     // Gaps, layer blur rules and cursor zoom are niri config, not runtime IPC.
     function setOuterGaps(px) { return false }
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return false }
+    function setScreenShader(path) { return false }
     function setCursorZoom(factor) { return false }
     function switchKeyboardLayout(delta) {
         if (delta < 0) NiriService.switchLayoutPrevious(); else NiriService.switchLayout()

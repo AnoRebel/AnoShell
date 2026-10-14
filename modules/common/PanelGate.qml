@@ -51,7 +51,7 @@ Singleton {
         { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers", category: "Utilities", source: "modules/wallpaperSelector/WallpaperSelector.qml" },
         { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities", source: "modules/screenCorners/ScreenCorners.qml", key: "screenCorners.enable" },
         { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities", source: "modules/focusTime/FocusTimePanel.qml", key: "focusTime.enable" },
-        { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor configuration (Hyprland only)", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", compositor: "hyprland" },
+        { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor arrangement, mode and scale", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", capability: "outputConfig" },
         { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
         // Features with their own Settings pages (not listed on the Modules page)
         { id: "anoScreen", source: "modules/anoScreen/AnoScreen.qml", key: "appearance.connectedCorners.enable", listed: false },
@@ -110,6 +110,7 @@ Singleton {
         if (m.key && !(root._keyValue(m.key) ?? false)) return false
         if (m.effective && !root[m.effective]) return false
         if (m.compositor && CompositorService.compositor !== m.compositor) return false
+        if (m.capability && !(CompositorService.supports[m.capability] ?? false)) return false
         return true
     }
 
@@ -120,6 +121,8 @@ Singleton {
         if (!root.hosted(id)) return `not available in the ${root.family} family`
         if (m.compositor && CompositorService.compositor !== m.compositor)
             return `${m.compositor === "niri" ? "niri" : "Hyprland"} only`
+        if (m.capability && !(CompositorService.supports[m.capability] ?? false))
+            return `not supported on ${CompositorService.backendName} yet`
         return ""
     }
 }
