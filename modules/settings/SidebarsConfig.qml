@@ -64,7 +64,6 @@ ColumnLayout {
         icon: "view_sidebar"
         title: "Left Sidebar"
         subtitle: "AI Chat and Notifications panel"
-        configKeys: ["sidebar.left"]
 
         NoticeBox {
             text: "The left sidebar contains two tabs: AI Chat and Notifications with a compact media player. AI model configuration is in the Services page."

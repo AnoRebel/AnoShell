@@ -333,6 +333,15 @@ Singleton {
             // bundle; the new key wins on read.
         }
 
+        // hud.enabled -> hud.enable (the HUD always read `enable`).
+        const hudBlock = root._userDelta?.hud;
+        if (hudBlock && hudBlock.enabled !== undefined) {
+            if (hudBlock.enable === undefined) hudBlock.enable = hudBlock.enabled;
+            delete hudBlock.enabled;
+            opts.hud.enable = hudBlock.enable;
+            migrated = true;
+        }
+
         // appearance.theme.static -> appearance.theme.name. The previous
         // property name `static` is a QML reserved word and broke shell
         // load; rename for the schema, migrate any user-delta value over.
@@ -714,8 +723,21 @@ Singleton {
             // HUD
             // ═══════════════════════════════════════════════════════════════
             property JsonObject hud: JsonObject {
-                property bool enabled: true
+                property bool enable: true
                 property int timeout: 2000 // ms
+            }
+
+            // Launcher state
+            property JsonObject search: JsonObject {
+                property var recentApps: [] // app ids, most recent first
+            }
+
+            // Translator (left sidebar) language pair
+            property JsonObject language: JsonObject {
+                property JsonObject translator: JsonObject {
+                    property string sourceLanguage: "auto"
+                    property string targetLanguage: "en"
+                }
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -734,6 +756,11 @@ Singleton {
                     property bool enable: true
                     property int maxAllowedIncrease: 10
                     property int maxAllowed: 100
+                }
+                // cava-backed spectrum (SpectrumService)
+                property JsonObject spectrum: JsonObject {
+                    property int bars: 32
+                    property int frameRate: 60
                 }
             }
 
@@ -827,6 +854,9 @@ Singleton {
                 // When true (default), a sidebar opens only on the focused
                 // monitor; false opens it on every monitor at once.
                 property bool onlyOnFocusedMonitor: true
+                property JsonObject translator: JsonObject {
+                    property int delay: 600 // ms of typing pause before translating
+                }
                 property JsonObject quickSliders: JsonObject {
                     property bool showBrightness: true
                     property bool showVolume: true
@@ -1009,6 +1039,7 @@ Singleton {
                 property real temperature: 0.5
                 property string systemPrompt: "You are a helpful assistant integrated into a Linux desktop shell called Ano. Be concise and use markdown formatting."
                 property var models: ({})
+                property var extraModels: [] // user-added model entries
             }
 
             // AnoSpot floating media/status pill
