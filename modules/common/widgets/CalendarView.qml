@@ -22,8 +22,46 @@ Item {
 
     signal dateClicked(date clickedDate)
 
+    // Merge all three calendar feeds — external ICS (CalendarSync), user events
+    // (CalendarEvents), and public holidays (Holidays) — into one list/colour set
+    // per day, so the dots and the day-detail popup show everything at once. Bumps
+    // on each feed's `changed()` signal via the _feedRev tick so bindings refresh.
+    property int _feedRev: 0
+    Connections { target: CalendarSync; function onEventsUpdated() { root._feedRev++ } }
+    Connections { target: CalendarEvents; function onChanged() { root._feedRev++ } }
+    Connections { target: Holidays; function onChanged() { root._feedRev++ } }
+
+    function eventsForDate(date) {
+        void root._feedRev
+        const ics = (CalendarSync.getEventsForDate(date) || [])
+        const usr = (CalendarEvents.getEventsForDate(date) || []).map(e => ({
+            title: e.title, description: e.description,
+            startDate: e.dateTime, allDay: false,
+            sourceId: "events", sourceColor: (CalendarEvents.eventColor?.toString?.() ?? "#65558F"),
+            isUserEvent: true, id: e.id, category: e.category, priority: e.priority,
+            recurrence: e.recurrence, reminderMinutes: e.reminderMinutes
+        }))
+        const hol = (Holidays.getEventsForDate(date) || [])
+        return hol.concat(usr).concat(ics)   // holidays first, then user, then ICS
+    }
+
+    function colorsForDate(date) {
+        void root._feedRev
+        const colors = []
+        const seen = new Set()
+        for (const e of root.eventsForDate(date)) {
+            const c = e.sourceColor
+            if (c && !seen.has(c)) { seen.add(c); colors.push(c) }
+        }
+        return colors
+    }
+
     implicitWidth: 280
     implicitHeight: column.implicitHeight
+
+    // Warm the holiday data for whichever year is on screen.
+    onDisplayDateChanged: Holidays.ensureYear(displayDate.getFullYear())
+    Component.onCompleted: Holidays.ensureYear(displayDate.getFullYear())
 
     function prevMonth() {
         displayDate = new Date(displayDate.getFullYear(), displayDate.getMonth() - 1, 1)
@@ -88,7 +126,15 @@ Item {
                     required property int index
                     width: (dayGrid.width - 12) / 7
                     height: 32
-                    visible: index >= dayGrid.startDay
+                    // The first `startDay` cells are blank padding that pushes day 1
+                    // into its correct weekday column. They must still OCCUPY their
+                    // grid cells: a QML Grid skips invisible children entirely, so
+                    // `visible: false` here collapsed the padding and shifted every
+                    // date left by startDay columns (July 17 2026 showed under W
+                    // instead of F). Stay visible-but-blank instead.
+                    readonly property bool isPad: index < dayGrid.startDay
+                    opacity: isPad ? 0 : 1
+                    enabled: !isPad
 
                     property int dayNum: index - dayGrid.startDay + 1
                     property date thisDate: new Date(dayGrid.year, dayGrid.month, dayNum)
@@ -126,7 +172,7 @@ Item {
                             visible: root.showEventDots
                             Repeater {
                                 model: root.showEventDots
-                                    ? (CalendarSync.getSourceColorsForDate(parent.parent.parent.thisDate) || []).slice(0, 3)
+                                    ? root.colorsForDate(parent.parent.parent.thisDate).slice(0, 3)
                                     : []
                                 Rectangle {
                                     required property string modelData

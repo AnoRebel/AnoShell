@@ -38,6 +38,10 @@ Singleton {
     property string userConfigDir: FileUtils.trimFileProtocol(`${root.config}/anoshell`)
     property string userConfigPath: FileUtils.trimFileProtocol(`${root.config}/anoshell/config.json`)
 
+    // User-created calendar events (add/edit/recurring + reminders). User data,
+    // so it lives in the config dir and survives shell upgrades.
+    property string eventsPath: FileUtils.trimFileProtocol(`${root.config}/anoshell/calendar-events.json`)
+
     // Shell configuration directory (user-writable config, separate from shell source)
     property string shellConfig: FileUtils.trimFileProtocol(`${root.config}/anoshell`)
 
