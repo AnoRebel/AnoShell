@@ -103,6 +103,24 @@ PanelWindow {
 
     mask: Region { item: hoverMask }
 
+    // Connected mode: the frame paints this bar, flush to its edge and full
+    // length, following the auto-hide slide (hideOffset ≤ 0 pushes it out).
+    ConnectedSurfaceLease {
+        key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}`
+        kind: "bar"; edge: barRoot.edge; priority: 20
+        screenName: barRoot._screenName
+        active: barRoot.visible
+        readonly property real _off: barContentLoader.hideOffset
+        readonly property real _sw: barRoot.screen?.width ?? 0
+        readonly property real _sh: barRoot.screen?.height ?? 0
+        readonly property real _th: barRoot.barThickness
+        x: barRoot.edge === "left" ? _off : barRoot.edge === "right" ? _sw - _th - _off : 0
+        y: barRoot.edge === "top" ? _off : barRoot.edge === "bottom" ? _sh - _th - _off : 0
+        w: barRoot.isVertical ? _th : _sw
+        h: barRoot.isVertical ? _sh : _th
+        progress: 1 + _off / Math.max(1, _th)
+    }
+
     MouseArea {
         id: hoverArea
         anchors.fill: parent

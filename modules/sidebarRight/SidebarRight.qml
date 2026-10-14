@@ -33,7 +33,7 @@ Scope {
                 || (modelData?.name && modelData.name === GlobalStates.focusedScreenName)
             readonly property bool shouldShow: GlobalStates.sidebarRightOpen && isFocusedScreen
 
-            Component.onCompleted: { visible = shouldShow; _updateReg() }
+            Component.onCompleted: visible = shouldShow
 
             Connections {
                 target: GlobalStates
@@ -52,28 +52,18 @@ Scope {
             Timer { id: _closeTimer; interval: 300; onTriggered: sidebarRoot.visible = false }
             function hide() { GlobalStates.sidebarRightOpen = false }
 
-            // Register this sidebar's content rect with PanelRegistry so the
-            // connected-corners frame (AnoScreen) can draw concave joins where it
-            // meets the right screen edge. Content is right-anchored, full height,
-            // width sidebarWidth, inset by globalMargin.
-            readonly property string _regKey: "sidebarRight:" + (modelData?.name ?? "")
-            readonly property bool _regActive: GlobalStates.sidebarRightOpen && sidebarRoot.visible
-            function _updateReg() {
-                if (_regActive) {
-                    const m = root.globalMargin
-                    const sw = screen?.width ?? 0
-                    const sh = screen?.height ?? 0
-                    PanelRegistry.register(_regKey, {
-                        "kind": "sidebar", "screenName": modelData?.name ?? "", "edge": "right",
-                        "x": sw - root.sidebarWidth + m, "y": m,
-                        "w": root.sidebarWidth - m * 2, "h": sh - m * 2
-                    })
-                } else {
-                    PanelRegistry.unregister(_regKey)
-                }
+            // Fuse into the connected frame, following the slide.
+            ConnectedSurfaceLease {
+                key: "sidebarRight:" + (sidebarRoot.modelData?.name ?? "")
+                kind: "sidebar"; edge: "right"; priority: 5
+                screenName: sidebarRoot.modelData?.name ?? ""
+                active: sidebarRoot.visible && progress > 0
+                x: (sidebarRoot.screen?.width ?? 0) - root.sidebarWidth + root.globalMargin + slide.x
+                y: root.globalMargin
+                w: root.sidebarWidth - root.globalMargin * 2
+                h: (sidebarRoot.screen?.height ?? 0) - root.globalMargin * 2
+                progress: ((sidebarRoot.screen?.width ?? 0) - x) / Math.max(1, root.sidebarWidth - root.globalMargin)
             }
-            on_RegActiveChanged: _updateReg()
-            Component.onDestruction: PanelRegistry.unregister(_regKey)
 
             exclusiveZone: 0
             implicitWidth: screen?.width ?? 1920
@@ -97,6 +87,7 @@ Scope {
                 width: root.sidebarWidth - root.globalMargin * 2
 
                 transform: Translate {
+                    id: slide
                     x: GlobalStates.sidebarRightOpen ? 0 : (root.sidebarWidth + root.globalMargin)
                     Behavior on x {
                         enabled: !root.instantOpen

@@ -175,33 +175,26 @@ Item {
             }
 
             // ── Connected-frame fusion ────────────────────────────────────────
-            // While open, publish the popout's screen-space rect to PanelRegistry
-            // so the AnoScreen frame shader fuses it into the silhouette with
-            // concave junction arcs, like the bar and sidebars. Inert when
-            // connected mode is off (PanelRegistry.register no-ops), so floating
-            // mode pays nothing. Priority 10 ranks it above the sidebars for the
-            // shader's four chrome slots (bars are added ahead of the registry
-            // entirely, so a popout can never evict the bar).
-            readonly property string _regKey: `popout:${root.popoutKey}`
+            // While open, publish the popout's screen-space rect so the frame
+            // fuses it into the silhouette with concave junction arcs.
+            property rect _rect: Qt.rect(0, 0, 0, 0)
+            property string _screenName: ""
             function _updateReg() {
-                if (!morphContainer.showPopout || root.popoutKey.length === 0) {
-                    PanelRegistry.unregister(morphContainer._regKey)
-                    return
-                }
                 const w = morphBg.Window.window
-                if (!w) return
+                if (!morphContainer.showPopout || !w) return
                 const p = morphBg.mapToItem(null, 0, 0)
-                PanelRegistry.register(morphContainer._regKey, {
-                    "kind": "popout",
-                    "screenName": w.screen?.name ?? "",
-                    "edge": "top",
-                    "x": p.x, "y": p.y,
-                    "w": morphBg.width, "h": morphBg.height,
-                    "priority": 10,
-                    "surfaceRadius": Appearance?.rounding?.normal ?? 12
-                })
+                morphContainer._rect = Qt.rect(p.x, p.y, morphBg.width, morphBg.height)
+                morphContainer._screenName = w.screen?.name ?? ""
             }
-            Component.onDestruction: PanelRegistry.unregister(morphContainer._regKey)
+            ConnectedSurfaceLease {
+                key: `popout:${root.popoutKey}`
+                kind: "popout"; edge: "top"; priority: 10
+                active: morphContainer.showPopout && root.popoutKey.length > 0
+                screenName: morphContainer._screenName
+                x: morphContainer._rect.x; y: morphContainer._rect.y
+                w: morphContainer._rect.width; h: morphContainer._rect.height
+                surfaceRadius: Appearance?.rounding?.normal ?? 12
+            }
 
             // Shape background
             ShapeCanvas {

@@ -52,52 +52,61 @@ Item {
         visible: false   // parking spot for inline children before the window exists
     }
 
-    // ── Connected-frame fusion ────────────────────────────────────────────────
-    // While shown, publish the popup card's SCREEN-space rect to PanelRegistry so
-    // the AnoScreen frame shader fuses it into the shell silhouette with concave
-    // junction arcs (like the bar and sidebars). Inert when connected mode is off
-    // (register no-ops). Priority 10 ranks it above the sidebars for the shader's
-    // four chrome slots; bars are added ahead of the registry, so a popup can
-    // never evict the bar.
-    //
-    // The card lives in its own PopupWindow, whose item origin is the popup — NOT
-    // the screen — so mapToItem there gives popup-local coords the frame can't use.
-    // Instead derive the rect from the ANCHOR item (the bar icon), which is a
-    // normal item mappable to screen space: the popup sits directly below the icon
-    // (top bar, gravity Bottom) and is horizontally centred on it.
-    readonly property string _regKey: `popout:${root}`
-    readonly property bool _regActive: root.shown && root.anchorItem !== null && PanelRegistry.enabled
-    function _updateReg() {
-        if (!root._regActive) {
-            PanelRegistry.unregister(root._regKey)
-            return
-        }
-        const w = root.anchorItem.QsWindow?.window
-        if (!w) return
-        // anchor item's position in its window (== screen for a top-anchored bar).
+    // ── Growth + connected-frame fusion ───────────────────────────────────────
+    // The card grows out of the edge it hangs from (pinned there) and retracts
+    // into it: `reveal` 0..1 on a spring, retargetable mid-flight. The edge the
+    // popup faces is the bar's edge: a popup hanging below its icon belongs to a
+    // top bar, and so on.
+    readonly property string edge: root.anchorEdges === Edges.Top ? "bottom"
+        : root.anchorEdges === Edges.Right ? "left"
+        : root.anchorEdges === Edges.Left ? "right" : "top"
+    readonly property bool _vertical: root.edge === "top" || root.edge === "bottom"
+    property real reveal: root.shown ? 1 : 0
+    Behavior on reveal { MotionSpring { token: root.shown ? "liquid" : "settle" } }
+    readonly property bool _open: root.shown || root.reveal > 0.005
+
+    // While open, publish the card's SCREEN rect so the frame fuses it into the
+    // bar with concave joins. The card lives in its own PopupWindow, whose item
+    // origin is the popup, not the screen, so the rect is derived from the
+    // ANCHOR item (the bar icon) instead. ponytail: assumes the bar window sits
+    // flush on its screen edge (true unless another client reserves that edge).
+    property rect _card: Qt.rect(0, 0, 0, 0)
+    property string _screenName: ""
+    function _measure() {
+        const w = root.anchorItem?.QsWindow?.window
+        if (!root.anchorItem || !w) return
         const a = root.anchorItem.mapToItem(null, 0, 0)
-        const cx = a.x + root.anchorItem.width / 2
-        // Clamp to the screen so the registered rect matches where the compositor
-        // actually places the popup: a popup centred near the screen edge gets
-        // shifted inward to stay on-screen, and registering the un-clamped centre
-        // drew the fusion arc offset from the real popup (calendar under the clock).
-        const sw = w.width ?? 0
-        const edgeGap = root.popupMargin
-        let cardX = cx - root.popupWidth / 2
-        cardX = Math.max(edgeGap, Math.min(cardX, sw - root.popupWidth - edgeGap))
-        const cardY = a.y + root.anchorItem.height + root.popupMargin
-        PanelRegistry.register(root._regKey, {
-            "kind": "popout",
-            "screenName": w.screen?.name ?? "",
-            "edge": "top",
-            "x": cardX, "y": cardY,
-            "w": root.popupWidth, "h": root.popupHeight,
-            "priority": 10,
-            "surfaceRadius": Appearance?.rounding?.normal ?? 12
-        })
+        const sw = w.screen?.width ?? w.width ?? 0, sh = w.screen?.height ?? w.height ?? 0
+        const m = root.popupMargin, pw = root.popupWidth, ph = root.popupHeight
+        let x, y
+        if (root._vertical) {
+            // Centred on the icon, clamped on-screen like the compositor does.
+            x = Math.max(m, Math.min(a.x + root.anchorItem.width / 2 - pw / 2, sw - pw - m))
+            y = root.edge === "top" ? a.y + root.anchorItem.height + m : a.y - m - ph
+        } else {
+            y = Math.max(m, Math.min(a.y + root.anchorItem.height / 2 - ph / 2, sh - ph - m))
+            x = root.edge === "left" ? a.x + root.anchorItem.width + m : a.x - m - pw
+        }
+        root._card = Qt.rect(x, y, pw, ph)
+        root._screenName = w.screen?.name ?? ""
     }
-    on_RegActiveChanged: _updateReg()
-    Component.onDestruction: PanelRegistry.unregister(root._regKey)
+    onShownChanged: if (shown) _measure()
+    onPopupWidthChanged: if (shown) _measure()
+    onPopupHeightChanged: if (shown) _measure()
+
+    ConnectedSurfaceLease {
+        key: `popout:${root}`
+        kind: "popout"; edge: root.edge; priority: 10
+        screenName: root._screenName
+        active: root._open && root.anchorItem !== null
+        progress: root.reveal
+        surfaceRadius: Appearance?.rounding?.normal ?? 12
+        readonly property real _r: Math.max(0, root.reveal)
+        w: root._vertical ? root._card.width : root._card.width * _r
+        h: root._vertical ? root._card.height * _r : root._card.height
+        x: root.edge === "right" ? root._card.x + root._card.width - w : root._card.x
+        y: root.edge === "bottom" ? root._card.y + root._card.height - h : root._card.y
+    }
 
     // Keep the popup window alive for the lifetime of this component instead
     // of destroying it on every hide. A Loader tied to `shown` tore the
@@ -114,13 +123,12 @@ Item {
                 // any inline children that were parked before load.
                 root.contentParent = item.cardContent
                 item.pullInlineContent()
-                root._updateReg()
             }
         }
 
         sourceComponent: PopupWindow {
             id: popupWin
-            visible: root.shown
+            visible: root._open
             color: "transparent"
             implicitWidth: root.popupWidth + root.popupMargin * 2
             implicitHeight: root.popupHeight + root.popupMargin * 2
@@ -144,82 +152,67 @@ Item {
                 gravity: root.anchorGravity
             }
 
-            mask: Region { item: cardBg }
+            mask: Region { item: body }
 
             Item {
+                id: area
                 anchors { fill: parent; margins: root.popupMargin }
 
-                // In connected mode the AnoScreen frame draws the shell's shadow +
-                // the fused-in popout surface, so this popup must drop its own
-                // chrome. The hand-drawn shadowRect below is a solid #44000000
-                // rect bleeding 4px past the card; the compositor BLURS it into a
-                // soft glow — the "halo" around the popout — and the 1px border
-                // adds an outline. Both are floating-mode only.
+                // In connected mode the AnoScreen frame paints this popout's
+                // fused surface, shadow included, so the popup drops its own
+                // background, shadow and border (they read as a halo/outline).
                 readonly property bool connectedMode: PanelRegistry.enabled
 
-                // Shadow
-                Rectangle {
-                    id: shadowRect
-                    visible: !parent.connectedMode
-                    anchors.fill: parent; anchors.margins: -4
-                    radius: cardBg.radius + 4
-                    color: "#44000000"
-                    z: -1
-                }
-
-                // Card
-                Rectangle {
-                    id: cardBg
-                    anchors.fill: parent
-                    // In connected mode the AnoScreen frame shader ALREADY paints
-                    // this popout's fused surface (with the concave top join + its
-                    // own rounded free corners). Painting cardBg's colLayer0 on top
-                    // draws a SECOND, slightly-inset background — the "double
-                    // background" whose offset edge read as a misaligned connector.
-                    // Go transparent and let the frame surface show through; drop the
-                    // border too (the frame is the outline). Floating mode keeps the
-                    // full card. Same principle as BarWindow's drawChrome.
-                    radius: Appearance?.rounding.normal ?? 12
-                    color: parent.connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
-                    border.width: 0
-                    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                // The growing body, pinned to the anchor edge. A small overshoot
+                // is allowed into the popup margin; clipping hides the rest.
+                Item {
+                    id: body
+                    readonly property real _r: Math.max(0, Math.min(root.reveal, 1 + root.popupMargin / Math.max(1, root._vertical ? area.height : area.width)))
+                    width: root._vertical ? area.width : area.width * _r
+                    height: root._vertical ? area.height * _r : area.height
+                    x: root.edge === "right" ? area.width - width : 0
+                    y: root.edge === "bottom" ? area.height - height : 0
                     clip: true
 
-                    // Report hover so the caller can keep the popup open while
-                    // the pointer is inside it (prevents flicker-close).
-                    HoverHandler {
-                        id: cardHover
-                        onHoveredChanged: root.popupHovered = hovered
+                    Rectangle {
+                        id: shadowRect
+                        visible: !area.connectedMode
+                        anchors.fill: parent; anchors.margins: -4
+                        radius: bg.radius + 4
+                        color: "#44000000"
+                        z: -1
+                    }
+                    Rectangle {
+                        id: bg
+                        anchors.fill: parent
+                        visible: !area.connectedMode
+                        radius: Appearance?.rounding.normal ?? 12
+                        color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
                     }
 
-                    // The live, visible, sized content area. Reparented content
-                    // and inline children both end up here.
+                    // Full-size content, fixed relative to the anchor edge and
+                    // uncovered as the body grows (no relayout per frame).
                     Item {
-                        id: contentContainer
-                        anchors { fill: parent; margins: 12 }
-                    }
-                }
+                        id: cardBg
+                        width: area.width; height: area.height
+                        x: root.edge === "right" ? body.width - width : 0
+                        y: root.edge === "bottom" ? body.height - height : 0
+                        // Content fades in once the shape has started to grow.
+                        opacity: Math.max(0, Math.min(1, (root.reveal - 0.25) / 0.5))
 
-                // Entry animation — scale in from the top since the popup hangs
-                // below its anchor icon. Uses the M3-expressive spring curve
-                // (slight overshoot) for a fluid, lively pop instead of a flat
-                // ease-out.
-                opacity: root.shown ? 1 : 0
-                scale: root.shown ? 1 : 0.88
-                transformOrigin: Item.Top
+                        // Report hover so the caller can keep the popup open while
+                        // the pointer is inside it (prevents flicker-close).
+                        HoverHandler {
+                            id: cardHover
+                            onHoveredChanged: root.popupHovered = hovered
+                        }
 
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Appearance?.animationCurves.emphasizedDecel ?? [0.05, 0.7, 0.1, 1, 1, 1]
-                    }
-                }
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: (Appearance?.animationCurves.expressiveFastSpatialDuration ?? 350) * (Appearance?.animSpeedMultiplier ?? 1)
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Appearance?.animationCurves.expressiveFastSpatial ?? [0.42, 1.67, 0.21, 0.90, 1, 1]
+                        // The live, visible, sized content area. Reparented content
+                        // and inline children both end up here.
+                        Item {
+                            id: contentContainer
+                            anchors { fill: parent; margins: 12 }
+                        }
                     }
                 }
             }

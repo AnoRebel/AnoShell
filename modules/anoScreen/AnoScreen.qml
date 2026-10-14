@@ -22,10 +22,10 @@ import qs.services
  * this window only ever holds a single ShaderEffect. Even that is attached one
  * event-loop turn late, via the `ready` latch + an async Loader.
  *
- * Geometry comes from two places: the bars, whose rects AnoScreen computes itself
- * from Config, and PanelRegistry, where sidebars/popouts/trays publish their
- * screen-space rect as they open. Both are packed into the frame shader's four
- * chrome slots — see ConnectedFrame / ConnectedSurfaceGeometry.js.
+ * Geometry comes from PanelRegistry: the bars, sidebars, popouts and other fused
+ * surfaces publish their current screen-space body through a
+ * ConnectedSurfaceLease, and the frame packs them into the shader's 8 slots —
+ * see ConnectedFrame / ConnectedSurfaceGeometry.js.
  *
  * Multi-monitor + multi-bar aware. Opt-in via appearance.connectedCorners.enable.
  */
@@ -52,10 +52,6 @@ Scope {
         (Appearance?.colors.colLayer0.r ?? 0.11),
         (Appearance?.colors.colLayer0.g ?? 0.11),
         (Appearance?.colors.colLayer0.b ?? 0.12), 1.0)
-    readonly property real globalMargin: Config.options?.appearance?.bezel ?? 0
-    readonly property bool barsShown: GlobalStates.barOpen && !GlobalStates.screenLocked
-
-    readonly property var barDefs: Config.options?.bars ?? [{ "id": "main", "edge": "top" }]
 
     // ── Compositor outer-gap management ───────────────────────────────────────
     // In connected mode the frame paints the bezel, so the compositor's own outer
@@ -92,18 +88,6 @@ Scope {
     Component.onDestruction: {
         if (_manageGaps) CompositorService.setOuterGaps(_floatingGapsOut)
         CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
-    }
-
-    // Whether a bar definition targets a given screen (per-bar screenList → global).
-    function barOnScreen(def, screenName) {
-        const list = def?.screenList ?? Config.options?.bar?.screenList ?? []
-        return (!list || list.length === 0) || list.includes(screenName)
-    }
-    function barIsVertical(def) { return def?.edge === "left" || def?.edge === "right" }
-    function barThickness(def) {
-        return def?.height
-            ?? Config.options?.bar?.layout?.height
-            ?? (barIsVertical(def) ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight)
     }
 
     // Space-reservation companions: the full-screen AnoScreen window uses
@@ -158,28 +142,6 @@ Scope {
             Component.onCompleted: if (visible) Qt.callLater(() => { if (win) win.ready = true })
 
 
-            // The bar definitions that actually render on THIS screen.
-            readonly property var screenBars: root.barDefs.filter(d =>
-                root.barOnScreen(d, screenName) && !(d?.morphingPanel ?? false))
-
-            // Per-bar geometry helper (screen-space placeholder rect). Returns a
-            // zero-size rect for an absent slot so unused mask/bar slots vanish.
-            function barRect(i) {
-                const def = win.screenBars[i]
-                if (!def) return { x: 0, y: 0, w: 0, h: 0, vertical: false, edge: "top", present: false }
-                const vertical = root.barIsVertical(def)
-                const th = root.barThickness(def)
-                const edge = def?.edge ?? "top"
-                // Connected look: the bar is FLUSH to its screen edge and spans
-                // the full length (no bezel margin → no floating pill). It fuses
-                // into the frame; only the interior corners are rounded.
-                const x = edge === "right" ? (sw - th) : 0
-                const y = edge === "bottom" ? (sh - th) : 0
-                const w = vertical ? th : sw
-                const h = vertical ? sh : th
-                return { x: x, y: y, w: w, h: h, vertical: vertical, edge: edge, present: true, def: def }
-            }
-
             // Fully click-through: AnoScreen is purely decorative (screen
             // corners). An EMPTY `Region {}` is NOT click-through in Quickshell —
             // it defaults to the whole window being the input region, so this
@@ -189,32 +151,10 @@ Scope {
             mask: Region { item: null }
 
             // ── The connected silhouette's chrome surfaces ────────────────
-            // The frame shader has four slots. Bars go in first (they're always
-            // present and must never be evicted by a transient popout), then the
-            // highest-priority registered panels fill whatever is left.
-            //
-            // Bars never omit a connector. Omitting is for a POPOUT whose end butts
-            // against the bar's end, so that end gets no arc. A bar's own outer
-            // corners must stay sharp (radius 0) so the union reaches the true
-            // screen corner — the rounding there comes from the frame's cutout, and
-            // the concave junction arc comes from the connector fillet `k`. Giving
-            // them the bar's convex radius instead pulls the bar off the corner and
-            // leaves a notch.
-            readonly property var barSurfaces: {
-                if (!root.barsShown) return []
-                const out = []
-                for (let i = 0; i < win.screenBars.length; i++) {
-                    const b = win.barRect(i)
-                    if (!b.present) continue
-                    out.push({ "side": b.edge, "x": b.x, "y": b.y, "w": b.w, "h": b.h })
-                }
-                return out
-            }
-            readonly property var frameSurfaces: {
-                const bars = win.barSurfaces
-                const room = Math.max(0, 8 - bars.length)
-                return bars.concat(PanelRegistry.surfacesForScreen(win.screenName, room))
-            }
+            // Every fused surface (bars included) publishes its current body
+            // through a ConnectedSurfaceLease; the highest priorities fill the
+            // shader's 8 slots (bars rank highest, so a popout never evicts one).
+            readonly property var frameSurfaces: PanelRegistry.surfacesForScreen(win.screenName, 8)
 
             // ── All visual content, attached ASYNCHRONOUSLY ───────────────
             // Attaching content synchronously while the layershell window is still
