@@ -182,16 +182,25 @@ Singleton {
 
     // Recursively merge `override` into `target`. Plain objects are merged;
     // arrays and scalars replace target's value.
-    function _deepMergeInto(target, override) {
+    // A key the schema doesn't have (typo, old or newer key) or a value of the
+    // wrong type is skipped with a warning; before, the throw aborted the merge
+    // and every later user setting was silently lost. `ano config validate`
+    // lists such keys.
+    function _deepMergeInto(target, override, prefix) {
         if (!override || typeof override !== "object" || Array.isArray(override))
             return;
         for (const key in override) {
             const value = override[key];
+            const path = prefix ? `${prefix}.${key}` : key;
             const isPlainObject = value && typeof value === "object" && !Array.isArray(value);
             if (isPlainObject && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
-                root._deepMergeInto(target[key], value);
+                root._deepMergeInto(target[key], value, path);
             } else {
-                target[key] = value;
+                try {
+                    target[key] = value;
+                } catch (e) {
+                    console.warn(`[Config] ignoring ${path}: ${e.message ?? e}`);
+                }
             }
         }
     }
@@ -981,6 +990,26 @@ Singleton {
             property JsonObject focusTime: JsonObject {
                 property bool enable: true
                 property var excludeApps: ["Quickshell", "Locked", "Desktop", "Unknown"]
+            }
+
+            // anod event hooks: a shell command per event, run by anod with
+            // ANO_EVENT and ANO_<KEY> data in the environment (docs/anod.md).
+            property JsonObject hooks: JsonObject {
+                property bool enable: true
+                property int timeoutSeconds: 10
+                property int batteryThreshold: 20 // battery_changed also fires when crossing this %
+                property string started: ""
+                property string wallpaperChanged: ""
+                property string themeModeChanged: ""
+                property string sessionLocked: ""
+                property string sessionUnlocked: ""
+                property string loggingOut: ""
+                property string rebooting: ""
+                property string shuttingDown: ""
+                property string wifiChanged: ""
+                property string bluetoothChanged: ""
+                property string batteryChanged: ""
+                property string powerProfileChanged: ""
             }
 
             // Display manager
