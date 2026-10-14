@@ -14,6 +14,15 @@ ColumnLayout {
     id: root
     spacing: 16
 
+    // Bars whose own (non-null) value for `key` overrides the global setting.
+    function overridingBars(key) {
+        return (Config.options?.bars ?? []).filter(b => b?.[key] !== null && b?.[key] !== undefined).map(b => b.id ?? "?")
+    }
+    function overrideNote(key, fallback) {
+        const ids = root.overridingBars(key)
+        return ids.length > 0 ? `Overridden on bar ${ids.join(", ")} — those bars ignore this switch` : fallback
+    }
+
     // configRoots: this page owns `bar` (including bar.morphingPanels even
     // though ModulesConfig has a dotted entry for it — both pages can
     // reset the key, the user can pick whichever page they think of first).
@@ -121,14 +130,14 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Auto hide"
-            sublabel: "Bar slides away when not hovered, revealing more screen"
+            sublabel: root.overrideNote("autoHide", "Bar slides away when not hovered, revealing more screen")
             checked: Config.options?.bar?.autoHide?.enable ?? false
             onCheckedChanged: Config.setNestedValue("bar.autoHide.enable", checked)
         }
 
         ConfigSwitch {
             label: "Show background"
-            sublabel: "Transparent bar when disabled — modules float directly"
+            sublabel: root.overrideNote("showBackground", "Transparent bar when disabled — modules float directly")
             checked: Config.options?.bar?.showBackground ?? true
             onCheckedChanged: Config.setNestedValue("bar.showBackground", checked)
         }

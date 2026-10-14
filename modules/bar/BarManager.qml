@@ -64,7 +64,7 @@ Scope {
 
                     screen: screenScope.modelData
                     barConfig: modelData
-                    barIndex: 0
+                    barIndex: root.barDefinitions.indexOf(modelData)
                     visible: _shouldShow
                 }
             }

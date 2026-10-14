@@ -63,8 +63,8 @@
           "sidebarButton"
         ]
       },
-      "autoHide": false,
-      "showBackground": true,
+      "autoHide": null,
+      "showBackground": null,
       "morphingPanel": false,
       "height": null,
       "radius": null,
