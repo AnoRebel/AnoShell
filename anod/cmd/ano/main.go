@@ -27,6 +27,7 @@ const usage = `usage: ano <command> [args]
                              ` + "%s" + `
   config validate [--file F] [--json]
   config migrate  [--file F] [--prune-unknown] [--dry-run]
+  setup status|install|update|refresh [flags]   manage the checkout and binaries (ano setup help)
   version
 `
 
@@ -39,7 +40,7 @@ func main() {
 	var err error
 	switch cmd {
 	case "version", "--version", "-v":
-		fmt.Printf("ano %s (API v%d)\n", version.Version, version.API)
+		fmt.Println("ano", versionString())
 	case "status":
 		err = status(args)
 	case "doctor":
@@ -52,6 +53,8 @@ func main() {
 		err = emit(args)
 	case "config":
 		os.Exit(configCmd(args))
+	case "setup":
+		os.Exit(setupCmd(args))
 	case "help", "-h", "--help":
 		fmt.Printf(usage, eventList())
 	default:
@@ -63,6 +66,8 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+func versionString() string { return fmt.Sprintf("%s (API v%d)", version.Version, version.API) }
 
 func eventList() string {
 	names := make([]string, 0, len(hooks.Events))

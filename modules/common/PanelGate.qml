@@ -106,10 +106,16 @@ Singleton {
         return legacy.length === 0 || legacy.includes(id)
     }
 
+    // anoSpot.pillOnly: the pill replaces the bar and the dock (their own
+    // switches are left as they are, so turning it off brings them back).
+    readonly property bool pillOnly: (Config.options?.anoSpot?.pillOnly ?? false) && (Config.options?.anoSpot?.enable ?? false)
+    readonly property var _pillOnlyHides: ["anoBar", "anoDock"]
+
     function enabled(id) {
         if (!Config.ready) return false
         const m = root.module(id)
         if (!m || !root.hosted(id) || !root.userEnabled(id)) return false
+        if (root.pillOnly && root._pillOnlyHides.includes(id)) return false
         if (m.key && !(root._keyValue(m.key) ?? false)) return false
         if (m.effective && !root[m.effective]) return false
         if (m.compositor && CompositorService.compositor !== m.compositor) return false
@@ -122,6 +128,7 @@ Singleton {
         const m = root.module(id)
         if (!m) return "unknown module"
         if (!root.hosted(id)) return `not available in the ${root.family} family`
+        if (root.pillOnly && root._pillOnlyHides.includes(id)) return "hidden by AnoSpot \"Pill only\""
         if (m.compositor && CompositorService.compositor !== m.compositor)
             return `${m.compositor === "niri" ? "niri" : "Hyprland"} only`
         if (m.capability && !(CompositorService.supports[m.capability] ?? false))

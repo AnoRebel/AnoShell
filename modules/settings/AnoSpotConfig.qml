@@ -43,7 +43,7 @@ ColumnLayout {
         icon: "view_compact_alt"
         title: "AnoSpot"
         subtitle: "Dynamic-island-style overlay for now playing, notifications, recording, clock"
-        configKeys: ["anoSpot.enable"]
+        configKeys: ["anoSpot.enable", "anoSpot.pillOnly"]
 
         ConfigSwitch {
             label: "Enable AnoSpot"
@@ -51,6 +51,17 @@ ColumnLayout {
             sublabel: "Compositor-agnostic. Works on Hyprland and Niri."
             checked: root.enabled
             onCheckedChanged: Config.setNestedValue("anoSpot.enable", checked)
+        }
+
+        ConfigSwitch {
+            label: "Pill only"
+            configKey: "anoSpot.pillOnly"
+            sublabel: "Use the pill as the whole shell: hide the bar and the dock (your Modules choices for them are kept)"
+            checked: Config.options?.anoSpot?.pillOnly ?? false
+            onCheckedChanged: {
+                Config.setNestedValue("anoSpot.pillOnly", checked)
+                if (checked) Config.setNestedValue("anoSpot.enable", true)
+            }
         }
 
         Rectangle {

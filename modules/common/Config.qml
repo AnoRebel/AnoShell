@@ -1057,6 +1057,8 @@ Singleton {
                 // Float as its own rounded pill with a gap, even when the
                 // connected frame is on (otherwise it fuses into the frame).
                 property bool floating: false
+                // Pill only: no bar and no dock; the pill is the whole shell chrome.
+                property bool pillOnly: false
                 property bool showMpris: true
                 property bool showNotification: true
                 property bool showRecording: true

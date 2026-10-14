@@ -1161,7 +1161,8 @@
   "label": "AnoSpot",
   "sublabel": "Dynamic-island-style overlay for now playing, notifications, recording, clock",
   "keys": [
-   "anoSpot.enable"
+   "anoSpot.enable",
+   "anoSpot.pillOnly"
   ]
  },
  {
@@ -1171,6 +1172,16 @@
   "sublabel": "Compositor-agnostic. Works on Hyprland and Niri.",
   "keys": [
    "anoSpot.enable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Pill only",
+  "sublabel": "Use the pill as the whole shell: hide the bar and the dock (your Modules choices for them are kept)",
+  "keys": [
+   "anoSpot.enable",
+   "anoSpot.pillOnly"
   ]
  },
  {

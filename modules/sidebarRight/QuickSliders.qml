@@ -36,7 +36,7 @@ Rectangle {
                 StyledSlider {
                     Layout.fillWidth: true
                     configuration: StyledSlider.Configuration.M
-                    trackWidth: 24; trackRadius: 8 // a touch slimmer than M
+                    trackWidth: 18; trackRadius: 6; handleHeight: 26 // slim: the handle sets the row height
                     value: root.brightnessMonitor?.brightness ?? 0
                     onMoved: root.brightnessMonitor?.setBrightness(value)
                     stopIndicatorValues: []
@@ -65,7 +65,7 @@ Rectangle {
                 StyledSlider {
                     Layout.fillWidth: true
                     configuration: StyledSlider.Configuration.M
-                    trackWidth: 24; trackRadius: 8 // a touch slimmer than M
+                    trackWidth: 18; trackRadius: 6; handleHeight: 26 // slim: the handle sets the row height
                     value: Audio.sink?.audio?.volume ?? 0
                     onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }
                     stopIndicatorValues: []
