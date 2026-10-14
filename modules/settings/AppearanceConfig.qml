@@ -78,6 +78,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Source"
+            configKey: "appearance.theme.source"
             sublabel: appearanceRoot.committedSource === "materialYou"
                 ? "Dynamic — palette derived from the active wallpaper"
                 : `Static — ${appearanceRoot.committedStatic || "(none selected)"}`
@@ -385,6 +386,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Extra background tint"
+            configKey: "appearance.extraBackgroundTint"
             sublabel: "Adds a subtle color overlay to surfaces for a warmer feel"
             checked: Config.options?.appearance?.extraBackgroundTint ?? false
             onCheckedChanged: Config.setNestedValue("appearance.extraBackgroundTint", checked)
@@ -429,6 +431,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Bezel size"
+            configKey: "appearance.bezel"
             sublabel: "Insets floating bars, sidebars, and overlay panels from the screen edge. Ignored in Connected shell mode, which uses Frame thickness instead."
             from: 0; to: 24; stepSize: 1
             value: Config.options?.appearance?.bezel ?? 0
@@ -480,6 +483,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Corner radius"
+            configKey: "appearance.connectedCorners.radius"
             sublabel: "Size of the rounded screen corners / bar edge curve"
             from: 4; to: 40; stepSize: 1
             enabled: shellModeCard.connected
@@ -490,6 +494,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Frame thickness"
+            configKey: "appearance.connectedCorners.thickness"
             sublabel: "Connected mode's counterpart to Bezel: width of the painted frame band at each screen edge. 0 shows only the rounded corners; raise it for a wider frame (lower it if the band overlaps window borders)."
             from: 0; to: 24; stepSize: 1
             enabled: shellModeCard.connected
@@ -500,6 +505,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Windows sit flush against the frame"
+            configKey: "appearance.connectedCorners.manageGaps"
             sublabel: "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept)."
             enabled: shellModeCard.connected
             checked: Config.options?.appearance?.connectedCorners?.manageGaps ?? true
@@ -508,6 +514,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Frame opacity"
+            configKey: "appearance.connectedCorners.opacity"
             sublabel: "Below 100% the frame becomes translucent. Turn on Frame blur too, or you'll see straight through it."
             from: 20; to: 100; stepSize: 1
             enabled: shellModeCard.connected
@@ -518,6 +525,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Frame blur"
+            configKey: "appearance.connectedCorners.blur"
             sublabel: "Blurs the desktop behind a translucent frame (frosted glass). No visible effect at 100% opacity."
             enabled: shellModeCard.connected
             checked: Config.options?.appearance?.connectedCorners?.blur ?? false
@@ -543,6 +551,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable elevation shadows"
+            configKey: "appearance.shadows.enable"
             sublabel: "Drawn with a GPU signed-distance-field shader (cheap; no blur passes)"
             checked: shadowsCard.shadowsOn
             onCheckedChanged: Config.setNestedValue("appearance.shadows.enable", checked)
@@ -550,6 +559,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Intensity"
+            configKey: "appearance.shadows.intensity"
             sublabel: "Scales the shadow's blur radius"
             from: 0.25; to: 2.0; stepSize: 0.05
             enabled: shadowsCard.shadowsOn
@@ -560,6 +570,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Opacity"
+            configKey: "appearance.shadows.opacity"
             sublabel: "Scales how dark the shadow is"
             from: 0.1; to: 2.0; stepSize: 0.05
             enabled: shadowsCard.shadowsOn
@@ -578,6 +589,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable animations"
+            configKey: "animations.enable"
             sublabel: "Disable for better performance on low-end hardware"
             checked: Config.options?.animations?.enable ?? true
             onCheckedChanged: Config.setNestedValue("animations.enable", checked)
@@ -585,6 +597,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Animation speed multiplier"
+            configKey: "animations.speed"
             sublabel: "1.0 = normal, 0.5 = faster, 2.0 = slower"
             from: 0.2; to: 3; stepSize: 0.1
             value: Config.options?.animations?.speed ?? 1
@@ -602,6 +615,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable random wallpaper rotation"
+            configKey: "background.randomize.enable"
             sublabel: "Periodically change wallpaper from a directory"
             checked: Config.options?.background?.randomize?.enable ?? false
             onCheckedChanged: Config.setNestedValue("background.randomize.enable", checked)
@@ -609,6 +623,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Wallpaper directory"
+            configKey: "background.randomize.directory"
             sublabel: "Path to folder containing wallpapers (supports ~)"
             StyledTextInput {
                 text: Config.options?.background?.randomize?.directory ?? "~/Pictures/Wallpapers"
@@ -620,6 +635,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Rotation interval"
+            configKey: "background.randomize.interval"
             sublabel: "Time between wallpaper changes"
             from: 30; to: 7200; stepSize: 30
             value: Config.options?.background?.randomize?.interval ?? 300
@@ -642,6 +658,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable wallpaper transitions"
+            configKey: "background.transition.enable"
             sublabel: "Smooth crossfade or slide when changing wallpapers"
             checked: Config.options?.background?.transition?.enable ?? true
             onCheckedChanged: Config.setNestedValue("background.transition.enable", checked)
@@ -649,6 +666,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Transition type"
+            configKey: "background.transition.type"
             sublabel: "Visual style of the wallpaper change"
             ButtonGroup {
                 buttons: [
@@ -662,6 +680,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Transition duration"
+            configKey: "background.transition.duration"
             sublabel: "How long the crossfade/slide animation takes"
             from: 200; to: 2000; stepSize: 100
             value: Config.options?.background?.transition?.duration ?? 800
@@ -671,6 +690,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Slide direction"
+            configKey: "background.transition.direction"
             sublabel: "Only applies to slide transition type"
             ButtonGroup {
                 buttons: [

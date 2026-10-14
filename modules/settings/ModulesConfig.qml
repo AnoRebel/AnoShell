@@ -169,6 +169,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Auto-hide timeout"
+            configKey: "osd.timeout"
             sublabel: "How long the OSD pill stays visible"
             from: 500; to: 5000; stepSize: 250
             value: Config.options?.osd?.timeout ?? 1500
@@ -178,6 +179,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "OSD position"
+            configKey: "osd.position"
             ButtonGroup {
                 buttons: [
                     GroupButton { label: "Top"; toggled: (Config.options?.osd?.position ?? "bottom") === "top"; onClicked: Config.setNestedValue("osd.position", "top") },
@@ -220,12 +222,14 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable hot corners"
+            configKey: "screenCorners.enable"
             checked: Config.options?.screenCorners?.enable ?? false
             onCheckedChanged: Config.setNestedValue("screenCorners.enable", checked)
         }
 
         ConfigSlider {
             label: "Dwell time"
+            configKey: "screenCorners.dwellMs"
             sublabel: "How long cursor must stay in corner before activation"
             from: 100; to: 1500; stepSize: 50
             value: Config.options?.screenCorners?.dwellMs ?? 300
@@ -235,6 +239,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Hit zone size"
+            configKey: "screenCorners.hitSize"
             sublabel: "Size of the invisible corner trigger area in pixels"
             from: 1; to: 10; stepSize: 1
             value: Config.options?.screenCorners?.hitSize ?? 2
@@ -307,12 +312,14 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable animations"
+            configKey: "altSwitcher.enableAnimation"
             checked: Config.options?.altSwitcher?.enableAnimation ?? true
             onCheckedChanged: Config.setNestedValue("altSwitcher.enableAnimation", checked)
         }
 
         ConfigSlider {
             label: "Animation duration"
+            configKey: "altSwitcher.animationDurationMs"
             from: 50; to: 500; stepSize: 25
             value: Config.options?.altSwitcher?.animationDurationMs ?? 200
             onValueChanged: Config.setNestedValue("altSwitcher.animationDurationMs", Math.round(value))
@@ -321,6 +328,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Most recent first (MRU)"
+            configKey: "altSwitcher.useMostRecentFirst"
             sublabel: "Order windows by most recently used instead of creation order"
             checked: Config.options?.altSwitcher?.useMostRecentFirst ?? true
             onCheckedChanged: Config.setNestedValue("altSwitcher.useMostRecentFirst", checked)
@@ -328,6 +336,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Compact style"
+            configKey: "altSwitcher.compactStyle"
             sublabel: "Smaller thumbnails, more windows visible"
             checked: Config.options?.altSwitcher?.compactStyle ?? false
             onCheckedChanged: Config.setNestedValue("altSwitcher.compactStyle", checked)
@@ -335,6 +344,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Background opacity"
+            configKey: "altSwitcher.backgroundOpacity"
             from: 0.3; to: 1.0; stepSize: 0.05
             value: Config.options?.altSwitcher?.backgroundOpacity ?? 0.85
             onValueChanged: Config.setNestedValue("altSwitcher.backgroundOpacity", value)
@@ -343,6 +353,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Scrim dimming"
+            configKey: "altSwitcher.scrimDim"
             from: 0; to: 80; stepSize: 5
             value: Config.options?.altSwitcher?.scrimDim ?? 40
             onValueChanged: Config.setNestedValue("altSwitcher.scrimDim", Math.round(value))
@@ -351,6 +362,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Max visible windows"
+            configKey: "altSwitcher.maxVisible"
             from: 4; to: 30; stepSize: 1
             value: Config.options?.altSwitcher?.maxVisible ?? 12
             onValueChanged: Config.setNestedValue("altSwitcher.maxVisible", Math.round(value))
@@ -367,6 +379,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Layout algorithm"
+            configKey: "taskView.layout"
             sublabel: "How windows are arranged in task view"
             ButtonGroup {
                 buttons: [
@@ -402,6 +415,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Terminal"
+            configKey: "apps.terminal"
             StyledTextInput {
                 text: Config.options?.apps?.terminal ?? "kitty"
                 onEditingFinished: Config.setNestedValue("apps.terminal", text)
@@ -411,6 +425,7 @@ ColumnLayout {
         }
         ConfigRow {
             label: "File Manager"
+            configKey: "apps.fileManager"
             StyledTextInput {
                 text: Config.options?.apps?.fileManager ?? "nemo"
                 onEditingFinished: Config.setNestedValue("apps.fileManager", text)
@@ -420,6 +435,7 @@ ColumnLayout {
         }
         ConfigRow {
             label: "Browser"
+            configKey: "apps.browser"
             StyledTextInput {
                 text: Config.options?.apps?.browser ?? "zen-browser"
                 onEditingFinished: Config.setNestedValue("apps.browser", text)
@@ -444,6 +460,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Default compositor"
+            configKey: "compositor.defaultCompositor"
             sublabel: "Fallback when auto-detection fails"
             RowLayout {
                 spacing: 6
@@ -459,6 +476,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Primary monitor"
+            configKey: "display.primaryMonitor"
             sublabel: "Leave empty for auto"
             StyledTextInput {
                 text: Config.options?.display?.primaryMonitor ?? ""
@@ -593,6 +611,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Family transition animation"
+            configKey: "familyTransitionAnimation"
             sublabel: "Animated ripple effect when switching between panel families"
             checked: Config.options?.familyTransitionAnimation ?? true
             onCheckedChanged: Config.setNestedValue("familyTransitionAnimation", checked)
@@ -613,6 +632,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable Focus Time"
+            configKey: "focusTime.enable"
             sublabel: "Track time spent in each application"
             checked: Config.options?.focusTime?.enable ?? true
             onCheckedChanged: Config.setNestedValue("focusTime.enable", checked)
@@ -620,6 +640,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Excluded apps"
+            configKey: "focusTime.excludeApps"
             sublabel: "Comma-separated list of apps to ignore"
             StyledTextInput {
                 text: (Config.options?.focusTime?.excludeApps ?? []).join(", ")
@@ -642,6 +663,7 @@ ColumnLayout {
             ConfigSwitch {
                 Layout.fillWidth: true
                 label: "Enable Display Manager"
+                configKey: "displayManager.enable"
                 sublabel: "Show monitor resolution/refresh rate controls"
                 checked: Config.options?.displayManager?.enable ?? true
                 onCheckedChanged: Config.setNestedValue("displayManager.enable", checked)
@@ -665,6 +687,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Race condition delay"
+            configKey: "hacks.arbitraryRaceConditionDelay"
             sublabel: "Delay (ms) for file reload operations to avoid race conditions"
             from: 50; to: 500; stepSize: 25
             value: Config.options?.hacks?.arbitraryRaceConditionDelay ?? 100
@@ -674,6 +697,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Sound theme"
+            configKey: "sounds.theme"
             StyledTextInput {
                 text: Config.options?.sounds?.theme ?? "freedesktop"
                 onEditingFinished: Config.setNestedValue("sounds.theme", text)
@@ -688,6 +712,7 @@ ColumnLayout {
             ConfigSwitch {
                 Layout.fillWidth: true
                 label: "Morphing bar panels"
+                configKey: "bar.morphingPanels"
                 sublabel: PanelGate.family === "ano"
                     ? "Use polygon-based ShapeCanvas bars (experimental, from hefty-hype)"
                     : (PanelGate.family === "hefty" ? "Always on in the Hefty family" : `Not available in the ${PanelGate.family} family`)
@@ -700,6 +725,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Duplicate player filter"
+            configKey: "media.filterDuplicatePlayers"
             sublabel: "Filter duplicate MPRIS players from browser integrations"
             checked: Config.options?.media?.filterDuplicatePlayers ?? true
             onCheckedChanged: Config.setNestedValue("media.filterDuplicatePlayers", checked)
@@ -707,6 +733,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Preferred player"
+            configKey: "media.preferredPlayer"
             sublabel: "Name to track first when nothing is playing (e.g. spotify); empty = automatic"
             StyledTextInput {
                 text: Config.options?.media?.preferredPlayer ?? ""

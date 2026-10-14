@@ -18,6 +18,19 @@ Singleton {
     // here, then get serialized to userOverridePath. The bundled config
     // is never written to.
     property var _userDelta: ({})
+    // Bumped whenever the user delta changes, so origin bindings re-evaluate.
+    property int deltaRevision: 0
+    // Keys whose user value came from a legacy-key migration.
+    property var _migratedKeys: ({})
+
+    // Where a key's effective value comes from: "user" (your config file),
+    // "migrated" (moved there from an old key) or "default" (bundled).
+    function originOf(nestedKey) {
+        void root.deltaRevision
+        if (root._migratedKeys[nestedKey]) return "migrated"
+        const [parent, leaf] = root._walkPath(root._userDelta, nestedKey, false)
+        return (parent !== null && parent !== undefined && leaf in parent) ? "user" : "default"
+    }
     // Suppresses the file-changed echo when we're the one writing.
     property bool _writingUserDelta: false
 
@@ -261,6 +274,7 @@ Singleton {
                 return;
             }
             root._userDelta = parsed;
+            root.deltaRevision++;
         } catch (e) {
             const where = root._formatJsonErrorLocation(e.message, text);
             const detail = where ? `${e.message} (${where})` : e.message;
@@ -278,6 +292,7 @@ Singleton {
     }
 
     function _writeUserDelta() {
+        root.deltaRevision++;
         root._writingUserDelta = true;
         const text = JSON.stringify(root._userDelta, null, 2) + "\n";
         userOverrideFileView.setText(text);
@@ -337,6 +352,7 @@ Singleton {
         const hudBlock = root._userDelta?.hud;
         if (hudBlock && hudBlock.enabled !== undefined) {
             if (hudBlock.enable === undefined) hudBlock.enable = hudBlock.enabled;
+            root._migratedKeys["hud.enable"] = true;
             delete hudBlock.enabled;
             opts.hud.enable = hudBlock.enable;
             migrated = true;

@@ -47,6 +47,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable AnoSpot"
+            configKey: "anoSpot.enable"
             sublabel: "Compositor-agnostic. Works on Hyprland and Niri."
             checked: root.enabled
             onCheckedChanged: Config.setNestedValue("anoSpot.enable", checked)
@@ -148,6 +149,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Allow drag to reposition"
+            configKey: "anoSpot.draggable"
             sublabel: "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge"
             checked: Config.options?.anoSpot?.draggable ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.draggable", checked)
@@ -163,32 +165,38 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Now playing (Mpris)"
+            configKey: "anoSpot.showMpris"
             checked: Config.options?.anoSpot?.showMpris ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showMpris", checked)
         }
         ConfigSwitch {
             label: "Latest notification"
+            configKey: "anoSpot.showNotification"
             checked: Config.options?.anoSpot?.showNotification ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showNotification", checked)
         }
         ConfigSwitch {
             label: "Recording indicator"
+            configKey: "anoSpot.showRecording"
             checked: Config.options?.anoSpot?.showRecording ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showRecording", checked)
         }
         ConfigSwitch {
             label: "Clock & weather"
+            configKey: "anoSpot.showClockWeather"
             checked: Config.options?.anoSpot?.showClockWeather ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showClockWeather", checked)
         }
         ConfigSwitch {
             label: "Workspace"
+            configKey: "anoSpot.showWorkspace"
             sublabel: "Active workspace number/name (click → overview)"
             checked: Config.options?.anoSpot?.showWorkspace ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showWorkspace", checked)
         }
         ConfigSwitch {
             label: "Battery"
+            configKey: "anoSpot.showBattery"
             sublabel: "Hidden automatically on desktops without a battery"
             checked: Config.options?.anoSpot?.showBattery ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showBattery", checked)
@@ -205,6 +213,7 @@ ColumnLayout {
         ConfigSwitch {
             id: dropEnable
             label: "Accept drops"
+            configKey: "anoSpot.acceptDrops"
             sublabel: "When off, drags pass through AnoSpot to whatever is below"
             checked: Config.options?.anoSpot?.acceptDrops ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.acceptDrops", checked)
@@ -212,6 +221,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Stash directory"
+            configKey: "anoSpot.stashDir"
             sublabel: "Empty = auto ($XDG_RUNTIME_DIR/anoSpot, falls back to /tmp/anoSpot-<UID>)"
             enabled: dropEnable.checked
 
@@ -444,12 +454,14 @@ ColumnLayout {
         ConfigSwitch {
             id: borderEnable
             label: "Enable"
+            configKey: "anoSpot.eventBorder.enable"
             checked: Config.options?.anoSpot?.eventBorder?.enable ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.eventBorder.enable", checked)
         }
 
         ConfigSlider {
             label: "Hold duration"
+            configKey: "anoSpot.eventBorder.holdMs"
             sublabel: "How long the halo stays visible before fading out"
             from: 500; to: 5000; stepSize: 100
             value: Config.options?.anoSpot?.eventBorder?.holdMs ?? 1500

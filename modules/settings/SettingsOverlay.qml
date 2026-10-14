@@ -34,6 +34,20 @@ Scope {
         target: "settings"
         function toggle(): void { GlobalStates.settingsOpen = !GlobalStates.settingsOpen }
         function open(): void { GlobalStates.settingsOpen = true }
-        function close(): void { GlobalStates.settingsOpen = false }
+        function close(): void {
+            GlobalStates.settingsCommandPaletteOpen = false
+            GlobalStates.settingsOpen = false
+        }
+        // Open on a page by index (0 = General … see SettingsRegistry.pages).
+        function page(index: int): void {
+            GlobalStates.settingsPage = Math.max(0, Math.min(index, SettingsRegistry.pages.length - 1))
+            GlobalStates.settingsOpen = true
+        }
+        // Open the Ctrl+K palette with a query (scripts/tests drive it without keystrokes).
+        function palette(query: string): void {
+            GlobalStates.settingsOpen = true
+            SettingsRegistry.query = query
+            GlobalStates.settingsCommandPaletteOpen = true
+        }
     }
 }

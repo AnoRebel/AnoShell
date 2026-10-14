@@ -27,6 +27,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Instant open (skip animation)"
+            configKey: "sidebar.instantOpen"
             sublabel: "Sidebars appear immediately without slide-in transition"
             checked: Config.options?.sidebar?.instantOpen ?? false
             onCheckedChanged: Config.setNestedValue("sidebar.instantOpen", checked)
@@ -38,6 +39,7 @@ ColumnLayout {
             ConfigSwitch {
                 Layout.fillWidth: true
                 label: "Keep left sidebar loaded"
+                configKey: "sidebar.keepLeftSidebarLoaded"
                 sublabel: "Faster re-open at the cost of ~20MB memory"
                 checked: Config.options?.sidebar?.keepLeftSidebarLoaded ?? true
                 onCheckedChanged: Config.setNestedValue("sidebar.keepLeftSidebarLoaded", checked)
@@ -51,6 +53,7 @@ ColumnLayout {
             ConfigSwitch {
                 Layout.fillWidth: true
                 label: "Keep right sidebar loaded"
+                configKey: "sidebar.keepRightSidebarLoaded"
                 sublabel: "Faster re-open at the cost of ~15MB memory"
                 checked: Config.options?.sidebar?.keepRightSidebarLoaded ?? true
                 onCheckedChanged: Config.setNestedValue("sidebar.keepRightSidebarLoaded", checked)
@@ -153,18 +156,21 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Show brightness slider"
+            configKey: "sidebar.quickSliders.showBrightness"
             checked: Config.options?.sidebar?.quickSliders?.showBrightness ?? true
             onCheckedChanged: Config.setNestedValue("sidebar.quickSliders.showBrightness", checked)
         }
 
         ConfigSwitch {
             label: "Show volume slider"
+            configKey: "sidebar.quickSliders.showVolume"
             checked: Config.options?.sidebar?.quickSliders?.showVolume ?? true
             onCheckedChanged: Config.setNestedValue("sidebar.quickSliders.showVolume", checked)
         }
 
         ConfigSwitch {
             label: "Show microphone slider"
+            configKey: "sidebar.quickSliders.showMic"
             sublabel: "Additional slider for microphone input volume"
             checked: Config.options?.sidebar?.quickSliders?.showMic ?? false
             onCheckedChanged: Config.setNestedValue("sidebar.quickSliders.showMic", checked)

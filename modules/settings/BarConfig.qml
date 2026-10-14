@@ -131,6 +131,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Auto hide"
+            configKey: "bar.autoHide.enable"
             sublabel: root.overrideNote("autoHide", "Bar slides away when not hovered, revealing more screen")
             checked: Config.options?.bar?.autoHide?.enable ?? false
             onCheckedChanged: Config.setNestedValue("bar.autoHide.enable", checked)
@@ -138,6 +139,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Auto-hide delay"
+            configKey: "bar.autoHide.delay"
             sublabel: "How long the bar stays after the pointer leaves"
             enabled: Config.options?.bar?.autoHide?.enable ?? false
             from: 0; to: 3000; stepSize: 100
@@ -148,6 +150,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Show background"
+            configKey: "bar.showBackground"
             sublabel: root.overrideNote("showBackground", "Transparent bar when disabled — modules float directly")
             checked: Config.options?.bar?.showBackground ?? true
             onCheckedChanged: Config.setNestedValue("bar.showBackground", checked)
@@ -155,6 +158,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Corner style"
+            configKey: "bar.cornerStyle"
             sublabel: "0 = floating (default), 1 = edge-to-edge with bezel padding"
             ButtonGroup {
                 buttons: [
@@ -490,6 +494,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Bar height"
+            configKey: "bar.layout.height"
             sublabel: "Total thickness of the bar in pixels"
             from: 28; to: 64; stepSize: 2
             value: Config.options?.bar?.layout?.height ?? 42
@@ -498,6 +503,7 @@ ColumnLayout {
         }
         ConfigSlider {
             label: "Corner radius"
+            configKey: "bar.layout.radius"
             sublabel: "Rounding of the bar background corners"
             from: 0; to: 28; stepSize: 1
             value: Config.options?.bar?.layout?.radius ?? 12
@@ -509,6 +515,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Left section spacing"
+            configKey: "bar.layout.leftSpacing"
             sublabel: "Gap between modules in the left section"
             from: 0; to: 24; stepSize: 1
             value: Config.options?.bar?.layout?.leftSpacing ?? 8
@@ -517,6 +524,7 @@ ColumnLayout {
         }
         ConfigSlider {
             label: "Center section spacing"
+            configKey: "bar.layout.centerSpacing"
             sublabel: "Gap between modules in the center group"
             from: 0; to: 16; stepSize: 1
             value: Config.options?.bar?.layout?.centerSpacing ?? 4
@@ -525,6 +533,7 @@ ColumnLayout {
         }
         ConfigSlider {
             label: "Right section spacing"
+            configKey: "bar.layout.rightSpacing"
             sublabel: "Gap between modules in the right section"
             from: 0; to: 24; stepSize: 1
             value: Config.options?.bar?.layout?.rightSpacing ?? 8
@@ -533,6 +542,7 @@ ColumnLayout {
         }
         ConfigSlider {
             label: "Edge padding"
+            configKey: "bar.layout.edgePadding"
             sublabel: "Distance from screen edge to first/last module"
             from: 0; to: 32; stepSize: 1
             value: Config.options?.bar?.layout?.edgePadding ?? 8
@@ -544,6 +554,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Center group padding"
+            configKey: "bar.layout.centerGroupPadding"
             sublabel: "Inner padding of the center pill container"
             from: 0; to: 16; stepSize: 1
             value: Config.options?.bar?.layout?.centerGroupPadding ?? 5
@@ -552,6 +563,7 @@ ColumnLayout {
         }
         ConfigSlider {
             label: "Center group radius"
+            configKey: "bar.layout.centerGroupRadius"
             sublabel: "Corner rounding of the center pill container"
             from: 0; to: 24; stepSize: 1
             value: Config.options?.bar?.layout?.centerGroupRadius ?? 8
@@ -560,12 +572,14 @@ ColumnLayout {
         }
         ConfigSwitch {
             label: "Show center group background"
+            configKey: "bar.layout.showCenterBackground"
             sublabel: "Visible pill background behind center modules (workspaces)"
             checked: Config.options?.bar?.layout?.showCenterBackground ?? true
             onCheckedChanged: Config.setNestedValue("bar.layout.showCenterBackground", checked)
         }
         ConfigSwitch {
             label: "Show section separators"
+            configKey: "bar.layout.showSeparators"
             sublabel: "Thin vertical lines between left, center, and right sections"
             checked: Config.options?.bar?.layout?.showSeparators ?? false
             onCheckedChanged: Config.setNestedValue("bar.layout.showSeparators", checked)
@@ -658,6 +672,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Left section scroll"
+            configKey: "bar.actions.scrollLeft"
             ChoiceRow {
                 model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollLeft ?? "brightness"
@@ -666,6 +681,7 @@ ColumnLayout {
         }
         ConfigRow {
             label: "Right section scroll"
+            configKey: "bar.actions.scrollRight"
             ChoiceRow {
                 model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollRight ?? "volume"
@@ -674,6 +690,7 @@ ColumnLayout {
         }
         ConfigRow {
             label: "Center section scroll"
+            configKey: "bar.actions.scrollCenter"
             ChoiceRow {
                 model: actionsCard.scrollChoices
                 current: Config.options?.bar?.actions?.scrollCenter ?? "workspace"
@@ -691,6 +708,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Number of workspaces shown"
+            configKey: "bar.workspaces.shown"
             sublabel: "How many workspace dots appear in the bar"
             from: 2; to: 20; stepSize: 1
             value: Config.options?.bar?.workspaces?.shown ?? 10
@@ -708,12 +726,14 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Show weather module in bar"
+            configKey: "bar.weather.enable"
             checked: Config.options?.bar?.weather?.enable ?? false
             onCheckedChanged: Config.setNestedValue("bar.weather.enable", checked)
         }
 
         ConfigRow {
             label: "City name"
+            configKey: "bar.weather.city"
             sublabel: (Config.options?.bar?.weather?.enableGPS ?? false)
                 ? "GPS positioning is on — manual city is ignored"
                 : "Leave empty to disable, or specify a city for manual lookup"
@@ -727,6 +747,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Use Fahrenheit (USCS)"
+            configKey: "bar.weather.useUSCS"
             sublabel: "Imperial units (°F, mph, inches)"
             checked: Config.options?.bar?.weather?.useUSCS ?? false
             onCheckedChanged: Config.setNestedValue("bar.weather.useUSCS", checked)
@@ -734,6 +755,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable GPS positioning"
+            configKey: "bar.weather.enableGPS"
             sublabel: "Auto-detect location for weather"
             checked: Config.options?.bar?.weather?.enableGPS ?? false
             onCheckedChanged: Config.setNestedValue("bar.weather.enableGPS", checked)
@@ -741,6 +763,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Fetch interval"
+            configKey: "bar.weather.fetchInterval"
             sublabel: "How often weather data refreshes"
             from: 1; to: 60; stepSize: 1
             value: Config.options?.bar?.weather?.fetchInterval ?? 15
@@ -758,6 +781,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Filter passive items"
+            configKey: "tray.filterPassive"
             sublabel: "Hide tray items with 'passive' status (reduces clutter)"
             checked: Config.options?.tray?.filterPassive ?? false
             onCheckedChanged: Config.setNestedValue("tray.filterPassive", checked)
@@ -765,6 +789,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Invert pinned items"
+            configKey: "tray.invertPinnedItems"
             sublabel: "Swap which items are shown as pinned vs overflow"
             checked: Config.options?.tray?.invertPinnedItems ?? false
             onCheckedChanged: Config.setNestedValue("tray.invertPinnedItems", checked)
@@ -772,6 +797,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Show item ID in tooltip"
+            configKey: "tray.showItemId"
             sublabel: "Useful for identifying which items to pin"
             checked: Config.options?.tray?.showItemId ?? false
             onCheckedChanged: Config.setNestedValue("tray.showItemId", checked)

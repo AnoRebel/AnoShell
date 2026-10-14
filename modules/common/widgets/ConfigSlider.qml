@@ -10,6 +10,8 @@ ColumnLayout {
     id: root
     property string label: ""
     property string sublabel: ""
+    // Dotted config key this control edits; shows a "Changed/Reset" chip when set by the user.
+    property string configKey: ""
     property alias value: slider.value
     property alias from: slider.from
     property alias to: slider.to
@@ -27,6 +29,7 @@ ColumnLayout {
             font.pixelSize: Appearance?.font.pixelSize.small ?? 15
             Layout.fillWidth: true
         }
+        ConfigOriginChip { configKey: root.configKey }
         StyledText {
             text: root.valueText
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13

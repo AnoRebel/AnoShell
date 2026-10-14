@@ -59,6 +59,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Volume protection (Earbang guard)"
+            configKey: "audio.protection.enable"
             sublabel: "Blocks sudden volume jumps that could damage hearing"
             checked: Config.options?.audio?.protection?.enable ?? false
             onCheckedChanged: Config.setNestedValue("audio.protection.enable", checked)
@@ -66,6 +67,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Max allowed increase per step"
+            configKey: "audio.protection.maxAllowedIncrease"
             sublabel: "Maximum % the volume can jump in a single change"
             from: 1; to: 50; stepSize: 1
             value: Config.options?.audio?.protection?.maxAllowedIncrease ?? 10
@@ -75,6 +77,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Hard volume limit"
+            configKey: "audio.protection.maxAllowed"
             sublabel: "Absolute maximum volume percentage (pavucontrol allows up to 153%)"
             from: 50; to: 200; stepSize: 5
             value: Config.options?.audio?.protection?.maxAllowed ?? 100
@@ -142,6 +145,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Low battery warning"
+            configKey: "battery.low"
             sublabel: "Show notification when battery drops below this level"
             from: 5; to: 50; stepSize: 5
             value: Config.options?.battery?.low ?? 20
@@ -151,6 +155,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Critical battery warning"
+            configKey: "battery.critical"
             sublabel: "Urgent notification with sound"
             from: 3; to: 30; stepSize: 1
             value: Config.options?.battery?.critical ?? 10
@@ -160,6 +165,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Auto-suspend threshold"
+            configKey: "battery.suspend"
             sublabel: "System suspends automatically below this level"
             from: 1; to: 15; stepSize: 1
             value: Config.options?.battery?.suspend ?? 5
@@ -169,6 +175,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Enable automatic suspend"
+            configKey: "battery.automaticSuspend"
             sublabel: "Suspend the system when battery reaches the threshold above"
             checked: Config.options?.battery?.automaticSuspend ?? false
             onCheckedChanged: Config.setNestedValue("battery.automaticSuspend", checked)
@@ -176,6 +183,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Full battery notification"
+            configKey: "battery.full"
             sublabel: "Notify to unplug when charged above this level"
             from: 80; to: 100; stepSize: 1
             value: Config.options?.battery?.full ?? 100
@@ -198,6 +206,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Battery sounds"
+            configKey: "sounds.battery"
             sublabel: "Play sounds for charging, low battery, and full events"
             checked: Config.options?.sounds?.battery ?? true
             onCheckedChanged: Config.setNestedValue("sounds.battery", checked)
@@ -292,6 +301,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Second precision"
+            configKey: "time.secondPrecision"
             sublabel: "Update clock every second (slightly more CPU usage)"
             checked: Config.options?.time?.secondPrecision ?? false
             onCheckedChanged: Config.setNestedValue("time.secondPrecision", checked)
@@ -307,6 +317,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Auto-dismiss timeout"
+            configKey: "notifications.timeout"
             sublabel: "How long popup notifications stay visible"
             from: 1000; to: 30000; stepSize: 1000
             value: Config.options?.notifications?.timeout ?? 7000
@@ -316,6 +327,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Silent mode"
+            configKey: "notifications.silent"
             sublabel: "No popups — notifications still go to the history"
             checked: Config.options?.notifications?.silent ?? false
             onCheckedChanged: Config.setNestedValue("notifications.silent", checked)
@@ -323,6 +335,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Popups on screen"
+            configKey: "notifications.maxVisible"
             sublabel: "Newest popups shown at once; older ones wait in the history"
             from: 1; to: 10; stepSize: 1
             value: Config.options?.notifications?.maxVisible ?? 5
@@ -340,6 +353,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Hold to confirm logout"
+            configKey: "session.confirmLogout"
             sublabel: "Off: a single click logs out"
             checked: Config.options?.session?.confirmLogout ?? true
             onCheckedChanged: Config.setNestedValue("session.confirmLogout", checked)
@@ -347,6 +361,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Hold to confirm shutdown"
+            configKey: "session.confirmShutdown"
             sublabel: "Off: a single click powers off"
             checked: Config.options?.session?.confirmShutdown ?? true
             onCheckedChanged: Config.setNestedValue("session.confirmShutdown", checked)
@@ -362,6 +377,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Faster touchpad scrolling"
+            configKey: "interactions.scrolling.fasterTouchpadScroll"
             sublabel: "Enhanced scroll speed for high-res touchpads"
             checked: Config.options?.interactions?.scrolling?.fasterTouchpadScroll ?? false
             onCheckedChanged: Config.setNestedValue("interactions.scrolling.fasterTouchpadScroll", checked)
@@ -369,6 +385,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Touchpad scroll factor"
+            configKey: "interactions.scrolling.touchpadScrollFactor"
             from: 10; to: 300; stepSize: 10
             value: Config.options?.interactions?.scrolling?.touchpadScrollFactor ?? 100
             onValueChanged: Config.setNestedValue("interactions.scrolling.touchpadScrollFactor", Math.round(value))
@@ -377,6 +394,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Mouse scroll factor"
+            configKey: "interactions.scrolling.mouseScrollFactor"
             from: 10; to: 200; stepSize: 10
             value: Config.options?.interactions?.scrolling?.mouseScrollFactor ?? 50
             onValueChanged: Config.setNestedValue("interactions.scrolling.mouseScrollFactor", Math.round(value))

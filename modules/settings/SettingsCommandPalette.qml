@@ -202,7 +202,8 @@ Loader {
                                         Layout.fillWidth: true
                                     }
                                     StyledText {
-                                        text: paletteDelegate.modelData.label ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName
+                                        text: (paletteDelegate.modelData.label ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
+                                            + ({ "user": " · changed in your config", "migrated": " · migrated" }[Config.originOf(paletteDelegate.modelData.key)] ?? "")
                                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 11
                                         opacity: 0.55
                                     }

@@ -77,6 +77,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Default model ID"
+            configKey: "ai.defaultModel"
             sublabel: "One of: " + Ai.modelList.join(", ")
             StyledTextInput {
                 text: Config.options?.ai?.defaultModel ?? ""
@@ -152,6 +153,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Temperature"
+            configKey: "ai.temperature"
             sublabel: "Creativity/randomness: 0 = deterministic, 2 = very creative"
             from: 0; to: 2; stepSize: 0.1
             value: Config.options?.ai?.temperature ?? 0.5
@@ -215,6 +217,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Update interval"
+            configKey: "resources.updateInterval"
             sublabel: "How often /proc is polled for CPU/RAM/network data"
             from: 500; to: 10000; stepSize: 500
             value: Config.options?.resources?.updateInterval ?? 3000
@@ -224,6 +227,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "History length"
+            configKey: "resources.historyLength"
             sublabel: "Number of data points stored for graph display"
             from: 10; to: 180; stepSize: 10
             value: Config.options?.resources?.historyLength ?? 60
@@ -241,6 +245,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Device name"
+            configKey: "light.device"
             sublabel: "Leave empty for auto-detect. Use 'brightnessctl -l' to list devices."
             StyledTextInput {
                 text: Config.options?.light?.device ?? ""
@@ -261,12 +266,14 @@ ColumnLayout {
         ConfigSwitch {
             id: gmEnable
             label: "Enable detection"
+            configKey: "gameMode.enable"
             checked: Config.options?.gameMode?.enable ?? false
             onCheckedChanged: Config.setNestedValue("gameMode.enable", checked)
         }
 
         ConfigSlider {
             label: "Poll interval"
+            configKey: "gameMode.pollIntervalMs"
             sublabel: "How often `gamemoded -s` is checked"
             from: 500; to: 10000; stepSize: 500
             enabled: gmEnable.checked
@@ -299,6 +306,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Restore on start"
+            configKey: "powerProfiles.restoreOnStart"
             sublabel: "When off, power-profiles-daemon decides at boot"
             checked: Config.options?.powerProfiles?.restoreOnStart ?? true
             onCheckedChanged: Config.setNestedValue("powerProfiles.restoreOnStart", checked)
@@ -359,12 +367,14 @@ ColumnLayout {
         ConfigSwitch {
             id: nlEnable
             label: "Enable"
+            configKey: "nightLight.enable"
             checked: Config.options?.nightLight?.enable ?? false
             onCheckedChanged: Config.setNestedValue("nightLight.enable", checked)
         }
 
         ConfigRow {
             label: "Mode"
+            configKey: "nightLight.mode"
             sublabel: "Manual holds a fixed temperature; schedule transitions at sunrise/sunset"
             enabled: nlEnable.checked
             RowLayout {
@@ -391,6 +401,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Night temperature"
+            configKey: "nightLight.nightTemp"
             sublabel: "Lower = warmer / more orange"
             from: 2500; to: 6500; stepSize: 100
             enabled: nlEnable.checked
@@ -401,6 +412,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Day temperature"
+            configKey: "nightLight.dayTemp"
             sublabel: "Used in schedule mode at noon"
             from: 4000; to: 6500; stepSize: 100
             enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
@@ -411,6 +423,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Latitude"
+            configKey: "nightLight.latitude"
             from: -90; to: 90; stepSize: 0.5
             enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
             value: Config.options?.nightLight?.latitude ?? 0
@@ -420,6 +433,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Longitude"
+            configKey: "nightLight.longitude"
             from: -180; to: 180; stepSize: 0.5
             enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
             value: Config.options?.nightLight?.longitude ?? 0
@@ -438,12 +452,14 @@ ColumnLayout {
         ConfigSwitch {
             id: nuEnable
             label: "Enable"
+            configKey: "network.usage.enable"
             checked: Config.options?.network?.usage?.enable ?? false
             onCheckedChanged: Config.setNestedValue("network.usage.enable", checked)
         }
 
         ConfigSlider {
             label: "Poll interval"
+            configKey: "network.usage.intervalMs"
             from: 250; to: 5000; stepSize: 250
             enabled: nuEnable.checked
             value: Config.options?.network?.usage?.intervalMs ?? 1000
@@ -453,6 +469,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "History length"
+            configKey: "network.usage.historyLength"
             sublabel: "Number of samples kept for sparkline display"
             from: 10; to: 120; stepSize: 5
             enabled: nuEnable.checked
@@ -472,6 +489,7 @@ ColumnLayout {
         ConfigSwitch {
             id: vpnEnable
             label: "Enable VPN service"
+            configKey: "vpn.enable"
             sublabel: "When off, no provider CLI is queried regardless of `providers` content"
             checked: Config.options?.vpn?.enable ?? true
             onCheckedChanged: Config.setNestedValue("vpn.enable", checked)
@@ -479,6 +497,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Notify on state change"
+            configKey: "vpn.notifyOnChange"
             sublabel: "Reserved — surfaces can subscribe to statusChanged for their own toasts"
             enabled: vpnEnable.checked
             checked: Config.options?.vpn?.notifyOnChange ?? true
@@ -543,12 +562,14 @@ ColumnLayout {
         ConfigSwitch {
             id: calEnable
             label: "Enable"
+            configKey: "calendar.externalSync.enable"
             checked: Config.options?.calendar?.externalSync?.enable ?? false
             onCheckedChanged: Config.setNestedValue("calendar.externalSync.enable", checked)
         }
 
         ConfigSlider {
             label: "Refresh interval"
+            configKey: "calendar.externalSync.refreshMinutes"
             from: 5; to: 240; stepSize: 5
             enabled: calEnable.checked
             value: Config.options?.calendar?.externalSync?.refreshMinutes ?? 15
@@ -597,12 +618,14 @@ ColumnLayout {
         ConfigSwitch {
             id: lyEnable
             label: "Enable"
+            configKey: "lyrics.enable"
             checked: Config.options?.lyrics?.enable ?? false
             onCheckedChanged: Config.setNestedValue("lyrics.enable", checked)
         }
 
         ConfigSwitch {
             label: "Visible by default"
+            configKey: "lyrics.visible"
             sublabel: "When off, surfaces start collapsed and the user has to toggle"
             enabled: lyEnable.checked
             checked: Config.options?.lyrics?.visible ?? true
@@ -612,6 +635,7 @@ ColumnLayout {
         // Backend picker (Auto / Local / LRCLIB / NetEase)
         ConfigRow {
             label: "Backend"
+            configKey: "lyrics.backend"
             sublabel: {
                 const b = Config.options?.lyrics?.backend ?? "Auto";
                 if (b === "Local")   return "Local files only — no network calls";
@@ -637,6 +661,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Lyrics directory"
+            configKey: "lyrics.dir"
             sublabel: "Path for local .lrc files. Supports `~` expansion."
             enabled: lyEnable.checked
             StyledTextInput {
@@ -657,6 +682,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Preferred shell"
+            configKey: "shell.preferred"
             sublabel: `Detected from $SHELL: ${ShellExec.detected}. Active: ${ShellExec.current}.`
 
             RowLayout {

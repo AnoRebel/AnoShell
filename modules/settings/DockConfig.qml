@@ -315,6 +315,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Dock height"
+            configKey: "dock.height"
             sublabel: "Total height of the dock container"
             from: 36; to: 96; stepSize: 2
             value: Config.options?.dock?.height ?? 56
@@ -324,6 +325,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Icon size"
+            configKey: "dock.iconSize"
             sublabel: "Size of individual app icons inside the dock"
             from: 24; to: 72; stepSize: 2
             value: Config.options?.dock?.iconSize ?? 40
@@ -342,6 +344,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Start pinned"
+            configKey: "dock.pinnedOnStartup"
             sublabel: "Dock is always visible when shell starts (no auto-hide initially)"
             checked: Config.options?.dock?.pinnedOnStartup ?? false
             onCheckedChanged: Config.setNestedValue("dock.pinnedOnStartup", checked)
@@ -349,6 +352,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Hover to reveal"
+            configKey: "dock.hoverToReveal"
             sublabel: "Show dock when mouse enters the dock edge area"
             checked: Config.options?.dock?.hoverToReveal ?? true
             onCheckedChanged: Config.setNestedValue("dock.hoverToReveal", checked)
@@ -356,6 +360,7 @@ ColumnLayout {
 
         ConfigSwitch {
             label: "Show on empty desktop"
+            configKey: "dock.showOnDesktop"
             sublabel: "Always show dock when no window is focused (like macOS)"
             checked: Config.options?.dock?.showOnDesktop ?? true
             onCheckedChanged: Config.setNestedValue("dock.showOnDesktop", checked)
@@ -505,6 +510,7 @@ ColumnLayout {
 
         ConfigRow {
             label: "Screen whitelist"
+            configKey: "dock.screenList"
             sublabel: "Comma-separated monitor names (empty = all screens)"
             StyledTextInput {
                 text: (Config.options?.dock?.screenList ?? []).join(", ")

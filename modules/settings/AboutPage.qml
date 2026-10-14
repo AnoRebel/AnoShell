@@ -341,6 +341,7 @@ ColumnLayout {
         // Custom avatar path override
         ConfigRow {
             label: "Custom avatar path"
+            configKey: "user.avatarPath"
             sublabel: "Override ~/.face with a custom path (leave empty for default)"
             StyledTextInput {
                 text: Config.options?.user?.avatarPath ?? ""
