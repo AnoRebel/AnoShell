@@ -18,6 +18,10 @@ import "."
 PanelWindow {
     id: panel
 
+    // The usage tracker must run whenever Focus Time is enabled (this module
+    // only loads then), not only after the panel is first opened.
+    readonly property bool _trackerStarted: FocusTime.wanted
+
     anchors { top: true; bottom: true; left: true; right: true }
 
     property int panelWidth: Math.min(820, panel.screen?.width * 0.55 ?? 820)

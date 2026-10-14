@@ -34,6 +34,11 @@ DESKTOP_CACHE_ICON = {}
 CACHE_BUILT = False
 
 SYSTEM_STATES = {"Desktop", "Locked", "Quickshell", "Unknown"}
+# focusTime.excludeApps from the shell config (JSON list of app classes)
+try:
+    SYSTEM_STATES |= set(json.loads(os.environ.get("FOCUSTIME_EXCLUDE", "[]")))
+except (ValueError, TypeError):
+    pass
 
 # Detect compositor
 COMPOSITOR = "unknown"
