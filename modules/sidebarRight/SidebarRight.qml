@@ -58,11 +58,14 @@ Scope {
                 kind: "sidebar"; edge: "right"; priority: 5
                 screenName: sidebarRoot.modelData?.name ?? ""
                 active: sidebarRoot.visible && progress > 0
-                x: (sidebarRoot.screen?.width ?? 0) - root.sidebarWidth + root.globalMargin + slide.x
-                y: root.globalMargin
+                x: (sidebarRoot.screen?.width ?? 0) - PanelRegistry.inset(_scr, "right") - root.sidebarWidth + root.globalMargin + slide.x
+                // The window is pushed in by exclusive zones (the bar).
+                readonly property string _scr: sidebarRoot.modelData?.name ?? ""
+                readonly property real _it: PanelRegistry.inset(_scr, "top")
+                y: _it + root.globalMargin
                 w: root.sidebarWidth - root.globalMargin * 2
-                h: (sidebarRoot.screen?.height ?? 0) - root.globalMargin * 2
-                progress: ((sidebarRoot.screen?.width ?? 0) - x) / Math.max(1, root.sidebarWidth - root.globalMargin)
+                h: (sidebarRoot.screen?.height ?? 0) - _it - PanelRegistry.inset(_scr, "bottom") - root.globalMargin * 2
+                progress: 1 - slide.x / Math.max(1, root.sidebarWidth + root.globalMargin)
             }
 
             exclusiveZone: 0

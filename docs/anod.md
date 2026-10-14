@@ -33,7 +33,7 @@ is not restarted.
 
 | Command | What it does |
 |---|---|
-| `ano status [--json]` | anod and shell state (version, uptime, supervisor, backend) |
+| `ano status [--json] [--frame]` | anod and shell state (version, uptime, supervisor, backend); `--frame` lists the surfaces fused into the connected frame |
 | `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash and competing wallpaper rotators. Exits 1 on any FAIL |
 | `ano reload` | reloads the shell |
 | `ano ipc <args…>` | passes through to `qs -c ano ipc`, e.g. `ano ipc call settings open`, `ano ipc show` |

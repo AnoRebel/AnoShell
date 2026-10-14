@@ -114,9 +114,17 @@ func shellCall(args ...string) (string, error) {
 func status(args []string) error {
 	fs := flag.NewFlagSet("status", flag.ExitOnError)
 	asJSON := fs.Bool("json", false, "machine-readable output")
+	frame := fs.Bool("frame", false, "also list the surfaces fused into the connected frame")
 	fs.Parse(args)
 
 	out := map[string]any{}
+	if *frame {
+		if res, err := shellCall("frame", "dump"); err == nil {
+			out["frame"] = json.RawMessage(res)
+		} else {
+			out["frame"] = map[string]any{"error": err.Error()}
+		}
+	}
 	if res, err := ipc.Call(ipc.DefaultSocketPath(), "status", nil); err == nil {
 		out["anod"] = json.RawMessage(res)
 	} else {
@@ -153,6 +161,26 @@ func status(args []string) error {
 		fmt.Printf("shell  running  backend %v\n", sh["backend"])
 	} else {
 		fmt.Println("shell  not running")
+	}
+	if f, ok := out["frame"].(json.RawMessage); ok {
+		var fr struct {
+			Enabled  bool
+			Revision int
+			Rejected int
+			Surfaces []struct {
+				Key, Kind, Screen, Edge string
+				Rect                    [4]int
+				Progress                float64
+				Priority                int
+			}
+		}
+		json.Unmarshal(f, &fr)
+		fmt.Printf("frame  connected=%v, %d surface(s), revision %d, %d rejected write(s)\n", fr.Enabled, len(fr.Surfaces), fr.Revision, fr.Rejected)
+		for _, s := range fr.Surfaces {
+			fmt.Printf("       %-24s %-13s %-6s %-6s %v  %.0f%%  prio %d\n", s.Key, s.Kind, s.Screen, s.Edge, s.Rect, s.Progress*100, s.Priority)
+		}
+	} else if e, ok := out["frame"].(map[string]any); ok {
+		fmt.Printf("frame  %v\n", e["error"])
 	}
 	return nil
 }

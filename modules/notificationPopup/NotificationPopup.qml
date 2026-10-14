@@ -19,11 +19,15 @@ Scope {
     readonly property string position: Config.options?.notifications?.position ?? "topRight"
     readonly property bool isTop: position.startsWith("top")
     readonly property bool isLeft: position.endsWith("Left")
-    readonly property int edgeMargin: Config.options?.notifications?.edgeMargin ?? 8
+    // Connected mode: the stack hangs flush from its edge and the frame paints
+    // it as one fused body (cards drop their own fill, border and shadow).
+    readonly property bool connected: PanelRegistry.enabled
+    readonly property int edgeMargin: connected ? 0 : (Config.options?.notifications?.edgeMargin ?? 8)
 
     PanelWindow {
         id: popupWindow
-        visible: Notifications.popupList.length > 0 && !GlobalStates.screenLocked
+        // Stays up until the stack has retracted into its edge.
+        visible: (Notifications.popupList.length > 0 || stackClip.height > 0.5) && !GlobalStates.screenLocked
 
         screen: Quickshell.screens.find(s => s.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]
 
@@ -50,17 +54,42 @@ Scope {
             right: !root.isLeft ? root.edgeMargin : 0
         }
 
-        mask: Region { item: notifColumn }
+        mask: Region { item: stackClip }
+
+        ConnectedSurfaceLease {
+            key: "notifications"
+            kind: "notifications"; edge: root.isTop ? "top" : "bottom"; priority: 7
+            screenName: popupWindow.screen?.name ?? ""
+            active: popupWindow.visible && stackClip.height > 0.5
+            progress: stackClip.height / Math.max(1, notifColumn.implicitHeight + root.edgeMargin * 2)
+            // The window is pushed in by exclusive zones (the bar) on its edges.
+            readonly property string _scr: popupWindow.screen?.name ?? ""
+            x: root.isLeft ? PanelRegistry.inset(_scr, "left") + root.edgeMargin + stackClip.x
+                : (popupWindow.screen?.width ?? 0) - PanelRegistry.inset(_scr, "right") - root.edgeMargin - popupWindow.width + stackClip.x
+            y: root.isTop ? PanelRegistry.inset(_scr, "top") + root.edgeMargin + stackClip.y
+                : (popupWindow.screen?.height ?? 0) - PanelRegistry.inset(_scr, "bottom") - root.edgeMargin - popupWindow.height + stackClip.y
+            w: stackClip.width; h: stackClip.height
+        }
 
         // Blur follows each rounded card (ext-background-effect-v1); the
         // compositor's rectangular layer-rule blur is opted out for this
         // namespace in the bundled hyprland.lua.
-        BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol ? cardsRegion : null
+        BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol && !root.connected ? cardsRegion : null
         Region {
             id: cardsRegion
             regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r) }
         }
 
+        // The stack grows out of its edge (pinned there) on a spring as cards
+        // arrive and retracts as they leave; the frame follows this body.
+        Item {
+            id: stackClip
+            clip: true
+            readonly property real target: Notifications.popupList.length > 0 ? notifColumn.implicitHeight + root.edgeMargin * 2 : 0
+            height: target
+            Behavior on height { MotionSpring { token: stackClip.target > stackClip.height ? "liquid" : "settle" } }
+            width: parent.width
+            y: root.isTop ? 0 : parent.height - height
         ColumnLayout {
             id: notifColumn
             anchors {
@@ -121,12 +150,12 @@ Scope {
                         x: popupDelegate.swipeX + popupDelegate.slideOffset
                         implicitHeight: cardContent.implicitHeight + 20
                         radius: Appearance?.rounding.normal ?? 12
-                        color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                        border.width: 1
+                        color: root.connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+                        border.width: root.connected ? 0 : 1
                         border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
-                        // Subtle shadow
-                        layer.enabled: true
+                        // Subtle shadow (floating only)
+                        layer.enabled: !root.connected
                         layer.effect: StyledDropShadow { radius: 12; verticalOffset: 3 }
 
                         // Hover glow
@@ -246,6 +275,7 @@ Scope {
                     }
                 }
             }
+        }
         }
     }
 }

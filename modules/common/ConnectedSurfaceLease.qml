@@ -28,6 +28,7 @@ QtObject {
     property real w: 0
     property real h: 0
     property real progress: 1
+    property real reserve: 0        // exclusive zone this surface holds on its edge
     property int priority: 0
     property var surfaceRadius: undefined
     property bool omitStartConnector: false
@@ -46,7 +47,7 @@ QtObject {
         PanelRegistry.publish(root.key, root._owner, ++root._rev, {
             "kind": root.kind, "screenName": root.screenName, "edge": root.edge,
             "x": root.x, "y": root.y, "w": root.w, "h": root.h,
-            "progress": Math.max(0, Math.min(1, root.progress)),
+            "progress": Math.max(0, Math.min(1, root.progress)), "reserve": root.reserve,
             "priority": root.priority, "surfaceRadius": root.surfaceRadius,
             "omitStartConnector": root.omitStartConnector, "omitEndConnector": root.omitEndConnector
         })
@@ -63,6 +64,7 @@ QtObject {
     onWChanged: _schedule()
     onHChanged: _schedule()
     onProgressChanged: _schedule()
+    onReserveChanged: _schedule()
     onScreenNameChanged: { _release(); _schedule() }
     onKeyChanged: { _release(); _schedule() }
     onEdgeChanged: _schedule()

@@ -111,25 +111,54 @@ Scope {
             visible: root.enabled
             color: "transparent"
 
-            implicitWidth: root.isVertical ? root.heightPx : root.widthPx
-            implicitHeight: root.isVertical ? root.widthPx : root.heightPx
+            // The pill fits its content (a fixed length clipped it), springing
+            // between sizes; anoSpot.widthPx is the maximum length.
+            readonly property real _lead: root.draggable ? 18 : 6
+            readonly property real _contentLen: root.isVertical
+                ? (contentLoader.item?.implicitHeight ?? 0) + _lead + 6
+                : (contentLoader.item?.implicitWidth ?? 0) + _lead + 6
+            property real length: Math.max(root.heightPx * 2, Math.min(_contentLen, root.widthPx))
+            Behavior on length { MotionSpring { token: "snappy" } }
+            implicitWidth: root.isVertical ? root.heightPx : length
+            implicitHeight: root.isVertical ? length : root.heightPx
 
-            exclusionMode: ExclusionMode.Ignore
+            // Normal: placed past the bar on the same edge instead of over it.
+            exclusionMode: ExclusionMode.Normal
+            exclusiveZone: 0
             WlrLayershell.namespace: "quickshell:anospot"
             WlrLayershell.layer: WlrLayer.Overlay
 
+            // One anchor: the layer shell centres the pill along its edge at
+            // its own size (anchoring both ends stretched it edge to edge).
             anchors {
-                top: root.position === "top" || root.isVertical
-                bottom: root.position === "bottom" || root.isVertical
-                left: root.position === "left" || !root.isVertical
-                right: root.position === "right" || !root.isVertical
+                top: root.position === "top"
+                bottom: root.position === "bottom"
+                left: root.position === "left"
+                right: root.position === "right"
             }
 
+            // Connected mode: flush on its edge, painted by the frame.
+            readonly property bool connected: PanelRegistry.enabled
+            readonly property int gap: connected ? 0 : 6
             margins {
-                top: root.position === "top" ? 6 : 0
-                bottom: root.position === "bottom" ? 6 : 0
-                left: root.position === "left" ? 6 : 0
-                right: root.position === "right" ? 6 : 0
+                top: root.position === "top" ? gap : 0
+                bottom: root.position === "bottom" ? gap : 0
+                left: root.position === "left" ? gap : 0
+                right: root.position === "right" ? gap : 0
+            }
+
+            ConnectedSurfaceLease {
+                key: "pill:" + (spotWindow.modelData?.name ?? "")
+                kind: "pill"; edge: root.position; priority: 15
+                screenName: spotWindow.modelData?.name ?? ""
+                active: spotWindow.visible
+                surfaceRadius: Math.min(spotWindow.width, spotWindow.height) / 2
+                readonly property real _sw: spotWindow.screen?.width ?? 0
+                readonly property real _sh: spotWindow.screen?.height ?? 0
+                readonly property real _in: PanelRegistry.inset(screenName, root.position)
+                x: root.position === "left" ? _in : root.position === "right" ? _sw - _in - spotWindow.width : (_sw - spotWindow.width) / 2
+                y: root.position === "top" ? _in : root.position === "bottom" ? _sh - _in - spotWindow.height : (_sh - spotWindow.height) / 2
+                w: spotWindow.width; h: spotWindow.height
             }
 
             // Animated gradient ring rendered behind the pill. When the
@@ -186,12 +215,12 @@ Scope {
                 width: parent.width
                 height: parent.height
                 radius: Math.min(width, height) / 2
-                color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
+                color: spotWindow.connected ? "transparent" : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
                 // Glass-token-driven border + opacity so static themes
                 // (aurora, angel, etc.) can dial the pill's translucency.
                 // Material You and "neutral" static themes leave the
                 // tokens at sensible defaults and look unchanged.
-                border.width: Appearance?.glassTokens?.borderWidth ?? 1
+                border.width: spotWindow.connected ? 0 : (Appearance?.glassTokens?.borderWidth ?? 1)
                 border.color: Appearance?.glassTokens?.borderColor
                             ?? Appearance?.colors?.colOutlineVariant
                             ?? "#444"
@@ -311,6 +340,7 @@ Scope {
 
                 // Horizontal layout for top/bottom; vertical for left/right
                 Loader {
+                    id: contentLoader
                     anchors.fill: parent
                     anchors.margins: 6
                     // Reserve space for the drag handle on the leading edge
@@ -324,7 +354,7 @@ Scope {
                     RowLayout {
                         spacing: 10
                         AnoSpotWorkspace  { visible: root.showWorkspace }
-                        AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
+                        AnoSpotMpris      { Layout.fillWidth: true; Layout.minimumWidth: 60; visible: root.showMpris && AnoSpotState.mpris !== null }
                         AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
                         AnoSpotNotification { Layout.fillWidth: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
                         AnoSpotClockWeather { visible: root.showClockWeather }

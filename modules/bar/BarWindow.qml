@@ -119,6 +119,7 @@ PanelWindow {
         w: barRoot.isVertical ? _th : _sw
         h: barRoot.isVertical ? _sh : _th
         progress: 1 + _off / Math.max(1, _th)
+        reserve: barRoot.exclusiveZone
     }
 
     MouseArea {

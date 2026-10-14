@@ -133,7 +133,6 @@ Scope {
                                 Item {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: root.thumbH
-                                    radius: 8
 
                                     Rectangle {
                                         anchors.fill: parent

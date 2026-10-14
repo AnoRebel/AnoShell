@@ -38,7 +38,13 @@ Scope {
         onTriggered: root.currentIndicator = ""
     }
 
+    // Services report their initial values a moment after startup; those are
+    // not changes the user made, so the OSD ignores them.
+    property bool _armed: false
+    Timer { running: true; interval: 2000; onTriggered: root._armed = true }
+
     function show(indicator, value, muted, label) {
+        if (!root._armed) return
         root.currentIndicator = indicator
         root.currentValue = value ?? 0
         root.currentMuted = muted ?? false
@@ -113,7 +119,12 @@ Scope {
             required property var modelData
             screen: modelData
 
-            visible: root.currentIndicator.length > 0
+            // Kept up until the pill has retracted, so the exit animates too.
+            readonly property bool wanted: root.currentIndicator.length > 0
+            property real shown: wanted ? 1 : 0
+            Behavior on shown { MotionSpring { token: osdWindow.wanted ? "liquid" : "settle" } }
+            visible: wanted || shown > 0.001
+            readonly property bool connected: PanelRegistry.enabled
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:osd"
@@ -125,17 +136,39 @@ Scope {
                 left: true; right: true
             }
             implicitHeight: 140
+            // Connected mode: flush on the edge so the frame fuses it.
             margins {
-                top: root.position === "top" ? 40 : 0
-                bottom: root.position !== "top" ? 40 : 0
+                top: root.position === "top" && !connected ? 40 : 0
+                bottom: root.position !== "top" && !connected ? 40 : 0
             }
 
-            mask: Region { item: osdPill }
+            mask: Region { item: osdBody }
 
-            // OSD pill
+            ConnectedSurfaceLease {
+                key: "osd:" + (osdWindow.modelData?.name ?? "")
+                kind: "osd"; edge: root.position === "top" ? "top" : "bottom"; priority: 9
+                screenName: osdWindow.modelData?.name ?? ""
+                active: osdWindow.visible
+                progress: osdWindow.shown
+                surfaceRadius: osdPill.radius
+                x: ((osdWindow.screen?.width ?? 0) - osdBody.width) / 2
+                y: root.position === "top" ? osdBody.y : (osdWindow.screen?.height ?? 0) - osdWindow.height + osdBody.y
+                w: osdBody.width; h: osdBody.height
+            }
+
+            // The pill grows out of its edge (pinned there) and retracts into it;
+            // the full-size pill inside is uncovered, not relaid out.
+            Item {
+                id: osdBody
+                clip: true
+                width: osdPill.width
+                height: osdPill.height * Math.max(0, Math.min(osdWindow.shown, 1.1))
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: root.position !== "top" ? parent.bottom : undefined
+                anchors.top: root.position === "top" ? parent.top : undefined
+
             Rectangle {
                 id: osdPill
-                anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: root.position !== "top" ? parent.bottom : undefined
                 anchors.top: root.position === "top" ? parent.top : undefined
 
@@ -146,15 +179,9 @@ Scope {
                 width: isLabelType ? Math.min(labelRow.implicitWidth + 40, 420) : 280
                 height: 56
                 radius: 28
-                color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                border.width: 1
+                color: osdWindow.connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+                border.width: osdWindow.connected ? 0 : 1
                 border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
-
-                opacity: root.currentIndicator.length > 0 ? 1 : 0
-                scale: root.currentIndicator.length > 0 ? 1 : 0.8
-
-                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 // Progress mode (volume/brightness/mic)
@@ -242,6 +269,7 @@ Scope {
                         Layout.maximumWidth: 320
                     }
                 }
+            }
             }
         }
     }

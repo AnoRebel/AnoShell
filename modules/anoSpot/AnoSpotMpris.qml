@@ -29,7 +29,11 @@ RowLayout {
         color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
     }
 
+    // The flexible part of the pill: shrinks and elides so the clock and
+    // battery always fit.
     StyledText {
+        Layout.fillWidth: true
+        Layout.minimumWidth: 40
         Layout.maximumWidth: 200
         elide: Text.ElideRight
         text: {

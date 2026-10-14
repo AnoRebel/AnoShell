@@ -83,6 +83,7 @@ Singleton {
             "edge": geom.edge ?? "top",
             "x": geom.x ?? 0, "y": geom.y ?? 0, "w": geom.w, "h": geom.h,
             "progress": geom.progress ?? 1,
+            "reserve": geom.reserve ?? 0,
             "priority": geom.priority ?? 0,
             "surfaceRadius": geom.surfaceRadius,
             "omitStartConnector": geom.omitStartConnector ?? false,
@@ -111,6 +112,15 @@ Singleton {
             }
             if (changed) root._schedule()
         }
+    }
+
+    /// Space reserved (exclusive zones) on one edge of a screen by fused
+    /// surfaces. Windows that honour exclusive zones are pushed in by this, so
+    /// their leases add it to their window-relative geometry.
+    function inset(screenName, edge) {
+        let n = 0
+        for (const p of root.panels) if (p.screenName === screenName && p.edge === edge) n += p.reserve
+        return n
     }
 
     function panelsForScreen(screenName) {

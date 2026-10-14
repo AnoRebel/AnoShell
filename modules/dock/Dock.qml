@@ -88,7 +88,9 @@ Scope {
             color: "transparent"
             exclusiveZone: root.pinned ? dockHeight : 0
             WlrLayershell.namespace: "quickshell:dock"
-            WlrLayershell.layer: WlrLayer.Top
+            // Overlay, like the bar: on Top it races the connected frame (also
+            // Top) and the frame can paint over the dock's icons.
+            WlrLayershell.layer: WlrLayer.Overlay
 
             anchors {
                 top: root.isTop || root.isVertical
@@ -112,25 +114,43 @@ Scope {
                 hoverEnabled: true
                 acceptedButtons: Qt.NoButton
 
-                // Dock background
+                // Dock background. Emerges from its own edge on a spring (no
+                // fade); in connected mode it sits flush on the edge and the
+                // frame paints it, so it drops its own fill and border.
                 Rectangle {
                     id: dockBg
-                    anchors.centerIn: parent
+                    readonly property bool connected: PanelRegistry.enabled
+                    readonly property real gap: connected ? 0 : 8
+                    property real shown: dockWindow.reveal ? 1 : 0
+                    Behavior on shown { MotionSpring { token: dockWindow.reveal ? "liquid" : "settle" } }
+                    readonly property real hideShift: (1 - shown) * (root.dockHeight + gap)
                     width: root.isVertical ? root.dockHeight : dockLayout.implicitWidth + 24
                     height: root.isVertical ? dockLayout.implicitHeight + 24 : root.dockHeight
+                    x: root.isVertical
+                        ? (root.isLeft ? gap - hideShift : parent.width - width - gap + hideShift)
+                        : (parent.width - width) / 2
+                    y: root.isVertical
+                        ? (parent.height - height) / 2
+                        : (root.isTop ? gap - hideShift : parent.height - height - gap + hideShift)
                     radius: root.isPillStyle ? height / 2 : Appearance?.rounding.normal ?? 12
-                    color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                    border.width: 1
+                    color: connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+                    border.width: connected ? 0 : 1
                     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
-                    opacity: dockWindow.reveal ? 1 : 0
-                    transform: Translate {
-                        y: root.isVertical ? 0 : (dockWindow.reveal ? 0 : (root.isTop ? -root.dockHeight : root.dockHeight))
-                        x: root.isVertical ? (dockWindow.reveal ? 0 : (root.isLeft ? -root.dockHeight : root.dockHeight)) : 0
+                    ConnectedSurfaceLease {
+                        key: "dock:" + (dockWindow.modelData?.name ?? "")
+                        kind: "dock"; edge: root.position; priority: 8
+                        screenName: dockWindow.modelData?.name ?? ""
+                        active: dockWindow.visible && dockBg.shown > 0.001
+                        progress: dockBg.shown
+                        surfaceRadius: root.isPillStyle ? Math.min(dockBg.width, dockBg.height) / 2 : undefined
+                        // The window spans the dock's edge, so window coords map to
+                        // the screen by its edge offset.
+                        readonly property real _ox: root.isVertical && !root.isLeft ? (dockWindow.screen?.width ?? 0) - dockWindow.width : 0
+                        readonly property real _oy: !root.isVertical && !root.isTop ? (dockWindow.screen?.height ?? 0) - dockWindow.height : 0
+                        x: _ox + dockBg.x; y: _oy + dockBg.y
+                        w: dockBg.width; h: dockBg.height
                     }
-
-                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-                    Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     // App items layout
                     RowLayout {

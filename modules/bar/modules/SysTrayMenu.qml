@@ -68,41 +68,47 @@ PopupWindow {
         Rectangle {
             id: popupBackground
             readonly property real padding: 4
+            // Grows down out of the tray icon (it hangs below a top bar), pinned
+            // to the bar edge; the menu entries are uncovered, not relaid out.
             anchors {
-                fill: parent
+                top: parent.top; left: parent.left; right: parent.right
                 margins: root.padding
             }
+            property real reveal: 0
+            Behavior on reveal { MotionSpring { token: "liquid" } }
+            Component.onCompleted: reveal = 1
+            height: Math.max(0, (parent.height - root.padding * 2) * Math.min(reveal, 1.04))
 
-            color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
+            // Connected mode: the frame paints the menu fused into the bar.
+            readonly property bool connected: PanelRegistry.enabled
+            color: connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
             radius: Appearance?.rounding.normal ?? 12
-            border.width: 1
+            border.width: connected ? 0 : 1
             border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
             clip: true
 
-            // Spring the menu down out of the tray icon (it hangs below a top bar),
-            // matching the bar popouts' expressive spatial feel instead of a flat
-            // fade. transformOrigin Top so it grows downward from the bar edge.
-            opacity: 0
-            scale: 0.9
-            transformOrigin: Item.Top
-            Component.onCompleted: { opacity = 1; scale = 1 }
+            ConnectedSurfaceLease {
+                key: "trayMenu:" + root.trayItemId
+                kind: "trayMenu"; edge: "top"; priority: 10
+                active: root.visible
+                progress: popupBackground.reveal
+                surfaceRadius: popupBackground.radius
+                // Screen rect from the anchor icon (the popup's own origin is
+                // not screen space); centred under the icon, clamped on-screen.
+                readonly property Item _icon: root.anchor.item
+                readonly property var _win: _icon?.QsWindow?.window ?? null
+                screenName: _win?.screen?.name ?? ""
+                readonly property point _a: { void root.visible; return _icon ? _icon.mapToItem(null, 0, 0) : Qt.point(0, 0) }
+                readonly property real _sw: _win?.screen?.width ?? 0
+                x: Math.max(0, Math.min(_a.x + (_icon?.width ?? 0) / 2 - root.implicitWidth / 2, _sw - root.implicitWidth)) + root.padding
+                y: _a.y + (_icon?.height ?? 0) + root.padding
+                w: popupBackground.width
+                h: popupBackground.height
+            }
 
             implicitWidth: stackView.implicitWidth + popupBackground.padding * 2
             implicitHeight: stackView.implicitHeight + popupBackground.padding * 2
 
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
-                    easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
-                }
-            }
-            Behavior on scale {
-                NumberAnimation {
-                    duration: (Appearance?.animationCurves.expressiveFastSpatialDuration ?? 350) * (Appearance?.animSpeedMultiplier ?? 1)
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Appearance?.animationCurves.expressiveFastSpatial ?? [0.42, 1.67, 0.21, 0.90, 1, 1]
-                }
-            }
             Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
             Behavior on implicitWidth { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
