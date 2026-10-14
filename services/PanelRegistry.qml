@@ -117,11 +117,17 @@ Singleton {
     /// Space reserved (exclusive zones) on one edge of a screen by fused
     /// surfaces. Windows that honour exclusive zones are pushed in by this, so
     /// their leases add it to their window-relative geometry.
+    /// Edges no surface reserves get the frame band's thickness (AnoScreen's
+    /// FrameExclusions reserve it there).
     function inset(screenName, edge) {
+        return root.reserved(screenName, edge) || root.frameThickness
+    }
+    function reserved(screenName, edge) {
         let n = 0
         for (const p of root.panels) if (p.screenName === screenName && p.edge === edge) n += p.reserve
         return n
     }
+    readonly property real frameThickness: root.enabled ? Math.max(0, Config.options?.appearance?.connectedCorners?.thickness ?? 0) : 0
 
     function panelsForScreen(screenName) {
         return root.panels.filter(p => p.screenName === screenName)

@@ -99,12 +99,40 @@ Scope {
         CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
     }
 
-    // Space-reservation companions: the full-screen AnoScreen window uses
-    // ExclusionMode.Ignore (to reach the corners) so it reserves nothing — but
-    // no separate BarExclusionZone is needed: BarManager's BarWindow loads in
-    // connected mode too and reserves the bar's space itself. Adding a second
-    // reservation here double-counted the space (an extra bar-height gap at the
-    // top). AnoScreen is now purely decorative.
+    // ── Space reservation (FrameExclusions) ───────────────────────────────────
+    // The frame window reserves nothing (ExclusionMode.Ignore, click-through).
+    // A painted band would cover the edges of windows, so one thin, empty,
+    // click-through window per edge reserves the band's thickness, except on
+    // edges a bar already reserves (no double gap).
+    Variants {
+        model: root.enabled && root.frameThickness > 0 ? Quickshell.screens : []
+        Scope {
+            id: excl
+            required property var modelData
+            Variants {
+                model: ["top", "bottom", "left", "right"]
+                PanelWindow {
+                    required property string modelData
+                    readonly property string edge: modelData
+                    screen: excl.modelData
+                    visible: PanelRegistry.reserved(excl.modelData?.name ?? "", edge) <= 0
+                    WlrLayershell.namespace: "quickshell:frameExclusion"
+                    WlrLayershell.layer: WlrLayer.Bottom
+                    color: "transparent"
+                    mask: Region { item: null }
+                    exclusiveZone: root.frameThickness
+                    anchors {
+                        top: edge !== "bottom"
+                        bottom: edge !== "top"
+                        left: edge !== "right"
+                        right: edge !== "left"
+                    }
+                    implicitWidth: edge === "left" || edge === "right" ? root.frameThickness : 0
+                    implicitHeight: edge === "top" || edge === "bottom" ? root.frameThickness : 0
+                }
+            }
+        }
+    }
 
     Variants {
         model: Quickshell.screens
