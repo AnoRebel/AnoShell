@@ -97,15 +97,21 @@ Singleton {
     Connections {
         target: Config
         function onReadyChanged() {
-            if (Config.ready && root._pickBackend() !== root.backendName) root.detectCompositor()
+            if (Config.ready && root._pickBackend() !== root.backend?.name) root.detectCompositor()
         }
     }
+
+    Component.onCompleted: detectCompositor()
 
     function detectCompositor() {
         const name = root._pickBackend()
         const comp = { "hyprland": hyprlandBackend, "niri": niriBackend }[name] ?? genericBackend
         root.backend?.destroy()
         root.backend = comp.createObject(root, { windowLeases: Object.keys(root._windowLeases).length })
+        if (!root.backend) {
+            console.error(`CompositorService: failed to create the ${name} backend: ${comp.errorString()}`)
+            return
+        }
         console.info(`CompositorService: ${root.backend.name} backend${root.backend.experimental ? " (experimental)" : ""}`)
     }
 

@@ -1,14 +1,14 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.WindowManager
 
 /**
  * Generic Wayland backend (see BackendContract.md) for compositors without a
  * dedicated backend. Windows come from the foreign-toplevel protocol
- * (ToplevelManager); workspace switching and session control are not
- * available, so those calls report unsupported.
- * ponytail: no workspaces yet — Quickshell.WindowManager (ext-workspace) can
- * fill them in when an experimental backend needs it (task 2.4/12.x).
+ * (ToplevelManager), workspaces from ext-workspace-v1 (Quickshell.WindowManager).
+ * ext-workspace does not say which workspaces hold windows, so only the
+ * active ones count as occupied. Session control is unavailable.
  */
 QtObject {
     id: root
@@ -16,14 +16,15 @@ QtObject {
     readonly property string name: "generic"
     readonly property bool experimental: true
     readonly property var supports: ({
-        workspaces: false, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
+        workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: false, outputConfig: false, exit: false,
         keyboardLayouts: false
     })
 
     readonly property string focusedOutput: Quickshell.screens[0]?.name ?? ""
-    readonly property int activeWorkspaceNumber: 0
-    readonly property string activeWorkspaceName: ""
+    readonly property var _focusedWs: root.workspaces.find(w => w.output === root.focusedOutput && w.active) ?? null
+    readonly property int activeWorkspaceNumber: root._focusedWs?.number ?? 0
+    readonly property string activeWorkspaceName: root._focusedWs?.name ?? ""
     property int revision: 0
     property int windowLeases: 0
     readonly property var windows: {
@@ -39,7 +40,28 @@ QtObject {
 
     function focusWindowById(id) { return false }
     function closeWindowById(id) { return false }
-    readonly property var workspaces: []
+    // One entry per (screen, windowset); `set` keeps the handle for activate().
+    readonly property var _sets: {
+        void root.revision
+        const out = []
+        for (const screen of Quickshell.screens) {
+            const sets = Array.from(WindowManager.screenProjection(screen)?.windowsets ?? []).filter(ws => ws.shouldDisplay !== false)
+            // Coordinates are compositor-defined (Hyprland uses the workspace id),
+            // so prefer a numeric name, then the first coordinate, then the order.
+            sets.forEach((ws, i) => out.push({ set: ws, output: screen.name,
+                number: parseInt(ws.name) || ws.coordinates?.[0] || i + 1 }))
+        }
+        return out.sort((x, y) => x.number - y.number)
+    }
+    readonly property var workspaces: root._sets.map(e => ({
+        id: `${e.output}:${e.number}`, number: e.number, name: e.set.name ?? String(e.number),
+        output: e.output, focused: !!e.set.active && e.output === root.focusedOutput,
+        active: !!e.set.active, occupied: !!e.set.active, urgent: !!e.set.urgent
+    }))
+    property var _wsChanges: Connections {
+        target: WindowManager
+        function onWindowsetsChanged() { root.revision++ }
+    }
 
     readonly property var fullscreenOutputs: {
         void root.revision
@@ -61,8 +83,14 @@ QtObject {
     readonly property var keyboardLayouts: []
 
     function _unsupported(what) { console.warn(`[compositor:generic] ${what} unsupported`); return false }
-    function focusWorkspace(number) { return root._unsupported("focusWorkspace") }
-    function focusWorkspaceRelative(delta) { return root._unsupported("focusWorkspaceRelative") }
+    function focusWorkspace(number) {
+        const e = root._sets.find(s => s.output === root.focusedOutput && s.number === Math.round(number))
+        if (!e) return false
+        e.set.activate(); return true
+    }
+    function focusWorkspaceRelative(delta) {
+        return root.focusWorkspace(Math.max(1, root.activeWorkspaceNumber + (delta < 0 ? -1 : 1)))
+    }
     function exit() { return root._unsupported("exit") }
     function powerOffMonitors() { return root._unsupported("dpms") }
     function powerOnMonitors() { return root._unsupported("dpms") }
