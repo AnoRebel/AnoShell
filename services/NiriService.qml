@@ -628,13 +628,11 @@ Singleton {
     }
 
     function moveWindowToWorkspace(windowId, workspaceIndex, focus) {
-        // First focus the target window so MoveWindowToWorkspace acts on it
-        send({ "Action": { "FocusWindow": { "id": windowId } } })
-
+        // window_id targets the window directly (no focus flash).
         return send({
             "Action": {
                 "MoveWindowToWorkspace": {
-                    "window_id": null,
+                    "window_id": windowId,
                     "reference": { "Index": workspaceIndex },
                     "focus": focus === undefined ? false : focus
                 }

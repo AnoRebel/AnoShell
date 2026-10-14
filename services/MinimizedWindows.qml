@@ -65,13 +65,7 @@ Singleton {
             : 1;
         const targetWs = maxWsIndex + 10;
 
-        moveToWorkspaceProc.command = [
-            "niri", "msg", "action", "move-window-to-workspace",
-            "--window-id", windowId.toString(),
-            "--focus", "false",
-            targetWs.toString()
-        ];
-        moveToWorkspaceProc.running = true;
+        NiriService.moveWindowToWorkspace(windowId, targetWs, false);
     }
 
     function restore(windowId) {
@@ -86,12 +80,8 @@ Singleton {
 
         const targetWorkspace = NiriService.focusedWorkspaceIndex;
 
-        restoreProc.command = [
-            "niri", "msg", "action", "move-window-to-workspace",
-            "--window-id", windowId.toString(),
-            targetWorkspace.toString()
-        ];
-        restoreProc.running = true;
+        NiriService.moveWindowToWorkspace(windowId, targetWorkspace, true);
+        NiriService.focusWindow(windowId);
     }
 
     function restoreApp(appId) {
@@ -105,27 +95,6 @@ Singleton {
         const windowIds = getMinimizedForApp(appId);
         if (windowIds.length > 0) {
             restore(windowIds[windowIds.length - 1]);
-        }
-    }
-
-    Process {
-        id: moveToWorkspaceProc
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) {
-                console.warn("[MinimizedWindows] Failed to move window");
-            }
-        }
-    }
-
-    Process {
-        id: restoreProc
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0) {
-                Qt.callLater(() => {
-                    const windowId = parseInt(restoreProc.command[5]);
-                    NiriService.focusWindow(windowId);
-                });
-            }
         }
     }
 
