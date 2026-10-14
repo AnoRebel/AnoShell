@@ -75,10 +75,19 @@ Scope {
     // threshold that excludes the transparent region.
     readonly property bool _frameBlur: root.enabled && (Config.options?.appearance?.connectedCorners?.blur ?? false)
     readonly property real _frameBlurIgnoreAlpha: Math.max(0.1, root.frameOpacity - 0.1)
+    // Where ext-background-effect-v1 exists (Hyprland, niri) the frame window
+    // sets a blur region shaped like the silhouette instead, and the
+    // rectangular layer-rule blur stays off.
+    readonly property bool _shapedBlur: CompositorService.supports.blurProtocol ?? false
+    // Hyprland applies a layer's ignore_alpha to protocol blur too, so with the
+    // shaped region the threshold must be 0 or transparent-ish parts of the
+    // region (a translucent frame) are skipped.
     function _applyFrameBlur() {
-        CompositorService.setLayerBlur("^quickshell:anoScreen$", root._frameBlur, root._frameBlurIgnoreAlpha)
+        if (root._shapedBlur) CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
+        else CompositorService.setLayerBlur("^quickshell:anoScreen$", root._frameBlur, root._frameBlurIgnoreAlpha)
     }
     on_FrameBlurChanged: _applyFrameBlur()
+    on_ShapedBlurChanged: _applyFrameBlur()
     on_FrameBlurIgnoreAlphaChanged: _applyFrameBlur()
 
     Component.onCompleted: {
@@ -167,7 +176,10 @@ Scope {
             // elevation shadow — is ONE ShaderEffect. It replaces the old stacked
             // opaque RoundCorner carve, which couldn't animate, z-fought panel
             // content, and only worked for horizontal bars.
+            BackgroundEffect.blurRegion: !win.ready ? null : root._frameBlur && root._shapedBlur ? (frameLoader.item?.blurShape ?? null) : null
+
             Loader {
+                id: frameLoader
                 anchors.fill: parent
                 asynchronous: true
                 active: win.ready

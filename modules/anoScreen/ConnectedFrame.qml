@@ -71,7 +71,7 @@ Item {
     /// Pack the descriptors into the shader's slots, one mat4 per slot whose
     /// columns are rect, corner radii, junction k and (active, 0, 0, 0).
     /// Mirrors DMS FrameWindow._sdfSlots.
-    readonly property var _slots: {
+    readonly property var _packed: {
         const dpr = Screen.devicePixelRatio || 1
         const src = root.surfaces ?? []
         const ctx = {
@@ -83,15 +83,47 @@ Item {
         const out = []
         for (let i = 0; i < root.slotCount; i++) {
             const s = (i < src.length) ? src[i] : null
-            const p = s ? SurfaceGeometry.packSlot(s, ctx) : SurfaceGeometry.emptySlot()
-            const r = p.rect, c = p.corner, k = p.k
-            // Qt.matrix4x4 takes rows; the shader reads columns.
-            out.push(Qt.matrix4x4(r[0], c[0], k[0], p.active,
-                                  r[1], c[1], k[1], 0,
-                                  r[2], c[2], k[2], 0,
-                                  r[3], c[3], k[3], 0))
+            out.push(s ? SurfaceGeometry.packSlot(s, ctx) : SurfaceGeometry.emptySlot())
         }
         return out
+    }
+
+    readonly property var _slots: root._packed.map(p => {
+        const r = p.rect, c = p.corner, k = p.k
+        // Qt.matrix4x4 takes rows; the shader reads columns.
+        return Qt.matrix4x4(r[0], c[0], k[0], p.active,
+                            r[1], c[1], k[1], 0,
+                            r[2], c[2], k[2], 0,
+                            r[3], c[3], k[3], 0)
+    })
+
+    /// Blur that follows the drawn silhouette (ext-background-effect-v1): the
+    /// ring (window minus the rounded cutout) plus every active slot with its
+    /// own corner radii. Only the tiny concave fillets are left unblurred.
+    readonly property Region blurShape: Region {
+        width: root.width; height: root.height
+        Region {
+            intersection: Intersection.Subtract
+            x: root._cutL; y: root._cutT
+            width: root._cutR - root._cutL; height: root._cutB - root._cutT
+            radius: root._cutRadius
+        }
+        SlotRegion { p: root._packed[0] }
+        SlotRegion { p: root._packed[1] }
+        SlotRegion { p: root._packed[2] }
+        SlotRegion { p: root._packed[3] }
+        SlotRegion { p: root._packed[4] }
+        SlotRegion { p: root._packed[5] }
+        SlotRegion { p: root._packed[6] }
+        SlotRegion { p: root._packed[7] }
+    }
+    component SlotRegion: Region {
+        property var p
+        intersection: Intersection.Combine
+        x: p.active ? p.rect[0] : 0; y: p.active ? p.rect[1] : 0
+        width: p.active ? p.rect[2] : 0; height: p.active ? p.rect[3] : 0
+        topLeftRadius: p.corner[0]; topRightRadius: p.corner[1]
+        bottomRightRadius: p.corner[2]; bottomLeftRadius: p.corner[3]
     }
 
     ShaderEffect {
