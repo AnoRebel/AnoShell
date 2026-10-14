@@ -131,11 +131,9 @@ hl.on("hyprland.start", function()
 	-- System tray apps
 	hl.exec_cmd("nm-applet --indicator")
 
-	-- Notification fallback (QuickShell normally handles them)
-	hl.exec_cmd("swaync")
-
-	-- FocusTime daemon (app usage tracker)
-	hl.exec_cmd("python3 ~/.config/quickshell/" .. QS_CONFIG .. "/scripts/focustime/focus_daemon.py &")
+	-- Notifications: ano is the notification daemon (a second daemon such as
+	-- swaync would take org.freedesktop.Notifications first).
+	-- FocusTime's tracker is started and stopped by ano itself (focusTime.enable).
 
 	-- Extras
 	hl.exec_cmd("pypr")
