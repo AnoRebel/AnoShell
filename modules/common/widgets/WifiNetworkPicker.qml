@@ -54,7 +54,7 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
                     rotation: Network.wifiScanning ? 360 : 0
-                    Behavior on rotation { enabled: Network.wifiScanning; RotationAnimation { duration: AnimationConfig.scaledDuration(900); loops: Animation.Infinite } }
+                    Behavior on rotation { enabled: Network.wifiScanning && AnimationConfig.continuous; RotationAnimation { duration: AnimationConfig.scaledDuration(900); loops: Animation.Infinite } }
                 }
                 StyledToolTip { text: "Rescan" }
             }

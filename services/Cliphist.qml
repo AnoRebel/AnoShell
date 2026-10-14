@@ -42,30 +42,37 @@ Singleton {
         readProc.running = true
     }
 
+    // cliphist ids are numbers; anything else is rejected rather than run.
+    function _id(entry) {
+        const id = String(entry ?? "").split("\t")[0].trim()
+        return /^[0-9]+$/.test(id) ? id : ""
+    }
+
     function copy(entry) {
-        const entryNumber = entry.split("\t")[0]
-        Quickshell.execDetached(["bash", "-c", `printf '%s' ${entryNumber} | ${root.cliphistBinary} decode | wl-copy`])
+        const id = root._id(entry); if (!id) return
+        Quickshell.execDetached({ command: ["bash", "-c", `printf '%s' "$ID" | ${root.cliphistBinary} decode | wl-copy`], environment: ({ ID: id }) })
     }
 
     function paste(entry) {
-        const entryNumber = entry.split("\t")[0]
-        Quickshell.execDetached(["bash", "-c", `printf '%s' ${entryNumber} | ${root.cliphistBinary} decode | wl-copy; ${root.pressPasteCommand}`])
+        const id = root._id(entry); if (!id) return
+        Quickshell.execDetached({ command: ["bash", "-c", `printf '%s' "$ID" | ${root.cliphistBinary} decode | wl-copy; ${root.pressPasteCommand}`], environment: ({ ID: id }) })
     }
 
     function superpaste(count, isImage = false) {
         const targetEntries = entries.filter(entry => !isImage || entryIsImage(entry)).slice(0, count)
         const pasteCommands = [...targetEntries].reverse().map(entry => {
-            const entryNumber = entry.split("\t")[0]
-            return `printf '%s' ${entryNumber} | ${root.cliphistBinary} decode | wl-copy && sleep ${root.pasteDelay} && ${root.pressPasteCommand}`
+            const id = root._id(entry) || "0" // ids are validated digits
+            return `printf '%s' ${id} | ${root.cliphistBinary} decode | wl-copy && sleep ${root.pasteDelay} && ${root.pressPasteCommand}`
         })
         Quickshell.execDetached(["bash", "-c", pasteCommands.join(` && sleep ${root.pasteDelay} && `)])
     }
 
     Process {
         id: deleteProc
-        property string entry: ""
-        command: ["bash", "-c", `printf '%s' ${deleteProc.entry.split("\t")[0]} | ${root.cliphistBinary} delete`]
-        function deleteEntry(e) { deleteProc.entry = e; deleteProc.running = true; deleteProc.entry = "" }
+        function deleteEntry(e) {
+            const id = root._id(e); if (!id) return
+            deleteProc.exec({ command: ["bash", "-c", `printf '%s' "$ID" | ${root.cliphistBinary} delete`], environment: ({ ID: id }) })
+        }
         onExited: root.refresh()
     }
 

@@ -222,6 +222,7 @@
   "label": "Enabled Modules",
   "sublabel": "",
   "keys": [
+   "disabledPanels",
    "enabledPanels"
   ]
  },

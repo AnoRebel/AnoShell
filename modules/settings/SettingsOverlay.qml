@@ -19,15 +19,25 @@ Scope {
 
     // Window + pages compile/instantiate on first open and are released after
     // the overlay has been closed for closeGrace (reopening within it is instant).
+    // Driven imperatively: a binding on settingsOpen || timer.running could
+    // flip false for a moment on close and rebuild the whole window.
     LazyLoader {
-        active: GlobalStates.settingsOpen || closeGrace.running
+        id: windowLoader
+        active: false
         // Loader (not LazyLoader.source) so nothing is compiled until first open.
         component: Loader { source: Qt.resolvedUrl("SettingsOverlayWindow.qml") }
     }
-    Timer { id: closeGrace; interval: 30000 }
+    Timer {
+        id: closeGrace
+        interval: 30000
+        onTriggered: if (!GlobalStates.settingsOpen) windowLoader.active = false
+    }
     Connections {
         target: GlobalStates
-        function onSettingsOpenChanged() { if (!GlobalStates.settingsOpen) closeGrace.restart() }
+        function onSettingsOpenChanged() {
+            if (GlobalStates.settingsOpen) { closeGrace.stop(); windowLoader.active = true }
+            else closeGrace.restart()
+        }
     }
 
     IpcHandler {

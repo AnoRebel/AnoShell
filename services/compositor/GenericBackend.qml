@@ -83,8 +83,9 @@ QtObject {
     readonly property var keyboardLayouts: []
 
     function _unsupported(what) { console.warn(`[compositor:generic] ${what} unsupported`); return false }
-    function focusWorkspace(number) {
-        const e = root._sets.find(s => s.output === root.focusedOutput && s.number === Math.round(number))
+    function focusWorkspace(number, outputName) {
+        const out = outputName || root.focusedOutput
+        const e = root._sets.find(s => s.output === out && s.number === Math.round(number))
         if (!e) return false
         e.set.activate(); return true
     }

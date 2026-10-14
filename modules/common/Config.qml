@@ -104,6 +104,7 @@ Singleton {
     // default. Triggers one disk write; the user file becomes "{}\n".
     function resetAllToDefaults() {
         root._userDelta = {};
+        root._migratedKeys = {};
         // Adapter is currently the merged state. Force a bundle reload
         // to re-baseline cleanly — this re-snapshots defaults, then
         // applies the (now empty) delta, which is a no-op.
@@ -125,6 +126,8 @@ Singleton {
                     delete root._userDelta[p];
                     touched = true;
                 }
+                for (const k of Object.keys(root._migratedKeys))
+                    if (k === p || k.startsWith(p + ".")) delete root._migratedKeys[k];
             } else {
                 root.resetToDefault(p);
                 touched = true;
@@ -145,6 +148,7 @@ Singleton {
     // bundle defaults. Empty intermediate objects in the delta are
     // pruned so the file stays tidy.
     function resetToDefault(nestedKey) {
+        delete root._migratedKeys[nestedKey];
         // Remove from delta and prune empty parents
         const segments = nestedKey.split(".");
         const trail = [root._userDelta];
@@ -420,6 +424,9 @@ Singleton {
             // Populated by family defaults on first run. Empty array means
             // "all modules enabled" (see ModulesConfig for the convention).
             property var enabledPanels: []
+            // Modules switched off in Settings → Modules (empty = none). Supersedes
+            // enabledPanels, which is only read for configs that still have it.
+            property var disabledPanels: []
             property bool familyTransitionAnimation: true
 
             // ═══════════════════════════════════════════════════════════════

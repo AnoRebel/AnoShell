@@ -97,15 +97,10 @@ Scope {
                     onTriggered: root.refreshThumbs()
                 }
 
-                // Window tracking is leased only while the overview is open; the
-                // model updates itself on window events.
-                Connections {
-                    target: GlobalStates
-                    function onOverviewOpenChanged() {
-                        if (GlobalStates.overviewOpen) CompositorService.acquireWindows("overview")
-                        else CompositorService.releaseWindows("overview")
-                    }
-                }
+                // Window tracking is leased while this overview window exists
+                // (it is created on open and destroyed on close).
+                Component.onCompleted: CompositorService.acquireWindows("overview")
+                Component.onDestruction: CompositorService.releaseWindows("overview")
 
                 function activateWindow(win) {
                     GlobalStates.overviewOpen = false

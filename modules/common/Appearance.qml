@@ -297,7 +297,7 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Animation Presets (ready-to-use animation configs with speed multiplier)
     // ═══════════════════════════════════════════════════════════════════════
-    readonly property real animSpeedMultiplier: Config?.options.animations.enable ? (Config?.options.animations.speed ?? 1.0) : 0.001
+    readonly property real animSpeedMultiplier: AnimationConfig.enabled ? AnimationConfig.speed : 0.001 // same clamp as AnimationConfig
 
     animation: QtObject {
         property QtObject elementMove: QtObject {

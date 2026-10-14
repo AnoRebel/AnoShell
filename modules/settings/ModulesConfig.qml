@@ -26,7 +26,7 @@ ColumnLayout {
         title: "Modules"
         subtitle: "Enable/disable shell modules, OSD, hot corners, apps, advanced"
         configRoots: [
-            "enabledPanels", "panelFamily", "familyTransitionAnimation",
+            "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
             "display.primaryMonitor", "sounds.theme", "bar.morphingPanels"
@@ -40,14 +40,11 @@ ColumnLayout {
         title: "Enabled Modules"
         subtitle: `Toggle individual shell modules on and off · ${enabledCount} of ${allModules.length} enabled`
         collapsible: false
-        configKeys: ["enabledPanels"]
+        configKeys: ["disabledPanels", "enabledPanels"]
 
         property string moduleSearchQuery: ""
 
-        readonly property int enabledCount: {
-            const arr = (Config.options?.enabledPanels ?? [])
-            return arr.length === 0 ? allModules.length : arr.length
-        }
+        readonly property int enabledCount: allModules.filter(m => PanelGate.userEnabled(m.id)).length
 
         // Shared catalogue (PanelGate) — the same list shell.qml loads from.
         readonly property var allModules: PanelGate.modules.filter(m => m.listed !== false)
@@ -135,7 +132,7 @@ ColumnLayout {
                     id: moduleSwitch
                     // Unavailable in this family/compositor, or always required: shown, not toggleable.
                     enabled: PanelGate.reason(moduleRow.modelData.id) === "" && !(moduleRow.modelData.required ?? false)
-                    checked: (Config.options?.enabledPanels ?? []).includes(moduleRow.modelData.id) || (Config.options?.enabledPanels ?? []).length === 0
+                    checked: PanelGate.userEnabled(moduleRow.modelData.id)
 
                     // toggled() only fires on user-driven changes (mouse
                     // click, Space-key activation, accessibility action).
@@ -143,15 +140,17 @@ ColumnLayout {
                     // which is exactly what we want — the initial-bind
                     // race that corrupted enabledPanels can't happen here.
                     onToggled: {
-                        let panels = [...(Config.options?.enabledPanels ?? [])]
-                        if (panels.length === 0) {
-                            // First user write — materialise the default
-                            // "everything enabled" list before mutating.
-                            panels = modulesCard.allModules.map(m => m.id)
+                        // Store what is switched OFF, so modules added later default to on
+                        // and unchecking everything can't wrap around to "all".
+                        let off = [...(Config.options?.disabledPanels ?? [])]
+                        const legacy = Config.options?.enabledPanels ?? []
+                        if (legacy.length > 0) { // convert an old allow-list once
+                            off = modulesCard.allModules.map(m => m.id).filter(id => !legacy.includes(id))
+                            Config.resetToDefault("enabledPanels")
                         }
-                        if (checked && !panels.includes(moduleRow.modelData.id)) panels.push(moduleRow.modelData.id)
-                        else if (!checked) panels = panels.filter(p => p !== moduleRow.modelData.id)
-                        Config.setNestedValue("enabledPanels", panels)
+                        const id = moduleRow.modelData.id
+                        off = checked ? off.filter(p => p !== id) : (off.includes(id) ? off : off.concat([id]))
+                        Config.setNestedValue("disabledPanels", off)
                     }
                 }
                     } // close RowLayout (moduleRow)

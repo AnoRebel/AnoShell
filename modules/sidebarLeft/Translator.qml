@@ -64,7 +64,8 @@ Item {
         // User text and the key travel via the environment; the script is a
         // constant, so nothing typed here can reach the shell parser.
         aiTranslateProcess.exec({
-            command: ["sh", "-c", 'curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$KEY" -H "Content-Type: application/json" -d "$BODY" | jq -r \'.candidates[0].content.parts[0].text // "Translation unavailable"\''],
+            // Key and text stay out of curl's argv (ps): header via config fd, body on stdin.
+            command: ["bash", "-c", 'curl -s -K <(printf \'header = "x-goog-api-key: %s"\\n\' "$KEY") -H "Content-Type: application/json" --data-binary @- "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" <<< "$BODY" | jq -r \'.candidates[0].content.parts[0].text // "Translation unavailable"\''],
             environment: ({
                 KEY: Ai.apiKeys?.google_gemini ?? "",
                 BODY: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })

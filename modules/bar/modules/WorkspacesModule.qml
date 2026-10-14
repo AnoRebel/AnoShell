@@ -73,7 +73,7 @@ Item {
         recomputeVisible()
     }
 
-    function switchTo(n) { CompositorService.focusWorkspace(n) }
+    function switchTo(n) { CompositorService.focusWorkspace(n, root.screenName) }
 
     Component.onCompleted: updateOccupied()
     Connections {
@@ -91,7 +91,7 @@ Item {
             const delta = event.angleDelta.y
             if (delta === 0) return
             const direction = delta > 0 ? -1 : 1
-            CompositorService.focusWorkspaceRelative(direction)
+            CompositorService.focusWorkspaceRelative(direction, root.screenName)
         }
         onPressed: (event) => {
             if (event.button === Qt.RightButton) GlobalStates.overviewOpen = !GlobalStates.overviewOpen

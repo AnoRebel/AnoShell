@@ -11,7 +11,7 @@ import "."
 
 /**
  * AnoSpot — dynamic-island-style overlay aggregating Mpris, Notifications,
- * Recording, and Clock/Weather. Compositor-agnostic: never reads HyprlandData
+ * Recording, and Clock/Weather. Compositor-agnostic: never reads compositor-specific services
  * directly; all compositor state flows through CompositorService.
  *
  * Toggle:    Config.options.anoSpot.enable

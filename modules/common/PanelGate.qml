@@ -94,13 +94,16 @@ Singleton {
 
     function hosted(id) { return root._hosted.includes(id) }
 
-    // enabledPanels only governs modules listed on the Modules page; unlisted
+    // disabledPanels (or a legacy enabledPanels) only governs modules listed on
+    // the Modules page; unlisted
     // features are switched by their own key.
     function userEnabled(id) {
         const m = root.module(id)
         if (!m || m.listed === false || m.required) return true
-        const list = Config.options?.enabledPanels ?? []
-        return list.length === 0 || list.includes(id)
+        if ((Config.options?.disabledPanels ?? []).includes(id)) return false
+        // Legacy allow-list (configs written before disabledPanels): empty = all.
+        const legacy = Config.options?.enabledPanels ?? []
+        return legacy.length === 0 || legacy.includes(id)
     }
 
     function enabled(id) {

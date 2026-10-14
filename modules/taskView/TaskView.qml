@@ -47,9 +47,9 @@ Scope {
                 WlrLayershell.keyboardFocus: GlobalStates.taskViewOpen ? 1 : 0
                 WlrLayershell.namespace: "quickshell:taskview"
 
-                // Window tracking is leased only while Task View is open.
-                onVisibleChanged: visible ? CompositorService.acquireWindows(`taskView:${screen?.name}`)
-                                          : CompositorService.releaseWindows(`taskView:${screen?.name}`)
+                // Window tracking is leased while this window exists (created on open).
+                Component.onCompleted: CompositorService.acquireWindows("taskView")
+                Component.onDestruction: CompositorService.releaseWindows("taskView")
 
                 property var lastPositions: ({})
                 property bool animateWindows: false
@@ -176,7 +176,7 @@ Scope {
                                     MouseArea {
                                         id: wsMA; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            CompositorService.focusWorkspace(index + 1)
+                                            CompositorService.focusWorkspace(index + 1, tvRoot.screen?.name)
                                         }
                                     }
                                 }

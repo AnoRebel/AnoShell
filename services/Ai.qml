@@ -385,7 +385,7 @@ Singleton {
     Process {
         id: openaiProc
         property string assistantId: ""
-        command: ["bash", "-c", `curl -sN "$ENDPOINT" -H "Content-Type: application/json" -H "Authorization: Bearer $API_KEY" -d "$BODY"`]
+        command: ["bash", "-c", `curl -sN -K <(printf 'header = "Authorization: Bearer %s"\\n' "$API_KEY") -H "Content-Type: application/json" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
@@ -424,11 +424,9 @@ Singleton {
         const systemInstruction = msgs.find(m => m.role === "system")
         if (systemInstruction) body.system_instruction = { parts: [{ text: systemInstruction.content }] }
 
-        const endpoint = model.endpoint.includes("?")
-            ? `${model.endpoint}&key=${apiKey}`
-            : `${model.endpoint}?key=${apiKey}`
+        const endpoint = model.endpoint // key goes in the x-goog-api-key header
 
-        geminiProc.environment = { ENDPOINT: endpoint, BODY: JSON.stringify(body) }
+        geminiProc.environment = { API_KEY: apiKey, ENDPOINT: endpoint, BODY: JSON.stringify(body) }
         geminiProc.assistantId = assistantId
         geminiProc.running = true
     }
@@ -436,7 +434,7 @@ Singleton {
     Process {
         id: geminiProc
         property string assistantId: ""
-        command: ["bash", "-c", `curl -sN "$ENDPOINT" -H "Content-Type: application/json" -d "$BODY"`]
+        command: ["bash", "-c", `curl -sN -K <(printf 'header = "x-goog-api-key: %s"\\n' "$API_KEY") -H "Content-Type: application/json" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
@@ -489,7 +487,7 @@ Singleton {
     Process {
         id: anthropicProc
         property string assistantId: ""
-        command: ["bash", "-c", `curl -sN "$ENDPOINT" -H "Content-Type: application/json" -H "x-api-key: $API_KEY" -H "anthropic-version: 2023-06-01" -d "$BODY"`]
+        command: ["bash", "-c", `curl -sN -K <(printf 'header = "x-api-key: %s"\\n' "$API_KEY") -H "Content-Type: application/json" -H "anthropic-version: 2023-06-01" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {

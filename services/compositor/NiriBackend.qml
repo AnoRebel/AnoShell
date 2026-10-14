@@ -93,27 +93,31 @@ QtObject {
     readonly property var outputs: []
     function applyOutputs(configs) { return false }
 
-    function focusWindowById(id) { if (id === undefined || id === null) return false; NiriService.focusWindow(id); return true }
-    function closeWindowById(id) { if (id === undefined || id === null) return false; NiriService.closeWindow(id); return true }
+    function focusWindowById(id) { return (id === undefined || id === null) ? false : NiriService.focusWindow(id) }
+    function closeWindowById(id) { return (id === undefined || id === null) ? false : NiriService.closeWindow(id) }
 
     readonly property string keyboardLayout: NiriService.getCurrentKeyboardLayoutName()
     readonly property var keyboardLayouts: NiriService.keyboardLayoutNames ?? []
 
-    function focusWorkspace(number) { NiriService.switchToWorkspace(Math.round(number)); return true }
-    function focusWorkspaceRelative(delta) {
-        if (delta < 0) NiriService.focusWorkspaceUp(); else NiriService.focusWorkspaceDown()
-        return true
+    // niri numbers workspaces per output; with an output, target that output's
+    // workspace by its unique id (Index is relative to the focused output).
+    function focusWorkspace(number, outputName) {
+        const ws = outputName ? (NiriService.allWorkspaces ?? []).find(w => w.output === outputName && w.idx === Math.round(number)) : null
+        if (ws) return NiriService.send({ "Action": { "FocusWorkspace": { "reference": { "Id": ws.id } } } }) ?? true
+        return NiriService.switchToWorkspace(Math.round(number)) ?? true
     }
-    function exit() { NiriService.quit(); return true }
-    function powerOffMonitors() { NiriService.powerOffMonitors(); return true }
-    function powerOnMonitors() { NiriService.powerOnMonitors(); return true }
+    function focusWorkspaceRelative(delta) {
+        return delta < 0 ? NiriService.focusWorkspaceUp() : NiriService.focusWorkspaceDown()
+    }
+    function exit() { return NiriService.quit() }
+    function powerOffMonitors() { return NiriService.powerOffMonitors() }
+    function powerOnMonitors() { return NiriService.powerOnMonitors() }
     // Gaps, layer blur rules and cursor zoom are niri config, not runtime IPC.
     function setOuterGaps(px) { return false }
     function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) { return false }
     function setScreenShader(path) { return false }
     function setCursorZoom(factor) { return false }
     function switchKeyboardLayout(delta) {
-        if (delta < 0) NiriService.switchLayoutPrevious(); else NiriService.switchLayout()
-        return true
+        return delta < 0 ? NiriService.switchLayoutPrevious() : NiriService.switchLayout()
     }
 }

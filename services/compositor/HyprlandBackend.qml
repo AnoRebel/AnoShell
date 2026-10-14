@@ -68,15 +68,36 @@ QtObject {
             // Hyprland closes the connection after replying.
             const job = root._current, text = root._buf
             root._current = null; root._buf = ""
+            root._watchdog.stop()
             if (job) { try { job.cb(JSON.parse(text)) } catch (e) { console.warn(`[compositor:hyprland] bad reply to ${job.cmd}: ${e}`) } }
             root._next()
         }
     }
-    function _request(cmd, cb) { root._queue.push({ cmd, cb }); if (!root._current) root._next() }
+    // Replies are snapshots, so a request already waiting for the same command
+    // just takes the newer callback (the queue can't grow while unreachable).
+    function _request(cmd, cb) {
+        const pending = root._queue.find(j => j.cmd === cmd)
+        if (pending) pending.cb = cb
+        else root._queue.push({ cmd, cb })
+        if (!root._current) root._next()
+    }
     function _next() {
         if (root._current || root._queue.length === 0) return
         root._current = root._queue.shift()
+        root._watchdog.restart()
         root._socket.connected = true
+    }
+    // A request that never completes (socket missing, connect failed) is
+    // dropped so the queue keeps moving.
+    property var _watchdog: Timer {
+        interval: 2000
+        onTriggered: {
+            if (!root._current) return
+            console.warn(`[compositor:hyprland] ${root._current.cmd} timed out`)
+            root._current = null; root._buf = ""
+            root._socket.connected = false
+            root._next()
+        }
     }
 
     function refresh() {
@@ -176,7 +197,9 @@ QtObject {
 
     // ── Actions ──────────────────────────────────────────────────────────────
     function _lua(code) { Hyprland.dispatch(code); return true }
-    function focusWorkspace(number) { return root._lua(`hl.dsp.focus({ workspace = ${Math.round(number)} })`) }
+    function focusWorkspace(number, outputName) { // ids are global on Hyprland
+        return root._lua(`hl.dsp.focus({ workspace = ${Math.round(number)} })`)
+    }
     function focusWorkspaceRelative(delta) {
         return root._lua(`hl.dsp.focus({ workspace = "${delta >= 0 ? "r+" : "r-"}${Math.abs(Math.round(delta)) || 1}" })`)
     }

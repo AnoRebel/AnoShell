@@ -61,16 +61,17 @@ Singleton {
     // height, focused, floating, fullscreen, toplevel } — toplevel is the
     // foreign-toplevel handle when matched (used for focus/close/screencopy).
     readonly property var windows: backend?.windows ?? []
+    // Counted per name: several instances (e.g. one per screen) may share a name.
     property var _windowLeases: ({})
+    function _leaseTotal() { return Object.values(root._windowLeases).reduce((a, b) => a + b, 0) }
     function acquireWindows(name: string): void {
-        if (root._windowLeases[name]) return
-        root._windowLeases[name] = true
-        if (root.backend) root.backend.windowLeases = Object.keys(root._windowLeases).length
+        root._windowLeases[name] = (root._windowLeases[name] ?? 0) + 1
+        if (root.backend) root.backend.windowLeases = root._leaseTotal()
     }
     function releaseWindows(name: string): void {
         if (!root._windowLeases[name]) return
-        delete root._windowLeases[name]
-        if (root.backend) root.backend.windowLeases = Object.keys(root._windowLeases).length
+        if (--root._windowLeases[name] <= 0) delete root._windowLeases[name]
+        if (root.backend) root.backend.windowLeases = root._leaseTotal()
     }
     // Windows on the workspace currently visible on an output.
     function windowsOnOutput(outputName) {
@@ -107,7 +108,7 @@ Singleton {
         const name = root._pickBackend()
         const comp = { "hyprland": hyprlandBackend, "niri": niriBackend }[name] ?? genericBackend
         root.backend?.destroy()
-        root.backend = comp.createObject(root, { windowLeases: Object.keys(root._windowLeases).length })
+        root.backend = comp.createObject(root, { windowLeases: root._leaseTotal() })
         if (!root.backend) {
             console.error(`CompositorService: failed to create the ${name} backend: ${comp.errorString()}`)
             return
@@ -118,8 +119,18 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Actions (forwarded; unsupported ones return false)
     // ═══════════════════════════════════════════════════════════════════════
-    function focusWorkspace(number) { return root.backend?.focusWorkspace(number) ?? false }
-    function focusWorkspaceRelative(delta) { return root.backend?.focusWorkspaceRelative(delta) ?? false }
+    // outputName (optional): the output whose workspace number is meant — matters
+    // where numbers are per output (niri); defaults to the focused output.
+    function focusWorkspace(number, outputName) { return root.backend?.focusWorkspace(number, outputName) ?? false }
+    function focusWorkspaceRelative(delta, outputName) {
+        if (outputName && root.supports.perOutputWorkspaces) {
+            const nums = root.workspacesFor(outputName).map(w => w.number).sort((a, b) => a - b)
+            const i = nums.indexOf(root.activeWorkspaceOn(outputName))
+            const target = nums[Math.max(0, Math.min(nums.length - 1, i + (delta < 0 ? -1 : 1)))]
+            return target ? root.focusWorkspace(target, outputName) : false
+        }
+        return root.backend?.focusWorkspaceRelative(delta) ?? false
+    }
     function exit() { return root.backend?.exit() ?? false }
     function powerOffMonitors() { return root.backend?.powerOffMonitors() ?? false }
     function powerOnMonitors() { return root.backend?.powerOnMonitors() ?? false }

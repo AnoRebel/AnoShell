@@ -26,8 +26,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 
 | Service | What it provides |
 |---------|------------------|
-| `CompositorService` | Runtime auto-detection of Hyprland vs Niri. Exposes `compositor` (string), `isHyprland`/`isNiri`, `activeWorkspaceIndex`/`activeWorkspaceName` as a unified abstraction over both backends. |
-| `HyprlandData` | Hyprland window/workspace JSON via `hyprctl`. Used by overview, dock, AnoSpot workspace widget. |
+| `CompositorService` | One API over the compositor backends in `services/compositor/` (Hyprland, niri, generic): workspaces, windows (leased), outputs, fullscreen, keyboard layout, actions. |
 | `NiriService` | Full Niri IPC over its UNIX socket — events, window list, workspace list, focus changes. |
 | `HyprlandKeybinds` / `NiriKeybinds` | Parsers for the live keybinds files. Power the cheatsheet. |
 | `AnoSocket` | Auto-reconnecting socket helper used by NiriService. |

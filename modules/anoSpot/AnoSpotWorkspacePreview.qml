@@ -65,8 +65,9 @@ Scope {
             // Windows on this screen's visible workspace, from the compositor
             // backend (which only tracks windows while a lease is held).
             readonly property var windowList: visible ? CompositorService.windowsOnOutput(modelData.name) : []
-            onVisibleChanged: visible ? CompositorService.acquireWindows("anoSpotPreview")
-                                      : CompositorService.releaseWindows("anoSpotPreview")
+            // Leased while this preview window exists (created when the preview opens).
+            Component.onCompleted: CompositorService.acquireWindows("anoSpotPreview")
+            Component.onDestruction: CompositorService.releaseWindows("anoSpotPreview")
 
             function _activate(entry) {
                 GlobalStates.anoSpotWorkspacePreviewOpen = false

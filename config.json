@@ -417,5 +417,6 @@
       "zen-browser",
       "brave-browser"
     ]
-  }
+  },
+  "disabledPanels": []
 }

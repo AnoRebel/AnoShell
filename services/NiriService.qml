@@ -1009,16 +1009,7 @@ Singleton {
 
     // ========== QUERY HELPERS ==========
 
-    function getCurrentOutputWorkspaceNumbers() {
-        return currentOutputWorkspaces.map(w => w.idx)
-    }
 
-    function getCurrentWorkspaceNumber() {
-        if (focusedWorkspaceIndex >= 0 && focusedWorkspaceIndex < allWorkspaces.length) {
-            return allWorkspaces[focusedWorkspaceIndex].idx
-        }
-        return 1
-    }
 
     function getCurrentKeyboardLayoutName() {
         if (currentKeyboardLayoutIndex >= 0 && currentKeyboardLayoutIndex < keyboardLayoutNames.length) {
@@ -1045,163 +1036,13 @@ Singleton {
         return null
     }
 
-    function findWindowByTitle(titlePattern) {
-        const wins = windows || []
-        const pattern = titlePattern.toLowerCase()
-        for (let i = 0; i < wins.length; i++) {
-            const w = wins[i]
-            if (w.title && w.title.toLowerCase().includes(pattern)) {
-                return w
-            }
-        }
-        return null
-    }
 
-    function findWindowByAppId(appIdPattern) {
-        const wins = windows || []
-        const pattern = appIdPattern.toLowerCase()
-        for (let i = 0; i < wins.length; i++) {
-            const w = wins[i]
-            if (w.app_id && w.app_id.toLowerCase().includes(pattern)) {
-                return w
-            }
-        }
-        return null
-    }
 
     // ========== TOPLEVEL SORTING & ENRICHMENT ==========
 
-    function sortToplevels(toplevels) {
-        if (!toplevels || toplevels.length === 0 || !CompositorService.isNiri || windows.length === 0) {
-            return [...toplevels]
-        }
 
-        const usedToplevels = new Set()
-        const enrichedToplevels = []
 
-        for (const niriWindow of sortWindowsByLayout(windows)) {
-            let bestMatch = null
-            let bestScore = -1
 
-            for (const toplevel of toplevels) {
-                if (usedToplevels.has(toplevel))
-                    continue
-
-                const score = matchToplevelToWindow(toplevel, niriWindow)
-                if (score > bestScore) {
-                    bestScore = score
-                    bestMatch = toplevel
-                    if (score === 3)
-                        break
-                }
-            }
-
-            if (!bestMatch)
-                continue
-
-            usedToplevels.add(bestMatch)
-            enrichedToplevels.push(enrichToplevel(bestMatch, niriWindow))
-        }
-
-        for (const toplevel of toplevels) {
-            if (!usedToplevels.has(toplevel)) {
-                enrichedToplevels.push(toplevel)
-            }
-        }
-
-        return enrichedToplevels
-    }
-
-    function matchToplevelToWindow(toplevel, niriWindow) {
-        if (toplevel.appId !== niriWindow.app_id)
-            return 0
-
-        let score = 1
-        if (niriWindow.title && toplevel.title) {
-            if (toplevel.title === niriWindow.title) {
-                score = 3
-            } else if (toplevel.title.includes(niriWindow.title) || niriWindow.title.includes(toplevel.title)) {
-                score = 2
-            }
-        }
-        return score
-    }
-
-    function enrichToplevel(toplevel, niriWindow) {
-        const workspace = workspaces[niriWindow.workspace_id]
-        const isFocused = niriWindow.is_focused ?? (workspace && workspace.active_window_id === niriWindow.id) ?? false
-        const windowId = niriWindow.id
-
-        const enriched = {
-            "appId": toplevel.appId,
-            "title": toplevel.title,
-            "activated": isFocused,
-            "niriWindowId": windowId,
-            "niriWorkspaceId": niriWindow.workspace_id,
-            "activate": function () {
-                return NiriService.focusWindow(windowId)
-            },
-            "close": function () {
-                if (toplevel.close) {
-                    return toplevel.close()
-                }
-                return false
-            }
-        }
-
-        for (let prop in toplevel) {
-            if (!(prop in enriched)) {
-                enriched[prop] = toplevel[prop]
-            }
-        }
-
-        return enriched
-    }
-
-    function filterCurrentWorkspace(toplevels, screenName) {
-        let currentWorkspaceId = null
-
-        for (var i = 0; i < allWorkspaces.length; i++) {
-            const ws = allWorkspaces[i]
-            if (ws.output === screenName && ws.is_active) {
-                currentWorkspaceId = ws.id
-                break
-            }
-        }
-
-        if (currentWorkspaceId === null)
-            return toplevels
-
-        const workspaceWindows = windows.filter(niriWindow => niriWindow.workspace_id === currentWorkspaceId)
-        const usedToplevels = new Set()
-        const result = []
-
-        for (const niriWindow of workspaceWindows) {
-            let bestMatch = null
-            let bestScore = -1
-
-            for (const toplevel of toplevels) {
-                if (usedToplevels.has(toplevel))
-                    continue
-
-                const score = matchToplevelToWindow(toplevel, niriWindow)
-                if (score > bestScore) {
-                    bestScore = score
-                    bestMatch = toplevel
-                    if (score === 3)
-                        break
-                }
-            }
-
-            if (!bestMatch)
-                continue
-
-            usedToplevels.add(bestMatch)
-            result.push(enrichToplevel(bestMatch, niriWindow))
-        }
-
-        return result
-    }
 
     // ========== TILING LAYOUTS ==========
 

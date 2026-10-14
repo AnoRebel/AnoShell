@@ -187,7 +187,7 @@ ColumnLayout {
         }
 
         NoticeBox {
-            text: "API keys are managed via the /key command in the AI chat sidebar and stored securely in api_keys.json. Supported providers: OpenAI, Google Gemini, Anthropic Claude."
+            text: "API keys are managed via the /key command in the AI chat sidebar and stored in ~/.local/share/anoshell/secrets/ai-keys.json (readable only by you). Supported providers: OpenAI, Google Gemini, Anthropic Claude."
             iconName: "security"
         }
     }

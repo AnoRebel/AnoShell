@@ -37,9 +37,20 @@ Singleton {
     // Polling runs only while a visible consumer holds a lease (ServiceLease).
     property var _leases: ({})
     property int leaseCount: 0
-    function acquire(name) { if (!root._leases[name]) { root._leases[name] = true; root.leaseCount++ } }
-    function release(name) { if (root._leases[name]) { delete root._leases[name]; root.leaseCount-- } }
-    onLeaseCountChanged: if (leaseCount === 0) pollTimer.interval = 1 // fresh sample on next resume
+    // Counted per name: several instances (e.g. one bar per screen) may share a name.
+    function acquire(name) { root._leases[name] = (root._leases[name] ?? 0) + 1; root.leaseCount++ }
+    function release(name) {
+        if (!root._leases[name]) return
+        if (--root._leases[name] <= 0) delete root._leases[name]
+        root.leaseCount--
+    }
+    // On pause, forget the last sample: the first sample after resuming must
+    // not average network/CPU over the whole pause as if it were one tick.
+    onLeaseCountChanged: if (leaseCount === 0) {
+        pollTimer.interval = 1
+        previousCpuStats = undefined
+        previousNetworkStats = undefined
+    }
     property list<real> cpuUsageHistory: []
     property list<real> memoryUsageHistory: []
     property list<real> swapUsageHistory: []

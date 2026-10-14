@@ -31,7 +31,7 @@ otherwise from the environment:
 | `fullscreenOutputs` | object | `{ outputName: true }` for outputs showing a fullscreen window |
 | `revision` | int | bumped whenever workspaces or fullscreen state change |
 | `keyboardLayout` | string | current layout name |
-| `keyboardLayouts` | array | all layout names |
+| `keyboardLayouts` | array | the configured layouts (xkb codes on Hyprland, full names on niri); use for counting/cycling, not display |
 
 `supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
 `outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`.
@@ -40,7 +40,7 @@ otherwise from the environment:
 
 | Function | Notes |
 |---|---|
-| `focusWorkspace(number)` | absolute, 1-based, on the focused output |
+| `focusWorkspace(number, outputName?)` | absolute, 1-based; on `outputName` when given (per-output numbering), else the focused output |
 | `focusWorkspaceRelative(delta)` | `+1` / `-1` |
 | `exit()` | end the session |
 | `powerOffMonitors()` / `powerOnMonitors()` | DPMS |

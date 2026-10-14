@@ -319,7 +319,8 @@ ColumnLayout {
                 onStreamFinished: {
                     const path = avatarPickerOutput.text.trim()
                     if (path.length > 0) {
-                        avatarCopyProc.command = ["bash", "-c", `cp '${path}' ~/.face && cp '${path}' ~/.face.icon`]
+                        // Path as an argument, never interpolated into the script.
+                        avatarCopyProc.command = ["sh", "-c", 'cp -- "$1" ~/.face && cp -- "$1" ~/.face.icon', "sh", path]
                         avatarCopyProc.running = true
                     }
                 }

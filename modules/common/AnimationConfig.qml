@@ -33,7 +33,7 @@ Singleton {
     // Global speed factor (1 = normal, >1 slower, <1 faster).
     readonly property real speed: Math.max(0.1, Config.options?.animations?.speed ?? 1.0)
     function scaledDuration(baseDuration) {
-        return root.enabled ? Math.max(1, Math.round(baseDuration * root.speed)) : 0
+        return (root.enabled && baseDuration > 0) ? Math.max(1, Math.round(baseDuration * root.speed)) : 0
     }
 
     // Read-only snapshot for scripts and tests.
