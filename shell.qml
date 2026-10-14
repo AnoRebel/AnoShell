@@ -36,9 +36,11 @@ ShellRoot {
         //   PowerProfilePersistence — restores profile on Config.ready
         //   AntiFlashbang           — IPC-controlled shader on Hyprland
         //   MinimizedWindows        — Niri minimize-emulation registry
+        //   DefaultApps             — `apps` IPC target used by keybinds
         void PowerProfilePersistence;
         void AntiFlashbang;
         void MinimizedWindows;
+        void DefaultApps;
     }
 
     // ═══════════════════════════════════════════════════════════════════════

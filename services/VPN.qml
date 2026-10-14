@@ -47,6 +47,17 @@ Singleton {
             authUrl: ""
         })
 
+    // Desktop notification on connect/disconnect (vpn.notifyOnChange). Changes
+    // before the first status check completes are the initial state, not news.
+    property bool _statusKnown: false
+    onConnectedChanged: {
+        if (!root._statusKnown) return
+        if (!(Config.options?.vpn?.notifyOnChange ?? true)) return
+        const name = root.currentConfig?.displayName ?? root.providerName
+        Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "-i", root.connected ? "network-vpn" : "network-vpn-disconnected",
+            root.connected ? `${name} connected` : `${name} disconnected`])
+    }
+
     readonly property bool connecting: connectProc.running || disconnectProc.running
     readonly property bool serviceEnabled: Config.options?.vpn?.enable ?? true
     readonly property var providers: Config.options?.vpn?.providers ?? []
@@ -262,6 +273,7 @@ Singleton {
         }
         status = newStatus;
         root.connected = newStatus.connected;
+        root._statusKnown = true;
         if (oldState !== newStatus.state) {
             console.log(lc, `VPN state ${oldState} -> ${newStatus.state}`,
                         newStatus.reason ? `(${newStatus.reason})` : "");

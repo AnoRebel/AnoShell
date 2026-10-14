@@ -81,6 +81,8 @@ Singleton {
     // User avatar locations (common Linux conventions)
     // Priority: ~/.face → AccountsService → ~/.face.icon
     property string userAvatarPathFace: FileUtils.trimFileProtocol(`${root.home}/.face`)
+    // What the shell shows: the user.avatarPath override, else ~/.face.
+    readonly property string userAvatarPath: (Config.options?.user?.avatarPath ?? "").trim() || root.userAvatarPathFace
     property string userAvatarPathFaceIcon: FileUtils.trimFileProtocol(`${root.home}/.face.icon`)
     // Quickshell 0.3 removed SystemInfo; fall back to the USER env var.
     readonly property string _username: Quickshell.env("USER") || ""

@@ -418,7 +418,6 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject display: JsonObject {
                 property string primaryMonitor: "" // empty = auto (focused screen)
-                property bool respectHyprlandGaps: true // sync bezel with Hyprland gaps_out
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -427,7 +426,6 @@ Singleton {
             property JsonObject appearance: JsonObject {
                 property int bezel: 0 // Global gap from screen edges (px) for ALL elements
                 property bool extraBackgroundTint: true
-                property int fakeScreenRounding: 2 // 0: None | 1: Always | 2: When not fullscreen
 
                 // Defaults use free/libre, widely-available families so a fresh
                 // install renders correctly without proprietary fonts. Geist
@@ -499,8 +497,6 @@ Singleton {
                 }
 
                 property JsonObject colors: JsonObject {
-                    property bool materialYou: true // derive colors from wallpaper
-                    property string manualScheme: "" // manual hex override (empty = auto)
                     property bool darkMode: true
                 }
 
@@ -524,7 +520,6 @@ Singleton {
             // Bar System
             // ═══════════════════════════════════════════════════════════════
             property JsonObject bar: JsonObject {
-                property string position: "top" // top, bottom, left, right
                 property int cornerStyle: 0 // 0: Normal | 1: Floating (adds gaps)
                 property bool verbose: false // verbose mode shows more info in bar modules
                 property bool morphingPanels: false
@@ -571,19 +566,7 @@ Singleton {
                     property string scrollCenter: "workspace"
                 }
 
-                // Multi-bar: array of bar definitions per monitor.
-                // Each bar has: id, position (top/bottom/left/right),
-                // modules (left/center/right arrays). Default: single
-                // top bar populated on first run.
-                property var bars: []
-
-                // Module arrangement — drag-and-drop ordering
-                property var modulesLeft: []
-                property var modulesCenter: []
-                property var modulesRight: []
-
-                // Weather widget shown in the bar / popout. Distinct from
-                // top-level weather (which controls the provider).
+                // Weather widget shown in the bar / popout.
                 property JsonObject weather: JsonObject {
                     property bool enable: false
                     property string city: ""
@@ -625,29 +608,10 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject overview: JsonObject {
                 property string layout: "SmartGrid" // one of 10 hyprview layouts
-                property int numWorkspaces: 10
-                property bool showEmptyWorkspaces: true
-                property int gapSize: 5
             }
 
             property JsonObject taskView: JsonObject {
-                property bool useInsteadOfOverview: false
                 property string layout: "Hero" // layout for task view (can differ from overview)
-            }
-
-            // ═══════════════════════════════════════════════════════════════
-            // Settings UI
-            // ═══════════════════════════════════════════════════════════════
-            property JsonObject settingsUi: JsonObject {
-                property bool overlayMode: false // true = overlay panel, false = separate window
-            }
-
-            // ═══════════════════════════════════════════════════════════════
-            // Wallpaper Selector
-            // ═══════════════════════════════════════════════════════════════
-            property JsonObject wallpaperSelector: JsonObject {
-                property string selectionTarget: "main" // "main", "backdrop"
-                property string targetMonitor: ""
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -658,17 +622,15 @@ Singleton {
                 property string position: "topRight"
                 property int edgeMargin: 8
                 property bool expressiveAnimations: true
-                // Kept for back-compat with anything still reading silent / maxVisible
-                property bool silent: false
-                property int maxVisible: 5
+                property bool silent: false // no popups; notifications still reach the history
+                property int maxVisible: 5 // popups on screen at once
             }
 
             // ═══════════════════════════════════════════════════════════════
             // Media
             // ═══════════════════════════════════════════════════════════════
             property JsonObject media: JsonObject {
-                property bool showEqualizer: true
-                property string preferredPlayer: "" // empty = auto
+                property string preferredPlayer: "" // MPRIS identity substring tracked first; empty = auto
                 property bool filterDuplicatePlayers: true
             }
 
@@ -703,15 +665,6 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // Weather provider config (existing — leaves top-level location/unit)
-            // ═══════════════════════════════════════════════════════════════
-            property JsonObject weather: JsonObject {
-                property string location: "" // empty = auto-detect
-                property string unit: "metric" // metric, imperial
-                property string provider: "openmeteo" // openmeteo (free, no key needed)
-            }
-
-            // ═══════════════════════════════════════════════════════════════
             // Animations
             // ═══════════════════════════════════════════════════════════════
             property JsonObject animations: JsonObject {
@@ -724,7 +677,6 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject hud: JsonObject {
                 property bool enable: true
-                property int timeout: 2000 // ms
             }
 
             // Launcher state
@@ -896,11 +848,6 @@ Singleton {
                     property bool keyboard: true
                     property bool network: true
                 }
-            }
-
-            // On-screen keyboard
-            property JsonObject osk: JsonObject {
-                property string layout: ""
             }
 
             // Lock screen

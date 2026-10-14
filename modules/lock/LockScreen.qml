@@ -176,7 +176,7 @@ Scope {
                             border.width: 3; border.color: Appearance?.colors.colPrimary ?? "#65558F"
                             Image {
                                 anchors.centerIn: parent; width: 72; height: 72
-                                source: `file://${Directories.userAvatarPathFace}`
+                                source: `file://${Directories.userAvatarPath}`
                                 fillMode: Image.PreserveAspectCrop
                                 visible: status === Image.Ready
                                 layer.enabled: true

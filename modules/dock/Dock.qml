@@ -87,8 +87,9 @@ Scope {
             screen: modelData
             visible: !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? true)
 
+            readonly property bool hoverToReveal: Config.options?.dock?.hoverToReveal ?? true
             property bool reveal: root.pinned
-                || dockHover.containsMouse
+                || (hoverToReveal && dockHover.containsMouse)
                 || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated)
 
             color: "transparent"
@@ -108,7 +109,9 @@ Scope {
             implicitWidth: root.isVertical ? (dockHeight + 16) : 0
             implicitHeight: root.isVertical ? 0 : (dockHeight + 16)
 
-            mask: Region { item: dockBg }
+            // The hidden dock keeps an input area only when hovering is what
+            // reveals it; otherwise it is click-through until shown.
+            mask: Region { item: (dockWindow.reveal || dockWindow.hoverToReveal) ? dockBg : null }
 
             MouseArea {
                 id: dockHover

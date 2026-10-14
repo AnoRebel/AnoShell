@@ -70,7 +70,10 @@ Singleton {
     property int unread: 0
     property var filePath: Directories.notificationsPath
     property list<Notif> list: []
-    property var popupList: list.filter(notif => notif.popup)
+    // notifications.silent: no popups (history still records them);
+    // notifications.maxVisible: newest N popups on screen at once.
+    property var popupList: (Config.options?.notifications?.silent ?? false) ? []
+        : list.filter(notif => notif.popup).slice(-Math.max(1, Config.options?.notifications?.maxVisible ?? 5))
     property bool popupInhibited: (GlobalStates?.sidebarRightOpen ?? false) || silent
     property var latestTimeForApp: ({})
 

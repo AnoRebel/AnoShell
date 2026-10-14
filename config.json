@@ -21,7 +21,6 @@
       "reading": "Readex Pro"
     },
     "colors": {
-      "materialYou": true,
       "darkMode": true
     },
     "connectedCorners": {
@@ -399,9 +398,6 @@
   },
   "hacks": {
     "arbitraryRaceConditionDelay": 100
-  },
-  "osk": {
-    "layout": ""
   },
   "dock": {
     "enable": true,

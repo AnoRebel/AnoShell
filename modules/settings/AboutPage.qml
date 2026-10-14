@@ -194,7 +194,7 @@ ColumnLayout {
                         Image {
                             id: avatarImg
                             anchors.fill: parent
-                            source: `file://${Directories.userAvatarPathFace}`
+                            source: `file://${Directories.userAvatarPath}`
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: false // Don't cache so it updates when changed
@@ -332,7 +332,7 @@ ColumnLayout {
                 if (exitCode === 0) {
                     // Force reload by toggling source
                     avatarImg.source = ""
-                    avatarImg.source = `file://${Directories.userAvatarPathFace}`
+                    avatarImg.source = `file://${Directories.userAvatarPath}`
                     Quickshell.execDetached(["notify-send", "Avatar Updated", "Your profile picture has been changed", "-a", "Ano Shell"])
                 }
             }

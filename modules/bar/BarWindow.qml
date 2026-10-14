@@ -30,8 +30,17 @@ PanelWindow {
     readonly property real barRadius: barConfig?.radius ?? Config.options?.bar?.layout?.radius ?? Appearance?.rounding.normal ?? 12
     readonly property real effectiveThickness: barThickness + (showBackground ? globalMargin * 2 : 0)
 
-    // Auto-hide hover tracking
-    property bool mustShow: hoverArea.containsMouse
+    // Auto-hide hover tracking: stays shown for bar.autoHide.delay after the
+    // pointer leaves, so brushing past the edge doesn't flicker it away.
+    property bool mustShow: hoverArea.containsMouse || hideDelay.running
+    Timer {
+        id: hideDelay
+        interval: Config.options?.bar?.autoHide?.delay ?? 1000
+    }
+    Connections {
+        target: hoverArea
+        function onContainsMouseChanged() { if (!hoverArea.containsMouse) hideDelay.restart() }
+    }
 
     // Hide the bar while a window is fullscreen on this bar's screen (unless the
     // pointer is over the bar). Compositor-agnostic via CompositorService. When

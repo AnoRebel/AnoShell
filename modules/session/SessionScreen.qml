@@ -72,7 +72,7 @@ Scope {
                             Image {
                                 anchors.centerIn: parent
                                 width: 64; height: 64
-                                source: `file://${Directories.userAvatarPathFace}`
+                                source: `file://${Directories.userAvatarPath}`
                                 fillMode: Image.PreserveAspectCrop
                                 visible: status === Image.Ready
                                 layer.enabled: true
@@ -121,6 +121,7 @@ Scope {
                             label: "Logout"
                             accentColor: "#FFB74D"
                             holdDuration: 1200
+                            requireHold: Config.options?.session?.confirmLogout ?? true
                             onActivated: {
                                 GlobalStates.sessionOpen = false
                                 if (CompositorService.compositor === "hyprland") Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exit()"])
@@ -146,6 +147,7 @@ Scope {
                             label: "Shutdown"
                             accentColor: "#EF5350"
                             holdDuration: 2500
+                            requireHold: Config.options?.session?.confirmShutdown ?? true
                             onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["systemctl", "poweroff"]) }
                         }
                     }
@@ -169,6 +171,8 @@ Scope {
         property string label: ""
         property color accentColor: "#65558F"
         property int holdDuration: 1500
+        // false = a single click activates (session.confirm* off)
+        property bool requireHold: true
         signal activated()
 
         width: 80; height: 100
@@ -251,7 +255,10 @@ Scope {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onPressed: { btn.isHolding = true; btn.holdProgress = 0; holdAnim.start() }
+                    onPressed: {
+                        if (!btn.requireHold) { btn.activated(); return }
+                        btn.isHolding = true; btn.holdProgress = 0; holdAnim.start()
+                    }
                     onReleased: { btn.isHolding = false; holdAnim.stop(); btn.holdProgress = 0 }
                     onCanceled: { btn.isHolding = false; holdAnim.stop(); btn.holdProgress = 0 }
                 }

@@ -16,7 +16,14 @@ Singleton {
     id: root
     property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player))
     property MprisPlayer trackedPlayer: null
-    property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null
+    property MprisPlayer activePlayer: trackedPlayer ?? preferredPlayer ?? Mpris.players.values[0] ?? null
+    // media.preferredPlayer: identity substring (e.g. "spotify") preferred when
+    // nothing is playing; a player that starts playing still takes over.
+    readonly property MprisPlayer preferredPlayer: {
+        const want = (Config.options?.media?.preferredPlayer ?? "").trim().toLowerCase()
+        if (!want) return null
+        return Mpris.players.values.find(p => (p.identity ?? "").toLowerCase().includes(want)) ?? null
+    }
     signal trackChanged(reverse: bool)
 
     property bool __reverse: false
@@ -60,7 +67,7 @@ Singleton {
             target: modelData
 
             Component.onCompleted: {
-                if (root.trackedPlayer == null || modelData.isPlaying)
+                if (root.trackedPlayer == null || modelData.isPlaying || modelData === root.preferredPlayer)
                     root.trackedPlayer = modelData
             }
 
@@ -73,7 +80,7 @@ Singleton {
                         }
                     }
                     if (trackedPlayer == null && Mpris.players.values.length !== 0)
-                        trackedPlayer = Mpris.players.values[0]
+                        trackedPlayer = root.preferredPlayer ?? Mpris.players.values[0]
                 }
             }
 

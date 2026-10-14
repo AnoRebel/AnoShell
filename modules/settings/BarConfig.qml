@@ -33,7 +33,7 @@ ColumnLayout {
         icon: "dock_to_bottom"
         title: "Position & Style"
         subtitle: "Bar edge, auto-hide, background, and margin"
-        configKeys: ["bar.position", "bar.cornerStyle", "bar.autoHide", "bar.showBackground", "bars"]
+        configKeys: ["bar.cornerStyle", "bar.autoHide", "bar.showBackground", "bars"]
 
         // Visual edge selector
         Item {
