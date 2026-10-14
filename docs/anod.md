@@ -40,7 +40,14 @@ is not restarted.
 | `ano emit <event> [key=value …]` | sends a shell event to anod, which runs its hook (handy for testing hooks) |
 | `ano config validate [--file F] [--json]` | checks your config against the schema: wrong types are errors (exit 1), unknown keys are warnings |
 | `ano config migrate [--file F] [--prune-unknown] [--dry-run]` | rewrites old keys (`hud.enabled`, `activSpot`, `appearance.theme.static`, `bar.bars`, and `bars[0].autoHide`/`showBackground`, which shadowed the global switches). It writes a new `config.json.bak-YYYYMMDD-HHMMSS` first (never overwriting an older backup), follows a symlinked config, and keeps the file's permissions. `--prune-unknown` also removes keys the shell ignores |
+| `ano setup status [--fetch] [--json]` | the shell checkout (branch, commit, uncommitted changes), how far it is ahead/behind its remote, and the CLI, anod and user-config state |
+| `ano setup install [--repo URL] [--branch B]` | clones the shell into `~/.config/quickshell/ano` if it isn't there, builds anod + ano, then runs `ano doctor` |
+| `ano setup update` | fast-forwards the checkout from its remote (refuses with uncommitted changes or diverged local commits; never rewrites history), then refreshes |
+| `ano setup refresh` | rebuilds anod + ano, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
 | `ano version` | prints the version |
+
+`install`, `update` and `refresh` take `--dry-run` (print each step without running
+it) and `--no-restart`. They don't touch your compositor config.
 
 `--file` defaults to `~/.config/anoshell/config.json`, your sparse delta over the
 bundled `config.json`.
