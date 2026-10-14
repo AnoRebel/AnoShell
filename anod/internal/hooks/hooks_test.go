@@ -95,3 +95,60 @@ func TestEnvName(t *testing.T) {
 		}
 	}
 }
+
+func TestChattyHookOutputIsBounded(t *testing.T) {
+	l := &logbuf{}
+	r := runner(map[string]string{"started": "yes | head -c 50000000; exit 3"}, 5*time.Second, l)
+	_, done := r.Fire("started", nil)
+	<-done
+	if len(l.lines) != 1 || len(l.lines[0]) > 600 {
+		t.Errorf("log not bounded: %d lines, first %d bytes", len(l.lines), len(l.lines[0]))
+	}
+}
+
+func TestBackgroundChildrenSurviveAndDontBlock(t *testing.T) {
+	dir := t.TempDir()
+	l := &logbuf{}
+	r := runner(map[string]string{
+		"started":      `sleep 3 & echo $! > ` + filepath.Join(dir, "bg"),
+		"wifi_changed": `setsid sleep 3 & true`,
+	}, 2*time.Second, l)
+	start := time.Now()
+	_, d1 := r.Fire("started", nil)
+	_, d2 := r.Fire("wifi_changed", nil)
+	<-d1
+	<-d2
+	if el := time.Since(start); el > 1800*time.Millisecond {
+		t.Errorf("waited %s for background children", el)
+	}
+	if len(l.lines) != 0 {
+		t.Errorf("false failures logged: %v", l.lines)
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "bg"))
+	if _, err := os.Stat("/proc/" + strings.TrimSpace(string(b))); err != nil {
+		t.Error("background child was killed")
+	}
+}
+
+func TestEventNameIsReserved(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "out")
+	r := runner(map[string]string{"wifi_changed": `printf %s "$ANO_EVENT" > ` + out}, time.Second, &logbuf{})
+	_, done := r.Fire("wifi_changed", map[string]string{"event": "forged"})
+	<-done
+	if b, _ := os.ReadFile(out); string(b) != "wifi_changed" {
+		t.Errorf("ANO_EVENT = %q", b)
+	}
+}
+
+func TestRepeatsCollapseIntoOneRerunWithLatestData(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "out")
+	r := runner(map[string]string{"battery_changed": `sleep 0.3; echo "$ANO_BATTERY_PERCENT" >> ` + out}, 5*time.Second, &logbuf{})
+	_, first := r.Fire("battery_changed", map[string]string{"batteryPercent": "1"})
+	for _, p := range []string{"2", "3", "4"} {
+		r.Fire("battery_changed", map[string]string{"batteryPercent": p})
+	}
+	<-first
+	if b, _ := os.ReadFile(out); string(b) != "1\n4\n" {
+		t.Errorf("runs = %q, want first and latest only", b)
+	}
+}

@@ -165,3 +165,38 @@ func TestMergeAndGetters(t *testing.T) {
 		t.Error("default not used")
 	}
 }
+
+func TestMigrateBackupsNeverOverwriteAndSymlinkKept(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "dotfiles-config.json")
+	link := filepath.Join(dir, "config.json")
+	orig, _ := os.ReadFile("testdata/legacy.json")
+	os.WriteFile(target, orig, 0o640)
+	os.Symlink(target, link)
+	now := time.Date(2026, 10, 14, 13, 5, 9, 0, time.UTC)
+
+	b1, _, err := MigrateFile(link, schema(t), false, false, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Same second, prune run: must not clobber the first (original) backup.
+	b2, log, err := MigrateFile(link, schema(t), true, false, now)
+	if err != nil || len(log) == 0 {
+		t.Fatalf("prune run: %v %v", log, err)
+	}
+	if b1 == b2 {
+		t.Fatalf("backup reused: %s", b1)
+	}
+	if b, _ := os.ReadFile(b1); string(b) != string(orig) {
+		t.Error("first backup no longer holds the original")
+	}
+	if fi, _ := os.Lstat(link); fi.Mode()&os.ModeSymlink == 0 {
+		t.Error("symlink replaced by a regular file")
+	}
+	if fi, _ := os.Stat(target); fi.Mode().Perm() != 0o640 {
+		t.Errorf("mode = %o, want 640", fi.Mode().Perm())
+	}
+	if ents, _ := filepath.Glob(filepath.Join(dir, ".*tmp-*")); len(ents) != 0 {
+		t.Errorf("temp files left: %v", ents)
+	}
+}

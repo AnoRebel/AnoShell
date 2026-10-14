@@ -392,6 +392,8 @@ ColumnLayout {
         Repeater {
             model: [
                 { label: "Compositor", value: CompositorService.compositor },
+                { label: "Daemon (anod)", value: Anod.available ? `connected · ${Anod.version}`
+                    : Anod.error || "not running: wallpaper pipeline and hooks unavailable (see docs/anod.md)" },
                 { label: "Shell root", value: Directories.shellRoot },
                 { label: "Config file", value: Directories.shellConfigPath },
                 { label: "Uptime", value: DateTime.uptime },

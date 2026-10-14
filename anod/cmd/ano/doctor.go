@@ -168,7 +168,7 @@ func runChecks() []check {
 	}
 
 	// Last crash.
-	if p := supervisor.QuickshellCrashReport(); p != "" {
+	if p := supervisor.QuickshellCrashReport(time.Time{}); p != "" {
 		fi, _ := os.Stat(p)
 		age := time.Since(fi.ModTime()).Round(time.Minute)
 		level := "info"

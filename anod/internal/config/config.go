@@ -7,6 +7,7 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -353,10 +354,20 @@ func Migrate(m map[string]any, s *Schema, pruneUnknown bool) []string {
 	return log
 }
 
-// MigrateFile migrates path in place. When anything changes it first writes
-// <path>.bak-YYYYMMDD-HHMMSS, then replaces the file atomically.
+// MigrateFile migrates path in place. When anything changes it first writes a
+// new <path>.bak-YYYYMMDD-HHMMSS[-N] (never overwriting an older backup), then
+// replaces the file atomically. A symlinked config is followed, so the link
+// stays and its target is updated; the file keeps its permissions.
 func MigrateFile(path string, s *Schema, pruneUnknown, dryRun bool, now time.Time) (backup string, log []string, err error) {
-	orig, err := os.ReadFile(path)
+	real, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return "", nil, err
+	}
+	fi, err := os.Stat(real)
+	if err != nil {
+		return "", nil, err
+	}
+	orig, err := os.ReadFile(real)
 	if err != nil {
 		return "", nil, err
 	}
@@ -368,17 +379,57 @@ func MigrateFile(path string, s *Schema, pruneUnknown, dryRun bool, now time.Tim
 	if len(log) == 0 || dryRun {
 		return "", log, nil
 	}
-	backup = path + ".bak-" + now.Format("20060102-150405")
-	if err := os.WriteFile(backup, orig, 0o600); err != nil {
+	if backup, err = writeBackup(real, orig, now); err != nil {
 		return "", nil, fmt.Errorf("backup: %w", err)
 	}
 	out, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return backup, nil, err
 	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, append(out, '\n'), 0o600); err != nil {
-		return backup, nil, err
+	return backup, log, writeAtomic(real, append(out, '\n'), fi.Mode().Perm())
+}
+
+func writeBackup(path string, data []byte, now time.Time) (string, error) {
+	base := path + ".bak-" + now.Format("20060102-150405")
+	for i := 0; i < 100; i++ {
+		name := base
+		if i > 0 {
+			name = fmt.Sprintf("%s-%d", base, i)
+		}
+		f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if errors.Is(err, os.ErrExist) {
+			continue
+		}
+		if err != nil {
+			return "", err
+		}
+		_, werr := f.Write(data)
+		if cerr := f.Close(); werr == nil {
+			werr = cerr
+		}
+		return name, werr
 	}
-	return backup, log, os.Rename(tmp, path)
+	return "", fmt.Errorf("too many backups named %s*", base)
+}
+
+// writeAtomic replaces path via a unique temp file in the same directory.
+func writeAtomic(path string, data []byte, perm os.FileMode) error {
+	f, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".tmp-*")
+	if err != nil {
+		return err
+	}
+	tmp := f.Name()
+	defer os.Remove(tmp) // no-op after a successful rename
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Chmod(perm); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
 }

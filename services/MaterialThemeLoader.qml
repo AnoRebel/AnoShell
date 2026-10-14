@@ -13,6 +13,7 @@ import Quickshell.Io
 Singleton {
     id: root
     property string filePath: Directories.generatedMaterialThemePath
+    signal colorsApplied() // after a wallpaper/scheme change lands in Appearance.m3colors
 
     function reapplyTheme() {
         themeFileView.reload()
@@ -41,6 +42,7 @@ Singleton {
             }
         }
         Appearance.m3colors.darkmode = (Appearance.m3colors.m3background.hslLightness < 0.5)
+        root.colorsApplied()
     }
 
     function resetFilePathNextTime() {

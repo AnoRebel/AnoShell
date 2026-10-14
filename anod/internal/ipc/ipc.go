@@ -77,8 +77,12 @@ func DefaultSocketPath() string {
 	return filepath.Join(dir, "ano", "anod.sock")
 }
 
+// ErrRunning: another anod holds the lock for this socket.
+var ErrRunning = errors.New("anod is already running")
+
 type Server struct {
 	path     string
+	lock     *os.File
 	handlers map[string]Handler
 	mu       sync.Mutex
 	conns    map[*conn]struct{}
@@ -111,8 +115,9 @@ func NewServer(path string) *Server {
 // Handle registers a method. Call before Listen.
 func (s *Server) Handle(method string, h Handler) { s.handlers[method] = h }
 
-// Listen prepares the private directory, refuses to start over a live anod,
-// clears a stale socket and binds with mode 0600.
+// Listen prepares the private directory, takes the instance lock (returns
+// ErrRunning if another anod holds it), clears a stale socket and binds with
+// mode 0600. The lock is an flock, so it can't go stale: it dies with the process.
 func (s *Server) Listen() error {
 	if len(s.path) >= 108 { // sockaddr_un.sun_path
 		return fmt.Errorf("socket path is %d bytes, over the 107-byte Unix limit: %s", len(s.path), s.path)
@@ -120,10 +125,15 @@ func (s *Server) Listen() error {
 	if err := ensurePrivateDir(filepath.Dir(s.path)); err != nil {
 		return err
 	}
-	if c, err := net.DialTimeout("unix", s.path, 500*time.Millisecond); err == nil {
-		c.Close()
-		return fmt.Errorf("anod is already running (%s)", s.path)
+	lock, err := os.OpenFile(s.path+".lock", os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return err
 	}
+	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		lock.Close()
+		return fmt.Errorf("%w (%s)", ErrRunning, s.path)
+	}
+	s.lock = lock
 	if err := os.Remove(s.path); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
@@ -167,6 +177,7 @@ func (s *Server) Serve(ctx context.Context) error {
 		}
 		s.mu.Unlock()
 	}()
+	defer s.lock.Close() // runs last: the socket is gone before the lock is released
 	defer os.Remove(s.path)
 	for {
 		nc, err := s.ln.Accept()

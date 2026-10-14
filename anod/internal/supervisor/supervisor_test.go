@@ -17,7 +17,7 @@ func TestCrashLoopStops(t *testing.T) {
 	var notified []string
 	s := fast("sh", "-c", "exit 3")
 	s.Notify = func(title, body string) { notified = append(notified, title+"|"+body) }
-	s.CrashReport = func() string { return "/tmp/crash-42" }
+	s.CrashReport = func(time.Time) string { return "/tmp/crash-42" }
 	if got := s.Run(context.Background()); got != CrashLoop {
 		t.Fatalf("state = %s, want crash-loop", got)
 	}
@@ -91,5 +91,29 @@ func TestNewestEntry(t *testing.T) {
 	os.Mkdir(filepath.Join(d, "new"), 0o755)
 	if got := NewestEntry(d); filepath.Base(got) != "new" {
 		t.Errorf("newest = %s", got)
+	}
+}
+
+func TestNoRestartAfterSessionEnds(t *testing.T) {
+	var notified bool
+	s := fast("sh", "-c", "exit 1")
+	s.Notify = func(string, string) { notified = true }
+	s.Alive = func() bool { return false }
+	if got := s.Run(context.Background()); got != Stopped || s.Status().Restarts != 0 || notified {
+		t.Errorf("state=%s restarts=%d notified=%v", got, s.Status().Restarts, notified)
+	}
+}
+
+func TestQuickshellCrashReportIgnoresOldReports(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_CACHE_HOME", d)
+	dir := filepath.Join(d, "quickshell", "crashes", "old")
+	os.MkdirAll(dir, 0o755)
+	os.Chtimes(dir, time.Now().Add(-time.Hour), time.Now().Add(-time.Hour))
+	if got := QuickshellCrashReport(time.Now().Add(-time.Minute)); got != "" {
+		t.Errorf("old report returned: %s", got)
+	}
+	if got := QuickshellCrashReport(time.Now().Add(-2 * time.Hour)); filepath.Base(got) != "old" {
+		t.Errorf("report = %q", got)
 	}
 }

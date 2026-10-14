@@ -30,10 +30,14 @@ type Supervisor struct {
 	MaxDelay   time.Duration // default 30 s
 	// Notify is called once when the crash loop stops restarts.
 	Notify func(title, body string)
-	// CrashReport returns the newest crash report path ("" if none).
-	CrashReport func() string
+	// CrashReport returns the newest crash report written after `since` ("" if none).
+	CrashReport func(since time.Time) string
+	// Alive reports whether the session the shell draws on still exists. A
+	// crash is not restarted once it's gone (the compositor exited: logout).
+	Alive func() bool
 
 	mu        sync.Mutex
+	started   time.Time // first child start; crash reports older than this aren't ours
 	state     State
 	pid       int
 	crashes   []time.Time
@@ -49,13 +53,16 @@ type Status struct {
 	Recent    int    `json:"recentCrashes"`
 	LastExit  string `json:"lastExit,omitempty"`
 	LastCrash string `json:"lastCrashReport,omitempty"`
+	since     time.Time
 }
 
 func (s *Supervisor) Status() Status {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return Status{s.state, s.pid, s.restarts, len(s.crashes), s.lastExit, s.lastCrash}
+	return Status{s.state, s.pid, s.restarts, len(s.crashes), s.lastExit, s.lastCrash, s.started}
 }
+
+func (st Status) startedAt() time.Time { return st.since }
 
 func (s *Supervisor) defaults() {
 	if s.MaxCrashes == 0 {
@@ -77,6 +84,7 @@ func (s *Supervisor) set(f func()) { s.mu.Lock(); f(); s.mu.Unlock() }
 // Run supervises until ctx ends, the shell exits cleanly, or a crash loop.
 func (s *Supervisor) Run(ctx context.Context) State {
 	s.defaults()
+	s.set(func() { s.started = time.Now() })
 	for {
 		cmd := exec.Command(s.Cmd[0], s.Cmd[1:]...)
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
@@ -120,10 +128,14 @@ func (s *Supervisor) Run(ctx context.Context) State {
 
 // crashed records a crash and either sleeps the backoff (false) or gives up (true).
 func (s *Supervisor) crashed(ctx context.Context) bool {
+	if s.Alive != nil && !s.Alive() {
+		s.set(func() { s.state = Stopped })
+		return true
+	}
 	now := time.Now()
 	report := ""
 	if s.CrashReport != nil {
-		report = s.CrashReport()
+		report = s.CrashReport(s.Status().startedAt())
 	}
 	s.mu.Lock()
 	recent := s.crashes[:0]
@@ -176,14 +188,19 @@ func exitText(ps *os.ProcessState, err error) string {
 	return ps.String() // "exit status 1" / "signal: segmentation fault"
 }
 
-// QuickshellCrashReport returns the newest dir under Quickshell's crash cache.
-func QuickshellCrashReport() string {
+// QuickshellCrashReport returns the newest dir under Quickshell's crash cache
+// that was written after since.
+func QuickshellCrashReport(since time.Time) string {
 	base := os.Getenv("XDG_CACHE_HOME")
 	if base == "" {
 		home, _ := os.UserHomeDir()
 		base = filepath.Join(home, ".cache")
 	}
-	return NewestEntry(filepath.Join(base, "quickshell", "crashes"))
+	p := NewestEntry(filepath.Join(base, "quickshell", "crashes"))
+	if fi, err := os.Stat(p); p == "" || err != nil || fi.ModTime().Before(since) {
+		return ""
+	}
+	return p
 }
 
 // NewestEntry returns the most recently modified entry in dir ("" if none).

@@ -39,6 +39,7 @@ Singleton {
     property int _nextId: 0
     property var _pending: ({})
     property bool _versionBlocked: false
+    property bool _versionNotified: false
     property int _retries: 0
     property bool _startedSent: false
 
@@ -62,10 +63,13 @@ Singleton {
         // Subscribing doubles as the version check.
         root._send("subscribe", {}, (res, err) => {
             if (err?.code === "version_mismatch") {
-                root._versionBlocked = true
+                root._versionBlocked = true // until anod restarts (socket directory changes)
                 root.error = err.message
                 sock.connected = false
-                Quickshell.execDetached(["notify-send", "-a", "ano", "anod version mismatch", err.message])
+                if (!root._versionNotified) {
+                    root._versionNotified = true
+                    Quickshell.execDetached(["notify-send", "-a", "ano", "anod version mismatch", err.message])
+                }
                 return
             }
             if (err) { root.error = err.message; return }
@@ -117,7 +121,12 @@ Singleton {
         readonly property real createdAt: Date.now()
         // Loads during startup get single attempts (no retry burst).
         // Later loads mean the directory changed: anod (re)started or stopped.
-        onStatusChanged: if (status === FolderListModel.Ready) root._tryConnect(Date.now() - createdAt > 2000 ? 3 : 0)
+        onStatusChanged: {
+            if (status !== FolderListModel.Ready) return
+            const startup = Date.now() - createdAt <= 2000
+            if (!startup) root._versionBlocked = false // anod restarted, maybe upgraded: check again
+            root._tryConnect(startup ? 0 : 3)
+        }
     }
     // anod creates the same 0700 directory; making it here lets the watch start
     // before anod has ever run.
@@ -135,46 +144,90 @@ Singleton {
     }
 
     // ── Shell events → anod hooks ───────────────────────────────────────────
+    // State-type events (Wi-Fi, Bluetooth, battery, …) only fire for real
+    // changes: sources settle for a few seconds after startup (nmcli, BlueZ and
+    // UPower fill in asynchronously), then the current values become the
+    // baseline and an event fires only when a value differs from the last one.
+    property bool _armed: false
+    property var _last: ({})
+    Timer {
+        interval: 4000
+        running: root.available && !root._armed
+        onTriggered: {
+            root._last = { themeMode: root._mode(), lock: GlobalStates.screenLocked, wifi: root._wifi(),
+                bluetooth: root._bluetooth(), battery: root._batteryKey(), profile: root._profile() }
+            root._armed = true
+        }
+    }
+    function _report(key, value, event, data) {
+        if (!root._armed || root._last[key] === value) return
+        root._last[key] = value
+        root.emit(event, data)
+    }
+
     function _mode() { return Appearance.m3colors.darkmode ? "dark" : "light" }
+    function _wifi() { return Network.wifiEnabled ? "on" : "off" }
+    function _bluetooth() { return BluetoothStatus.enabled ? "on" : "off" }
+    function _profile() {
+        const p = PowerProfiles.profile
+        return p === PowerProfile.PowerSaver ? "power-saver" : p === PowerProfile.Performance ? "performance" : "balanced"
+    }
+
     Connections {
         target: Appearance.m3colors
-        function onDarkmodeChanged() { root.emit("theme_mode_changed", { themeMode: root._mode() }) }
-    }
-    Connections {
-        target: Config.options?.background ?? null
-        function onWallpaperPathChanged() {
-            root.emit("wallpaper_changed", { wallpaper: Config.options.background.wallpaperPath, themeMode: root._mode() })
-        }
+        function onDarkmodeChanged() { root._report("themeMode", root._mode(), "theme_mode_changed", { themeMode: root._mode() }) }
     }
     Connections {
         target: GlobalStates
-        function onScreenLockedChanged() { root.emit(GlobalStates.screenLocked ? "session_locked" : "session_unlocked", {}) }
+        function onScreenLockedChanged() {
+            const locked = GlobalStates.screenLocked
+            root._report("lock", locked, locked ? "session_locked" : "session_unlocked", {})
+        }
     }
     Connections {
         target: Network
-        function onWifiEnabledChanged() { root.emit("wifi_changed", { wifi: Network.wifiEnabled ? "on" : "off" }) }
+        function onWifiEnabledChanged() { root._report("wifi", root._wifi(), "wifi_changed", { wifi: root._wifi() }) }
     }
     Connections {
         target: BluetoothStatus
-        function onEnabledChanged() { root.emit("bluetooth_changed", { bluetooth: BluetoothStatus.enabled ? "on" : "off" }) }
+        function onEnabledChanged() { root._report("bluetooth", root._bluetooth(), "bluetooth_changed", { bluetooth: root._bluetooth() }) }
     }
     Connections {
         target: PowerProfiles
-        function onProfileChanged() {
-            const p = PowerProfiles.profile
-            root.emit("power_profile_changed", { powerProfile: p === PowerProfile.PowerSaver ? "power-saver"
-                : p === PowerProfile.Performance ? "performance" : "balanced" })
-        }
+        function onProfileChanged() { root._report("profile", root._profile(), "power_profile_changed", { powerProfile: root._profile() }) }
+    }
+
+    // Wallpaper/colours: fires once the new colours are applied (so the hook
+    // sees them and the final theme mode). A wallpaper change that produces no
+    // colour update (static theme, matugen missing) still fires after 6 s.
+    function _emitWallpaper() {
+        wallpaperFallback.stop()
+        if (root._armed)
+            root.emit("wallpaper_changed", { wallpaper: Config.options?.background?.wallpaperPath ?? "", themeMode: root._mode() })
+    }
+    Timer { id: colorsSettled; interval: 500; onTriggered: root._emitWallpaper() }
+    Timer { id: wallpaperFallback; interval: 6000; onTriggered: root._emitWallpaper() }
+    Connections {
+        target: MaterialThemeLoader
+        function onColorsApplied() { colorsSettled.restart() }
+    }
+    Connections {
+        target: Config.options?.background ?? null
+        function onWallpaperPathChanged() { wallpaperFallback.restart() }
     }
 
     // Battery: fires on charge-state changes and when crossing hooks.batteryThreshold.
-    readonly property string batteryState: !Battery.available ? "" : Battery.isCharging ? "charging"
-        : Battery.isPluggedIn ? "full" : "discharging"
+    readonly property string batteryState: !Battery.available ? ""
+        : Battery.chargeState === UPowerDeviceState.Charging ? "charging"
+        : Battery.chargeState === UPowerDeviceState.FullyCharged ? "full"
+        : Battery.chargeState === UPowerDeviceState.PendingCharge ? "plugged" // on AC, not charging
+        : "discharging"
     readonly property bool batteryLow: Battery.available
         && Math.round(Battery.percentage * 100) <= (Config.options?.hooks?.batteryThreshold ?? 20)
+    function _batteryKey() { return `${root.batteryState}/${root.batteryLow}` }
     function _emitBattery() {
         if (!Battery.available) return
-        root.emit("battery_changed", { batteryPercent: Math.round(Battery.percentage * 100),
+        root._report("battery", root._batteryKey(), "battery_changed", { batteryPercent: Math.round(Battery.percentage * 100),
             batteryState: root.batteryState, batteryLow: root.batteryLow ? "true" : "false" })
     }
     onBatteryStateChanged: root._emitBattery()

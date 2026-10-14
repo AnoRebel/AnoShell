@@ -39,7 +39,7 @@ is not restarted.
 | `ano ipc <args…>` | passes through to `qs -c ano ipc`, e.g. `ano ipc call settings open`, `ano ipc show` |
 | `ano emit <event> [key=value …]` | sends a shell event to anod, which runs its hook (handy for testing hooks) |
 | `ano config validate [--file F] [--json]` | checks your config against the schema: wrong types are errors (exit 1), unknown keys are warnings |
-| `ano config migrate [--file F] [--prune-unknown] [--dry-run]` | rewrites old keys (`hud.enabled`, `activSpot`, `appearance.theme.static`, `bar.bars`, and `bars[0].autoHide`/`showBackground`, which shadowed the global switches). It writes `config.json.bak-YYYYMMDD-HHMMSS` first. `--prune-unknown` also removes keys the shell ignores |
+| `ano config migrate [--file F] [--prune-unknown] [--dry-run]` | rewrites old keys (`hud.enabled`, `activSpot`, `appearance.theme.static`, `bar.bars`, and `bars[0].autoHide`/`showBackground`, which shadowed the global switches). It writes a new `config.json.bak-YYYYMMDD-HHMMSS` first (never overwriting an older backup), follows a symlinked config, and keeps the file's permissions. `--prune-unknown` also removes keys the shell ignores |
 | `ano version` | prints the version |
 
 `--file` defaults to `~/.config/anoshell/config.json`, your sparse delta over the
@@ -49,9 +49,15 @@ bundled `config.json`.
 
 Set a shell command per event under `hooks` in `~/.config/anoshell/config.json`.
 anod runs it with `sh -c`, asynchronously, in its own process group. A hook that
-runs longer than `hooks.timeoutSeconds` (default 10) is killed and logged. Event
-data arrives only through the environment (`ANO_EVENT` plus the variables
-below), never spliced into the command.
+runs longer than `hooks.timeoutSeconds` (default 10) is killed and logged.
+Programs a hook starts in the background (`cmd &`) keep running. Event data
+arrives only through the environment (`ANO_EVENT` plus the variables below),
+never spliced into the command.
+
+While a hook is still running, repeats of the same event collapse into one more
+run with the newest data. State events (Wi-Fi, Bluetooth, battery, power
+profile, theme, lock) fire only on real changes, never just because the shell
+started.
 
 ```json
 {
@@ -66,13 +72,13 @@ below), never spliced into the command.
 | Config key | Event | Environment |
 |---|---|---|
 | `started` | `started`: the shell started or reloaded | none |
-| `wallpaperChanged` | `wallpaper_changed` | `ANO_WALLPAPER`, `ANO_THEME_MODE` |
+| `wallpaperChanged` | `wallpaper_changed`: after the new colours are applied (or 6 s after a wallpaper change that produces no colour update) | `ANO_WALLPAPER`, `ANO_THEME_MODE` |
 | `themeModeChanged` | `theme_mode_changed` | `ANO_THEME_MODE` (`dark` or `light`) |
 | `sessionLocked` / `sessionUnlocked` | `session_locked` / `session_unlocked` | none |
 | `loggingOut` / `rebooting` / `shuttingDown` | `logging_out` / `rebooting` / `shutting_down` | none |
 | `wifiChanged` | `wifi_changed` | `ANO_WIFI` (`on` or `off`) |
 | `bluetoothChanged` | `bluetooth_changed` | `ANO_BLUETOOTH` (`on` or `off`) |
-| `batteryChanged` | `battery_changed`: the charge state changed, or `batteryThreshold` was crossed | `ANO_BATTERY_PERCENT`, `ANO_BATTERY_STATE` (`charging`, `discharging` or `full`), `ANO_BATTERY_LOW` |
+| `batteryChanged` | `battery_changed`: the charge state changed, or `batteryThreshold` was crossed | `ANO_BATTERY_PERCENT`, `ANO_BATTERY_STATE` (`charging`, `discharging`, `full`, or `plugged` for on AC but not charging), `ANO_BATTERY_LOW` |
 | `powerProfileChanged` | `power_profile_changed` | `ANO_POWER_PROFILE` (`power-saver`, `balanced` or `performance`) |
 
 `hooks.enable: false` turns all hooks off. Hooks read the config on every event,
@@ -97,7 +103,10 @@ Methods: `ping`, `version`, `status`, `subscribe`, `event.emit`
 `{"id":…,"error":{"code":"…","message":"…"}}`, with the codes
 `version_mismatch`, `unknown_method`, `bad_request` and `failed`. A client that
 sends the wrong `v` gets `version_mismatch`; the shell then shows a one-time
-notification and stops retrying until it is reloaded.
+notification and checks again the next time anod restarts.
+
+Methods also include `shutdown`, which a new session's anod uses to retire a
+stale one.
 
 From the shell: `qs -c ano ipc call anod status` shows whether the shell is connected.
 
@@ -105,13 +114,16 @@ From the shell: `qs -c ano ipc call anod status` shows whether the shell is conn
 
 | Path | Contents |
 |---|---|
-| `$XDG_RUNTIME_DIR/ano/anod.sock` | control socket |
-| `$XDG_STATE_HOME/ano/anod.log` | log (also on stderr; reset when it passes 1 MB) |
+| `$XDG_RUNTIME_DIR/ano/anod.sock` | control socket (plus `anod.sock.lock`) |
+| `$XDG_STATE_HOME/ano/anod.log` | log (also on stderr; starts over when it passes 1 MB) |
 | `~/.config/anoshell/config.json` | your config (hooks live here) |
 
-anod exits on its own when the Wayland display it started under goes away, so a
-stale daemon never outlives its session. It idles at about 8 MB RSS and
-near-zero CPU.
+anod belongs to the graphical session it started in. It exits within 5 s of
+that session ending, and its supervisor never restarts the shell into a dead
+display. If you log out and back in quickly, the new session's anod asks the
+old one to shut down and takes over. A second anod in the same session refuses
+to start (an `flock` on `anod.sock.lock` guards the socket). anod idles at about
+8 MB RSS and near-zero CPU.
 
 ## Developing
 
