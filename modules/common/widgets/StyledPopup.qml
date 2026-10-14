@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.modules.common
+import qs.services
 
 /**
  * Styled popup window anchored to a parent item. Used for bar module
@@ -51,6 +52,53 @@ Item {
         visible: false   // parking spot for inline children before the window exists
     }
 
+    // ── Connected-frame fusion ────────────────────────────────────────────────
+    // While shown, publish the popup card's SCREEN-space rect to PanelRegistry so
+    // the AnoScreen frame shader fuses it into the shell silhouette with concave
+    // junction arcs (like the bar and sidebars). Inert when connected mode is off
+    // (register no-ops). Priority 10 ranks it above the sidebars for the shader's
+    // four chrome slots; bars are added ahead of the registry, so a popup can
+    // never evict the bar.
+    //
+    // The card lives in its own PopupWindow, whose item origin is the popup — NOT
+    // the screen — so mapToItem there gives popup-local coords the frame can't use.
+    // Instead derive the rect from the ANCHOR item (the bar icon), which is a
+    // normal item mappable to screen space: the popup sits directly below the icon
+    // (top bar, gravity Bottom) and is horizontally centred on it.
+    readonly property string _regKey: `popout:${root}`
+    readonly property bool _regActive: root.shown && root.anchorItem !== null && PanelRegistry.enabled
+    function _updateReg() {
+        if (!root._regActive) {
+            PanelRegistry.unregister(root._regKey)
+            return
+        }
+        const w = root.anchorItem.QsWindow?.window
+        if (!w) return
+        // anchor item's position in its window (== screen for a top-anchored bar).
+        const a = root.anchorItem.mapToItem(null, 0, 0)
+        const cx = a.x + root.anchorItem.width / 2
+        // Clamp to the screen so the registered rect matches where the compositor
+        // actually places the popup: a popup centred near the screen edge gets
+        // shifted inward to stay on-screen, and registering the un-clamped centre
+        // drew the fusion arc offset from the real popup (calendar under the clock).
+        const sw = w.width ?? 0
+        const edgeGap = root.popupMargin
+        let cardX = cx - root.popupWidth / 2
+        cardX = Math.max(edgeGap, Math.min(cardX, sw - root.popupWidth - edgeGap))
+        const cardY = a.y + root.anchorItem.height + root.popupMargin
+        PanelRegistry.register(root._regKey, {
+            "kind": "popout",
+            "screenName": w.screen?.name ?? "",
+            "edge": "top",
+            "x": cardX, "y": cardY,
+            "w": root.popupWidth, "h": root.popupHeight,
+            "priority": 10,
+            "surfaceRadius": Appearance?.rounding?.normal ?? 12
+        })
+    }
+    on_RegActiveChanged: _updateReg()
+    Component.onDestruction: PanelRegistry.unregister(root._regKey)
+
     // Keep the popup window alive for the lifetime of this component instead
     // of destroying it on every hide. A Loader tied to `shown` tore the
     // window (and the reparented content) down mid-animation, so the popup
@@ -66,6 +114,7 @@ Item {
                 // any inline children that were parked before load.
                 root.contentParent = item.cardContent
                 item.pullInlineContent()
+                root._updateReg()
             }
         }
 
@@ -100,9 +149,18 @@ Item {
             Item {
                 anchors { fill: parent; margins: root.popupMargin }
 
+                // In connected mode the AnoScreen frame draws the shell's shadow +
+                // the fused-in popout surface, so this popup must drop its own
+                // chrome. The hand-drawn shadowRect below is a solid #44000000
+                // rect bleeding 4px past the card; the compositor BLURS it into a
+                // soft glow — the "halo" around the popout — and the 1px border
+                // adds an outline. Both are floating-mode only.
+                readonly property bool connectedMode: PanelRegistry.enabled
+
                 // Shadow
                 Rectangle {
                     id: shadowRect
+                    visible: !parent.connectedMode
                     anchors.fill: parent; anchors.margins: -4
                     radius: cardBg.radius + 4
                     color: "#44000000"
@@ -113,9 +171,17 @@ Item {
                 Rectangle {
                     id: cardBg
                     anchors.fill: parent
+                    // In connected mode the AnoScreen frame shader ALREADY paints
+                    // this popout's fused surface (with the concave top join + its
+                    // own rounded free corners). Painting cardBg's colLayer0 on top
+                    // draws a SECOND, slightly-inset background — the "double
+                    // background" whose offset edge read as a misaligned connector.
+                    // Go transparent and let the frame surface show through; drop the
+                    // border too (the frame is the outline). Floating mode keeps the
+                    // full card. Same principle as BarWindow's drawChrome.
                     radius: Appearance?.rounding.normal ?? 12
-                    color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                    border.width: 1
+                    color: parent.connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+                    border.width: 0
                     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
                     clip: true
 

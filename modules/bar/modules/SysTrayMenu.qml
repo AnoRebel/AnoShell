@@ -79,13 +79,30 @@ PopupWindow {
             border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
             clip: true
 
+            // Spring the menu down out of the tray icon (it hangs below a top bar),
+            // matching the bar popouts' expressive spatial feel instead of a flat
+            // fade. transformOrigin Top so it grows downward from the bar edge.
             opacity: 0
-            Component.onCompleted: opacity = 1
+            scale: 0.9
+            transformOrigin: Item.Top
+            Component.onCompleted: { opacity = 1; scale = 1 }
 
             implicitWidth: stackView.implicitWidth + popupBackground.padding * 2
             implicitHeight: stackView.implicitHeight + popupBackground.padding * 2
 
-            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
+                    easing.type: Easing.OutCubic
+                }
+            }
+            Behavior on scale {
+                NumberAnimation {
+                    duration: (Appearance?.animationCurves.expressiveFastSpatialDuration ?? 350) * (Appearance?.animSpeedMultiplier ?? 1)
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Appearance?.animationCurves.expressiveFastSpatial ?? [0.42, 1.67, 0.21, 0.90, 1, 1]
+                }
+            }
             Behavior on implicitHeight { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
             Behavior on implicitWidth { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 

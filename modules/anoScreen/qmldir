@@ -1,2 +1,3 @@
 module qs.modules.anoScreen
 AnoScreen 1.0 AnoScreen.qml
+ConnectedFrame 1.0 ConnectedFrame.qml

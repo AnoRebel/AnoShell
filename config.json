@@ -26,7 +26,12 @@
     },
     "connectedCorners": {
       "enable": false,
-      "radius": 18
+      "radius": 18,
+      "thickness": 7,
+      "manageGaps": true,
+      "floatingGapsOut": 5,
+      "opacity": 1.0,
+      "blur": false
     },
     "shadows": {
       "enable": false,
@@ -273,6 +278,16 @@
       "enable": false,
       "refreshMinutes": 15,
       "sources": []
+    },
+    "holidays": {
+      "enable": false,
+      "autoDetect": true,
+      "fallbackCountry": "TZ",
+      "country": "",
+      "color": "#E06C75"
+    },
+    "events": {
+      "enable": true
     }
   },
   "lock": {

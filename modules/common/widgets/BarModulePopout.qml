@@ -46,6 +46,14 @@ Item {
     property real popupWidth: 280
     property real popupHeight: 200
 
+    // Stable unique id for this popout, used as its PanelRegistry key so the
+    // connected-corners frame can fuse it into the shell silhouette. Derived from
+    // the QML object address, which is stable for the instance's lifetime and
+    // unique across modules — bar modules don't set objectName, and only one
+    // popout is open at a time, so a per-instance identity is all the registry
+    // needs. Override it if a module ever needs a meaningful key.
+    property string popoutKey: `${root}`
+
     // Hover over the popup window itself (reported by the standard mode).
     property bool popupHovered: false
     // Grace period after the request drops before the popup hides, covering
@@ -163,7 +171,37 @@ Item {
 
             onShowPopoutChanged: {
                 Qt.callLater(() => { morphContainer.wasShown = morphContainer.showPopout })
+                morphContainer._updateReg()
             }
+
+            // ── Connected-frame fusion ────────────────────────────────────────
+            // While open, publish the popout's screen-space rect to PanelRegistry
+            // so the AnoScreen frame shader fuses it into the silhouette with
+            // concave junction arcs, like the bar and sidebars. Inert when
+            // connected mode is off (PanelRegistry.register no-ops), so floating
+            // mode pays nothing. Priority 10 ranks it above the sidebars for the
+            // shader's four chrome slots (bars are added ahead of the registry
+            // entirely, so a popout can never evict the bar).
+            readonly property string _regKey: `popout:${root.popoutKey}`
+            function _updateReg() {
+                if (!morphContainer.showPopout || root.popoutKey.length === 0) {
+                    PanelRegistry.unregister(morphContainer._regKey)
+                    return
+                }
+                const w = morphBg.Window.window
+                if (!w) return
+                const p = morphBg.mapToItem(null, 0, 0)
+                PanelRegistry.register(morphContainer._regKey, {
+                    "kind": "popout",
+                    "screenName": w.screen?.name ?? "",
+                    "edge": "top",
+                    "x": p.x, "y": p.y,
+                    "w": morphBg.width, "h": morphBg.height,
+                    "priority": 10,
+                    "surfaceRadius": Appearance?.rounding?.normal ?? 12
+                })
+            }
+            Component.onDestruction: PanelRegistry.unregister(morphContainer._regKey)
 
             // Shape background
             ShapeCanvas {
@@ -177,8 +215,16 @@ Item {
                 height: root.popupHeight
 
                 color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                borderWidth: 0.002
-                borderColor: Appearance?.colors.colLayer0Border ?? "#44444488"
+                // The polygon below is a normalized unit RECTANGLE meant to cover
+                // this whole canvas, so it must stretch per-axis. ShapeCanvas
+                // otherwise scales uniformly by min(w,h), which drew the shape as a
+                // square inside the non-square popup and left a transparent strip
+                // that the compositor blurred into a halo around the popout.
+                stretchToFill: true
+                // No border: the stroke is drawn in normalized space and scaled up
+                // by the canvas transform, so a 0.002 hairline rendered as a soft,
+                // uneven outline rather than a crisp edge.
+                borderWidth: 0
 
                 roundedPolygon: {
                     const r = (Appearance?.rounding?.normal ?? 12) / Math.max(root.popupWidth, root.popupHeight)

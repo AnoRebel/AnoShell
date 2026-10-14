@@ -54,6 +54,10 @@ Item {
     implicitWidth: barContentContainer.implicitWidth
     implicitHeight: barContentContainer.implicitHeight
 
+    // NOTE: this component is currently UNUSED — every bar module goes through
+    // BarModulePopout, which implements its own morph inline. Fixes made here
+    // (stretchToFill, borderWidth) must be mirrored there to have any effect.
+
     // Bar content (always visible)
     Item {
         id: barContentContainer
@@ -79,8 +83,18 @@ Item {
         height: root.popupContentHeight
 
         color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-        borderWidth: 0.002
-        borderColor: Appearance?.colors.colLayer0Border ?? "#44444488"
+        // No border: the polygon is drawn in normalized (0..1) space and then
+        // scaled up by the canvas transform, so a stroke is scaled too — the
+        // hairline 0.002 became a soft, uneven outline around the popout rather
+        // than a crisp 1px edge. The fill alone reads cleanly.
+        borderWidth: 0
+
+        // The polygon below is a normalized unit RECTANGLE meant to cover this
+        // whole canvas, so it must stretch per-axis. With the default uniform
+        // min(w,h) scaling it drew a 200×200 square inside the 280×200 surface,
+        // leaving an ~80px transparent strip that the compositor blurred into the
+        // halo around the popout.
+        stretchToFill: true
 
         // Morphing polygon
         roundedPolygon: {
@@ -99,13 +113,27 @@ Item {
             easing.bezierCurve: [0.42, 1.67, 0.21, 0.90, 1, 1] // M3 Expressive fast spatial
         }
 
-        // Scale animation for entry/exit
+        // Scale entry/exit — grows from the bar edge the popout hangs off (top for
+        // a top bar, bottom for a bottom bar), with the same expressive spatial
+        // spring the sidebars use, so the popout feels like it springs out of the
+        // bar rather than fading in place.
         opacity: root.showPopout ? 1 : 0
         scale: root.showPopout ? 1 : 0.85
         transformOrigin: root.atBottom ? Item.Bottom : Item.Top
 
-        Behavior on opacity { NumberAnimation { duration: root.morphDuration / 2; easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: root.morphDuration; easing.type: Easing.OutCubic } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on scale {
+            NumberAnimation {
+                duration: (Appearance?.animationCurves.expressiveFastSpatialDuration ?? 350) * (Appearance?.animSpeedMultiplier ?? 1)
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Appearance?.animationCurves.expressiveFastSpatial ?? [0.42, 1.67, 0.21, 0.90, 1, 1]
+            }
+        }
 
         // Popout content (only visible when expanded)
         Item {

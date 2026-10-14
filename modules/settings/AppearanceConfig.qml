@@ -395,7 +395,7 @@ ColumnLayout {
     SettingsCard {
         icon: "fullscreen"
         title: "Global Margin (Bezel)"
-        subtitle: "Gap between all shell elements and screen edges"
+        subtitle: "Floating mode: gap between shell elements and the screen edge"
         configKeys: ["appearance.bezel"]
 
         // Visual bezel preview
@@ -429,7 +429,7 @@ ColumnLayout {
 
         ConfigSlider {
             label: "Bezel size"
-            sublabel: "Applied to bars, sidebars, and all overlay panels"
+            sublabel: "Insets floating bars, sidebars, and overlay panels from the screen edge. Ignored in Connected shell mode, which uses Frame thickness instead."
             from: 0; to: 24; stepSize: 1
             value: Config.options?.appearance?.bezel ?? 0
             onValueChanged: Config.setNestedValue("appearance.bezel", Math.round(value))
@@ -486,6 +486,42 @@ ColumnLayout {
             value: Config.options?.appearance?.connectedCorners?.radius ?? 18
             onValueChanged: Config.setNestedValue("appearance.connectedCorners.radius", Math.round(value))
             valueText: `${Math.round(value)}px`
+        }
+
+        ConfigSlider {
+            label: "Frame thickness"
+            sublabel: "Connected mode's counterpart to Bezel: width of the painted frame band at each screen edge. 0 shows only the rounded corners; raise it for a wider frame (lower it if the band overlaps window borders)."
+            from: 0; to: 24; stepSize: 1
+            enabled: shellModeCard.connected
+            value: Config.options?.appearance?.connectedCorners?.thickness ?? 7
+            onValueChanged: Config.setNestedValue("appearance.connectedCorners.thickness", Math.round(value))
+            valueText: `${Math.round(value)}px`
+        }
+
+        ConfigSwitch {
+            label: "Windows sit flush against the frame"
+            sublabel: "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept)."
+            enabled: shellModeCard.connected
+            checked: Config.options?.appearance?.connectedCorners?.manageGaps ?? true
+            onCheckedChanged: Config.setNestedValue("appearance.connectedCorners.manageGaps", checked)
+        }
+
+        ConfigSlider {
+            label: "Frame opacity"
+            sublabel: "Below 100% the frame becomes translucent. Turn on Frame blur too, or you'll see straight through it."
+            from: 20; to: 100; stepSize: 1
+            enabled: shellModeCard.connected
+            value: (Config.options?.appearance?.connectedCorners?.opacity ?? 1.0) * 100
+            onValueChanged: Config.setNestedValue("appearance.connectedCorners.opacity", Math.round(value) / 100)
+            valueText: `${Math.round(value)}%`
+        }
+
+        ConfigSwitch {
+            label: "Frame blur"
+            sublabel: "Blurs the desktop behind a translucent frame (frosted glass). No visible effect at 100% opacity."
+            enabled: shellModeCard.connected
+            checked: Config.options?.appearance?.connectedCorners?.blur ?? false
+            onCheckedChanged: Config.setNestedValue("appearance.connectedCorners.blur", checked)
         }
 
         NoticeBox {

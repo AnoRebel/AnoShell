@@ -431,13 +431,37 @@ Singleton {
                     property string expressive: "Geist"
                 }
 
-                // Seamless connected-corner background: draws concave corners
-                // that join the bar to the screen edges so it "flows" from the
-                // shell (noctalia/caelestia-style). Opt-in — the normal bar
-                // background is used when disabled.
+                // Connected shell mode: one SDF pass draws the rounded screen
+                // frame with the bar/sidebars/popouts fused into it by concave
+                // junction arcs, so the shell reads as a single surface. Opt-in;
+                // when disabled every surface draws its own floating background.
                 property JsonObject connectedCorners: JsonObject {
                     property bool enable: false
+                    // Screen-corner rounding.
                     property real radius: 18
+                    // Width of the painted frame band on each screen edge. This is
+                    // the visible bezel the desktop sits inside. It must be > 0 for
+                    // the frame's elevation shadow to have somewhere to fall —
+                    // at 0 the shadow would bleed inward over your windows, so it
+                    // is suppressed entirely.
+                    property real thickness: 7
+                    // Drop the compositor's OUTER gap while connected mode is on,
+                    // so windows sit flush against the painted frame instead of
+                    // being inset by a second, unpainted gap. Inner gaps (between
+                    // windows) are left alone.
+                    property bool manageGaps: true
+                    // The outer gap to restore when connected mode turns off (or
+                    // manageGaps is disabled). Should match the compositor config's
+                    // floating-mode gaps_out.
+                    property int floatingGapsOut: 5
+                    // Opacity of the painted frame surface. Below 1.0 the frame
+                    // becomes translucent; pair with `blur` so what shows through is
+                    // the blurred desktop rather than a raw see-through panel.
+                    property real opacity: 1.0
+                    // Ask the compositor to blur behind the frame surface. Only has
+                    // a visible effect when opacity < 1.0 (a fully opaque frame has
+                    // nothing to see through to).
+                    property bool blur: false
                 }
 
                 // Material 3 elevation shadows (SDF shader). Default off — when
@@ -491,6 +515,9 @@ Singleton {
                 property bool verbose: false // verbose mode shows more info in bar modules
                 property bool morphingPanels: false
                 property bool showBackground: true
+                // Slide the bar out (and release its exclusive zone) while a window
+                // is fullscreen on the same screen; reveal on hovering the edge.
+                property bool hideOnFullscreen: true
                 property var screenList: []
                 // autoHide block matches the bundled config shape. Per-bar
                 // `bars[].autoHide` (a plain bool in bars[]) overrides this.
@@ -884,6 +911,28 @@ Singleton {
                     property bool enable: false
                     property int refreshMinutes: 15
                     property var sources: []
+                }
+                // User-created calendar events (add/edit, recurring, reminders).
+                property JsonObject events: JsonObject {
+                    property bool enable: true
+                }
+                // Public holidays shown in the calendar (dots + labels), fetched
+                // per country+year and cached. Primary source Nager.Date (no key);
+                // AbstractAPI is an optional fallback when an API key is set.
+                property JsonObject holidays: JsonObject {
+                    property bool enable: false
+                    // ISO-3166 alpha-2 country. Empty + auto ⇒ detect by IP.
+                    property string country: ""
+                    // Auto-detect the country via IP geolocation (ip-api.com, no
+                    // key). When false, `country` is used verbatim. Falls back to
+                    // `fallbackCountry` if detection fails.
+                    property bool autoDetect: true
+                    property string fallbackCountry: "TZ"
+                    // Optional AbstractAPI key; enables the fallback provider used
+                    // when Nager.Date has no data / errors for a country.
+                    property string abstractApiKey: ""
+                    // Dot/label colour for holiday entries in the calendar.
+                    property string color: "#E06C75"
                 }
             }
 

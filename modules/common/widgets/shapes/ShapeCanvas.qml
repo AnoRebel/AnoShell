@@ -6,6 +6,13 @@ Canvas {
     property color color: "#685496"
     property var roundedPolygon: null
     property bool polygonIsNormalized: true
+    // Normalized polygons are scaled UNIFORMLY by min(width, height) so shapes
+    // (blobs, stars, …) keep their aspect ratio. A polygon that is a normalized
+    // unit RECTANGLE meant to fill a non-square canvas needs the opposite: scale
+    // each axis independently, or it renders as a square inset inside the canvas
+    // and leaves a transparent strip the compositor then blurs into a halo.
+    // Opt-in so the aspect-preserving default is unchanged for existing users.
+    property bool stretchToFill: false
     property real borderWidth: 0
     property color borderColor: color
     property bool debug: false
@@ -44,6 +51,9 @@ Canvas {
 
     onProgressChanged: requestPaint()
     onColorChanged: requestPaint()
+    onStretchToFillChanged: requestPaint()
+    onWidthChanged: requestPaint()
+    onHeightChanged: requestPaint()
     onBorderWidthChanged: requestPaint()
     onBorderColorChanged: requestPaint()
     onDebugChanged: requestPaint()
@@ -63,7 +73,10 @@ Canvas {
 
         ctx.save();
         if (root.polygonIsNormalized) {
-            ctx.scale(size, size);
+            if (root.stretchToFill)
+                ctx.scale(root.width, root.height);
+            else
+                ctx.scale(size, size);
         }
         ctx.translate(root.xOffset, root.yOffset);
 

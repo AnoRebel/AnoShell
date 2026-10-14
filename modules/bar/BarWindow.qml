@@ -33,7 +33,33 @@ PanelWindow {
     // Auto-hide hover tracking
     property bool mustShow: hoverArea.containsMouse
 
+    // Hide the bar while a window is fullscreen on this bar's screen (unless the
+    // pointer is over the bar). Compositor-agnostic via CompositorService. When
+    // hidden the bar slides out AND drops its exclusive zone, so a fullscreen app
+    // truly gets the whole screen. Toggle: bar.hideOnFullscreen (default on).
+    readonly property bool hideOnFullscreen: Config.options?.bar?.hideOnFullscreen ?? true
+    readonly property string _screenName: barRoot.screen?.name ?? ""
+    readonly property bool screenFullscreen: {
+        void CompositorService.fullscreenRevision
+        return hideOnFullscreen && CompositorService.hasFullscreenOnScreen(_screenName)
+    }
+    // Treated exactly like auto-hide: revealed on hover, hidden otherwise.
+    readonly property bool effectiveHidden: (autoHide || screenFullscreen) && !mustShow
+
+    // In connected mode the AnoScreen frame shader paints this bar's fill, its
+    // concave junction arcs into the screen frame, and the whole silhouette's M3
+    // shadow. Drawing our own background/border/shadow/corners on top of that
+    // re-creates the floating pill outline the mode exists to remove — so all
+    // per-widget chrome is FLOATING-MODE ONLY.
+    readonly property bool connectedMode: PanelRegistry.enabled
+    readonly property bool drawChrome: showBackground && !connectedMode
+
     WlrLayershell.namespace: `quickshell:bar:${barConfig?.id ?? barIndex}`
+    // Overlay (above Top) so the bar always draws above the connected-corners
+    // frame (AnoScreen, on Top). Two same-layer surfaces order by commit time,
+    // which let the frame cover the bar content until a hover event; Overlay makes
+    // the bar deterministically win.
+    WlrLayershell.layer: WlrLayer.Overlay
 
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
@@ -43,7 +69,7 @@ PanelWindow {
     // blank (the "top space removed, then bar appears" flicker). Gating on
     // contentLoaded makes the reserved space and the bar appear together.
     readonly property bool contentLoaded: barContentLoader.status === Loader.Ready
-    exclusiveZone: (autoHide && !mustShow) || !contentLoaded ? 0 : barThickness + globalMargin
+    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin
 
     // Anchoring based on edge
     anchors {
@@ -84,9 +110,10 @@ PanelWindow {
 
         // Material 3 elevation shadow behind the bar (SDF shader; no-op when
         // appearance.shadows.enable is false). Declared BEFORE the background so
-        // it renders underneath it.
+        // it renders underneath it. In connected mode the frame shader draws the
+        // shadow for the whole fused silhouette instead.
         Loader {
-            active: barRoot.showBackground && (Config.options?.appearance?.shadows?.enable ?? false)
+            active: barRoot.drawChrome && (Config.options?.appearance?.shadows?.enable ?? false)
             anchors.fill: barBackground
             sourceComponent: ElevationShadow {
                 level: 2
@@ -102,7 +129,9 @@ PanelWindow {
             anchors {
                 fill: barContentLoader
             }
-            visible: barRoot.showBackground
+            // Kept as a geometry anchor even when unpainted: the shadow Loader and
+            // the corner decorators anchor to it.
+            visible: barRoot.drawChrome
             color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
             radius: barRoot.barRadius
             border.width: 1
@@ -142,8 +171,8 @@ PanelWindow {
             width: barRoot.isVertical ? barRoot.barThickness : undefined
             height: barRoot.isVertical ? undefined : barRoot.barThickness
 
-            // Auto-hide slide
-            property real hideOffset: barRoot.autoHide && !barRoot.mustShow ? -barRoot.barThickness : 0
+            // Auto-hide / fullscreen-hide slide
+            property real hideOffset: barRoot.effectiveHidden ? -barRoot.barThickness : 0
             Behavior on hideOffset {
                 NumberAnimation {
                     duration: Appearance?.animation.elementMoveFast.duration ?? 200
@@ -163,9 +192,10 @@ PanelWindow {
             }
         }
 
-        // Round corner decorators (for edge-hugging bars)
+        // Round corner decorators (for edge-hugging bars). Connected mode draws
+        // the bar→frame junction arcs in the shader, so these would double up.
         Loader {
-            active: barRoot.showBackground && globalMargin === 0
+            active: barRoot.drawChrome && globalMargin === 0
             anchors {
                 left: !barRoot.isVertical ? parent.left : undefined
                 right: !barRoot.isVertical ? parent.right : undefined

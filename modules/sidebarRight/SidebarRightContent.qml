@@ -18,9 +18,17 @@ Rectangle {
     property var panelScreen: null
     property var brightnessMonitor: panelScreen ? Brightness.getMonitorForScreen(panelScreen) : null
 
-    color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-    radius: Appearance?.rounding.normal ?? 12
-    border.width: 1
+    // In connected mode the AnoScreen frame shader ALREADY paints this sidebar's
+    // fused surface (it's registered with PanelRegistry, so the shader fills its
+    // whole body with the frame colour + draws the concave join). Painting our own
+    // colLayer0 on top produces a second, slightly-inset background — the "double
+    // background". Go transparent and let the frame show through, and drop the
+    // border/rounding (the frame is the surface). Floating mode keeps the full
+    // translucent card (compositor-blurred). Same rule as BarWindow / StyledPopup.
+    readonly property bool connectedMode: PanelRegistry.enabled
+    color: connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+    radius: connectedMode ? 0 : (Appearance?.rounding.normal ?? 12)
+    border.width: 0
     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
     clip: true
 

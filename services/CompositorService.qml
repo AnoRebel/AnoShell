@@ -53,6 +53,62 @@ Singleton {
             : "")
 
     // ═══════════════════════════════════════════════════════════════════════
+    // Fullscreen tracking (compositor-agnostic) — so surfaces (e.g. the bar) can
+    // hide while a window is fullscreen on their screen.
+    // ═══════════════════════════════════════════════════════════════════════
+    // Set of monitor names that currently have a fullscreen window.
+    property var fullscreenScreens: ({})
+    // Bumped whenever fullscreen state might have changed, so bindings recompute.
+    property int fullscreenRevision: 0
+
+    function hasFullscreenOnScreen(screenName): bool {
+        return !!root.fullscreenScreens[screenName]
+    }
+
+    function _recomputeFullscreen(): void {
+        const out = ({})
+        if (isHyprland) {
+            // Use HyprlandData, which re-runs `hyprctl clients -j` on every raw
+            // event, so its window list is never stale (Hyprland workspace
+            // `lastIpcObject.hasfullscreen` is NOT refreshed on fullscreen events,
+            // which made an earlier attempt flaky). fullscreen: 0=none, 1=maximize,
+            // 2=fullscreen — only true fullscreen (>=2) hides the bar. `monitor` is
+            // a monitor id; map it to a name via HyprlandData.monitors.
+            const monById = ({})
+            for (const m of (HyprlandData.monitors || [])) monById[m.id] = m.name
+            for (const w of (HyprlandData.windowList || [])) {
+                if ((w.fullscreen ?? 0) >= 2) {
+                    const name = monById[w.monitor] ?? ""
+                    if (name) out[name] = true
+                }
+            }
+        } else if (isNiri && NiriService) {
+            const wins = NiriService.windows?.values
+                ? Array.from(NiriService.windows.values) : (NiriService.windows || [])
+            for (const w of wins) {
+                if (w && w.is_fullscreen) {
+                    const o = w.output ?? w.workspace?.output ?? ""
+                    if (o) out[o] = true
+                }
+            }
+        }
+        root.fullscreenScreens = out
+        root.fullscreenRevision++
+    }
+
+    // Recompute whenever HyprlandData refreshes (it already listens to raw events
+    // and re-queries hyprctl), or when Niri's window state changes.
+    Connections {
+        target: root.isHyprland ? HyprlandData : null
+        function onWindowListChanged() { root._recomputeFullscreen() }
+    }
+    Connections {
+        target: (root.isNiri && NiriService) ? NiriService : null
+        function onActiveWindowChanged() { root._recomputeFullscreen() }
+        function onWindowsChanged() { root._recomputeFullscreen() }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // Sorted toplevels (compositor-aware window list)
     // ═══════════════════════════════════════════════════════════════════════
     property var sortedToplevels: sortedToplevelsCache
@@ -403,5 +459,46 @@ Singleton {
         if (isNiri) return NiriService.powerOnMonitors()
         if (isHyprland) return Hyprland.dispatch("dpms on")
         console.warn("CompositorService: Cannot power on monitors, unknown compositor")
+    }
+
+    // Set the compositor's OUTER gap (the space between windows and the screen
+    // edge) at runtime. Connected shell mode uses this to drop the outer gap to 0
+    // so windows sit flush against the painted frame band; inner gaps (between
+    // windows) are left untouched.
+    //
+    // Hyprland runs a Lua config backend here, where `hyprctl keyword` and
+    // `dispatch keyword` are both rejected ("can't work with non-legacy
+    // parsers") — the working runtime path is `hyprctl eval 'hl.config{...}'`.
+    // Niri has no runtime gap IPC, so this is a no-op there (Niri's connected
+    // look is governed by its own config).
+    //
+    // NOTE: runtime-only. It does not persist across a compositor reload, which
+    // is fine — AnoScreen re-applies it whenever connected mode is active.
+    function setOuterGaps(px) {
+        const v = Math.max(0, Math.round(px))
+        if (isHyprland) {
+            Quickshell.execDetached(["hyprctl", "eval", `hl.config({ general = { gaps_out = ${v} } })`])
+            return
+        }
+        if (isNiri) return   // no runtime gap control; configured in niri's own config
+        console.warn("CompositorService: Cannot set outer gaps, unknown compositor")
+    }
+
+    // Turn compositor blur on/off for one layer surface, by namespace regex.
+    // Used by the connected frame so a translucent frame shows a BLURRED desktop
+    // behind it rather than a raw see-through panel. Runtime-only, like
+    // setOuterGaps — the caller re-applies it whenever its config changes.
+    // `ignoreAlpha` is the alpha threshold below which pixels are NOT blurred;
+    // keep it at 0 for surfaces whose own translucent fill must be blurred (a
+    // higher value would skip them and they'd render flat-transparent).
+    function setLayerBlur(namespaceRegex, enabled, ignoreAlpha) {
+        if (isHyprland) {
+            const a = (ignoreAlpha === undefined) ? 0 : ignoreAlpha
+            Quickshell.execDetached(["hyprctl", "eval",
+                `hl.layer_rule({ match = { namespace = "${namespaceRegex}" }, blur = ${enabled ? "true" : "false"}, ignore_alpha = ${a} })`])
+            return
+        }
+        if (isNiri) return   // niri has no per-layer blur IPC
+        console.warn("CompositorService: Cannot set layer blur, unknown compositor")
     }
 }

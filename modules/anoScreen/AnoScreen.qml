@@ -1,38 +1,44 @@
 import QtQuick
-import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import qs
 import qs.modules.common
-import qs.modules.common.widgets
+import qs.modules.anoScreen
 import qs.services
 
 /**
- * AnoScreen — one unified full-screen surface per screen (noctalia MainScreen /
- * caelestia ContentWindow model).
+ * AnoScreen — the connected-corners frame: one decorative full-screen surface per
+ * screen that draws the shell's whole silhouette.
  *
- * A single WlrLayer.Top PanelWindow spanning the whole output (ExclusionMode
- * Ignore + all-4 anchors), so ALL bars, panels, screen-corner rounding and the
- * connected background live in ONE coordinate space and can join seamlessly.
+ * A WlrLayer.Top PanelWindow spanning the output (ExclusionMode.Ignore + all-4
+ * anchors) so the rounded screen corners, the frame ring, and every bar/panel
+ * fused into it live in ONE coordinate space. It is DECORATIVE AND CLICK-THROUGH:
+ * it hosts no panel content and reserves no space.
  *
- * Multi-monitor + multi-bar aware: renders every configured bar (Config.bars)
- * on every screen that bar targets (per-bar geometry, edge, thickness, modules).
- * Input is click-through by default; each visible bar adds its own rectangle to
- * the window mask (fixed slots — Region can't take a Repeater) so only the bars
- * (and, later, open panels) are interactive.
+ * That separation is load-bearing, not stylistic. Attaching a deep Layout+anchors
+ * tree into a freshly-committed full-screen layershell window trips a refWindow
+ * recursion segfault in QS 0.3.0 on roughly half of cold starts. So the bars keep
+ * living in their own thin BarWindows (which also own the exclusive zone), and
+ * this window only ever holds a single ShaderEffect. Even that is attached one
+ * event-loop turn late, via the `ready` latch + an async Loader.
  *
- * NOTE: the bar content is attached AFTER the window is up (delayedActive) to
- * dodge the QS 0.3.0 refWindow/derefWindow recursion segfault that a deep tree
- * attaching synchronously into a fresh window triggers.
+ * Geometry comes from two places: the bars, whose rects AnoScreen computes itself
+ * from Config, and PanelRegistry, where sidebars/popouts/trays publish their
+ * screen-space rect as they open. Both are packed into the frame shader's four
+ * chrome slots — see ConnectedFrame / ConnectedSurfaceGeometry.js.
  *
- * Opt-in via appearance.connectedCorners.enable. Phase 1: screen corners + all
- * bars. Sidebars/panels move in next.
+ * Multi-monitor + multi-bar aware. Opt-in via appearance.connectedCorners.enable.
  */
 Scope {
     id: root
 
     readonly property bool enabled: Config.options?.appearance?.connectedCorners?.enable ?? false
     readonly property int cornerRadius: Math.max(1, Config.options?.appearance?.connectedCorners?.radius ?? 18)
+    // Painted bezel width on each screen edge. 0 ⇒ corner arcs only.
+    readonly property real frameThickness: Math.max(0, Config.options?.appearance?.connectedCorners?.thickness ?? 0)
+    // Frame surface opacity; < 1.0 makes the frame translucent (pair with the
+    // `blur` layer rule so the desktop behind it is blurred rather than raw).
+    readonly property real frameOpacity: Math.max(0, Math.min(1, Config.options?.appearance?.connectedCorners?.opacity ?? 1.0))
     // Bar surface colour.
     readonly property color frameColor: Appearance?.colors.colLayer0 ?? "#1C1B1F"
     // Screen-corner colour: a bezel tone that reads on ANY wallpaper. Pure black
@@ -50,6 +56,43 @@ Scope {
     readonly property bool barsShown: GlobalStates.barOpen && !GlobalStates.screenLocked
 
     readonly property var barDefs: Config.options?.bars ?? [{ "id": "main", "edge": "top" }]
+
+    // ── Compositor outer-gap management ───────────────────────────────────────
+    // In connected mode the frame paints the bezel, so the compositor's own outer
+    // gap (the space between windows and the screen edge) would just be a second,
+    // unpainted inset — windows should sit flush against the frame instead. Drop
+    // gaps_out to 0 while connected (+ manageGaps), restore it otherwise. Global,
+    // not per-screen, so it lives at the Scope root, driven off the config.
+    readonly property bool _manageGaps: Config.options?.appearance?.connectedCorners?.manageGaps ?? true
+    readonly property int _floatingGapsOut: Config.options?.appearance?.connectedCorners?.floatingGapsOut ?? 5
+    readonly property int _targetGapsOut: (root.enabled && _manageGaps) ? 0 : _floatingGapsOut
+    on_TargetGapsOutChanged: CompositorService.setOuterGaps(_targetGapsOut)
+
+    // ── Frame blur ────────────────────────────────────────────────────────────
+    // The frame is a FULL-SCREEN surface that is transparent everywhere except the
+    // band + corners, so blurring it wholesale blurs the empty middle too and shows
+    // up as a misplaced blur strip across the screen — which is why it ships
+    // excluded from blur. `ignore_alpha` is what makes an opt-in safe: it is the
+    // alpha threshold BELOW which a pixel is not blurred, so setting it just under
+    // the frame's own opacity blurs the painted band/corners and nothing else.
+    // Clamped to a floor so a fully-opaque frame (opacity 1.0) still gets a
+    // threshold that excludes the transparent region.
+    readonly property bool _frameBlur: root.enabled && (Config.options?.appearance?.connectedCorners?.blur ?? false)
+    readonly property real _frameBlurIgnoreAlpha: Math.max(0.1, root.frameOpacity - 0.1)
+    function _applyFrameBlur() {
+        CompositorService.setLayerBlur("^quickshell:anoScreen$", root._frameBlur, root._frameBlurIgnoreAlpha)
+    }
+    on_FrameBlurChanged: _applyFrameBlur()
+    on_FrameBlurIgnoreAlphaChanged: _applyFrameBlur()
+
+    Component.onCompleted: {
+        if (root.enabled && _manageGaps) CompositorService.setOuterGaps(0)
+        root._applyFrameBlur()
+    }
+    Component.onDestruction: {
+        if (_manageGaps) CompositorService.setOuterGaps(_floatingGapsOut)
+        CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
+    }
 
     // Whether a bar definition targets a given screen (per-bar screenList → global).
     function barOnScreen(def, screenName) {
@@ -79,13 +122,27 @@ Scope {
             screen: modelData
 
             WlrLayershell.namespace: "quickshell:anoScreen"
+            // The frame draws the rounded SCREEN corners, so it must sit ABOVE
+            // windows or a maximized window covers the corners (Bottom put it below
+            // windows → corners occluded). It stays on Top; the shell chrome (bar,
+            // sidebars) is bumped to Overlay (above Top) so it always draws above
+            // the frame — resolving the same-layer z-race that otherwise hid the
+            // bar content until hover. Click-through mask keeps it non-interactive.
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
             color: "transparent"
 
             anchors { top: true; bottom: true; left: true; right: true }
-            visible: root.enabled
+            // Hide the whole frame while a window is fullscreen on this screen —
+            // otherwise its (possibly blurred) surface leaves a strip over the
+            // fullscreen app even though the bar has hidden. Reacts live via the
+            // fullscreenRevision tick.
+            readonly property bool screenFullscreen: {
+                void CompositorService.fullscreenRevision
+                return CompositorService.hasFullscreenOnScreen(screenName)
+            }
+            visible: root.enabled && !screenFullscreen
 
             readonly property real sw: width
             readonly property real sh: height
@@ -131,51 +188,58 @@ Scope {
             // region = truly click-through (same pattern as PopupToolTip).
             mask: Region { item: null }
 
+            // ── The connected silhouette's chrome surfaces ────────────────
+            // The frame shader has four slots. Bars go in first (they're always
+            // present and must never be evicted by a transient popout), then the
+            // highest-priority registered panels fill whatever is left.
+            //
+            // Bars never omit a connector. Omitting is for a POPOUT whose end butts
+            // against the bar's end, so that end gets no arc. A bar's own outer
+            // corners must stay sharp (radius 0) so the union reaches the true
+            // screen corner — the rounding there comes from the frame's cutout, and
+            // the concave junction arc comes from the connector fillet `k`. Giving
+            // them the bar's convex radius instead pulls the bar off the corner and
+            // leaves a notch.
+            readonly property var barSurfaces: {
+                if (!root.barsShown) return []
+                const out = []
+                for (let i = 0; i < win.screenBars.length; i++) {
+                    const b = win.barRect(i)
+                    if (!b.present) continue
+                    out.push({ "side": b.edge, "x": b.x, "y": b.y, "w": b.w, "h": b.h })
+                }
+                return out
+            }
+            readonly property var frameSurfaces: {
+                const bars = win.barSurfaces
+                const room = Math.max(0, 4 - bars.length)
+                return bars.concat(PanelRegistry.surfacesForScreen(win.screenName, room))
+            }
+
             // ── All visual content, attached ASYNCHRONOUSLY ───────────────
-            // The corner Shapes + bar content are a deep item tree; attaching it
-            // synchronously while the layershell window is still acquiring its
-            // surface drives the QS 0.3.0 refWindow recursion segfault (same bug
-            // BarWindow dodges). One async Loader defers the whole subtree to a
-            // later event-loop turn, after the window is realised.
+            // Attaching content synchronously while the layershell window is still
+            // acquiring its surface drives the QS 0.3.0 refWindow recursion
+            // segfault (the same bug BarWindow dodges). One async Loader defers the
+            // subtree to a later event-loop turn, after the window is realised.
+            //
+            // The whole silhouette — rounded screen corners, the frame ring, and
+            // every bar/panel fused into it with concave junction arcs, plus the M3
+            // elevation shadow — is ONE ShaderEffect. It replaces the old stacked
+            // opaque RoundCorner carve, which couldn't animate, z-fought panel
+            // content, and only worked for horizontal bars.
             Loader {
                 anchors.fill: parent
                 asynchronous: true
                 active: win.ready
-                sourceComponent: Item {
+                sourceComponent: ConnectedFrame {
                     anchors.fill: parent
-
-                    // Rounded outer screen corners
-                    RoundCorner {
-                        anchors.top: parent.top; anchors.left: parent.left
-                        implicitSize: root.cornerRadius; color: root.cornerColor
-                        corner: RoundCorner.CornerEnum.TopLeft
-                    }
-                    RoundCorner {
-                        anchors.top: parent.top; anchors.right: parent.right
-                        implicitSize: root.cornerRadius; color: root.cornerColor
-                        corner: RoundCorner.CornerEnum.TopRight
-                    }
-                    RoundCorner {
-                        anchors.bottom: parent.bottom; anchors.left: parent.left
-                        implicitSize: root.cornerRadius; color: root.cornerColor
-                        corner: RoundCorner.CornerEnum.BottomLeft
-                    }
-                    RoundCorner {
-                        anchors.bottom: parent.bottom; anchors.right: parent.right
-                        implicitSize: root.cornerRadius; color: root.cornerColor
-                        corner: RoundCorner.CornerEnum.BottomRight
-                    }
-
-                    // ── Bar/panel → frame concave joins ────────────────────
-                    // (Removed the stacked-opaque-RoundCorner-carve approach: it
-                    // can't animate, z-fights panel content, and only worked for
-                    // horizontal bars. Replaced by a single SDF fragment shader
-                    // (ported from DMS `connected_arc.frag`): frame ring + each
-                    // registered surface unioned via smin() smooth-minimum, whose
-                    // junction-fillet term produces the concave joins analytically
-                    // in one crash-safe pass — plus the M3 elevation shadow.
-                    // PanelRegistry (kept) feeds the surface slots. See the
-                    // connected-corners-fusion tasks / SDF port.)
+                    cornerRadius: root.cornerRadius
+                    frameThickness: root.frameThickness
+                    connectedRadius: root.cornerRadius
+                    surfaceRadius: Appearance?.rounding.normal ?? 12
+                    surfaceColor: root.cornerColor
+                    surfaceOpacity: root.frameOpacity
+                    surfaces: win.frameSurfaces
                 }
             }
         }

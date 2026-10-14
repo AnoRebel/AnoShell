@@ -11,9 +11,14 @@ import "."
  */
 Rectangle {
     id: root
-    color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-    radius: Appearance?.rounding.normal ?? 12
-    border.width: 1
+    // In connected mode the frame shader paints this sidebar's fused surface, so
+    // going transparent lets it show through instead of stacking a second inset
+    // background (the "double background"). Drop border/rounding too. Floating
+    // keeps colLayer0's translucent fill. See SidebarRightContent / StyledPopup.
+    readonly property bool connectedMode: PanelRegistry.enabled
+    color: connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+    radius: connectedMode ? 0 : (Appearance?.rounding.normal ?? 12)
+    border.width: 0
     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
     clip: true
 

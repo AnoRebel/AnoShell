@@ -134,6 +134,12 @@ Item {
 
         StyledToolTip {
             text: TrayService.getTooltipForItem(trayIcon.item)
+            // The parent is a MouseArea (has `containsMouse`, not `hovered`), so
+            // StyledToolTip's default `parent.hovered` check is undefined and the
+            // tooltip would show whenever its condition is true — i.e. always,
+            // even with the menu open, covering the icons. Gate it explicitly on
+            // real hover AND the menu being closed.
+            extraVisibleCondition: trayIcon.containsMouse && !menuLoader.active
         }
 
         Loader {
