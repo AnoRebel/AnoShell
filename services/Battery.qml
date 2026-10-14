@@ -17,7 +17,9 @@ Singleton {
     property var chargeState: UPower.displayDevice.state
     property bool isCharging: chargeState === UPowerDeviceState.Charging
     property bool isPluggedIn: isCharging || chargeState === UPowerDeviceState.PendingCharge || chargeState === UPowerDeviceState.FullyCharged
-    property real percentage: UPower.displayDevice?.percentage ?? 1
+    // Whole percents (0..1 in 0.01 steps): UPower reports fractional changes every
+    // few seconds while charging, and each one re-animated every battery ring.
+    property real percentage: Math.round((UPower.displayDevice?.percentage ?? 1) * 100) / 100
     readonly property bool allowAutomaticSuspend: Config.options.battery.automaticSuspend
     readonly property bool soundEnabled: Config.options.sounds.battery
 

@@ -17,6 +17,21 @@ import qs.services
 Scope {
     id: root
 
+    // Tell anod (its logout/reboot/shutdown hook) first, giving the hook a
+    // short head start before the session ends; immediate without anod.
+    property var _pendingAction: null
+    function endSession(event, action) {
+        if (!Anod.available) { action(); return }
+        Anod.emit(event, {})
+        root._pendingAction = action
+        endSessionTimer.restart()
+    }
+    Timer {
+        id: endSessionTimer
+        interval: 500
+        onTriggered: { const a = root._pendingAction; root._pendingAction = null; if (a) a() }
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -125,8 +140,10 @@ Scope {
                             onActivated: {
                                 GlobalStates.sessionOpen = false
                                 // Compositor exit where supported, else end the login session.
-                                if (!CompositorService.exit())
-                                    Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
+                                root.endSession("logging_out", () => {
+                                    if (!CompositorService.exit())
+                                        Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
+                                })
                             }
                         }
                         SessionButton {
@@ -141,7 +158,7 @@ Scope {
                             label: "Reboot"
                             accentColor: "#66BB6A"
                             holdDuration: 2000
-                            onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["systemctl", "reboot"]) }
+                            onActivated: { GlobalStates.sessionOpen = false; root.endSession("rebooting", () => Quickshell.execDetached(["systemctl", "reboot"])) }
                         }
                         SessionButton {
                             iconName: "power_settings_new"
@@ -149,7 +166,7 @@ Scope {
                             accentColor: "#EF5350"
                             holdDuration: 2500
                             requireHold: Config.options?.session?.confirmShutdown ?? true
-                            onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["systemctl", "poweroff"]) }
+                            onActivated: { GlobalStates.sessionOpen = false; root.endSession("shutting_down", () => Quickshell.execDetached(["systemctl", "poweroff"])) }
                         }
                     }
 

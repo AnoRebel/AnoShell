@@ -37,10 +37,12 @@ ShellRoot {
         //   AntiFlashbang           — IPC-controlled shader on Hyprland
         //   MinimizedWindows        — Niri minimize-emulation registry
         //   DefaultApps             — `apps` IPC target used by keybinds
+        //   Anod                    — daemon socket + shell events for hooks
         void PowerProfilePersistence;
         void AntiFlashbang;
         void MinimizedWindows;
         void DefaultApps;
+        void Anod;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
