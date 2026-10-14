@@ -16,7 +16,7 @@ QtObject {
     readonly property string name: "generic"
     readonly property bool experimental: true
     readonly property var supports: ({
-        workspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
+        workspaces: false, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, dpms: false, outputConfig: false, exit: false,
         keyboardLayouts: false
     })

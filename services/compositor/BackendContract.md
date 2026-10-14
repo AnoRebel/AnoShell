@@ -33,7 +33,7 @@ otherwise from the environment:
 | `keyboardLayout` | string | current layout name |
 | `keyboardLayouts` | array | all layout names |
 
-`supports` flags: `workspaces`, `windowCapture`, `blurProtocol`, `layerBlurRules`,
+`supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
 `outerGaps`, `cursorZoom`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`.
 
 ## Functions

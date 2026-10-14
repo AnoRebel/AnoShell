@@ -16,7 +16,7 @@ QtObject {
     readonly property string name: "niri"
     readonly property bool experimental: false
     readonly property var supports: ({
-        workspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
+        workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true
     })

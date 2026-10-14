@@ -136,22 +136,12 @@ Singleton {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Screen Zoom (Hyprland-only)
+    // Screen Zoom (where the compositor supports it — supports.cursorZoom)
     // ═══════════════════════════════════════════════════════════════════════
+    // Applied once per step. (An animated Behavior here sent one compositor
+    // command per animation frame — ~60 process spawns per second.)
     property real screenZoom: 1
-    onScreenZoomChanged: {
-        if (!CompositorService.isHyprland) return;
-        // Lua config: `hyprctl keyword …` is rejected by the non-legacy parser;
-        // set the value through hl.config via `hyprctl eval` instead.
-        Quickshell.execDetached(["hyprctl", "eval", `hl.config({ cursor = { zoom_factor = ${root.screenZoom} } })`]);
-    }
-    Behavior on screenZoom {
-        animation: NumberAnimation {
-            duration: Appearance.animation.elementMoveFast.duration
-            easing.type: Appearance.animation.elementMoveFast.type
-            easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
-        }
-    }
+    onScreenZoomChanged: CompositorService.setCursorZoom(root.screenZoom)
 
     // ═══════════════════════════════════════════════════════════════════════
     // Compositor-guarded shortcuts (only load on Hyprland)

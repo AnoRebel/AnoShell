@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
@@ -26,11 +25,7 @@ Scope {
         id: popupWindow
         visible: Notifications.popupList.length > 0 && !GlobalStates.screenLocked
 
-        screen: {
-            if (CompositorService.compositor === "niri")
-                return Quickshell.screens.find(s => s.name === NiriService.currentOutput) ?? Quickshell.screens[0]
-            return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-        }
+        screen: Quickshell.screens.find(s => s.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]
 
         WlrLayershell.namespace: "quickshell:notifPopup"
         WlrLayershell.layer: WlrLayer.Overlay

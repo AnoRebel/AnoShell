@@ -93,11 +93,7 @@ Item {
                 if (isUp) Audio.incrementVolume(); else Audio.decrementVolume()
                 break
             case "workspace":
-                if (CompositorService.compositor === "niri") {
-                    if (isUp) NiriService.focusWorkspaceUp(); else NiriService.focusWorkspaceDown()
-                } else if (CompositorService.compositor === "hyprland") {
-                    Quickshell.execDetached(["hyprctl", "dispatch", isUp ? `hl.dsp.focus({ workspace = "r-1" })` : `hl.dsp.focus({ workspace = "r+1" })`])
-                }
+                CompositorService.focusWorkspaceRelative(isUp ? -1 : 1)
                 break
             case "none": break
         }

@@ -3,24 +3,22 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import qs.modules.common
 import qs.services
 
 /**
- * Keyboard layout service. Works on both Hyprland and Niri.
- * Exposes active XKB layout name and code for indicators.
- * On Hyprland: listens to activelayout events.
- * On Niri: polls from NiriService keyboard layout tracking.
+ * Keyboard layout service: the active layout's name (from the compositor
+ * backend) and its short XKB code (looked up in base.lst) for indicators.
  */
 Singleton {
     id: root
-    property list<string> layoutCodes: []
+    // Layout name and list come from the compositor backend (Hyprland:
+    // activelayout events + j/devices; niri: keyboard layout events).
+    readonly property var layoutCodes: CompositorService.keyboardLayouts
     property var cachedLayoutCodes: ({})
-    property string currentLayoutName: ""
+    readonly property string currentLayoutName: CompositorService.keyboardLayout
     property string currentLayoutCode: ""
     property string baseLayoutFilePath: "/usr/share/X11/xkb/rules/base.lst"
-    property bool needsLayoutRefresh: false
 
     onCurrentLayoutNameChanged: root.updateLayoutCode()
 
@@ -63,57 +61,4 @@ Singleton {
         }
     }
 
-    // Hyprland: fetch layout info from hyprctl devices
-    Process {
-        id: fetchLayoutsProc
-        running: CompositorService.compositor === "hyprland"
-        command: ["hyprctl", "-j", "devices"]
-        stdout: StdioCollector {
-            id: devicesCollector
-            onStreamFinished: {
-                const parsedOutput = JSON.parse(devicesCollector.text)
-                const hyprlandKeyboard = parsedOutput["keyboards"].find(kb => kb.main === true)
-                if (hyprlandKeyboard) {
-                    root.layoutCodes = hyprlandKeyboard["layout"].split(",")
-                    root.currentLayoutName = hyprlandKeyboard["active_keymap"]
-                }
-            }
-        }
-    }
-
-    // Hyprland: listen for layout changes
-    Connections {
-        enabled: CompositorService.compositor === "hyprland"
-        target: Hyprland
-        function onRawEvent(event) {
-            if (event.name === "activelayout") {
-                if (root.needsLayoutRefresh) {
-                    root.needsLayoutRefresh = false
-                    fetchLayoutsProc.running = true
-                }
-                if (root.layoutCodes.length <= 1) return
-                const dataString = event.data
-                root.currentLayoutName = dataString.substring(dataString.indexOf(",") + 1)
-            } else if (event.name === "configreloaded") {
-                root.needsLayoutRefresh = true
-            }
-        }
-    }
-
-    // Niri: subscribe to the NiriService.layoutChanged(string) signal.
-    // Previous version referenced a non-existent keyboardLayoutChanged.
-    Connections {
-        enabled: CompositorService.compositor === "niri"
-        target: NiriService
-        function onLayoutChanged(layout) {
-            root.currentLayoutName = layout
-        }
-    }
-
-    // Initialize for Niri
-    Component.onCompleted: {
-        if (CompositorService.compositor === "niri" && NiriService.keyboardLayout) {
-            root.currentLayoutName = NiriService.keyboardLayout
-        }
-    }
 }

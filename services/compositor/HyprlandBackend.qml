@@ -19,7 +19,7 @@ QtObject {
     readonly property string name: "hyprland"
     readonly property bool experimental: false
     readonly property var supports: ({
-        workspaces: true, windowCapture: true, blurProtocol: true, layerBlurRules: true,
+        workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
         outerGaps: true, cursorZoom: true, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true
     })
@@ -115,11 +115,21 @@ QtObject {
             if (root._refreshEvents.includes(event.name)) root._refreshTimer.restart()
             else if (event.name === "activelayout")
                 root.keyboardLayout = event.data.substring(event.data.indexOf(",") + 1)
+            else if (event.name === "configreloaded")
+                root._refreshKeyboard()
         }
     }
 
     property string keyboardLayout: ""
-    readonly property var keyboardLayouts: []
+    property var keyboardLayouts: [] // xkb layout codes of the main keyboard
+    function _refreshKeyboard() {
+        root._request("j/devices", d => {
+            const kb = (d.keyboards ?? []).find(k => k.main) ?? (d.keyboards ?? [])[0]
+            if (!kb) return
+            root.keyboardLayout = kb.active_keymap ?? ""
+            root.keyboardLayouts = (kb.layout ?? "").split(",").filter(x => x.length > 0)
+        })
+    }
 
     // ── Actions ──────────────────────────────────────────────────────────────
     function _lua(code) { Hyprland.dispatch(code); return true }
@@ -146,10 +156,6 @@ QtObject {
 
     Component.onCompleted: {
         root.refresh()
-        // Initial keyboard layout (later updates come from activelayout events).
-        root._request("j/devices", d => {
-            const kb = (d.keyboards ?? []).find(k => k.main) ?? (d.keyboards ?? [])[0]
-            if (kb && !root.keyboardLayout) root.keyboardLayout = kb.active_keymap ?? ""
-        })
+        root._refreshKeyboard() // later updates come from activelayout events
     }
 }

@@ -124,8 +124,9 @@ Scope {
                             requireHold: Config.options?.session?.confirmLogout ?? true
                             onActivated: {
                                 GlobalStates.sessionOpen = false
-                                if (CompositorService.compositor === "hyprland") Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exit()"])
-                                else Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
+                                // Compositor exit where supported, else end the login session.
+                                if (!CompositorService.exit())
+                                    Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
                             }
                         }
                         SessionButton {

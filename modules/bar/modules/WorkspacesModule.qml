@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
@@ -25,12 +24,8 @@ Item {
     readonly property bool alwaysShowAll: Config.options?.bar?.workspaces?.alwaysShowAll ?? false
     property bool expanded: false
 
-    readonly property int currentWorkspaceNumber: {
-        if (CompositorService.compositor === "niri")
-            return NiriService.getCurrentWorkspaceNumber()
-        const monitor = Hyprland.monitorFor(root.QsWindow.window?.screen)
-        return monitor?.activeWorkspace?.id ?? 1
-    }
+    readonly property string screenName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property int currentWorkspaceNumber: CompositorService.activeWorkspaceOn(root.screenName) || 1
 
     property list<bool> workspaceOccupied: []
     property int buttonSize: 26
@@ -72,37 +67,18 @@ Item {
     implicitHeight: vertical ? (_cellCount * buttonSize) : Appearance.sizes.barHeight
 
     function updateOccupied() {
-        if (CompositorService.compositor === "niri") {
-            const wsList = NiriService.currentOutputWorkspaces || []
-            const windows = NiriService.windows || []
-            const occupiedIds = new Set(windows.map(w => w.workspace_id))
-            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) => {
-                const ws = wsList.find(w => w.idx === i + 1)
-                return ws ? occupiedIds.has(ws.id) : false
-            })
-        } else {
-            workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) =>
-                Hyprland.workspaces.values.some(ws => ws.id === i + 1)
-            )
-        }
+        const ws = CompositorService.workspacesFor(root.screenName)
+        workspaceOccupied = Array.from({ length: workspacesShown }, (_, i) =>
+            ws.some(w => w.number === i + 1 && w.occupied))
         recomputeVisible()
     }
 
-    function switchTo(n) {
-        if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(n)
-        // Lua Hyprland config: dispatchers must be hl.dsp.* expressions.
-        else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${n}" })`])
-    }
+    function switchTo(n) { CompositorService.focusWorkspace(n) }
 
     Component.onCompleted: updateOccupied()
     Connections {
-        target: CompositorService.compositor === "hyprland" ? Hyprland.workspaces : null
-        function onValuesChanged() { updateOccupied() }
-    }
-    Connections {
-        target: CompositorService.compositor === "niri" ? NiriService : null
-        function onAllWorkspacesChanged() { updateOccupied() }
-        function onWindowsChanged() { updateOccupied() }
+        target: CompositorService
+        function onWorkspacesChanged() { root.updateOccupied() }
     }
     onCurrentWorkspaceNumberChanged: { updateOccupied(); recomputeVisible() }
 
@@ -115,12 +91,7 @@ Item {
             const delta = event.angleDelta.y
             if (delta === 0) return
             const direction = delta > 0 ? -1 : 1
-            if (CompositorService.compositor === "niri") {
-                if (direction > 0) NiriService.focusWorkspaceDown()
-                else NiriService.focusWorkspaceUp()
-            } else {
-                Quickshell.execDetached(["hyprctl", "dispatch", direction > 0 ? `hl.dsp.focus({ workspace = "r+1" })` : `hl.dsp.focus({ workspace = "r-1" })`])
-            }
+            CompositorService.focusWorkspaceRelative(direction)
         }
         onPressed: (event) => {
             if (event.button === Qt.RightButton) GlobalStates.overviewOpen = !GlobalStates.overviewOpen

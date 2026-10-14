@@ -43,14 +43,11 @@ Item {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-        cursorShape: CompositorService.isNiri ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: {
-            // Niri-only: cycle to the next layout. Hyprland's keyboard-
-            // layout cycling needs a different IPC and is left to keybinds.
-            if (CompositorService.isNiri) {
-                Quickshell.execDetached(["niri", "msg", "action", "switch-layout", "next"])
-            }
-        }
+        readonly property bool canSwitch: CompositorService.supports.keyboardLayouts ?? false
+        cursorShape: canSwitch ? Qt.PointingHandCursor : Qt.ArrowCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        // Left: next layout, right: previous.
+        onClicked: event => { if (canSwitch) CompositorService.switchKeyboardLayout(event.button === Qt.RightButton ? -1 : 1) }
         StyledToolTip { text: KeyboardLayoutService.currentLayoutName }
     }
 }

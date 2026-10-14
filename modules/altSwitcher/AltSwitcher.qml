@@ -87,15 +87,7 @@ Scope {
         const windows = filteredWindows
         if (selectedIndex < 0 || selectedIndex >= windows.length) { hide(); return }
         const win = windows[selectedIndex]
-        if (win.toplevel) {
-            win.toplevel.activated = true
-            if (CompositorService.compositor === "hyprland") {
-                const addr = win.toplevel.HyprlandToplevel?.address ?? ""
-                if (addr) Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ window = "address:0x${addr}" })`])
-            } else if (CompositorService.compositor === "niri") {
-                NiriService.focusWindowByAppId(win.appId)
-            }
-        }
+        if (win.toplevel) CompositorService.focusWindow(win.toplevel)
         hide()
     }
 

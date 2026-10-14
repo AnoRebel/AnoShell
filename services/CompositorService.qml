@@ -38,6 +38,16 @@ Singleton {
     readonly property string activeWorkspaceName: backend?.activeWorkspaceName ?? ""
     readonly property string focusedMonitorName: backend?.focusedOutput ?? ""
     readonly property var workspaces: backend?.workspaces ?? []
+    // Workspaces to show for one output: niri numbers them per output,
+    // Hyprland globally (every output shows the same numbers).
+    function workspacesFor(outputName) {
+        return root.supports.perOutputWorkspaces ? root.workspaces.filter(w => w.output === outputName) : root.workspaces
+    }
+    // The workspace number visible on an output (falls back to the focused one).
+    function activeWorkspaceOn(outputName) {
+        const ws = root.workspacesFor(outputName).find(w => w.active && (!outputName || w.output === outputName))
+        return ws?.number ?? root.activeWorkspaceIndex
+    }
     readonly property string keyboardLayout: backend?.keyboardLayout ?? ""
     readonly property var keyboardLayouts: backend?.keyboardLayouts ?? []
 
