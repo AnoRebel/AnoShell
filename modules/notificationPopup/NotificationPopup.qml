@@ -87,7 +87,11 @@ Scope {
                     Layout.fillWidth: true
                     implicitHeight: notifCard.implicitHeight
                     // No clip: it cut the card's drop shadow into straight edges.
-                    property Region blurShape: Region { item: notifCard; radius: notifCard.radius }
+                    // Explicit geometry: Region { item } ignores transforms and ancestor moves.
+                    property Region blurShape: Region {
+                        x: notifColumn.x + popupDelegate.x + notifCard.x; y: notifColumn.y + popupDelegate.y
+                        width: notifCard.width; height: notifCard.height; radius: notifCard.radius
+                    }
 
                     // Entry animation — slide in from edge + fade
                     property real slideOffset: root.isLeft ? -20 : 20
@@ -103,9 +107,8 @@ Scope {
                     }
 
                     opacity: entryOpacity
-                    transform: Translate { x: popupDelegate.slideOffset }
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-                    Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    // The slide animates through notifCard's Behavior on x.
 
                     // Swipe to dismiss tracking
                     property real swipeX: 0
@@ -115,7 +118,7 @@ Scope {
                     Rectangle {
                         id: notifCard
                         width: parent.width
-                        x: popupDelegate.swipeX
+                        x: popupDelegate.swipeX + popupDelegate.slideOffset
                         implicitHeight: cardContent.implicitHeight + 20
                         radius: Appearance?.rounding.normal ?? 12
                         color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
