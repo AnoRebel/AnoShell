@@ -1545,7 +1545,7 @@
   "page": 6,
   "card": "Animations",
   "label": "Animations",
-  "sublabel": "Enable/disable and control animation speed",
+  "sublabel": "On/off, speed, reduced motion and battery saving",
   "keys": [
    "animations"
   ]
@@ -1566,6 +1566,24 @@
   "sublabel": "1.0 = normal, 0.5 = faster, 2.0 = slower",
   "keys": [
    "animations.speed"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Reduce motion",
+  "sublabel": "Stop looping and ambient motion (spinning art, pulses, visualizers); opening and closing still animate",
+  "keys": [
+   "animations.reducedMotion"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Save battery",
+  "sublabel": "Stop looping and ambient motion while running on battery",
+  "keys": [
+   "animations.batterySaver"
   ]
  },
  {

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs
 import qs.modules.common
 import qs.services
@@ -33,5 +34,15 @@ Singleton {
     readonly property real speed: Math.max(0.1, Config.options?.animations?.speed ?? 1.0)
     function scaledDuration(baseDuration) {
         return root.enabled ? Math.max(1, Math.round(baseDuration * root.speed)) : 0
+    }
+
+    // Read-only snapshot for scripts and tests.
+    IpcHandler {
+        target: "motion"
+        function status(): string {
+            return JSON.stringify({ enabled: root.enabled, speed: root.speed, reducedMotion: root.reducedMotion,
+                batterySaver: root.batterySaver, onBattery: root.onBattery,
+                transitions: root.transitions, continuous: root.continuous })
+        }
     }
 }

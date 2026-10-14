@@ -584,7 +584,7 @@ ColumnLayout {
     SettingsCard {
         icon: "animation"
         title: "Animations"
-        subtitle: "Enable/disable and control animation speed"
+        subtitle: "On/off, speed, reduced motion and battery saving"
         configKeys: ["animations"]
 
         ConfigSwitch {
@@ -603,6 +603,24 @@ ColumnLayout {
             value: Config.options?.animations?.speed ?? 1
             onValueChanged: Config.setNestedValue("animations.speed", value)
             valueText: `${value.toFixed(1)}x`
+        }
+
+        ConfigSwitch {
+            label: "Reduce motion"
+            configKey: "animations.reducedMotion"
+            sublabel: "Stop looping and ambient motion (spinning art, pulses, visualizers); opening and closing still animate"
+            enabled: Config.options?.animations?.enable ?? true
+            checked: Config.options?.animations?.reducedMotion ?? false
+            onCheckedChanged: Config.setNestedValue("animations.reducedMotion", checked)
+        }
+
+        ConfigSwitch {
+            label: "Save battery"
+            configKey: "animations.batterySaver"
+            sublabel: "Stop looping and ambient motion while running on battery"
+            enabled: Config.options?.animations?.enable ?? true
+            checked: Config.options?.animations?.batterySaver ?? false
+            onCheckedChanged: Config.setNestedValue("animations.batterySaver", checked)
         }
     }
 
