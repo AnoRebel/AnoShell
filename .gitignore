@@ -17,3 +17,6 @@ Thumbs.db
 *.bak
 *.old
 *.orig
+
+# Python bytecode from dev scripts
+__pycache__/
