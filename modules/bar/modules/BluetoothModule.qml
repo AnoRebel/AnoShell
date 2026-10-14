@@ -10,8 +10,9 @@ import QtQuick.Layouts
 Item {
     id: root
     visible: BluetoothStatus.available
+    property bool vertical: false
     implicitWidth: icon.implicitWidth + 8
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: vertical ? icon.implicitHeight + 8 : Appearance.sizes.barHeight
     property bool hovered: btMA.containsMouse
     // Left-click pins the popout so the device picker is usable.
     property bool pinned: false

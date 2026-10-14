@@ -11,22 +11,24 @@ import QtQuick.Layouts
 Item {
     id: root
     visible: Battery.available
+    property bool vertical: false
     implicitWidth: row.implicitWidth + 12
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: vertical ? row.implicitHeight + 8 : Appearance.sizes.barHeight
 
     property bool hovered: batteryMA.containsMouse
 
-    RowLayout {
+    GridLayout {
         id: row
         anchors.centerIn: parent
-        spacing: 2
+        flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        rowSpacing: 2; columnSpacing: 2
 
         MaterialSymbol {
             text: Battery.isCharging ? "bolt" : ""
             iconSize: Appearance.font.pixelSize.smaller
             fill: 1
             visible: Battery.isCharging && Battery.percentage < 1
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignCenter
         }
 
         CircularProgress {
@@ -35,14 +37,14 @@ Item {
             colPrimary: Battery.isLow && !Battery.isCharging
                 ? Appearance?.m3colors.m3error ?? "#BA1A1A"
                 : Appearance?.colors.colOnSecondaryContainer ?? "#1D1B20"
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignCenter
         }
 
         StyledText {
             text: `${Math.round(Battery.percentage * 100)}%`
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 13
             color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignCenter
         }
     }
 

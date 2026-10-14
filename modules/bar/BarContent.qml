@@ -99,6 +99,14 @@ Item {
         }
     }
 
+    // Tell a loaded module where it lives: its section (position-aware modules
+    // like sidebarButton) and the bar's orientation.
+    function _place(item, section) {
+        if (!item) return
+        if (item.hasOwnProperty("barSection")) item.barSection = section
+        if (item.hasOwnProperty("vertical")) item.vertical = Qt.binding(() => root.isVertical)
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // Separator component
     // ═══════════════════════════════════════════════════════════════════
@@ -127,6 +135,7 @@ Item {
             bottom: isVertical ? undefined : parent.bottom
             right: isVertical ? parent.right : middleSection.left
         }
+        height: isVertical ? leftGrid.implicitHeight + root.edgePadding : undefined
 
         // Section click/scroll catcher — sits BEHIND the modules (declared
         // first → lowest in stacking). Module-level MouseAreas (tray icons,
@@ -145,12 +154,14 @@ Item {
             }
         }
 
-        RowLayout {
+        GridLayout {
+            id: leftGrid
             anchors.fill: parent
-            anchors.leftMargin: isVertical ? 4 : root.edgePadding
-            anchors.rightMargin: isVertical ? 4 : 4
-            spacing: root.leftSpacing
-            layoutDirection: Qt.LeftToRight
+            anchors.leftMargin: isVertical ? 0 : root.edgePadding
+            anchors.rightMargin: isVertical ? 0 : 4
+            anchors.topMargin: isVertical ? root.edgePadding : 0
+            flow: isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+            rowSpacing: root.leftSpacing; columnSpacing: root.leftSpacing
 
             Repeater {
                 model: root.leftModules
@@ -158,14 +169,14 @@ Item {
                     required property string modelData
                     Layout.fillHeight: !isVertical
                     Layout.fillWidth: isVertical
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
                     sourceComponent: BarModuleLoader.getModule(modelData)
                     // Tell position-aware modules (sidebarButton) which section
                     // they live in — reliable, unlike guessing from pixel X.
-                    onLoaded: if (item && item.hasOwnProperty("barSection")) item.barSection = "left"
+                    onLoaded: root._place(item, "left")
                 }
             }
-            Item { Layout.fillWidth: true }
+            Item { Layout.fillWidth: !isVertical; Layout.fillHeight: isVertical }
         }
     }
 
@@ -228,9 +239,11 @@ Item {
                     model: root.centerModules
                     Loader {
                         required property string modelData
-                        Layout.fillHeight: true
-                        Layout.alignment: Qt.AlignVCenter
+                        Layout.fillHeight: !isVertical
+                        Layout.fillWidth: isVertical
+                        Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
                         sourceComponent: BarModuleLoader.getModule(modelData)
+                        onLoaded: root._place(item, "center")
                     }
                 }
             }
@@ -257,6 +270,7 @@ Item {
             left: isVertical ? parent.left : middleSection.right
             right: parent.right
         }
+        height: isVertical ? rightGrid.implicitHeight + root.edgePadding : undefined
 
         // Section click/scroll catcher behind the modules (see leftSection).
         MouseArea {
@@ -272,25 +286,29 @@ Item {
             }
         }
 
-        RowLayout {
+        // Laid out from the far end: right to left, or bottom up when vertical.
+        GridLayout {
+            id: rightGrid
             anchors.fill: parent
-            anchors.leftMargin: isVertical ? 4 : 4
-            anchors.rightMargin: isVertical ? 4 : root.edgePadding
-            spacing: root.rightSpacing
-            layoutDirection: Qt.RightToLeft
+            anchors.leftMargin: isVertical ? 0 : 4
+            anchors.rightMargin: isVertical ? 0 : root.edgePadding
+            anchors.bottomMargin: isVertical ? root.edgePadding : 0
+            flow: isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+            layoutDirection: isVertical ? Qt.LeftToRight : Qt.RightToLeft
+            rowSpacing: root.rightSpacing; columnSpacing: root.rightSpacing
 
             Repeater {
-                model: root.rightModules
+                model: isVertical ? root.rightModules.slice().reverse() : root.rightModules
                 Loader {
                     required property string modelData
                     Layout.fillHeight: !isVertical
                     Layout.fillWidth: isVertical
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
                     sourceComponent: BarModuleLoader.getModule(modelData)
-                    onLoaded: if (item && item.hasOwnProperty("barSection")) item.barSection = "right"
+                    onLoaded: root._place(item, "right")
                 }
             }
-            Item { Layout.fillWidth: true }
+            Item { Layout.fillWidth: !isVertical }
         }
     }
 }

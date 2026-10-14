@@ -19,7 +19,7 @@ Item {
     property real backgroundRadius: Appearance?.rounding.small ?? 8
     default property alias items: gridLayout.children
 
-    implicitWidth: vertical ? Appearance.sizes.baseVerticalBarWidth : (gridLayout.implicitWidth + padding * 2)
+    implicitWidth: gridLayout.implicitWidth + padding * 2
     implicitHeight: vertical ? (gridLayout.implicitHeight + padding * 2) : Appearance.sizes.baseBarHeight
 
     Rectangle {

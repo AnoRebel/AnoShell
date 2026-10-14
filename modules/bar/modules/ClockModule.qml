@@ -10,16 +10,27 @@ import QtQuick.Layouts
 Item {
     id: root
     property bool showDate: Config.options?.bar?.verbose ?? true
+    // Vertical bars stack the time (hours over minutes) and drop the date.
+    property bool vertical: false
     implicitWidth: rowLayout.implicitWidth
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: vertical ? rowLayout.implicitHeight + 8 : Appearance.sizes.barHeight
     property bool hovered: clockMA.containsMouse
 
-    RowLayout {
+    GridLayout {
         id: rowLayout
-        anchors.centerIn: parent; spacing: 4
-        StyledText { font.pixelSize: Appearance.font.pixelSize.large; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: DateTime.time }
-        StyledText { visible: root.showDate; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: "•" }
-        StyledText { visible: root.showDate; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: DateTime.date }
+        anchors.centerIn: parent; columnSpacing: 4; rowSpacing: -4
+        flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        Repeater {
+            // "22:32" → ["22", "32"] when stacked; any AM/PM suffix stays on the minutes.
+            model: root.vertical ? [DateTime.time.split(":")[0], DateTime.time.split(":").slice(1).join(":")] : [DateTime.time]
+            StyledText {
+                required property string modelData
+                Layout.alignment: Qt.AlignHCenter
+                font.pixelSize: Appearance.font.pixelSize.large; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: modelData
+            }
+        }
+        StyledText { visible: root.showDate && !root.vertical; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: "•" }
+        StyledText { visible: root.showDate && !root.vertical; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: DateTime.date }
     }
 
     MouseArea { id: clockMA; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }

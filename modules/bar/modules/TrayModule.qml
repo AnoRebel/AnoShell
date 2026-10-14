@@ -15,8 +15,9 @@ import Quickshell.Widgets
  */
 Item {
     id: root
+    property bool vertical: false
     implicitWidth: trayRow.implicitWidth
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: vertical ? trayRow.implicitHeight + 8 : Appearance.sizes.barHeight
 
     property var activeMenu: null
 
@@ -28,16 +29,17 @@ Item {
         root.activeMenu = menuWindow;
     }
 
-    RowLayout {
+    GridLayout {
         id: trayRow
         anchors.centerIn: parent
-        spacing: 2
+        flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        rowSpacing: 2; columnSpacing: 2
 
         // Overflow button for unpinned items
         Loader {
             active: TrayService.unpinnedItems.length > 0
             visible: active
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignCenter
 
             sourceComponent: Item {
                 implicitWidth: 20; implicitHeight: 20
@@ -49,7 +51,9 @@ Item {
                     iconSize: 16
                     text: "expand_more"
                     color: Appearance.colors.colOnLayer1
-                    rotation: parent.overflowOpen ? 180 : 0
+                    // Points away from the bar; flips while open.
+                    readonly property string _edge: PanelRegistry.windowEdge(root.QsWindow.window) || "top"
+                    rotation: ({ "top": 0, "bottom": 180, "left": -90, "right": 90 })[_edge] + (parent.overflowOpen ? 180 : 0)
                     Behavior on rotation { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 }
 
@@ -91,7 +95,7 @@ Item {
             delegate: TrayIcon {
                 required property SystemTrayItem modelData
                 item: modelData
-                Layout.alignment: Qt.AlignVCenter
+                Layout.alignment: Qt.AlignCenter
                 onMenuOpened: (win) => root.setActiveMenu(win)
             }
         }

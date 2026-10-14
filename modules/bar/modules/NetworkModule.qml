@@ -13,8 +13,9 @@ Item {
     // ResourceUsage polls only while a visible consumer holds a lease.
     ServiceLease { service: ResourceUsage; name: "barNetworkPopup"; active: root.hovered }
 
+    property bool vertical: false
     implicitWidth: icon.implicitWidth + 8
-    implicitHeight: Appearance.sizes.barHeight
+    implicitHeight: vertical ? icon.implicitHeight + 8 : Appearance.sizes.barHeight
     property bool hovered: netMA.containsMouse
 
     MaterialSymbol {
