@@ -26,7 +26,7 @@ import (
 
 const defaultRepo = "https://github.com/AnoRebel/AnoShell.git"
 
-const setupUsage = `usage: ano setup <command> [flags]
+const setupUsage = `usage: ano setup [<command> [flags]]   (no command on a terminal: interactive menu)
 
   status  [--fetch] [--json]          checkout, upstream and binary versions
   install [--repo URL] [--branch B]   clone the shell if missing, build anod + ano, run doctor
@@ -39,6 +39,10 @@ const setupUsage = `usage: ano setup <command> [flags]
 
 func setupCmd(args []string) int {
 	if len(args) == 0 {
+		// No subcommand on a terminal: the interactive menu.
+		if isTerminal() {
+			return setupTUI()
+		}
 		fmt.Fprint(os.Stderr, setupUsage)
 		return 2
 	}

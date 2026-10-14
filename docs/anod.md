@@ -46,6 +46,10 @@ is not restarted.
 | `ano setup refresh` | rebuilds anod + ano, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
 | `ano version` | prints the version |
 
+`ano setup` with no command, run in a terminal, opens an interactive menu
+(Bubble Tea): pick an action, read its `--dry-run` plan, press Enter to run it.
+It runs the same subcommands, so scripts can keep using them directly.
+
 `install`, `update` and `refresh` take `--dry-run` (print each step without running
 it) and `--no-restart`. They don't touch your compositor config.
 
