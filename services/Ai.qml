@@ -222,9 +222,17 @@ Singleton {
         const model = models[currentModelId]
         if (!model) { addMessage("No model selected", interfaceRole); return }
         apiKeys[model.key_id] = key
-        // Persist
-        const keysPath = `${Directories.config}/quickshell/ano/api_keys.json`
-        keysSaveProc.exec(["bash", "-c", `echo '${JSON.stringify(apiKeys)}' > '${keysPath}'`])
+        // Persist to the user-only secrets dir. Values travel via the
+        // environment, never interpolated into the script.
+        keysSaveProc.exec({
+            command: ["sh", "-c", 'umask 077 && mkdir -p -- "$DIR" && printf "%s" "$KEYS" > "$FILE" && rm -f -- "$LEGACY"'],
+            environment: ({
+                KEYS: JSON.stringify(apiKeys),
+                DIR: Directories.secretsDir,
+                FILE: Directories.aiKeysPath,
+                LEGACY: Directories.legacyAiKeysPath
+            })
+        })
         addMessage("API key saved", interfaceRole)
     }
 
@@ -256,23 +264,38 @@ Singleton {
     // Chat save/load
     property string chatSavePath: `${Directories.cache}/anoshell/ai_chats`
 
+    // Chat names come from the /save and /load commands: keep them to a
+    // plain file name (no separators, no "..").
+    function _chatFile(name) {
+        const safe = String(name).replace(/[^A-Za-z0-9_.-]/g, "_").replace(/^\.+/, "") || "chat"
+        return `${chatSavePath}/${safe}.json`
+    }
+
+    property string _pendingChatText: ""
     function saveChat(name) {
         const data = messageIDs.map(id => {
             const msg = messageByID[id]
             return { role: msg.role, content: msg.content, model: msg.model }
         })
-        const path = `${chatSavePath}/${name}.json`
-        chatSaveProc.exec(["bash", "-c", `mkdir -p '${chatSavePath}' && echo '${JSON.stringify(data).replace(/'/g, "'\\''")}' > '${path}'`])
-        addMessage(`Chat saved as: ${name}`, interfaceRole)
+        root._pendingChatText = JSON.stringify(data)
+        chatWriter.path = root._chatFile(name)
+        chatDirProc.exec(["mkdir", "-p", "--", chatSavePath])  // then onExited writes
+        addMessage(`Chat saved as: ${chatWriter.path.split("/").pop()}`, interfaceRole)
     }
 
     function loadChat(name) {
-        const path = `${chatSavePath}/${name}.json`
-        chatLoadProc.exec(["cat", path])
+        chatLoadProc.exec(["cat", "--", root._chatFile(name)])
     }
 
     Process { id: keysSaveProc }
-    Process { id: chatSaveProc }
+    Process {
+        id: chatDirProc
+        onExited: exitCode => {
+            if (exitCode === 0) chatWriter.setText(root._pendingChatText)
+            root._pendingChatText = ""
+        }
+    }
+    FileView { id: chatWriter; preload: false }
     Process {
         id: chatLoadProc
         stdout: StdioCollector {
@@ -510,7 +533,9 @@ Singleton {
 
     Process {
         id: keysLoadProc
-        command: ["bash", "-c", `cat '${Directories.config}/quickshell/ano/api_keys.json' 2>/dev/null || echo '{}'`]
+        // New secrets path first, then the legacy in-config path (migrated on next save).
+        command: ["sh", "-c", 'cat -- "$1" 2>/dev/null || cat -- "$2" 2>/dev/null || echo "{}"', "sh",
+            Directories.aiKeysPath, Directories.legacyAiKeysPath]
         stdout: StdioCollector {
             id: keysCollector
             onStreamFinished: {

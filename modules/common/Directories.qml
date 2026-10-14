@@ -15,6 +15,7 @@ Singleton {
     readonly property string state: StandardPaths.standardLocations(StandardPaths.StateLocation)[0]
     readonly property string cache: StandardPaths.standardLocations(StandardPaths.CacheLocation)[0]
     readonly property string genericCache: StandardPaths.standardLocations(StandardPaths.GenericCacheLocation)[0]
+    readonly property string genericData: StandardPaths.standardLocations(StandardPaths.GenericDataLocation)[0]
     readonly property string documents: StandardPaths.standardLocations(StandardPaths.DocumentsLocation)[0]
     readonly property string downloads: StandardPaths.standardLocations(StandardPaths.DownloadLocation)[0]
     readonly property string pictures: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
@@ -40,6 +41,12 @@ Singleton {
 
     // User-created calendar events (add/edit/recurring + reminders). User data,
     // so it lives in the config dir and survives shell upgrades.
+    // Secrets (API keys) — user data dir, 0700/0600, never inside the shell
+    // config tree or config.json. The legacy path is read once for migration.
+    property string secretsDir: FileUtils.trimFileProtocol(`${root.genericData}/anoshell/secrets`)
+    property string aiKeysPath: `${root.secretsDir}/ai-keys.json`
+    property string legacyAiKeysPath: FileUtils.trimFileProtocol(`${root.config}/quickshell/ano/api_keys.json`)
+
     property string eventsPath: FileUtils.trimFileProtocol(`${root.config}/anoshell/calendar-events.json`)
 
     // Shell configuration directory (user-writable config, separate from shell source)

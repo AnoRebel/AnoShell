@@ -61,8 +61,15 @@ Item {
         const text = inputArea.text.trim()
         if (text.length === 0) return
         const prompt = `Translate the following text to ${root.targetLanguage}. Only output the translation, nothing else:\n\n${text}`
-        aiTranslateProcess.command = ["bash", "-c", `echo '${prompt.replace(/'/g, "'\\''")}' | curl -s 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='$(cat ~/.config/quickshell/ano/api_keys.json 2>/dev/null | jq -r '.google_gemini // empty') -H 'Content-Type: application/json' -d '{"contents":[{"parts":[{"text":"'"${prompt.replace(/'/g, "'\\''").replace(/"/g, '\\"')}"'"}]}]}' | jq -r '.candidates[0].content.parts[0].text // "Translation unavailable"'`]
-        aiTranslateProcess.running = true
+        // User text and the key travel via the environment; the script is a
+        // constant, so nothing typed here can reach the shell parser.
+        aiTranslateProcess.exec({
+            command: ["sh", "-c", 'curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$KEY" -H "Content-Type: application/json" -d "$BODY" | jq -r \'.candidates[0].content.parts[0].text // "Translation unavailable"\''],
+            environment: ({
+                KEY: Ai.apiKeys?.google_gemini ?? "",
+                BODY: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            })
+        })
     }
 
     Process {
