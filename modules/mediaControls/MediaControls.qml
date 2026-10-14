@@ -100,13 +100,15 @@ Scope {
                         clip: true
 
                         Image {
+                            id: albumArt
                             anchors.fill: parent
                             source: MprisController.activeTrack?.artUrl ?? ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
 
                             RotationAnimator {
-                                target: parent; from: 0; to: 360; duration: 12000
+                                // An animator has no `parent`; target the art by id.
+                                target: albumArt; from: 0; to: 360; duration: 12000
                                 running: MprisController.isPlaying
                                 loops: Animation.Infinite
                             }
