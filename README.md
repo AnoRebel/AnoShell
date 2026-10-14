@@ -111,7 +111,7 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 | `Ctrl+0` | Jump to last page |
 | `Esc` | Close the panel (overlay) or quit (standalone) |
 
-**Command palette (`Ctrl+K`).** Search every config key in the shell — case-insensitive, multi-word (every term must match somewhere). The index is built dynamically from `config.json`, so new keys appear automatically as you add them. Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
+**Command palette (`Ctrl+K`).** Search every setting by the words you see in Settings (card titles, control labels and descriptions) or by config key — case-insensitive, multi-word (every term must match somewhere). Keys come live from the config; labels come from `modules/settings/settings-index.json` (generated, see *Keeping settings wired* below). Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
 
 ```
 Ctrl+K → "event border"   → anoSpot.eventBorder.holdMs   → AnoSpot · Event border animation
@@ -168,7 +168,7 @@ The Settings UI has 10 pages, each owning a set of top-level config keys. The "R
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
-| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`            | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout, scroll speed |
+| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | Edge picker (visual), per-section module chip editor, click/scroll actions, layout sliders, weather, tray pinning |
 | Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, pinned apps |
@@ -385,7 +385,18 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 `appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 24 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
 
 ### Module Enable/Disable
-Every module is toggleable via the `enabledPanels` array or the Modules settings page.
+Every module is toggleable via the `enabledPanels` array (empty = all) or the Modules settings page, in every panel family. A module loads only when its family hosts it, you haven't switched it off, its own feature key (e.g. `dock.enable`, `focusTime.enable`) is on, and the compositor supports it — see `modules/common/PanelGate.qml`. Disabled modules are never even compiled.
+
+### Keeping settings wired (developers)
+- Every key lives in the schema (`modules/common/Config.qml`), the bundled defaults (`config.json`) and is read by runtime code outside `modules/settings/`.
+- Runtime code changes settings only through `Config.setNestedValue("a.b", value)`; it is a no-op when the value doesn't change, so controls echoing their initial value never write.
+- Per-bar fields in `bars[]` are `null` to follow the global setting.
+- After adding or renaming a control or key, run:
+
+```sh
+python3 scripts/dev/settings-index.py   # regenerate the palette label index
+python3 scripts/dev/settings-audit.py   # exit 1 on dead, undeclared, mismatched keys or a stale index
+```
 
 ## IPC Commands
 ```bash
