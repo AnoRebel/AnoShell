@@ -4,7 +4,6 @@ import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import Quickshell.Widgets
 import qs
 import qs.modules.common
@@ -48,61 +47,28 @@ Scope {
                 WlrLayershell.keyboardFocus: GlobalStates.taskViewOpen ? 1 : 0
                 WlrLayershell.namespace: "quickshell:taskview"
 
+                // Window tracking is leased only while Task View is open.
+                onVisibleChanged: visible ? CompositorService.acquireWindows(`taskView:${screen?.name}`)
+                                          : CompositorService.releaseWindows(`taskView:${screen?.name}`)
+
                 property var lastPositions: ({})
                 property bool animateWindows: false
 
+                // Windows on this screen's visible workspace (model windows from
+                // CompositorService; `win` carries the toplevel for previews).
                 function getActiveAddress() {
-                    if (CompositorService.compositor === "hyprland")
-                        return Hyprland.activeToplevel?.lastIpcObject?.address ?? ""
-                    const focusedWin = NiriService.windows?.find(w => w.is_focused)
-                    return focusedWin?.id?.toString() ?? ""
-                }
-
-                function getCurrentWorkspaceId() {
-                    if (CompositorService.compositor === "hyprland") {
-                        const monitor = Hyprland.monitorFor(tvRoot.screen)
-                        return monitor?.activeWorkspace?.id ?? 1
-                    }
-                    return NiriService.getCurrentWorkspaceNumber()
+                    return CompositorService.windows.find(w => w.focused)?.key ?? ""
                 }
 
                 function buildWindowList() {
-                    const wsId = getCurrentWorkspaceId()
-                    var windowList = []
-
-                    if (CompositorService.compositor === "hyprland") {
-                        for (const it of (Hyprland.toplevels?.values ?? [])) {
-                            const ci = it?.lastIpcObject ?? {}
-                            if (ci?.workspace?.id !== wsId) continue
-                            const size = ci?.size ?? [0, 0]
-                            windowList.push({
-                                win: it, clientInfo: ci, workspaceId: wsId,
-                                width: size[0], height: size[1],
-                                lastIpcObject: ci, address: ci.address
-                            })
-                        }
-                    } else if (CompositorService.compositor === "niri") {
-                        for (const nw of (NiriService.windows ?? [])) {
-                            if (nw.workspace_id !== wsId) continue
-                            windowList.push({
-                                win: nw, clientInfo: nw, workspaceId: wsId,
-                                width: nw.width ?? 800, height: nw.height ?? 600,
-                                lastIpcObject: nw, address: nw.id?.toString() ?? ""
-                            })
-                        }
-                    }
-                    return windowList
+                    return CompositorService.windowsOnOutput(tvRoot.screen?.name ?? "").map(w => ({
+                        win: w, width: w.width || 800, height: w.height || 600, address: w.key
+                    }))
                 }
 
-                function activateWindow(toplevel, clientInfo) {
+                function activateWindow(win) {
                     GlobalStates.taskViewOpen = false
-                    if (CompositorService.compositor === "hyprland") {
-                        const addr = toplevel?.address ?? clientInfo?.address ?? ""
-                        if (addr) Hyprland.dispatch("focuswindow address:0x" + addr)
-                    } else if (CompositorService.compositor === "niri") {
-                        const winId = toplevel?.id ?? clientInfo?.id
-                        if (winId !== undefined) NiriService.focusWindow(winId)
-                    }
+                    CompositorService.focusWindow(win)
                 }
 
                 // Dim backdrop
@@ -128,8 +94,7 @@ Scope {
                             id: taskLayoutModel
                             property int areaW: windowArea.width
                             property int areaH: windowArea.height
-                            property var _dep1: CompositorService.compositor === "hyprland" ? Hyprland.toplevels?.values : null
-                            property var _dep2: CompositorService.compositor === "niri" ? NiriService.windows : null
+                            property var _dep: CompositorService.windows
                             values: {
                                 if (areaW <= 0 || areaH <= 0) return []
                                 return LayoutsManager.doLayout(root.layoutAlgorithm, tvRoot.buildWindowList(), areaW, areaH, tvRoot.getActiveAddress())
@@ -149,10 +114,10 @@ Scope {
 
                                 Loader {
                                     anchors.fill: parent
-                                    active: !!modelData.win?.wayland
+                                    active: !!modelData.win?.toplevel
                                     sourceComponent: ScreencopyView {
                                         anchors.fill: parent
-                                        captureSource: modelData.win?.wayland ?? null
+                                        captureSource: modelData.win?.toplevel ?? null
                                         live: false; paintCursor: false
                                         layer.enabled: true
                                         layer.effect: OpacityMask { maskSource: Rectangle { width: parent.width; height: parent.height; radius: 12 } }
@@ -180,9 +145,8 @@ Scope {
                                     acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                                     onClicked: event => {
                                         if (event.button === Qt.MiddleButton) {
-                                            if (CompositorService.compositor === "hyprland") Hyprland.dispatch("closewindow address:0x" + (modelData.clientInfo?.address ?? ""))
-                                            else if (CompositorService.compositor === "niri") NiriService.closeWindow(modelData.clientInfo?.id)
-                                        } else tvRoot.activateWindow(modelData.win, modelData.clientInfo)
+                                            CompositorService.closeWindow(modelData.win)
+                                        } else tvRoot.activateWindow(modelData.win)
                                     }
                                 }
                             }
@@ -212,8 +176,7 @@ Scope {
                                     MouseArea {
                                         id: wsMA; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (CompositorService.compositor === "niri") NiriService.switchToWorkspace(index + 1)
-                                            else Quickshell.execDetached(["hyprctl", "dispatch", `hl.dsp.focus({ workspace = "${index + 1}" })`])
+                                            CompositorService.focusWorkspace(index + 1)
                                         }
                                     }
                                 }

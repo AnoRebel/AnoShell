@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Wayland
 
 /**
  * Hyprland backend (see BackendContract.md).
@@ -29,6 +30,8 @@ QtObject {
     property var rawWorkspaces: []     // j/workspaces
     property var fullscreenOutputs: ({})
     property int revision: 0
+    property int windowLeases: 0      // set by CompositorService
+    property var clients: []           // j/clients, kept only while leased
 
     readonly property var _focusedMon: root.monitors.find(m => m.focused) ?? null
     readonly property string focusedOutput: root._focusedMon?.name ?? ""
@@ -82,7 +85,34 @@ QtObject {
             root.rawWorkspaces = data
             root._refreshFullscreen()
         })
+        if (root.windowLeases > 0) root._request("j/clients", data => { root.clients = data })
     }
+    onWindowLeasesChanged: {
+        if (root.windowLeases > 0) root._refreshTimer.restart()
+        else root.clients = []
+    }
+
+    // Windows (only while leased). Toplevels are matched by Hyprland address.
+    readonly property var windows: {
+        if (root.windowLeases === 0) return []
+        const monName = {}
+        for (const m of root.monitors) monName[m.id] = m.name
+        const byAddress = {}
+        for (const t of Array.from(ToplevelManager.toplevels?.values ?? [])) {
+            const a = t?.HyprlandToplevel?.address
+            if (a) byAddress[`0x${a}`.replace(/^0x0x/, "0x")] = t
+        }
+        const focused = root.clients.reduce((best, c) => (best === null || c.focusHistoryID < best.focusHistoryID) ? c : best, null)
+        return root.clients.filter(c => (c.workspace?.id ?? 0) > 0 && c.mapped !== false).map(c => ({
+            key: c.address, id: c.address, title: c.title ?? "", appId: c.class ?? "",
+            workspace: c.workspace?.id ?? 0, output: monName[c.monitor] ?? "",
+            x: c.at?.[0] ?? 0, y: c.at?.[1] ?? 0, width: c.size?.[0] ?? 0, height: c.size?.[1] ?? 0,
+            focused: c === focused, floating: !!c.floating, fullscreen: (c.fullscreen ?? 0) >= 2,
+            toplevel: byAddress[c.address] ?? null
+        }))
+    }
+    function focusWindowById(id) { return id ? root._lua(`hl.dsp.focus({ window = "address:${id}" })`) : false }
+    function closeWindowById(id) { return id ? root._lua(`hl.dsp.window.close({ window = "address:${id}" })`) : false }
 
     // True fullscreen (mode 2) on a monitor's visible workspace. `hasfullscreen`
     // is also set by maximize, so clients are only fetched when it is set.
@@ -105,6 +135,9 @@ QtObject {
         "moveworkspace", "moveworkspacev2", "renameworkspace", "fullscreen",
         "openwindow", "closewindow", "movewindow", "movewindowv2", "monitoradded", "monitoraddedv2",
         "monitorremoved", "monitorremovedv2"]
+    // Extra events that only matter while windows are leased.
+    readonly property var _windowEvents: ["activewindow", "activewindowv2", "windowtitle", "windowtitlev2",
+        "changefloatingmode", "pin", "minimized"]
     property var _refreshTimer: Timer {
         interval: 50 // coalesce bursts of events into one round of requests
         onTriggered: root.refresh()
@@ -112,7 +145,8 @@ QtObject {
     property var _events: Connections {
         target: Hyprland
         function onRawEvent(event) {
-            if (root._refreshEvents.includes(event.name)) root._refreshTimer.restart()
+            if (root._refreshEvents.includes(event.name)
+                || (root.windowLeases > 0 && root._windowEvents.includes(event.name))) root._refreshTimer.restart()
             else if (event.name === "activelayout")
                 root.keyboardLayout = event.data.substring(event.data.indexOf(",") + 1)
             else if (event.name === "configreloaded")

@@ -6,7 +6,6 @@ import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import "."
 
@@ -18,9 +17,8 @@ import "."
  *
  * Click any thumbnail → focus that window.
  *
- * Compositor-agnostic — builds the window list per-compositor (Hyprland
- * via Hyprland.toplevels, Niri via NiriService.windows), then renders
- * each via ScreencopyView (the same primitive overview/taskView use).
+ * Compositor-agnostic: the window list comes from
+ * CompositorService.windowsOnOutput(); each window renders via ScreencopyView (the same primitive overview/taskView use).
  */
 Scope {
     id: root
@@ -64,38 +62,15 @@ Scope {
                 right: root.spotPosition === "right" ? 56 : 0
             }
 
-            // Build the list once per-popup-open (cheap; window count is small).
-            // Re-read on visibility change so the second hover gets a fresh set.
-            property var windowList: []
-            function _refreshList() {
-                const list = []
-                if (CompositorService.compositor === "hyprland") {
-                    const monitor = Hyprland.monitorFor(modelData)
-                    const wsId = monitor?.activeWorkspace?.id ?? -1
-                    for (const it of (Hyprland.toplevels?.values ?? [])) {
-                        const ci = it?.lastIpcObject ?? {}
-                        if (ci?.workspace?.id !== wsId) continue
-                        list.push({ win: it, title: ci?.title ?? "", appId: ci?.class ?? "", address: ci?.address ?? "" })
-                    }
-                } else if (CompositorService.compositor === "niri") {
-                    const wsId = NiriService.getCurrentWorkspaceNumber()
-                    for (const nw of (NiriService.windows ?? [])) {
-                        if (nw.workspace_id !== wsId) continue
-                        list.push({ win: nw, title: nw.title ?? "", appId: nw.app_id ?? "", id: nw.id })
-                    }
-                }
-                windowList = list
-            }
-            onVisibleChanged: if (visible) _refreshList()
+            // Windows on this screen's visible workspace, from the compositor
+            // backend (which only tracks windows while a lease is held).
+            readonly property var windowList: visible ? CompositorService.windowsOnOutput(modelData.name) : []
+            onVisibleChanged: visible ? CompositorService.acquireWindows("anoSpotPreview")
+                                      : CompositorService.releaseWindows("anoSpotPreview")
 
             function _activate(entry) {
                 GlobalStates.anoSpotWorkspacePreviewOpen = false
-                if (CompositorService.compositor === "hyprland") {
-                    const addr = entry.address || ""
-                    if (addr.length > 0) Hyprland.dispatch("focuswindow address:0x" + addr)
-                } else if (CompositorService.compositor === "niri") {
-                    if (entry.id !== undefined) NiriService.focusWindow(entry.id)
-                }
+                CompositorService.focusWindow(entry)
             }
 
             // Keep the popup open while the cursor is over it.
@@ -173,10 +148,10 @@ Scope {
                                     Loader {
                                         anchors.fill: parent
                                         anchors.margins: 2
-                                        active: !!modelData.win?.wayland
+                                        active: !!modelData.toplevel
                                         sourceComponent: ScreencopyView {
                                             anchors.fill: parent
-                                            captureSource: modelData.win?.wayland ?? null
+                                            captureSource: modelData.toplevel ?? null
                                             live: true
                                             paintCursor: false
                                             layer.enabled: true
@@ -190,7 +165,7 @@ Scope {
 
                                     MaterialSymbol {
                                         anchors.centerIn: parent
-                                        visible: !modelData.win?.wayland
+                                        visible: !modelData.toplevel
                                         text: "preview_off"
                                         iconSize: 24
                                         opacity: 0.4

@@ -27,6 +27,7 @@ QtObject {
     readonly property string activeWorkspaceName: root._focusedWs?.name ?? ""
 
     property int revision: 0
+    property int windowLeases: 0      // niri streams windows anyway; kept for the contract
 
     readonly property var workspaces: {
         void root.revision
@@ -68,6 +69,28 @@ QtObject {
         function onWindowsChanged() { root.revision++ }
         function onAllWorkspacesChanged() { root.revision++ }
     }
+
+    readonly property var windows: {
+        void root.revision
+        const wsById = {}
+        for (const ws of (NiriService.allWorkspaces ?? [])) wsById[ws.id] = ws
+        const toplevels = Array.from(ToplevelManager.toplevels?.values ?? [])
+        return (NiriService.windows ?? []).map(w => {
+            const ws = wsById[w.workspace_id]
+            const pos = w.layout?.tile_pos_in_workspace_view ?? w.layout?.pos_in_scrolling_layout ?? [0, 0]
+            const size = w.layout?.tile_size ?? w.layout?.window_size ?? [0, 0]
+            const tl = toplevels.find(t => t.appId === w.app_id && (!w.title || t.title === w.title)) ?? null
+            return {
+                key: String(w.id), id: w.id, title: w.title ?? "", appId: w.app_id ?? "",
+                workspace: ws?.idx ?? 0, output: ws?.output ?? "",
+                x: pos[0] ?? 0, y: pos[1] ?? 0, width: size[0] ?? 0, height: size[1] ?? 0,
+                focused: !!w.is_focused, floating: !!w.is_floating, fullscreen: !!tl?.fullscreen,
+                toplevel: tl
+            }
+        })
+    }
+    function focusWindowById(id) { if (id === undefined || id === null) return false; NiriService.focusWindow(id); return true }
+    function closeWindowById(id) { if (id === undefined || id === null) return false; NiriService.closeWindow(id); return true }
 
     readonly property string keyboardLayout: NiriService.getCurrentKeyboardLayoutName()
     readonly property var keyboardLayouts: NiriService.keyboardLayoutNames ?? []

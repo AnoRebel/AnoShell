@@ -25,6 +25,17 @@ QtObject {
     readonly property int activeWorkspaceNumber: 0
     readonly property string activeWorkspaceName: ""
     property int revision: 0
+    property int windowLeases: 0
+    readonly property var windows: {
+        void root.revision
+        return Array.from(ToplevelManager.toplevels?.values ?? []).map((t, i) => ({
+            key: `${i}:${t.appId}`, id: i, title: t.title ?? "", appId: t.appId ?? "",
+            workspace: 0, output: t.screens?.[0]?.name ?? "", x: 0, y: 0, width: 0, height: 0,
+            focused: !!t.activated, floating: false, fullscreen: !!t.fullscreen, toplevel: t
+        }))
+    }
+    function focusWindowById(id) { return false }
+    function closeWindowById(id) { return false }
     readonly property var workspaces: []
 
     readonly property var fullscreenOutputs: {

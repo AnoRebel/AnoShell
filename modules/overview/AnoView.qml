@@ -15,7 +15,7 @@ import qs.modules.overview
 import "."
 /**
  * AnoView — Compositor-agnostic window overview with 10 selectable layouts.
- * Works on both Hyprland (via Hyprland.toplevels) and Niri (via NiriService.windows + ToplevelManager).
+ * Compositor-agnostic: windows come from CompositorService.windows (leased while open).
  * Supports text filtering, keyboard navigation, random layout mode.
  */
 Scope {
@@ -56,14 +56,9 @@ Scope {
                     Behavior on opacity { NumberAnimation { duration: 200 } }
                 }
 
-                // Resolve active window address for Hero/Spiral/Satellite layouts
+                // Focused window key for Hero/Spiral/Satellite layouts
                 function getActiveAddress() {
-                    if (CompositorService.compositor === "hyprland") {
-                        return Hyprland.activeToplevel?.lastIpcObject?.address ?? ""
-                    }
-                    // Niri: find focused window
-                    const focusedWin = NiriService.windows?.find(w => w.is_focused)
-                    return focusedWin?.id?.toString() ?? ""
+                    return CompositorService.windows.find(w => w.focused)?.key ?? ""
                 }
 
                 function toggleView() {
@@ -102,99 +97,32 @@ Scope {
                     onTriggered: root.refreshThumbs()
                 }
 
-                // Listen for window events to refresh
+                // Window tracking is leased only while the overview is open; the
+                // model updates itself on window events.
                 Connections {
-                    enabled: CompositorService.compositor === "hyprland"
-                    target: Hyprland
-                    function onRawEvent(ev) {
-                        if (!GlobalStates.overviewOpen) return
-                        if (["openwindow", "closewindow", "changefloatingmode", "movewindow"].includes(ev.name)) {
-                            Hyprland.refreshToplevels()
-                            root.refreshThumbs()
-                        }
+                    target: GlobalStates
+                    function onOverviewOpenChanged() {
+                        if (GlobalStates.overviewOpen) CompositorService.acquireWindows("overview")
+                        else CompositorService.releaseWindows("overview")
                     }
                 }
 
-                // Activate a window (compositor-agnostic)
-                function activateWindow(toplevel, clientInfo) {
+                function activateWindow(win) {
                     GlobalStates.overviewOpen = false
                     root.animateWindows = false
                     root.lastPositions = {}
-
-                    if (CompositorService.compositor === "hyprland") {
-                        const addr = toplevel?.address ?? clientInfo?.address ?? ""
-                        if (addr) {
-                            Hyprland.dispatch("focuswindow address:0x" + addr)
-                            Hyprland.dispatch("alterzorder top")
-                        }
-                    } else if (CompositorService.compositor === "niri") {
-                        const winId = toplevel?.id ?? clientInfo?.id
-                        if (winId !== undefined) NiriService.focusWindow(winId)
-                    }
+                    CompositorService.focusWindow(win)
                 }
 
-                function closeWindow(toplevel) {
-                    if (CompositorService.compositor === "hyprland") {
-                        const addr = toplevel?.address ?? ""
-                        if (addr) Hyprland.dispatch("closewindow address:0x" + addr)
-                    } else if (CompositorService.compositor === "niri") {
-                        const winId = toplevel?.id
-                        if (winId !== undefined) NiriService.closeWindow(winId)
-                    }
-                }
+                function closeWindow(win) { CompositorService.closeWindow(win) }
 
-                // Build window list (compositor-agnostic)
+                // Every window matching the search, grouped by workspace.
                 function buildWindowList(query) {
-                    var q = (query || "").toLowerCase()
-                    var windowList = []
-
-                    if (CompositorService.compositor === "hyprland") {
-                        var toplevels = Hyprland.toplevels?.values ?? []
-                        for (var it of toplevels) {
-                            var ci = it?.lastIpcObject ?? {}
-                            var ws = ci?.workspace; var wsId = ws?.id
-                            if (wsId === undefined || wsId === null) continue
-                            var size = ci?.size ?? [0, 0]; var at = ci?.at ?? [-1000, -1000]
-                            if (at[1] + size[1] <= 0) continue
-
-                            var title = (it.title || ci.title || "").toLowerCase()
-                            var clazz = (ci["class"] || "").toLowerCase()
-                            var app = (it.appId || ci.initialClass || "").toLowerCase()
-                            if (q.length > 0 && title.indexOf(q) === -1 && clazz.indexOf(q) === -1 && app.indexOf(q) === -1) continue
-
-                            windowList.push({
-                                win: it, clientInfo: ci, workspaceId: wsId,
-                                width: size[0], height: size[1],
-                                lastIpcObject: ci, address: ci.address
-                            })
-                        }
-                    } else if (CompositorService.compositor === "niri") {
-                        var niriWindows = NiriService.windows ?? []
-                        var toplevelsMap = {}
-                        for (var tl of ToplevelManager.toplevels.values) {
-                            toplevelsMap[tl.appId] = tl
-                        }
-                        for (var nw of niriWindows) {
-                            var nTitle = (nw.title || "").toLowerCase()
-                            var nApp = (nw.app_id || "").toLowerCase()
-                            if (q.length > 0 && nTitle.indexOf(q) === -1 && nApp.indexOf(q) === -1) continue
-
-                            var tl2 = toplevelsMap[nw.app_id]
-                            windowList.push({
-                                win: tl2 ?? nw, clientInfo: nw, workspaceId: nw.workspace_id ?? 0,
-                                width: nw.width ?? 800, height: nw.height ?? 600,
-                                lastIpcObject: nw, address: nw.id?.toString() ?? "",
-                                id: nw.id
-                            })
-                        }
-                    }
-
-                    windowList.sort((a, b) => {
-                        if (a.workspaceId < b.workspaceId) return -1
-                        if (a.workspaceId > b.workspaceId) return 1
-                        return 0
-                    })
-                    return windowList
+                    const q = (query || "").toLowerCase()
+                    return CompositorService.windows
+                        .filter(w => q.length === 0 || w.title.toLowerCase().includes(q) || w.appId.toLowerCase().includes(q))
+                        .map(w => ({ win: w, width: w.width || 800, height: w.height || 600, address: w.key, workspaceId: w.workspace }))
+                        .sort((a, b) => a.workspaceId - b.workspaceId)
                 }
 
                 // Main UI
@@ -262,8 +190,7 @@ Scope {
                                     property string query: exposeArea.searchText
                                     property string algo: root.lastLayoutAlgorithm
                                     // Depend on toplevel changes
-                                    property var _dep1: CompositorService.compositor === "hyprland" ? Hyprland.toplevels?.values : null
-                                    property var _dep2: CompositorService.compositor === "niri" ? NiriService.windows : null
+                                    property var _dep: CompositorService.windows
 
                                     values: {
                                         if (areaW <= 0 || areaH <= 0) return []
@@ -278,11 +205,11 @@ Scope {
 
                                     delegate: WindowThumbnail {
                                         hWin: modelData.win
-                                        wHandle: hWin?.wayland ?? null
+                                        wHandle: hWin?.toplevel ?? null
                                         winKey: String(modelData.address ?? modelData.win?.address ?? index)
                                         thumbW: modelData.width
                                         thumbH: modelData.height
-                                        clientInfo: modelData.clientInfo ?? hWin?.lastIpcObject ?? ({})
+                                        clientInfo: ({})
                                         targetX: modelData.x
                                         targetY: modelData.y
                                         targetZ: (visible && exposeArea.currentIndex === index) ? 1000 : (modelData.zIndex || 0)
@@ -291,7 +218,7 @@ Scope {
                                         animateWindows: root.animateWindows
                                         lastPositions: root.lastPositions
 
-                                        onActivated: root.activateWindow(hWin, clientInfo)
+                                        onActivated: root.activateWindow(hWin)
                                         onClosed: root.closeWindow(hWin)
                                     }
                                 }
