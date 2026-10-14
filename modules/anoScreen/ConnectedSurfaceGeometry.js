@@ -123,7 +123,8 @@ function packSlot(descriptor, ctx) {
             rect: [b.x, b.y, b.width, b.height],
             corner: [bodyR, bodyR, bodyR, bodyR],
             k: [nk, nk, nk, nk],
-            active: active
+            active: active,
+            junction: null
         };
     }
 
@@ -161,8 +162,69 @@ function packSlot(descriptor, ctx) {
         rect: [b.x, b.y, b.width, b.height],
         corner: cr,
         k: ks,
-        active: active
+        active: active,
+        // For fillets(): the slot in its edge's local frame, and its junction k.
+        junction: { side: side, omitS: omitS || !!descriptor.omitStartConnector,
+                    omitE: omitE || !!descriptor.omitEndConnector, kS: kS, kE: kE, fc: fc }
     };
+}
+
+// Edge-local frame: u runs along the edge, v is the depth into the screen.
+function _local(side, r, W, H) {
+    if (side === "top") return { u0: r[0], u1: r[0] + r[2], v1: r[1] + r[3] };
+    if (side === "bottom") return { u0: r[0], u1: r[0] + r[2], v1: H - r[1] };
+    if (side === "left") return { u0: r[1], u1: r[1] + r[3], v1: r[0] + r[2] };
+    return { u0: r[1], u1: r[1] + r[3], v1: W - r[0] };
+}
+function _screen(side, u, v, W, H) {
+    if (side === "top") return [u, v];
+    if (side === "bottom") return [u, H - v];
+    if (side === "left") return [v, u];
+    return [W - v, u];
+}
+
+/**
+ * The concave fillets the shader's smooth-min draws OUTSIDE the slot rects,
+ * as {x, y, w, h, cx, cy, r}: a k×k square minus the circle of radius k
+ * centred at (cx, cy). The blur region needs them, or they show unblurred
+ * next to blurred bodies. Junctions: where a slot's side meets the surface it
+ * grows out of (the deepest same-edge slot under it, else the ring), and
+ * where a slot's end is flush with the band or surface beside it (far corner).
+ * ctx: { cutL, cutT, cutR, cutB, width, height }.
+ */
+function fillets(packed, ctx) {
+    var W = ctx.width, H = ctx.height, out = [];
+    var near = { top: ctx.cutT, bottom: H - ctx.cutB, left: ctx.cutL, right: W - ctx.cutR };
+    var slots = [];
+    for (var i = 0; i < packed.length; i++) {
+        var p = packed[i];
+        if (p.active && p.junction) {
+            var l = _local(p.junction.side, p.rect, W, H);
+            slots.push({ j: p.junction, u0: l.u0, u1: l.u1, v1: l.v1 });
+        }
+    }
+    function depth(s, u) {
+        var d = near[s.j.side];
+        for (var n = 0; n < slots.length; n++) {
+            var o = slots[n];
+            if (o !== s && o.j.side === s.j.side && o.u0 <= u && u <= o.u1) d = Math.max(d, o.v1);
+        }
+        return d;
+    }
+    function push(s, u, v, du, k) {
+        if (!(k > 0)) return;
+        var a = _screen(s.j.side, u, v, W, H), b = _screen(s.j.side, u + du * k, v + k, W, H);
+        out.push({ x: Math.min(a[0], b[0]), y: Math.min(a[1], b[1]), w: k, h: k, cx: b[0], cy: b[1], r: k });
+    }
+    for (var m = 0; m < slots.length; m++) {
+        var s = slots[m], side = s.j.side, horiz = isHorizontal(side);
+        var c0 = horiz ? ctx.cutL : ctx.cutT, c1 = horiz ? ctx.cutR : ctx.cutB;
+        if (s.j.omitS || s.u0 <= c0 + 0.5) push(s, Math.max(s.u0, c0), s.v1, 1, s.j.fc);
+        else { var d0 = depth(s, s.u0 - 0.5); if (d0 < s.v1 - 0.5) push(s, s.u0, d0, -1, s.j.kS); }
+        if (s.j.omitE || s.u1 >= c1 - 0.5) push(s, Math.min(s.u1, c1), s.v1, -1, s.j.fc);
+        else { var d1 = depth(s, s.u1 + 0.5); if (d1 < s.v1 - 0.5) push(s, s.u1, d1, 1, s.j.kE); }
+    }
+    return out;
 }
 
 /// The inert slot for an unused shader chrome channel.

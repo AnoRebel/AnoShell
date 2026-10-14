@@ -77,8 +77,13 @@ Scope {
 
     signal borderPulse()
 
+    // Startup fires workspace/track/notification signals as services settle;
+    // they are not events, so the halo stays off until this arms.
+    property bool _armed: false
+    Timer { running: true; interval: 2000; onTriggered: root._armed = true }
+
     function triggerBorder(eventType) {
-        if (!eventBorderEnabled) return;
+        if (!eventBorderEnabled || !_armed) return;
         if (eventBorderEvents.indexOf(eventType) < 0) return;
         root.borderPulse();
     }
@@ -103,9 +108,38 @@ Scope {
     Variants {
         model: root.enabled ? Quickshell.screens : []
 
+      Scope {
+        id: spotScope
+        required property var modelData
+
+        // Edge strip that brings a tucked pill back on hover (fullscreen only).
+        PanelWindow {
+            screen: spotScope.modelData
+            visible: spotWindow.screenFullscreen
+            color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.namespace: "quickshell:anospot:peek"
+            WlrLayershell.layer: WlrLayer.Overlay
+            anchors {
+                top: root.position === "top"
+                bottom: root.position === "bottom"
+                left: root.position === "left"
+                right: root.position === "right"
+            }
+            implicitWidth: root.isVertical ? 3 : spotWindow.width
+            implicitHeight: root.isVertical ? spotWindow.height : 3
+            MouseArea {
+                id: peekArea
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.NoButton
+                onExited: spotWindow.peek()
+            }
+        }
+
         PanelWindow {
             id: spotWindow
-            required property var modelData
+            readonly property var modelData: spotScope.modelData
             screen: modelData
 
             visible: root.enabled
@@ -138,7 +172,8 @@ Scope {
             }
 
             // Connected mode: flush on its edge, painted by the frame.
-            readonly property bool connected: PanelRegistry.enabled
+            // The frame retracts in fullscreen, so the pill paints itself then.
+            readonly property bool connected: PanelRegistry.enabled && !(Config.options?.anoSpot?.floating ?? false) && !screenFullscreen
             readonly property int gap: connected ? 0 : 6
             margins {
                 top: root.position === "top" ? gap : 0
@@ -147,16 +182,50 @@ Scope {
                 right: root.position === "right" ? gap : 0
             }
 
+            // ── Fullscreen: slide into the edge, peek on edge hover ───────────
+            // Like the bar: hidden while a window is fullscreen on this screen,
+            // revealed by hovering the edge strip (peekStrip) and kept while the
+            // pointer is on the pill or for a short grace period after.
+            readonly property bool screenFullscreen: {
+                void CompositorService.fullscreenRevision
+                return (Config.options?.anoSpot?.hideOnFullscreen ?? true)
+                    && CompositorService.hasFullscreenOnScreen(modelData?.name ?? "")
+            }
+            // Shown while hovered, and for a grace period after the pointer
+            // touches the edge strip or leaves the pill.
+            readonly property bool tucked: screenFullscreen && !pillHover.hovered && !peekArea.containsMouse && !peekGrace.running
+            function peek() { peekGrace.restart() }
+            Timer { id: peekGrace; interval: 1000 }
+            HoverHandler {
+                id: pillHover
+                onHoveredChanged: if (!hovered) peekGrace.restart()
+            }
+            // 0 = shown, 1 = fully inside the edge.
+            property real tuck: tucked ? 1 : 0
+            Behavior on tuck { MotionSpring { token: spotWindow.tucked ? "settle" : "liquid" } }
+            readonly property real _depth: (root.isVertical ? width : height) + gap
+            readonly property real _shift: Math.max(0, tuck) * _depth
+            // The whole content slides; the window itself stays put.
+            Binding {
+                target: spotWindow.contentItem
+                property: root.isVertical ? "x" : "y"
+                value: (root.position === "top" || root.position === "left") ? -spotWindow._shift : spotWindow._shift
+            }
+            // Fully tucked: click-through (only the peek strip takes input).
+            mask: Region { item: spotWindow.tuck > 0.99 ? null : spotWindow.contentItem }
+
             ConnectedSurfaceLease {
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
                 kind: "pill"; edge: root.position; priority: 15
                 screenName: spotWindow.modelData?.name ?? ""
-                active: spotWindow.visible
+                active: spotWindow.visible && spotWindow.connected && spotWindow.tuck < 0.99
+                progress: 1 - Math.max(0, Math.min(1, spotWindow.tuck))
                 surfaceRadius: Math.min(spotWindow.width, spotWindow.height) / 2
                 // Where the layer shell actually puts the window (centred in
                 // the space other edges leave, e.g. beside a left bar).
                 readonly property point _o: PanelRegistry.windowOrigin(spotWindow)
-                x: _o.x; y: _o.y
+                readonly property real _s: (root.position === "top" || root.position === "left") ? -spotWindow._shift : spotWindow._shift
+                x: _o.x + (root.isVertical ? _s : 0); y: _o.y + (root.isVertical ? 0 : _s)
                 w: spotWindow.width; h: spotWindow.height
             }
 
@@ -168,8 +237,8 @@ Scope {
             Item {
                 id: borderHalo
                 anchors.centerIn: parent
-                width: parent.width + 4
-                height: parent.height + 4
+                width: parent.width
+                height: parent.height
                 opacity: 0
                 visible: opacity > 0
                 z: -1
@@ -189,7 +258,12 @@ Scope {
                             GradientStop { position: 1.00; color: Appearance?.colors?.colPrimary    ?? "#a6e3a1" }
                         }
                     }
-                    color: "white"  // overwritten by the conical gradient layer effect
+                    // A ring, not a fill: the gradient takes this item's alpha, and a
+                    // filled source washed the whole pill pale (its body is
+                    // transparent in connected mode).
+                    color: "transparent"
+                    border.width: 2
+                    border.color: "white"
                 }
 
                 Connections {
@@ -375,5 +449,6 @@ Scope {
                 }
             }
         }
+      }
     }
 }

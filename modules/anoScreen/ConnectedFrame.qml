@@ -97,9 +97,15 @@ Item {
                             r[3], c[3], k[3], 0)
     })
 
+    // The concave fillets drawn outside the slot rects (at most 2 per slot).
+    readonly property var _fillets: SurfaceGeometry.fillets(root._packed, {
+        cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
+        width: root.width, height: root.height })
+
     /// Blur that follows the drawn silhouette (ext-background-effect-v1): the
-    /// ring (window minus the rounded cutout) plus every active slot with its
-    /// own corner radii. Only the tiny concave fillets are left unblurred.
+    /// ring (window minus the rounded cutout), every active slot with its own
+    /// corner radii, and the concave fillets joining them, so the whole
+    /// silhouette is one material.
     readonly property Region blurShape: Region {
         width: root.width; height: root.height
         Region {
@@ -116,6 +122,35 @@ Item {
         SlotRegion { p: root._packed[5] }
         SlotRegion { p: root._packed[6] }
         SlotRegion { p: root._packed[7] }
+        FilletRegion { f: root._fillets[0] }
+        FilletRegion { f: root._fillets[1] }
+        FilletRegion { f: root._fillets[2] }
+        FilletRegion { f: root._fillets[3] }
+        FilletRegion { f: root._fillets[4] }
+        FilletRegion { f: root._fillets[5] }
+        FilletRegion { f: root._fillets[6] }
+        FilletRegion { f: root._fillets[7] }
+        FilletRegion { f: root._fillets[8] }
+        FilletRegion { f: root._fillets[9] }
+        FilletRegion { f: root._fillets[10] }
+        FilletRegion { f: root._fillets[11] }
+        FilletRegion { f: root._fillets[12] }
+        FilletRegion { f: root._fillets[13] }
+        FilletRegion { f: root._fillets[14] }
+        FilletRegion { f: root._fillets[15] }
+    }
+    // k×k square minus the circle the fillet is tangent to.
+    component FilletRegion: Region {
+        property var f
+        intersection: Intersection.Combine
+        x: f ? f.x : 0; y: f ? f.y : 0
+        width: f ? f.w : 0; height: f ? f.h : 0
+        Region {
+            shape: RegionShape.Ellipse
+            intersection: Intersection.Subtract
+            x: f ? f.cx - f.r : 0; y: f ? f.cy - f.r : 0
+            width: f ? f.r * 2 : 0; height: f ? f.r * 2 : 0
+        }
     }
     component SlotRegion: Region {
         property var p

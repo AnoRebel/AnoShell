@@ -1180,7 +1180,9 @@
   "sublabel": "Which screen edge the overlay anchors to",
   "keys": [
    "anoSpot.position",
-   "anoSpot.draggable"
+   "anoSpot.draggable",
+   "anoSpot.floating",
+   "anoSpot.hideOnFullscreen"
   ]
  },
  {
@@ -1190,6 +1192,24 @@
   "sublabel": "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge",
   "keys": [
    "anoSpot.draggable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Floating",
+  "sublabel": "Keep the pill as its own rounded island with a gap, instead of fusing it into the connected frame",
+  "keys": [
+   "anoSpot.floating"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Hide in fullscreen",
+  "sublabel": "Slide into the edge while a window is fullscreen; hover the edge to bring it back",
+  "keys": [
+   "anoSpot.hideOnFullscreen"
   ]
  },
  {

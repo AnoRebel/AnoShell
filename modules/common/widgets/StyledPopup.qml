@@ -76,24 +76,46 @@ Item {
     // flush on its screen edge (true unless another client reserves that edge).
     property rect _card: Qt.rect(0, 0, 0, 0)
     property string _screenName: ""
+    // The popup hangs off the bar's OUTER edge, not the icon's: in connected
+    // mode it sits flush there (no gap) so the frame joins it to the bar with
+    // fillets instead of drawing a separate rounded island.
+    readonly property real _gap: PanelRegistry.enabled ? 0 : root.popupMargin
+    // Margin on the two sides across the bar: room for the floating card's
+    // shadow, not needed when the frame paints it. Without it a card near a
+    // screen end slides flush onto the frame band (the compositor keeps the
+    // popup on the output) and the ends below fillet into it.
+    readonly property real _side: PanelRegistry.enabled ? 0 : root.popupMargin
+    property bool _flushStart: false
+    property bool _flushEnd: false
+    // Anchor rect relative to the icon, stretched across the bar's thickness.
+    property rect _anchorRect: Qt.rect(0, 0, 1, 1)
     function _measure() {
         const w = root.anchorItem?.QsWindow?.window
         if (!root.anchorItem || !w) return
         const o = PanelRegistry.windowOrigin(w), ai = root.anchorItem.mapToItem(null, 0, 0)
+        const iw = root.anchorItem.width, ih = root.anchorItem.height
+        root._anchorRect = root._vertical ? Qt.rect(0, -ai.y, Math.max(1, iw), Math.max(1, w.height))
+                                          : Qt.rect(-ai.x, 0, Math.max(1, w.width), Math.max(1, ih))
         const a = Qt.point(o.x + ai.x, o.y + ai.y)
         const sw = w.screen?.width ?? w.width ?? 0, sh = w.screen?.height ?? w.height ?? 0
-        const m = root.popupMargin, pw = root.popupWidth, ph = root.popupHeight
+        const m = root._side, g = root._gap, pw = root.popupWidth, ph = root.popupHeight
+        const sn = w.screen?.name ?? ""
         let x, y
         if (root._vertical) {
             // Centred on the icon, clamped on-screen like the compositor does.
-            x = Math.max(m, Math.min(a.x + root.anchorItem.width / 2 - pw / 2, sw - pw - m))
-            y = root.edge === "top" ? a.y + root.anchorItem.height + m : a.y - m - ph
+            x = Math.max(m, Math.min(a.x + iw / 2 - pw / 2, sw - pw - m))
+            y = root.edge === "top" ? o.y + w.height + g : o.y - g - ph
+            root._flushStart = PanelRegistry.enabled && x <= PanelRegistry.inset(sn, "left") + 0.5
+            root._flushEnd = PanelRegistry.enabled && x + pw >= sw - PanelRegistry.inset(sn, "right") - 0.5
         } else {
-            y = Math.max(m, Math.min(a.y + root.anchorItem.height / 2 - ph / 2, sh - ph - m))
-            x = root.edge === "left" ? a.x + root.anchorItem.width + m : a.x - m - pw
+            y = Math.max(m, Math.min(a.y + ih / 2 - ph / 2, sh - ph - m))
+            x = root.edge === "left" ? o.x + w.width + g : o.x - g - pw
+            root._flushStart = PanelRegistry.enabled && y <= PanelRegistry.inset(sn, "top") + 0.5
+            root._flushEnd = PanelRegistry.enabled && y + ph >= sh - PanelRegistry.inset(sn, "bottom") - 0.5
         }
         root._card = Qt.rect(x, y, pw, ph)
-        root._screenName = w.screen?.name ?? ""
+        root._screenName = sn
+        popupLoader.item?.anchor.updateAnchor()
     }
     onShownChanged: if (shown) _measure()
     onPopupWidthChanged: if (shown) _measure()
@@ -102,6 +124,7 @@ Item {
     ConnectedSurfaceLease {
         key: `popout:${root}`
         kind: "popout"; edge: root.edge; priority: 10
+        omitStartConnector: root._flushStart; omitEndConnector: root._flushEnd
         screenName: root._screenName
         active: root._open && root.anchorItem !== null
         progress: root.reveal
@@ -135,8 +158,8 @@ Item {
             id: popupWin
             visible: root._open
             color: "transparent"
-            implicitWidth: root.popupWidth + root.popupMargin * 2
-            implicitHeight: root.popupHeight + root.popupMargin * 2
+            implicitWidth: root.popupWidth + (root._vertical ? root._side * 2 : root.popupMargin + root._gap)
+            implicitHeight: root.popupHeight + (root._vertical ? root.popupMargin + root._gap : root._side * 2)
 
             // Expose the visible card content area so the outer Loader can route
             // both inline children and externally-reparented content into it.
@@ -153,6 +176,7 @@ Item {
             anchor {
                 window: root.QsWindow.window
                 item: root.anchorItem
+                rect: root._anchorRect
                 edges: root.anchorEdges
                 gravity: root.anchorGravity
             }
@@ -161,7 +185,14 @@ Item {
 
             Item {
                 id: area
-                anchors { fill: parent; margins: root.popupMargin }
+                anchors {
+                    fill: parent; margins: root.popupMargin
+                    // bar side: _gap; far side: popupMargin (spring overshoot room); across: _side
+                    topMargin: root.edge === "top" ? root._gap : root.edge === "bottom" ? root.popupMargin : root._side
+                    bottomMargin: root.edge === "bottom" ? root._gap : root.edge === "top" ? root.popupMargin : root._side
+                    leftMargin: root.edge === "left" ? root._gap : root.edge === "right" ? root.popupMargin : root._side
+                    rightMargin: root.edge === "right" ? root._gap : root.edge === "left" ? root.popupMargin : root._side
+                }
 
                 // In connected mode the AnoScreen frame paints this popout's
                 // fused surface, shadow included, so the popup drops its own

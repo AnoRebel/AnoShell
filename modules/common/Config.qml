@@ -1051,6 +1051,12 @@ Singleton {
                 property string position: "top"
                 property int widthPx: 420
                 property int heightPx: 36
+                // Slide into the edge while a window is fullscreen on that
+                // screen; hovering the edge brings it back.
+                property bool hideOnFullscreen: true
+                // Float as its own rounded pill with a gap, even when the
+                // connected frame is on (otherwise it fuses into the frame).
+                property bool floating: false
                 property bool showMpris: true
                 property bool showNotification: true
                 property bool showRecording: true

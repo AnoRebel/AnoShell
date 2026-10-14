@@ -91,7 +91,7 @@ ColumnLayout {
         icon: "open_in_full"
         title: "Position"
         subtitle: "Which screen edge the overlay anchors to"
-        configKeys: ["anoSpot.position", "anoSpot.draggable"]
+        configKeys: ["anoSpot.position", "anoSpot.draggable", "anoSpot.floating", "anoSpot.hideOnFullscreen"]
 
         Item {
             Layout.fillWidth: true
@@ -153,6 +153,22 @@ ColumnLayout {
             sublabel: "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge"
             checked: Config.options?.anoSpot?.draggable ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.draggable", checked)
+        }
+
+        ConfigSwitch {
+            label: "Floating"
+            configKey: "anoSpot.floating"
+            sublabel: "Keep the pill as its own rounded island with a gap, instead of fusing it into the connected frame"
+            checked: Config.options?.anoSpot?.floating ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.floating", checked)
+        }
+
+        ConfigSwitch {
+            label: "Hide in fullscreen"
+            configKey: "anoSpot.hideOnFullscreen"
+            sublabel: "Slide into the edge while a window is fullscreen; hover the edge to bring it back"
+            checked: Config.options?.anoSpot?.hideOnFullscreen ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.hideOnFullscreen", checked)
         }
     }
 

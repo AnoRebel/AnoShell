@@ -73,6 +73,9 @@ QtObject {
     onScreenNameChanged: { _release(); _schedule() }
     onKeyChanged: { _release(); _schedule() }
     onEdgeChanged: _schedule()
+    onOmitStartConnectorChanged: _schedule()
+    onOmitEndConnectorChanged: _schedule()
+    onSurfaceRadiusChanged: _schedule()
     readonly property Connections _cfg: Connections {
         target: PanelRegistry
         function onEnabledChanged() { root._owner = ""; root._schedule() }

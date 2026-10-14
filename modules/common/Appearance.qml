@@ -288,8 +288,8 @@ Singleton {
         readonly property real _k: 1 / Math.pow(AnimationConfig.speed, 2)
         // Surfaces growing out of an edge / morphing shapes: soft, slight give.
         readonly property QtObject liquid: QtObject { readonly property real spring: 3.2 * root.springs._k; readonly property real damping: 0.28; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
-        // Retracting into an edge: settles flush without bouncing past it.
-        readonly property QtObject settle: QtObject { readonly property real spring: 4.2 * root.springs._k; readonly property real damping: 0.42; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
+        // Retracting into an edge: firm, settles flush without a long tail.
+        readonly property QtObject settle: QtObject { readonly property real spring: 7.0 * root.springs._k; readonly property real damping: 0.65; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
         // Small UI elements (chips, toggles, indicators).
         readonly property QtObject snappy: QtObject { readonly property real spring: 6.0 * root.springs._k; readonly property real damping: 0.55; readonly property real mass: 0.8; readonly property real epsilon: 0.25 }
     }

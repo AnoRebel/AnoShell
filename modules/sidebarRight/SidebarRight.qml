@@ -67,6 +67,9 @@ Scope {
             ConnectedSurfaceLease {
                 key: "sidebarRight:" + (sidebarRoot.modelData?.name ?? "")
                 kind: "sidebar"; edge: "right"; priority: 5
+                // Full height between the bar and the bottom band: both ends are
+                // flush, so they fillet into them instead of rounding on their own.
+                omitStartConnector: true; omitEndConnector: true
                 screenName: sidebarRoot.modelData?.name ?? ""
                 active: sidebarRoot.visible && progress > 0
                 x: (sidebarRoot.screen?.width ?? 0) - PanelRegistry.inset(_scr, "right") - root.sidebarWidth + root.globalMargin + slide.x
