@@ -109,7 +109,7 @@ Scope {
                             RotationAnimator {
                                 // An animator has no `parent`; target the art by id.
                                 target: albumArt; from: 0; to: 360; duration: AnimationConfig.scaledDuration(12000)
-                                running: MprisController.isPlaying
+                                running: MprisController.isPlaying && AnimationConfig.continuous && (QsWindow.window?.visible ?? false)
                                 loops: Animation.Infinite
                             }
 

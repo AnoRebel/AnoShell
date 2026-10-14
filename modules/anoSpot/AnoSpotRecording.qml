@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -14,7 +15,7 @@ RowLayout {
         radius: 4
         color: "#f38ba8"
         SequentialAnimation on opacity {
-            running: AnoSpotState.recording.active
+            running: AnoSpotState.recording.active && AnimationConfig.continuous && (QsWindow.window?.visible ?? false)
             loops: Animation.Infinite
             NumberAnimation { from: 1.0; to: 0.3; duration: AnimationConfig.scaledDuration(600) }
             NumberAnimation { from: 0.3; to: 1.0; duration: AnimationConfig.scaledDuration(600) }

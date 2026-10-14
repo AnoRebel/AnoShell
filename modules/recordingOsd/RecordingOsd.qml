@@ -410,7 +410,7 @@ Scope {
                 width: 8; height: 8; radius: 4
                 color: Appearance?.colors?.colError ?? "#f38ba8"
                 SequentialAnimation on opacity {
-                    running: osdLoader.active
+                    running: osdLoader.active && AnimationConfig.continuous
                     loops: Animation.Infinite
                     NumberAnimation { to: 0.2; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                     NumberAnimation { to: 1.0; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
@@ -451,7 +451,7 @@ Scope {
                 width: 8; height: 8; radius: 4
                 color: Appearance?.colors?.colError ?? "#f38ba8"
                 SequentialAnimation on opacity {
-                    running: osdLoader.active
+                    running: osdLoader.active && AnimationConfig.continuous
                     loops: Animation.Infinite
                     NumberAnimation { to: 0.2; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                     NumberAnimation { to: 1.0; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }

@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -101,7 +102,7 @@ Rectangle {
 
                     RotationAnimator on rotation {
                         from: 0; to: 360; duration: AnimationConfig.scaledDuration(8000)
-                        running: MprisController.isPlaying && artHolder.hasArt
+                        running: MprisController.isPlaying && artHolder.hasArt && AnimationConfig.continuous && (QsWindow.window?.visible ?? false)
                         loops: Animation.Infinite
                     }
                 }

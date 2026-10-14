@@ -83,7 +83,11 @@ Item {
                         fillColor: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.5)
                     }
                 }
-                Component.onCompleted: SpectrumService.registerComponent("mediaBarPopup")
+                // cava runs only while the popup is actually showing (the popup's
+                // content exists for the whole session).
+                readonly property bool _wantSpectrum: root.hovered
+                on_WantSpectrumChanged: _wantSpectrum ? SpectrumService.registerComponent("mediaBarPopup")
+                                                      : SpectrumService.unregisterComponent("mediaBarPopup")
                 Component.onDestruction: SpectrumService.unregisterComponent("mediaBarPopup")
             }
 

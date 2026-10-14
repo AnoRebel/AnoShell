@@ -49,7 +49,7 @@ Item {
     property real globalOrbitAngle: 0
     NumberAnimation on globalOrbitAngle {
         from: 0; to: Math.PI * 2; duration: AnimationConfig.scaledDuration(90000)
-        loops: Animation.Infinite; running: true
+        loops: Animation.Infinite; running: AnimationConfig.continuous && (QsWindow.window?.visible ?? false)
     }
 
     property real introState: 0.0
