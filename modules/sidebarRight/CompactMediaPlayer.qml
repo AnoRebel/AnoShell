@@ -100,7 +100,7 @@ Rectangle {
                     transformOrigin: Item.Center
 
                     RotationAnimator on rotation {
-                        from: 0; to: 360; duration: 8000
+                        from: 0; to: 360; duration: AnimationConfig.scaledDuration(8000)
                         running: MprisController.isPlaying && artHolder.hasArt
                         loops: Animation.Infinite
                     }
@@ -164,7 +164,7 @@ Rectangle {
                 width: 40; height: 40; radius: 20
                 color: Appearance?.colors.colPrimary ?? "#65558F"
                 scale: playMA.pressed ? 0.9 : (playMA.containsMouse ? 1.05 : 1)
-                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 MaterialSymbol {
                     anchors.centerIn: parent

@@ -55,7 +55,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: GlobalStates.mediaControlsOpen ? 0.7 : 0
-            Behavior on opacity { NumberAnimation { duration: 300 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.mediaControlsOpen = false }
         }
 
@@ -72,8 +72,8 @@ Scope {
 
             opacity: GlobalStates.mediaControlsOpen ? 1 : 0
             scale: GlobalStates.mediaControlsOpen ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 id: mediaContent
@@ -108,7 +108,7 @@ Scope {
 
                             RotationAnimator {
                                 // An animator has no `parent`; target the art by id.
-                                target: albumArt; from: 0; to: 360; duration: 12000
+                                target: albumArt; from: 0; to: 360; duration: AnimationConfig.scaledDuration(12000)
                                 running: MprisController.isPlaying
                                 loops: Animation.Infinite
                             }
@@ -204,7 +204,7 @@ Scope {
                                     : (inRange
                                         ? (1 - Math.abs(targetIdx - LyricsService.currentIndex) * 0.3)
                                         : 0)
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
                             }
                         }
                     }
@@ -240,7 +240,7 @@ Scope {
                         width: 56; height: 56; radius: 28
                         color: Appearance?.colors.colPrimary ?? "#65558F"
                         scale: playBtnMA.pressed ? 0.88 : (playBtnMA.containsMouse ? 1.08 : 1)
-                        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+                        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(100); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                         MaterialSymbol {
                             anchors.centerIn: parent
                             text: MprisController.isPlaying ? "pause" : "play_arrow"

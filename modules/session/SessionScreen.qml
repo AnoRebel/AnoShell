@@ -40,7 +40,7 @@ Scope {
                 anchors.fill: parent
                 color: "#000000"
                 opacity: GlobalStates.sessionOpen ? 0.7 : 0
-                Behavior on opacity { NumberAnimation { duration: 300 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
                 MouseArea { anchors.fill: parent; onClicked: GlobalStates.sessionOpen = false }
             }
 
@@ -50,8 +50,8 @@ Scope {
                 width: 600; height: 350
                 opacity: GlobalStates.sessionOpen ? 1 : 0
                 scale: GlobalStates.sessionOpen ? 1 : 0.85
-                Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -212,10 +212,10 @@ Scope {
                     color: Qt.rgba(btn.accentColor.r, btn.accentColor.g, btn.accentColor.b, btnMA.containsMouse || btn.isHolding ? 0.25 : 0.1)
                     border.width: 2
                     border.color: Qt.rgba(btn.accentColor.r, btn.accentColor.g, btn.accentColor.b, 0.4)
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
                     scale: btnMA.pressed ? 0.92 : (btnMA.containsMouse ? 1.05 : 1)
-                    Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 }
 
                 // Progress ring (fills as you hold)
@@ -248,7 +248,7 @@ Scope {
                     anchors.centerIn: parent
                     text: btn.iconName; iconSize: 28; fill: btn.isHolding ? 1 : 0
                     color: btn.isHolding ? btn.accentColor : "white"
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                 }
 
                 MouseArea {
@@ -271,7 +271,7 @@ Scope {
                 font.weight: Font.DemiBold
                 color: btn.isHolding ? btn.accentColor : "white"
                 Layout.alignment: Qt.AlignHCenter
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
             }
         }
     }

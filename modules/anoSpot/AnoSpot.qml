@@ -172,12 +172,12 @@ Scope {
                 SequentialAnimation {
                     id: borderAnim
                     ParallelAnimation {
-                        NumberAnimation { target: borderHalo; property: "opacity"; to: 1; duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: borderHalo; property: "opacity"; to: 1; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                         RotationAnimation { target: borderHalo; property: "angle"; from: 0; to: 360
-                                            duration: 200 + root.eventBorderHoldMs + 400; easing.type: Easing.Linear }
+                                            duration: AnimationConfig.scaledDuration(200) + root.eventBorderHoldMs + 400; easing.type: Easing.Linear }
                     }
                     PauseAnimation { duration: root.eventBorderHoldMs }
-                    NumberAnimation { target: borderHalo; property: "opacity"; to: 0; duration: 400; easing.type: Easing.InCubic }
+                    NumberAnimation { target: borderHalo; property: "opacity"; to: 0; duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
                 }
             }
 
@@ -243,7 +243,7 @@ Scope {
                             opacity: parent.dropHover ? 0.18 : 0
                             border.width: parent.dropHover ? 2 : 0
                             border.color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
-                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
                         }
                     }
                 }
@@ -273,7 +273,7 @@ Scope {
                         opacity: handleArea.containsMouse || handleArea.drag.active ? 0.85 : 0.5
                         rotation: root.isVertical ? 90 : 0
                         color: Appearance?.colors?.colOnLayer0Subtle ?? "#a6adc8"
-                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
                     }
 
                     MouseArea {

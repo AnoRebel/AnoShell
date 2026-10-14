@@ -49,7 +49,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: GlobalStates.hudVisible ? 0.55 : 0
-            Behavior on opacity { NumberAnimation { duration: 250 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250) } }
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.hudVisible = false }
         }
 
@@ -66,8 +66,8 @@ Scope {
 
             opacity: GlobalStates.hudVisible ? 1 : 0
             scale: GlobalStates.hudVisible ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 id: hudContent

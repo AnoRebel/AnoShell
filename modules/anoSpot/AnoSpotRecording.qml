@@ -16,8 +16,8 @@ RowLayout {
         SequentialAnimation on opacity {
             running: AnoSpotState.recording.active
             loops: Animation.Infinite
-            NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
-            NumberAnimation { from: 0.3; to: 1.0; duration: 600 }
+            NumberAnimation { from: 1.0; to: 0.3; duration: AnimationConfig.scaledDuration(600) }
+            NumberAnimation { from: 0.3; to: 1.0; duration: AnimationConfig.scaledDuration(600) }
         }
     }
 

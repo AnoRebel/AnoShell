@@ -55,7 +55,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: GlobalStates.clipboardOpen ? 0.5 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.clipboardOpen = false }
         }
 
@@ -72,8 +72,8 @@ Scope {
 
             opacity: GlobalStates.clipboardOpen ? 1 : 0
             scale: GlobalStates.clipboardOpen ? 1 : 0.92
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 anchors { fill: parent; margins: 16 }

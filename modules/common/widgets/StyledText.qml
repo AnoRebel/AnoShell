@@ -23,7 +23,7 @@ Text {
 
     component Anim: NumberAnimation {
         target: root
-        duration: 300 / 2
+        duration: AnimationConfig.scaledDuration(300) / 2
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
     }
@@ -42,17 +42,17 @@ Text {
         SequentialAnimation {
             alwaysRunToEnd: true
             ParallelAnimation {
-                Anim { property: "x"; to: textAnimationBehavior.originalX - root.animationDistanceX; easing.type: Easing.InSine }
-                Anim { property: "y"; to: textAnimationBehavior.originalY - root.animationDistanceY; easing.type: Easing.InSine }
-                Anim { property: "opacity"; to: 0; easing.type: Easing.InSine }
+                Anim { property: "x"; to: textAnimationBehavior.originalX - root.animationDistanceX; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
+                Anim { property: "y"; to: textAnimationBehavior.originalY - root.animationDistanceY; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
+                Anim { property: "opacity"; to: 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
             }
             PropertyAction {}
             PropertyAction { target: root; property: "x"; value: textAnimationBehavior.originalX + root.animationDistanceX }
             PropertyAction { target: root; property: "y"; value: textAnimationBehavior.originalY + root.animationDistanceY }
             ParallelAnimation {
-                Anim { property: "x"; to: textAnimationBehavior.originalX; easing.type: Easing.OutSine }
-                Anim { property: "y"; to: textAnimationBehavior.originalY; easing.type: Easing.OutSine }
-                Anim { property: "opacity"; to: 1; easing.type: Easing.OutSine }
+                Anim { property: "x"; to: textAnimationBehavior.originalX; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                Anim { property: "y"; to: textAnimationBehavior.originalY; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                Anim { property: "opacity"; to: 1; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
             }
         }
     }

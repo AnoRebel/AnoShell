@@ -49,7 +49,7 @@ Item {
 
     property real animatedTotalSeconds: 0
     Behavior on animatedTotalSeconds {
-        NumberAnimation { duration: 850; easing.type: Easing.OutQuint }
+        NumberAnimation { duration: AnimationConfig.scaledDuration(850); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
     }
     onTotalSecondsChanged: animatedTotalSeconds = totalSeconds
 
@@ -64,7 +64,7 @@ Item {
         introState = 1.0;
         requestDataUpdate();
     }
-    Behavior on introState { NumberAnimation { duration: 800; easing.type: Easing.OutExpo } }
+    Behavior on introState { NumberAnimation { duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     // ─── Data Ingestion ─────────────────────────────────────────────────────
     function updateFromData(data) {
@@ -338,7 +338,7 @@ Item {
                             width: 40; height: 40; radius: 20
                             visible: root.selectedAppClass !== "" || root.isWeekView
                             color: backMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                             MaterialSymbol { anchors.centerIn: parent; text: "arrow_back"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea {
                                 id: backMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -358,7 +358,7 @@ Item {
                             width: 40; height: 40; radius: 20
                             visible: root.selectedAppClass === "" && !root.isWeekView
                             color: weekMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                             MaterialSymbol { anchors.centerIn: parent; text: "calendar_view_week"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea {
                                 id: weekMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -370,7 +370,7 @@ Item {
                         Rectangle {
                             width: 40; height: 40; radius: 20
                             color: prevMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                             MaterialSymbol { anchors.centerIn: parent; text: "chevron_left"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                             MouseArea { id: prevMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(-1) }
                         }
@@ -410,7 +410,7 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40; radius: 20
                         color: nextMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                         MaterialSymbol { anchors.centerIn: parent; text: "chevron_right"; iconSize: 20; color: Appearance.colors.colOnLayer0 }
                         MouseArea { id: nextMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(1) }
                     }
@@ -501,7 +501,7 @@ Item {
                                         anchors.bottom: dayLbl.top; anchors.bottomMargin: 8
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         width: 42; height: Math.max(4, (parent.height - 25) * (model.total / Math.max(root.maxWeekTotal, 1)))
-                                        Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 600; easing.type: Easing.OutQuint } }
+                                        Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 600; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                         Rectangle {
                                             anchors.fill: parent; radius: 4
                                             color: model.isTarget ? Appearance.m3colors.m3primary : Appearance.colors.colLayer2
@@ -570,7 +570,7 @@ Item {
                                     width: parent.width; radius: 2
                                     height: Math.max(2, parent.height * (root.hourlyData[index] / Math.max(root.maxHourlyTotal, 1)))
                                     color: Appearance.m3colors.m3primary; opacity: 0.6
-                                    Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 400; easing.type: Easing.OutQuint } }
+                                    Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 400; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                 }
                             }
                         }
@@ -601,7 +601,7 @@ Item {
                                 Layout.fillWidth: true; Layout.preferredHeight: 44
                                 radius: Appearance.rounding.small
                                 color: appItemMa.containsMouse ? Appearance.colors.colLayer1 : "transparent"
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                                 MouseArea {
                                     id: appItemMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                     onClicked: {
@@ -634,7 +634,7 @@ Item {
                                         Rectangle {
                                             width: parent.width * (model.percent / 100); height: parent.height; radius: 3
                                             color: Appearance.m3colors.m3primary
-                                            Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
+                                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                         }
                                     }
                                     StyledText {

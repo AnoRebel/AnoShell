@@ -196,43 +196,43 @@ Scope {
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
                 Behavior on x {
                     enabled: pill.animatePosition
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                         onRunningChanged: if (!running) pill.animatePosition = false
                     }
                 }
                 Behavior on y {
                     enabled: pill.animatePosition
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
                 Behavior on width {
                     enabled: pill.animatePosition
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
                 Behavior on height {
                     enabled: pill.animatePosition
                     NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.OutCubic
+                        duration: AnimationConfig.scaledDuration(220)
+                        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                     }
                 }
 
@@ -337,7 +337,7 @@ Scope {
         opacity: dragHover.hovered || dragHandler.active ? 0.8 : 0.4
 
         Behavior on opacity {
-            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
         }
 
         Rectangle {
@@ -348,7 +348,7 @@ Scope {
                 : dragHover.hovered
                     ? (Appearance?.colors?.colLayer2Hover ?? "#3a3a3a")
                     : "transparent"
-            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
         }
 
         MaterialSymbol {
@@ -412,8 +412,8 @@ Scope {
                 SequentialAnimation on opacity {
                     running: osdLoader.active
                     loops: Animation.Infinite
-                    NumberAnimation { to: 0.2; duration: 800; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.2; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+                    NumberAnimation { to: 1.0; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                 }
             }
 
@@ -453,8 +453,8 @@ Scope {
                 SequentialAnimation on opacity {
                     running: osdLoader.active
                     loops: Animation.Infinite
-                    NumberAnimation { to: 0.2; duration: 800; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 0.2; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+                    NumberAnimation { to: 1.0; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                 }
             }
 

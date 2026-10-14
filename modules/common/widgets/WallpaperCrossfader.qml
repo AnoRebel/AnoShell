@@ -70,19 +70,19 @@ Item {
 
         Behavior on opacity {
             enabled: root.enableTransitions && root.transitionType !== "none"
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on scale {
             enabled: root.enableTransitions && root.transitionType === "zoom"
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on x {
             enabled: root.enableTransitions && (root.transitionType === "slideRight" || root.transitionType === "slideLeft")
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on y {
             enabled: root.enableTransitions && (root.transitionType === "slideDown" || root.transitionType === "slideUp")
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
     }
 
@@ -101,19 +101,19 @@ Item {
 
         Behavior on opacity {
             enabled: root.enableTransitions && root.transitionType !== "none"
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on scale {
             enabled: root.enableTransitions && root.transitionType === "zoom"
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on x {
             enabled: root.enableTransitions && (root.transitionType === "slideRight" || root.transitionType === "slideLeft")
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         Behavior on y {
             enabled: root.enableTransitions && (root.transitionType === "slideDown" || root.transitionType === "slideUp")
-            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.InOutCubic }
+            NumberAnimation { duration: root.transitionBaseDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
     }
 }

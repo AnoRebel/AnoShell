@@ -51,7 +51,7 @@ Flow {
             border.color: Appearance?.colors.colPrimary ?? "#65558F"
             opacity: cell.itemEnabled ? 1.0 : 0.4
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
             ColumnLayout {
                 id: contentCol

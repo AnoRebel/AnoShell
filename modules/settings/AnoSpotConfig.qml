@@ -134,8 +134,8 @@ ColumnLayout {
                             : Appearance?.colors.colOutlineVariant ?? "#44444488"
                         opacity: root.currentPosition === modelData.pos ? 1 : 0.3
 
-                        Behavior on color { ColorAnimation { duration: 200 } }
-                        Behavior on opacity { NumberAnimation { duration: 200 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
                         MouseArea {
                             anchors.fill: parent

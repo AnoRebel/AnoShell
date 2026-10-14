@@ -221,7 +221,7 @@ Scope {
                                     color: removeMa.containsMouse
                                         ? (Appearance?.colors?.colError ?? "#f38ba8")
                                         : Qt.rgba(0, 0, 0, 0.4)
-                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                                     MaterialSymbol {
                                         anchors.centerIn: parent
@@ -405,7 +405,7 @@ Scope {
                                     color: deviceMa.containsMouse
                                         ? (Appearance?.colors?.colLayer2 ?? "#3a3845")
                                         : (Appearance?.colors?.colLayer1 ?? "#2b2930")
-                                    Behavior on color { ColorAnimation { duration: 100 } }
+                                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                                     required property string alias
                                     required property string ip

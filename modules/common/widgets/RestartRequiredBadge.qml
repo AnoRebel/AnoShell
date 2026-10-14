@@ -31,8 +31,8 @@ Rectangle {
     border.color: Appearance?.colors.colOutlineVariant ?? "#49454F"
     opacity: ma.containsMouse ? 1.0 : 0.7
 
-    Behavior on color { ColorAnimation { duration: 120 } }
-    Behavior on opacity { NumberAnimation { duration: 120 } }
+    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
+    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
     RowLayout {
         id: row

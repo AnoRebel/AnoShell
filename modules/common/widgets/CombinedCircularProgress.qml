@@ -34,8 +34,8 @@ Item {
     property real centerX: implicitSize / 2
     property real centerY: implicitSize / 2
 
-    Behavior on outerDegree { enabled: root.enableAnimation; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
-    Behavior on innerDegree { enabled: root.enableAnimation; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+    Behavior on outerDegree { enabled: root.enableAnimation; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+    Behavior on innerDegree { enabled: root.enableAnimation; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     Shape {
         anchors.fill: parent

@@ -50,7 +50,7 @@ Item {
                     text: "expand_more"
                     color: Appearance.colors.colOnLayer1
                     rotation: parent.overflowOpen ? 180 : 0
-                    Behavior on rotation { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                    Behavior on rotation { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 }
 
                 MouseArea {

@@ -46,7 +46,7 @@ RowLayout {
         font.pixelSize: 12
         font.italic: mprisRow.showLyrics && mprisRow.currentLyric.length > 0
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
-        Behavior on text { PropertyAnimation { duration: 150 } }
+        Behavior on text { PropertyAnimation { duration: AnimationConfig.scaledDuration(150) } }
     }
 
     // Wheel-to-volume overlay. Sits above the row so wheel events are intercepted

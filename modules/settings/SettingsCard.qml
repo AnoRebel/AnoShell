@@ -99,8 +99,8 @@ Rectangle {
                     // that was the "flip/rotate the whole page" effect. Target
                     // the chevron itself.
                     Behavior on text { SequentialAnimation {
-                        NumberAnimation { target: chevron; property: "rotation"; to: root.expanded ? -180 : 180; duration: 0 }
-                        NumberAnimation { target: chevron; property: "rotation"; to: 0; duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: chevron; property: "rotation"; to: root.expanded ? -180 : 180; duration: AnimationConfig.scaledDuration(0) }
+                        NumberAnimation { target: chevron; property: "rotation"; to: 0; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                     }}
                 }
             }
@@ -113,7 +113,7 @@ Rectangle {
             implicitHeight: 1
             color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
             opacity: root.expanded ? 0.3 : 0
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
         }
 
         // Content
@@ -121,14 +121,14 @@ Rectangle {
             Layout.fillWidth: true
             implicitHeight: root.expanded ? contentColumn.implicitHeight + 16 : 0
             clip: true
-            Behavior on implicitHeight { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 id: contentColumn
                 anchors { left: parent.left; right: parent.right; top: parent.top; margins: 16; topMargin: 8 }
                 spacing: 12
                 opacity: root.expanded ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
             }
         }
     }

@@ -131,8 +131,8 @@ Item {
                         ? (Appearance?.colors.colPrimary ?? "#65558F")
                         : (Appearance?.m3colors.m3secondaryContainer ?? "#E8DEF8")
                     opacity: cell.isActive ? 1 : (cell.isOccupied ? 0.5 : 0)
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
                 }
 
                 // Dot / number

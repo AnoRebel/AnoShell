@@ -111,23 +111,23 @@ Item {
                     add: Transition {
                         enabled: notifList.expressive
                         ParallelAnimation {
-                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200; easing.type: Easing.OutCubic }
-                            NumberAnimation { property: "scale"; from: 0.92; to: 1; duration: 200; easing.type: Easing.OutCubic }
+                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                            NumberAnimation { property: "scale"; from: 0.92; to: 1; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                         }
                     }
                     remove: Transition {
                         enabled: notifList.expressive
                         ParallelAnimation {
-                            NumberAnimation { property: "opacity"; to: 0; duration: 220; easing.type: Easing.InCubic }
+                            NumberAnimation { property: "opacity"; to: 0; duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
                             // Slide trailing — gives the cascade direction.
-                            NumberAnimation { property: "x"; to: 24; duration: 220; easing.type: Easing.InCubic }
+                            NumberAnimation { property: "x"; to: 24; duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
                         }
                     }
                     // Items that shift up when one above them leaves — gives
                     // the cascade a continuous feel instead of jump-cuts.
                     displaced: Transition {
                         enabled: notifList.expressive
-                        NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation { property: "y"; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                     }
                 }
             }

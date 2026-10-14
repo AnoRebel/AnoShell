@@ -90,7 +90,7 @@ Rectangle {
                 color: modelData.connected
                     ? Qt.rgba(0.70, 0.53, 1.0, 0.18)
                     : (devMouse.containsMouse ? (Appearance?.colors.colLayer2 ?? "#2B2930") : "transparent")
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 8; rightMargin: 8 }

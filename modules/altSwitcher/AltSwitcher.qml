@@ -168,8 +168,8 @@ Scope {
 
             opacity: root.panelVisible ? 1 : 0
             scale: root.panelVisible ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: root.animDurationMs; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: root.animDurationMs; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: root.animDurationMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: root.animDurationMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 id: panelContent
@@ -224,7 +224,7 @@ Scope {
                                 border.width: isSelected ? 2 : 0
                                 border.color: Appearance?.colors.colPrimary ?? "#65558F"
 
-                                Behavior on color { ColorAnimation { duration: 100 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                                 RowLayout {
                                     id: windowRow

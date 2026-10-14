@@ -124,7 +124,7 @@ Item {
         Behavior on opacity {
             NumberAnimation {
                 duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
-                easing.type: Easing.OutCubic
+                easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
             }
         }
         Behavior on scale {
@@ -141,7 +141,7 @@ Item {
             anchors { fill: parent; margins: 12 }
             visible: root.showPopout
             opacity: root.showPopout ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: root.morphDuration * 0.6; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: root.morphDuration * 0.6; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
         }
     }
 

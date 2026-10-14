@@ -18,7 +18,7 @@ ScrollBar {
         opacity: root.policy === ScrollBar.AlwaysOn || (root.active && root.size < 1.0) ? 0.5 : 0
         Behavior on opacity {
             NumberAnimation {
-                duration: 350
+                duration: AnimationConfig.scaledDuration(350)
                 easing.type: Appearance.animation.elementMoveFast.type
                 easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve
             }

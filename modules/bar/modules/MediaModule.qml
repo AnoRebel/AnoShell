@@ -55,10 +55,12 @@ Item {
                 Rectangle {
                     width: 56; height: 56; radius: 28; color: Appearance?.colors.colLayer2 ?? "#2B2930"; clip: true
                     Image {
+                        id: popupArt
                         anchors.fill: parent; source: MprisController.activeTrack?.artUrl ?? ""
                         fillMode: Image.PreserveAspectCrop; asynchronous: true
                         layer.enabled: true; layer.effect: OpacityMask { maskSource: Rectangle { width: 56; height: 56; radius: 28 } }
-                        RotationAnimator { target: parent; from: 0; to: 360; duration: 10000; running: MprisController.isPlaying; loops: Animation.Infinite }
+                        // An animator has no `parent`; target the art by id. Continuous motion → gated.
+                        RotationAnimator { target: popupArt; from: 0; to: 360; duration: AnimationConfig.scaledDuration(10000); running: MprisController.isPlaying && AnimationConfig.continuous && popupArt.visible; loops: Animation.Infinite }
                     }
                     Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: Appearance?.colors.colLayer0 ?? "#1C1B1F" }
                 }
@@ -91,7 +93,7 @@ Item {
                 ToolbarButton { iconName: "skip_previous"; iconSize: 22; onClicked: MprisController.previous(); enabled: MprisController.canGoPrevious }
                 Rectangle {
                     width: 40; height: 40; radius: 20; color: Appearance?.colors.colPrimary ?? "#65558F"
-                    scale: playMA.pressed ? 0.9 : 1; Behavior on scale { NumberAnimation { duration: 100 } }
+                    scale: playMA.pressed ? 0.9 : 1; Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(100) } }
                     MaterialSymbol { anchors.centerIn: parent; text: MprisController.isPlaying ? "pause" : "play_arrow"; iconSize: 24; fill: 1; color: Appearance?.m3colors.m3onPrimary ?? "white" }
                     MouseArea { id: playMA; anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: MprisController.togglePlaying() }
                 }

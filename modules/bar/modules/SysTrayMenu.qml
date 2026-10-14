@@ -93,7 +93,7 @@ PopupWindow {
             Behavior on opacity {
                 NumberAnimation {
                     duration: (Appearance?.animationCurves.expressiveEffectsDuration ?? 200) * (Appearance?.animSpeedMultiplier ?? 1)
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                 }
             }
             Behavior on scale {
@@ -103,16 +103,16 @@ PopupWindow {
                     easing.bezierCurve: Appearance?.animationCurves.expressiveFastSpatial ?? [0.42, 1.67, 0.21, 0.90, 1, 1]
                 }
             }
-            Behavior on implicitHeight { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-            Behavior on implicitWidth { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on implicitWidth { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             StackView {
                 id: stackView
                 anchors { fill: parent; margins: popupBackground.padding }
-                pushEnter: Transition { NumberAnimation { duration: 0 } }
-                pushExit: Transition { NumberAnimation { duration: 0 } }
-                popEnter: Transition { NumberAnimation { duration: 0 } }
-                popExit: Transition { NumberAnimation { duration: 0 } }
+                pushEnter: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
+                pushExit: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
+                popEnter: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
+                popExit: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
 
                 implicitWidth: currentItem.implicitWidth
                 implicitHeight: currentItem.implicitHeight
@@ -129,7 +129,7 @@ PopupWindow {
         property bool shown: false
         opacity: shown ? 1 : 0
 
-        Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         Component.onCompleted: shown = true
         StackView.onActivating: shown = true

@@ -240,7 +240,7 @@ ColumnLayout {
                         radius: width / 2
                         color: "#99000000"
                         opacity: avatarHover.containsMouse ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: 150 } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
                         ColumnLayout {
                             anchors.centerIn: parent

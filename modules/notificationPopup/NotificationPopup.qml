@@ -93,8 +93,8 @@ Scope {
 
                     opacity: entryOpacity
                     transform: Translate { x: popupDelegate.slideOffset }
-                    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                    Behavior on transform { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     // Swipe to dismiss tracking
                     property real swipeX: 0
@@ -121,7 +121,7 @@ Scope {
                             color: "transparent"
                             border.width: cardHover.containsMouse ? 1 : 0
                             border.color: Appearance?.colors.colPrimary ?? "#65558F"
-                            Behavior on border.width { NumberAnimation { duration: 100 } }
+                            Behavior on border.width { NumberAnimation { duration: AnimationConfig.scaledDuration(100) } }
                         }
 
                         RowLayout {
@@ -228,7 +228,7 @@ Scope {
                                 }
                             }
                         }
-                        Behavior on x { enabled: !popupDelegate.swiping; NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                        Behavior on x { enabled: !popupDelegate.swiping; NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                     }
                 }
             }

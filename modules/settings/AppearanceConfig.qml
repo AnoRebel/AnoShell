@@ -150,8 +150,8 @@ ColumnLayout {
                             : isPreviewing
                                 ? (Appearance?.colors.colSecondary ?? "#cba6f7")
                                 : (Appearance?.colors.colOutlineVariant ?? "#44444466")
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                        Behavior on border.color { ColorAnimation { duration: 120 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
+                        Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                         ColumnLayout {
                             id: cellCol

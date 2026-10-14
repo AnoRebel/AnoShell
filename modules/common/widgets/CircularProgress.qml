@@ -16,7 +16,7 @@ Item {
     property bool fill: false
     property bool enableAnimation: true
     property int animationDuration: 800
-    property var easingType: Easing.OutCubic
+    property var bezierCurve: Appearance.animationCurves.emphasizedDecel
 
     implicitWidth: implicitSize
     implicitHeight: implicitSize
@@ -29,7 +29,7 @@ Item {
 
     Behavior on degree {
         enabled: root.enableAnimation
-        NumberAnimation { duration: root.animationDuration; easing.type: root.easingType }
+        NumberAnimation { duration: AnimationConfig.scaledDuration(root.animationDuration); easing.type: Easing.BezierSpline; easing.bezierCurve: root.bezierCurve }
     }
 
     Loader {

@@ -119,7 +119,7 @@ Scope {
                             ? (Config.options?.lock?.dim?.opacity ?? 0.6)
                             : 0
                         Behavior on opacity {
-                            NumberAnimation { duration: 400; easing.type: Easing.InOutCubic }
+                            NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                         }
                     }
 
@@ -218,7 +218,7 @@ Scope {
                                 : 320
                             implicitHeight: 48; radius: 24
                             Behavior on Layout.preferredWidth {
-                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                             }
                             color: Qt.rgba(1, 1, 1, 0.1)
                             border.width: passwordInput.activeFocus ? 2 : 1
@@ -227,13 +227,14 @@ Scope {
                             // Error shake animation
                             NumberAnimation {
                                 id: errorShake; target: parent; property: "x"
-                                from: parent.x - 10; to: parent.x + 10; duration: 80
-                                loops: 3; easing.type: Easing.InOutQuad
+                                from: parent.x - 10; to: parent.x + 10; duration: AnimationConfig.scaledDuration(80)
+                                loops: 3; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
                                 onFinished: parent.x = 0
                             }
 
                             RowLayout {
-                                anchors { fill: parent; leftMargin: 16; rightMargin: 16 }; spacing: 8
+                                anchors { fill: parent; leftMargin: 16; rightMargin: 16 }
+                                spacing: 8
                                 MaterialSymbol {
                                     text: lockScope.authenticating ? "hourglass_top" : "lock"
                                     iconSize: 20; color: "white"; opacity: 0.5

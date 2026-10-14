@@ -73,7 +73,7 @@ Scope {
 
                 // Animation in/out
                 scale: root.open ? 1 : 0.95
-                Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 // Internal state — what date the events list is filtered to
                 property date filterDate: new Date()
@@ -163,13 +163,13 @@ Scope {
                         add: Transition {
                             enabled: eventList.expressive
                             ParallelAnimation {
-                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 180; easing.type: Easing.OutCubic }
-                                NumberAnimation { property: "scale"; from: 0.95; to: 1; duration: 180; easing.type: Easing.OutCubic }
+                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: AnimationConfig.scaledDuration(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                                NumberAnimation { property: "scale"; from: 0.95; to: 1; duration: AnimationConfig.scaledDuration(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                             }
                         }
                         displaced: Transition {
                             enabled: eventList.expressive
-                            NumberAnimation { property: "y"; duration: 180; easing.type: Easing.OutCubic }
+                            NumberAnimation { property: "y"; duration: AnimationConfig.scaledDuration(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                         }
 
                         delegate: Rectangle {

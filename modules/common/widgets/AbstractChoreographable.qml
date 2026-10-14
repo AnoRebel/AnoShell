@@ -17,6 +17,5 @@ Item {
     children: child ? [child] : []
     visible: progress > 0.01
 
-    property var animation: Appearance?.animation.elementMoveSmall?.numberAnimation?.createObject(this) ?? NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-    Behavior on progress { animation: root.animation }
+    Behavior on progress { MotionNumber { curve: "emphasizedDecel"; baseDuration: 200 } }
 }

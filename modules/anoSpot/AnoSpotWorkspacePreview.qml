@@ -142,7 +142,7 @@ Scope {
                                         border.color: thumbMa.containsMouse
                                             ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
                                             : (Appearance?.colors.colOutlineVariant ?? "#44444466")
-                                        Behavior on border.color { ColorAnimation { duration: 120 } }
+                                        Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                                     }
 
                                     Loader {

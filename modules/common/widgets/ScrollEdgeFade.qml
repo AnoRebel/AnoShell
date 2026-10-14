@@ -20,7 +20,7 @@ Item {
             GradientStop { position: 0.0; color: root.fadeColor }
             GradientStop { position: 1.0; color: "transparent" }
         }
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
     }
 
     Rectangle {
@@ -31,6 +31,6 @@ Item {
             GradientStop { position: 0.0; color: "transparent" }
             GradientStop { position: 1.0; color: root.fadeColor }
         }
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
     }
 }

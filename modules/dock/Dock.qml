@@ -129,8 +129,8 @@ Scope {
                         x: root.isVertical ? (dockWindow.reveal ? 0 : (root.isLeft ? -root.dockHeight : root.dockHeight)) : 0
                     }
 
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-                    Behavior on transform { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     // App items layout
                     RowLayout {
@@ -159,8 +159,8 @@ Scope {
                                         : "transparent"
 
                                     scale: iconMA.pressed ? 0.85 : (iconMA.containsMouse ? 1.15 : 1)
-                                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-                                    Behavior on color { ColorAnimation { duration: 100 } }
+                                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                                     // Desktop icon from freedesktop
                                     IconImage {
@@ -192,7 +192,7 @@ Scope {
                                     height: 4; radius: 2
                                     color: Appearance?.colors.colPrimary ?? "#65558F"
                                     visible: modelData.running
-                                    Behavior on width { NumberAnimation { duration: 150 } }
+                                    Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
                                 }
                             }
                         }

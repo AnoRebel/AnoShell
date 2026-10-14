@@ -185,7 +185,7 @@ PanelWindow {
             Behavior on hideOffset {
                 NumberAnimation {
                     duration: Appearance?.animation.elementMoveFast.duration ?? 200
-                    easing.type: Easing.OutCubic
+                    easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
                 }
             }
 

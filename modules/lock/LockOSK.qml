@@ -67,7 +67,7 @@ ColumnLayout {
                     color: keyMa.containsPress ? Qt.rgba(1,1,1,0.25)
                          : keyMa.containsMouse ? Qt.rgba(1,1,1,0.18)
                          : Qt.rgba(1,1,1,0.10)
-                    Behavior on color { ColorAnimation { duration: 80 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(80) } }
                     StyledText {
                         anchors.centerIn: parent
                         text: parent.modelData
@@ -111,7 +111,7 @@ ColumnLayout {
                         Layout.preferredWidth: 50; Layout.preferredHeight: 36
                         radius: 6
                         color: bsMa.containsMouse ? Qt.rgba(1,1,1,0.18) : Qt.rgba(1,1,1,0.10)
-                        Behavior on color { ColorAnimation { duration: 80 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(80) } }
                         MaterialSymbol {
                             anchors.centerIn: parent
                             text: "backspace"
@@ -140,7 +140,7 @@ ColumnLayout {
             Layout.preferredWidth: 200; Layout.preferredHeight: 34
             radius: 6
             color: spaceMa.containsMouse ? Qt.rgba(1,1,1,0.18) : Qt.rgba(1,1,1,0.10)
-            Behavior on color { ColorAnimation { duration: 80 } }
+            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(80) } }
             MouseArea {
                 id: spaceMa
                 anchors.fill: parent
@@ -155,7 +155,7 @@ ColumnLayout {
             color: submitMa.containsMouse
                 ? (Appearance?.colors.colPrimaryHover ?? "#80aaaa")
                 : (Appearance?.colors.colPrimary ?? "#65558F")
-            Behavior on color { ColorAnimation { duration: 80 } }
+            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(80) } }
             MaterialSymbol {
                 anchors.centerIn: parent
                 text: "arrow_forward"

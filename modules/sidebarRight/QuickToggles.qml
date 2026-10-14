@@ -154,8 +154,8 @@ Rectangle {
             clip: true
             implicitHeight: root.networkExpanded ? netPicker.implicitHeight + 8 : 0
             opacity: root.networkExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-            Behavior on opacity { NumberAnimation { duration: 180 } }
+            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             WifiNetworkPicker {
                 id: netPicker
@@ -169,8 +169,8 @@ Rectangle {
             clip: true
             implicitHeight: root.bluetoothExpanded ? btPicker.implicitHeight + 8 : 0
             opacity: root.bluetoothExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-            Behavior on opacity { NumberAnimation { duration: 180 } }
+            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             BluetoothDevicePicker {
                 id: btPicker
@@ -186,8 +186,8 @@ Rectangle {
             clip: true
             implicitHeight: root.nightLightExpanded ? expanderCol.implicitHeight + 8 : 0
             opacity: root.nightLightExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-            Behavior on opacity { NumberAnimation { duration: 180 } }
+            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             ColumnLayout {
                 id: expanderCol
@@ -248,7 +248,7 @@ Rectangle {
         border.width: active ? 1 : 0
         border.color: Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.4)
 
-        Behavior on color { ColorAnimation { duration: 200 } }
+        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
         RowLayout {
             anchors.centerIn: parent
@@ -272,7 +272,7 @@ Rectangle {
                 text: "expand_more"; iconSize: 16
                 rotation: pill.chevronRotation
                 color: pill.active ? pill.activeColor : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
-                Behavior on rotation { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                Behavior on rotation { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
             }
         }
 

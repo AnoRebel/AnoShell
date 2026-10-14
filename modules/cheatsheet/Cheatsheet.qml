@@ -52,7 +52,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: root.cheatsheetOpen ? 0.6 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
             MouseArea { anchors.fill: parent; onClicked: root.close() }
         }
 
@@ -69,8 +69,8 @@ Scope {
 
             opacity: root.cheatsheetOpen ? 1 : 0
             scale: root.cheatsheetOpen ? 1 : 0.92
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 anchors { fill: parent; margins: 20 }

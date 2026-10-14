@@ -54,7 +54,7 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
                     rotation: Network.wifiScanning ? 360 : 0
-                    Behavior on rotation { enabled: Network.wifiScanning; RotationAnimation { duration: 900; loops: Animation.Infinite } }
+                    Behavior on rotation { enabled: Network.wifiScanning; RotationAnimation { duration: AnimationConfig.scaledDuration(900); loops: Animation.Infinite } }
                 }
                 StyledToolTip { text: "Rescan" }
             }
@@ -89,7 +89,7 @@ Rectangle {
                 color: modelData.active
                     ? Qt.rgba((Appearance?.colors.colPrimary?.r ?? 0.4), (Appearance?.colors.colPrimary?.g ?? 0.33), (Appearance?.colors.colPrimary?.b ?? 0.56), 0.18)
                     : (netMouse.containsMouse ? (Appearance?.colors.colLayer2 ?? "#2B2930") : "transparent")
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 8; rightMargin: 8 }

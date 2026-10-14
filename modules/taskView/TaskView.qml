@@ -75,7 +75,7 @@ Scope {
                 Rectangle {
                     anchors.fill: parent; color: "#88000000"
                     opacity: GlobalStates.taskViewOpen ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 200 } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
                 }
 
                 MouseArea { anchors.fill: parent; z: -1; onClicked: GlobalStates.taskViewOpen = false }

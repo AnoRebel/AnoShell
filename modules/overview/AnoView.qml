@@ -53,7 +53,7 @@ Scope {
                     anchors.fill: parent
                     color: "#88000000"
                     opacity: GlobalStates.overviewOpen ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 200 } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
                 }
 
                 // Focused window key for Hero/Spiral/Satellite layouts

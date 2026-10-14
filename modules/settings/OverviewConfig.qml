@@ -68,11 +68,11 @@ ColumnLayout {
                         ? Appearance?.colors.colPrimary ?? "#65558F"
                         : Appearance?.colors.colOutlineVariant ?? "#44444488"
 
-                    Behavior on color { ColorAnimation { duration: 200 } }
-                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                    Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
                     scale: layoutMA.pressed ? 0.95 : (layoutMA.containsMouse ? 1.02 : 1)
-                    Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     ColumnLayout {
                         anchors.centerIn: parent

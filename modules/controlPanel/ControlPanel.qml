@@ -41,7 +41,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: GlobalStates.controlPanelOpen ? 0.4 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.controlPanelOpen = false }
         }
 
@@ -59,8 +59,8 @@ Scope {
 
             opacity: GlobalStates.controlPanelOpen ? 1 : 0
             transform: Translate { y: GlobalStates.controlPanelOpen ? 0 : -20 }
-            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-            Behavior on transform { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             StyledFlickable {
                 anchors { fill: parent; margins: 16 }
@@ -196,7 +196,7 @@ Scope {
         radius: Appearance?.rounding.small ?? 8
         color: active ? Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.2) : Appearance?.colors.colLayer1 ?? "#E5E1EC"
         border.width: active ? 1 : 0; border.color: Appearance?.colors.colPrimary ?? "#65558F"
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
         ColumnLayout { anchors.centerIn: parent; spacing: 1
             MaterialSymbol { text: iconName; iconSize: 18; fill: active ? 1 : 0; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; Layout.alignment: Qt.AlignHCenter }
             StyledText { text: label; font.pixelSize: 10; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.maximumWidth: 80; Layout.alignment: Qt.AlignHCenter; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5" }

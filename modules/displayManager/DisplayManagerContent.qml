@@ -48,13 +48,13 @@ Item {
 
     property real globalOrbitAngle: 0
     NumberAnimation on globalOrbitAngle {
-        from: 0; to: Math.PI * 2; duration: 90000
+        from: 0; to: Math.PI * 2; duration: AnimationConfig.scaledDuration(90000)
         loops: Animation.Infinite; running: true
     }
 
     property real introState: 0.0
     Component.onCompleted: { introState = 1.0; loadOutputs() }
-    Behavior on introState { NumberAnimation { duration: 800; easing.type: Easing.OutQuint } }
+    Behavior on introState { NumberAnimation { duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     property bool applyHovered: false
     property bool applyPressed: false
@@ -151,14 +151,14 @@ Item {
                 x: (parent.width / 2 - width / 2) + Math.cos(globalOrbitAngle * 2) * 150
                 y: (parent.height / 2 - height / 2) + Math.sin(globalOrbitAngle * 2) * 100
                 opacity: 0.04; color: selectedResAccent
-                Behavior on color { ColorAnimation { duration: 1000 } }
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(1000) } }
             }
             Rectangle {
                 width: parent.width * 0.9; height: width; radius: width / 2
                 x: (parent.width / 2 - width / 2) + Math.sin(globalOrbitAngle * 1.5) * -150
                 y: (parent.height / 2 - height / 2) + Math.cos(globalOrbitAngle * 1.5) * -100
                 opacity: 0.04; color: selectedRateAccent
-                Behavior on color { ColorAnimation { duration: 1000 } }
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(1000) } }
             }
 
             // ═════════════════════════════════════════════════════════════
@@ -181,7 +181,7 @@ Item {
                         anchors.centerIn: parent
                         width: 380; height: 280
                         scale: Math.min(1.0, 2200 / currentSimW)
-                        Behavior on scale { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
+                        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                         Rectangle {
                             id: deskSurface
@@ -213,15 +213,15 @@ Item {
                             height: 90 + (90 * (currentSimH / 1080))
                             anchors { bottom: standNeck.top; bottomMargin: -10; horizontalCenter: parent.horizontalCenter }
                             radius: 12; color: window.crust; border.color: window.surface2; border.width: 2
-                            Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
-                            Behavior on height { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                             Rectangle {
                                 anchors.fill: parent; anchors.margins: 10; radius: 6; color: window.surface0; clip: true
                                 gradient: Gradient {
                                     orientation: Gradient.Vertical
-                                    GradientStop { position: 0.0; color: Qt.tint(window.surface0, Qt.alpha(selectedResAccent, 0.15)); Behavior on color { ColorAnimation { duration: 400 } } }
-                                    GradientStop { position: 1.0; color: Qt.tint(window.surface0, Qt.alpha(selectedRateAccent, 0.1)); Behavior on color { ColorAnimation { duration: 400 } } }
+                                    GradientStop { position: 0.0; color: Qt.tint(window.surface0, Qt.alpha(selectedResAccent, 0.15)); Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } } }
+                                    GradientStop { position: 1.0; color: Qt.tint(window.surface0, Qt.alpha(selectedRateAccent, 0.1)); Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } } }
                                 }
                                 Grid { anchors.centerIn: parent; rows: 10; columns: 15; spacing: 20; Repeater { model: 150; Rectangle { width: 2; height: 2; radius: 1; color: Qt.alpha(window.text_, 0.1) } } }
                                 Item {
@@ -229,7 +229,7 @@ Item {
                                     scale: 1.0 / singleMonitorZoom.scale
                                     ColumnLayout {
                                         anchors.centerIn: parent; spacing: 4
-                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 38; color: selectedResAccent; text: "󰍹"; Behavior on color { ColorAnimation { duration: 400 } } }
+                                        StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 38; color: selectedResAccent; text: "󰍹"; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } } }
                                         StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.weight: Font.Bold; font.pixelSize: 16; color: window.text_; text: monitorsModel.count > 0 ? monitorsModel.get(0).name : "Unknown" }
                                         StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.pixelSize: 12; color: window.subtext0; text: currentSimW + "x" + currentSimH + " @ " + (monitorsModel.count > 0 ? monitorsModel.get(0).rate : "60") + "Hz" }
                                     }
@@ -277,9 +277,9 @@ Item {
                             id: transformNode
                             x: multiMonitorView.offsetX; y: multiMonitorView.offsetY
                             scale: multiMonitorView.targetScale; transformOrigin: Item.TopLeft
-                            Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
-                            Behavior on y { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
-                            Behavior on scale { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
+                            Behavior on x { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on y { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                             Repeater {
                                 model: monitorsModel
@@ -293,12 +293,12 @@ Item {
                                         radius: 8; color: isActive ? window.surface1 : window.crust
                                         border.color: isActive ? selectedResAccent : window.surface2
                                         border.width: isActive ? 2 : 1; z: isActive ? 5 : 0
-                                        Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
-                                        Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
-                                        Behavior on border.color { ColorAnimation { duration: 300 } }
-                                        Behavior on color { ColorAnimation { duration: 300 } }
-                                        Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
-                                        Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
+                                        Behavior on x { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                        Behavior on y { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                        Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(300) } }
+                                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(300) } }
+                                        Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                        Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                                         Item {
                                             anchors.centerIn: parent; width: 110; height: 80
@@ -307,7 +307,7 @@ Item {
                                             scale: Math.min(idealScale, maxPhysicalScale)
                                             ColumnLayout {
                                                 anchors.centerIn: parent; spacing: 2
-                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 32; color: isActive ? selectedResAccent : window.text_; text: "󰍹"; Behavior on color { ColorAnimation { duration: 300 } } }
+                                                StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.iconNerd; font.pixelSize: 32; color: isActive ? selectedResAccent : window.text_; text: "󰍹"; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(300) } } }
                                                 StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.weight: Font.Black; font.pixelSize: 13; color: window.text_; text: model.name }
                                                 StyledText { Layout.alignment: Qt.AlignHCenter; font.family: Appearance.font.family.monospace; font.pixelSize: 10; color: window.subtext0; text: model.resW + "x" + model.resH + " @ " + model.rate + "Hz" }
                                             }
@@ -354,8 +354,8 @@ Item {
                 SequentialAnimation {
                     id: menuTransitionAnim
                     ParallelAnimation {
-                        ScaleAnimator { target: rightSideContainer; from: 0.99; to: 1.0; duration: 200; easing.type: Easing.OutSine }
-                        NumberAnimation { target: highlightFlash; property: "opacity"; from: 0.05; to: 0.0; duration: 250; easing.type: Easing.OutQuad }
+                        ScaleAnimator { target: rightSideContainer; from: 0.99; to: 1.0; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                        NumberAnimation { target: highlightFlash; property: "opacity"; from: 0.05; to: 0.0; duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                     }
                 }
 
@@ -389,16 +389,16 @@ Item {
                                 property color accentColor: modelData.accent
                                 color: isSel ? Qt.alpha(accentColor, 0.15) : (resMa.containsMouse ? window.surface0 : window.mantle)
                                 border.color: isSel ? accentColor : (resMa.containsMouse ? window.surface1 : "transparent"); border.width: isSel ? 2 : 1
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                                Behavior on border.color { ColorAnimation { duration: 200 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                                Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
                                 RowLayout {
                                     anchors.fill: parent; anchors.margins: 12; spacing: 8
-                                    StyledText { font.family: Appearance.font.family.monospace; font.weight: isSel ? Font.Black : Font.Bold; font.pixelSize: 16; color: isSel ? accentColor : window.text_; text: modelData.label; Behavior on color { ColorAnimation { duration: 200 } } }
+                                    StyledText { font.family: Appearance.font.family.monospace; font.weight: isSel ? Font.Black : Font.Bold; font.pixelSize: 16; color: isSel ? accentColor : window.text_; text: modelData.label; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } } }
                                     Item { Layout.fillWidth: true }
-                                    StyledText { font.family: Appearance.font.family.monospace; font.pixelSize: 12; color: isSel ? window.text_ : window.overlay0; text: modelData.resW + "x" + modelData.resH; Behavior on color { ColorAnimation { duration: 200 } } }
+                                    StyledText { font.family: Appearance.font.family.monospace; font.pixelSize: 12; color: isSel ? window.text_ : window.overlay0; text: modelData.resW + "x" + modelData.resH; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } } }
                                 }
                                 scale: resMa.pressed ? 0.96 : 1.0
-                                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutSine } }
+                                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                 MouseArea {
                                     id: resMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                     onClicked: {
@@ -437,13 +437,13 @@ Item {
                             id: track
                             anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; verticalCenterOffset: -10 }
                             height: 12; radius: 6; color: window.mantle; border.color: window.crust; border.width: 1
-                            Rectangle { width: knob.x + knob.width / 2; height: parent.height; radius: parent.radius; color: selectedRateAccent; Behavior on color { ColorAnimation { duration: 200 } } }
+                            Rectangle { width: knob.x + knob.width / 2; height: parent.height; radius: parent.radius; color: selectedRateAccent; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } } }
                         }
                         Repeater {
                             model: sliderContainer.rates.length
                             Item {
                                 x: (index / (sliderContainer.rates.length - 1)) * track.width; y: track.y + 20
-                                StyledText { anchors.horizontalCenter: parent.horizontalCenter; text: sliderContainer.rates[index]; font.family: Appearance.font.family.monospace; font.pixelSize: 13; font.weight: sliderContainer.currentIndex === index ? Font.Bold : Font.Normal; color: sliderContainer.currentIndex === index ? selectedRateAccent : window.overlay0; Behavior on color { ColorAnimation { duration: 200 } } }
+                                StyledText { anchors.horizontalCenter: parent.horizontalCenter; text: sliderContainer.rates[index]; font.family: Appearance.font.family.monospace; font.pixelSize: 13; font.weight: sliderContainer.currentIndex === index ? Font.Bold : Font.Normal; color: sliderContainer.currentIndex === index ? selectedRateAccent : window.overlay0; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } } }
                             }
                         }
                         Rectangle {
@@ -451,10 +451,10 @@ Item {
                             color: sliderMa.containsPress ? selectedRateAccent : window.text_
                             anchors.verticalCenter: track.verticalCenter
                             x: (sliderContainer.visualPct * track.width) - width / 2
-                            Behavior on x { enabled: !sliderMa.pressed; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on x { enabled: !sliderMa.pressed; NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                             border.width: sliderMa.containsMouse ? 4 : 0; border.color: Qt.alpha(selectedRateAccent, 0.3)
-                            Behavior on border.width { NumberAnimation { duration: 150 } }
+                            Behavior on border.width { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
                         }
                         MouseArea {
                             id: sliderMa; anchors.fill: parent; anchors.margins: -15; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -489,24 +489,24 @@ Item {
                     shadowEnabled: true; shadowColor: selectedRateAccent
                     shadowBlur: applyHovered ? 1.2 : 0.6; shadowOpacity: applyHovered ? 0.6 : 0.2
                     shadowVerticalOffset: 4; z: -1
-                    Behavior on shadowBlur { NumberAnimation { duration: 300 } }
-                    Behavior on shadowOpacity { NumberAnimation { duration: 300 } }
-                    Behavior on shadowColor { ColorAnimation { duration: 400 } }
+                    Behavior on shadowBlur { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
+                    Behavior on shadowOpacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
+                    Behavior on shadowColor { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } }
                 }
 
                 Rectangle {
                     id: applyBtn; anchors.fill: parent; radius: 25
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: selectedResAccent; Behavior on color { ColorAnimation { duration: 400 } } }
-                        GradientStop { position: 1.0; color: selectedRateAccent; Behavior on color { ColorAnimation { duration: 400 } } }
+                        GradientStop { position: 0.0; color: selectedResAccent; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } } }
+                        GradientStop { position: 1.0; color: selectedRateAccent; Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(400) } } }
                     }
                     scale: applyPressed ? 0.94 : (applyHovered ? 1.04 : 1.0)
-                    Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack } }
+                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.expressiveFastSpatial } }
 
                     Rectangle {
                         id: flashRect; anchors.fill: parent; radius: 25; color: window.text_; opacity: 0.0
-                        PropertyAnimation on opacity { id: applyFlashAnim; to: 0.0; duration: 400; easing.type: Easing.OutExpo }
+                        PropertyAnimation on opacity { id: applyFlashAnim; to: 0.0; duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                     }
 
                     RowLayout {

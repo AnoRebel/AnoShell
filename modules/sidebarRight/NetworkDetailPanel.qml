@@ -174,7 +174,7 @@ Rectangle {
                                   (Appearance?.colors.colPrimary?.b ?? 0.56), 0.2)
                         : Appearance?.colors.colLayer2 ?? "#2B2930"
                     opacity: VPN.connecting ? 0.6 : 1
-                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
                     RowLayout {
                         id: toggleRow

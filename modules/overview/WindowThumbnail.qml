@@ -39,9 +39,9 @@ Item {
     x: 0; y: 0; z: targetZ; rotation: 0
     visible: !!wHandle
 
-    NumberAnimation { id: animX; target: thumbContainer; property: "x"; duration: animateWindows ? 100 : 0; easing.type: Easing.OutQuad }
-    NumberAnimation { id: animY; target: thumbContainer; property: "y"; duration: animateWindows ? 100 : 0; easing.type: Easing.OutQuad }
-    NumberAnimation { id: animRotation; target: thumbContainer; property: "rotation"; duration: 400; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+    NumberAnimation { id: animX; target: thumbContainer; property: "x"; duration: animateWindows ? 100 : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+    NumberAnimation { id: animY; target: thumbContainer; property: "y"; duration: animateWindows ? 100 : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+    NumberAnimation { id: animRotation; target: thumbContainer; property: "rotation"; duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.expressiveFastSpatial; easing.overshoot: 1.2 }
 
     function updateLastPos() {
         var lp = lastPositions || ({})
@@ -81,7 +81,7 @@ Item {
         anchors.fill: parent
         scale: thumbContainer.hovered ? 1.05 : 0.95
         transformOrigin: Item.Center
-        Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
+        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(100); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         MouseArea {
             anchors.fill: parent

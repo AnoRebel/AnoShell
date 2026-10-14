@@ -58,7 +58,7 @@ Loader {
             color: Qt.rgba(0, 0, 0, 0.55)
 
             opacity: GlobalStates.settingsCommandPaletteOpen ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
             // Click-to-close on the scrim
             MouseArea {
@@ -179,7 +179,7 @@ Loader {
                                 : (paletteMA.containsMouse
                                     ? (Appearance?.colors.colLayer1Hover ?? "#3C3947")
                                     : "transparent")
-                            Behavior on color { ColorAnimation { duration: 100 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                             RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
@@ -296,8 +296,8 @@ Loader {
         id: scrollAnim
         target: root.flickable
         property: "contentY"
-        duration: 320
-        easing.type: Easing.OutCubic
+        duration: AnimationConfig.scaledDuration(320)
+        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
     }
 
     // Walk the page's children for a SettingsCard whose configKeys

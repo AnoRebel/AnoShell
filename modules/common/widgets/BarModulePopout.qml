@@ -248,8 +248,8 @@ Item {
                 transformOrigin: Item.Top
 
                 // Opacity fade matches morph speed (200ms fast, 300ms smooth)
-                Behavior on opacity { NumberAnimation { duration: morphContainer.morphDuration === 500 ? 300 : 200; easing.type: Easing.InOutSine } }
-                Behavior on scale { NumberAnimation { duration: morphContainer.morphDuration; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: morphContainer.morphDuration === 500 ? 300 : 200; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard } }
+                Behavior on scale { NumberAnimation { duration: morphContainer.morphDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 // Content inside morph shape
                 Item {
@@ -257,7 +257,7 @@ Item {
                     anchors { fill: parent; margins: 12 }
                     visible: morphContainer.showPopout
                     opacity: morphContainer.showPopout ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 }
             }
 

@@ -64,7 +64,7 @@ ColumnLayout {
                 ? (Appearance?.colors.colPrimary ?? "#65558F")
                 : (Appearance?.colors.colOutlineVariant ?? "#49454F")
 
-        Behavior on border.color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
         RowLayout {
             id: inputRow
@@ -111,7 +111,7 @@ ColumnLayout {
                     color: iconMA.containsMouse
                         ? (Appearance?.colors.colLayer1Hover ?? "#3C3947")
                         : "transparent"
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                     MaterialSymbol {
                         anchors.centerIn: parent

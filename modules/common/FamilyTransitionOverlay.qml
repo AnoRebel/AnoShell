@@ -55,7 +55,7 @@ Scope {
         id: fadeOut
         target: root; property: "_overlayOpacity"
         to: 0; duration: root.exitDuration
-        easing.type: Easing.InOutCubic
+        easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
         onFinished: { root._active = false; root.enterComplete() }
     }
 
@@ -119,8 +119,8 @@ Scope {
                     color: Qt.rgba((Appearance?.colors.colPrimaryContainer ?? "#4A4458").r, (Appearance?.colors.colPrimaryContainer ?? "#4A4458").g, (Appearance?.colors.colPrimaryContainer ?? "#4A4458").b, 0.4)
                     opacity: root._phase ? 0 : 1
 
-                    Behavior on width { NumberAnimation { duration: root._phase ? root.exitDuration * 0.7 : root.enterDuration; easing.type: Easing.OutQuart } }
-                    Behavior on opacity { NumberAnimation { duration: root.exitDuration; easing.type: Easing.OutQuad } }
+                    Behavior on width { NumberAnimation { duration: root._phase ? root.exitDuration * 0.7 : root.enterDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on opacity { NumberAnimation { duration: root.exitDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 }
 
                 // Secondary ripple ring
@@ -133,7 +133,7 @@ Scope {
                     border.color: Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.3)
                     opacity: root._phase ? 0 : 1
 
-                    Behavior on width { NumberAnimation { duration: root._phase ? root.exitDuration * 0.6 : root.enterDuration + 80; easing.type: Easing.OutQuart } }
+                    Behavior on width { NumberAnimation { duration: root._phase ? root.exitDuration * 0.6 : root.enterDuration + 80; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                     Behavior on opacity { NumberAnimation { duration: root.exitDuration * 0.8 } }
                 }
 
@@ -147,8 +147,8 @@ Scope {
 
                     opacity: root._phase ? 0 : (centerContent.showContent ? 1 : 0)
                     scale: root._phase ? 0.9 : (centerContent.showContent ? 1 : 0.75)
-                    Behavior on opacity { NumberAnimation { duration: root._phase ? 200 : 280; easing.type: Easing.OutQuad } }
-                    Behavior on scale { NumberAnimation { duration: root._phase ? 200 : 350; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: root._phase ? 200 : 280; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on scale { NumberAnimation { duration: root._phase ? 200 : 350; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     // Logo circle
                     Rectangle {

@@ -38,7 +38,7 @@ Scope {
         Rectangle {
             anchors.fill: parent; color: "#000000"
             opacity: GlobalStates.weatherPanelOpen ? 0.5 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.weatherPanelOpen = false }
         }
 
@@ -54,8 +54,8 @@ Scope {
 
             opacity: GlobalStates.weatherPanelOpen ? 1 : 0
             scale: GlobalStates.weatherPanelOpen ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             ColumnLayout {
                 id: weatherContent

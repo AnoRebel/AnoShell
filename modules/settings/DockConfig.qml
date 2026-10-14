@@ -115,9 +115,9 @@ ColumnLayout {
                             : Qt.rgba(1, 1, 1, 0.1)
                         opacity: root.currentPosition === modelData.edge ? 1 : 0.25
 
-                        Behavior on color { ColorAnimation { duration: 200 } }
-                        Behavior on opacity { NumberAnimation { duration: 200 } }
-                        Behavior on radius { NumberAnimation { duration: 200 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                        Behavior on radius { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
                         // Fake "app icons" inside the dock indicator
                         Row {
@@ -206,11 +206,11 @@ ColumnLayout {
                         ? Appearance?.colors.colPrimary ?? "#65558F"
                         : Appearance?.colors.colOutlineVariant ?? "#44444488"
 
-                    Behavior on color { ColorAnimation { duration: 200 } }
-                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
+                    Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
                     scale: styleMA.pressed ? 0.95 : (styleMA.containsMouse ? 1.02 : 1)
-                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     ColumnLayout {
                         anchors.centerIn: parent; spacing: 6
