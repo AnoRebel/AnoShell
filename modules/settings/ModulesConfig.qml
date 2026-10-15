@@ -354,7 +354,7 @@ ColumnLayout {
             label: "Scrim dimming"
             configKey: "altSwitcher.scrimDim"
             from: 0; to: 80; stepSize: 5
-            value: Config.options?.altSwitcher?.scrimDim ?? 40
+            value: Config.options?.altSwitcher?.scrimDim ?? 0
             onValueChanged: Config.setNestedValue("altSwitcher.scrimDim", Math.round(value))
             valueText: `${Math.round(value)}%`
         }

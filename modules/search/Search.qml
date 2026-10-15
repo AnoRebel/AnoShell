@@ -116,12 +116,8 @@ Scope {
             }
         }
 
-        // Scrim
-        Rectangle {
-            anchors.fill: parent; color: "#000000"
-            opacity: 0.5 * Math.max(0, Math.min(1, searchWindow.shown))
-            MouseArea { anchors.fill: parent; onClicked: GlobalStates.searchOpen = false }
-        }
+        // Click outside to close; nothing dims the desktop behind the launcher.
+        MouseArea { anchors.fill: parent; onClicked: GlobalStates.searchOpen = false }
 
         // Search card — positioned in upper third of screen
         Rectangle {

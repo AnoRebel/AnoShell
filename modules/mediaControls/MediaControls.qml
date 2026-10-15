@@ -41,7 +41,10 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:media"
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.keyboardFocus: GlobalStates.mediaControlsOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: GlobalStates.mediaControlsOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+        // Non-modal: no scrim, input only on the card (clicks elsewhere reach
+        // your windows), keyboard focus when you interact with it.
+        mask: Region { item: mediaCard }
         anchors { top: true; bottom: true; left: true; right: true }
 
         // Keys can't attach to a window (only to Items): a focused Item that
@@ -55,14 +58,6 @@ Scope {
                 else if (event.key === Qt.Key_Right) MprisController.next()
                 else if (event.key === Qt.Key_Left) MprisController.previous()
             }
-        }
-
-        // Scrim
-        Rectangle {
-            anchors.fill: parent; color: "#000000"
-            opacity: GlobalStates.mediaControlsOpen ? 0.7 : 0
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
-            MouseArea { anchors.fill: parent; onClicked: GlobalStates.mediaControlsOpen = false }
         }
 
         // Media card

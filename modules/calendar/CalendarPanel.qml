@@ -13,7 +13,7 @@ import Quickshell.Wayland
  * CalendarSync (external ICS feeds) and DateTime (today highlight).
  *
  * IPC: `qs -c ano ipc call calendar toggle`. Panel is layer-shell
- * Overlay, scrim+escape closes.
+ * Non-modal overlay card; Escape closes.
  *
  * Read-only: clicking a date filters the bottom list to that day's
  * events; "Today" button resets to the upcoming view. Editing feeds
@@ -49,12 +49,8 @@ Scope {
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-            // Click-outside scrim
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton
-                onClicked: GlobalStates.calendarOpen = false
-            }
+            // Non-modal: input only on the card; clicks elsewhere reach your windows.
+            mask: Region { item: card }
 
             // Card
             Rectangle {
@@ -69,7 +65,6 @@ Scope {
                             ?? Appearance?.colors.colOutlineVariant ?? "#444"
                 opacity: Appearance?.glassTokens?.opacity ?? 1
 
-                MouseArea { anchors.fill: parent }  // swallow scrim clicks
 
                 // Animation in/out
                 scale: root.open ? 1 : 0.95

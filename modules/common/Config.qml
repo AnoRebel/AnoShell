@@ -1079,7 +1079,7 @@ Singleton {
                 property bool compactStyle: false
                 property real backgroundOpacity: 0.85
                 property int maxVisible: 7
-                property real scrimDim: 0.4
+                property real scrimDim: 0 // % dim behind the switcher; 0 = none
             }
 
             // Lyrics

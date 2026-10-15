@@ -53,13 +53,8 @@ Scope {
 
         Shortcut { sequence: "Escape"; onActivated: GlobalStates.clipboardOpen = false }
 
-        // Scrim
-        Rectangle {
-            anchors.fill: parent; color: "#000000"
-            opacity: GlobalStates.clipboardOpen ? 0.5 : 0
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
-            MouseArea { anchors.fill: parent; onClicked: GlobalStates.clipboardOpen = false }
-        }
+        // Click outside to close; nothing dims the desktop behind it.
+        MouseArea { anchors.fill: parent; onClicked: GlobalStates.clipboardOpen = false }
 
         // Card
         Rectangle {

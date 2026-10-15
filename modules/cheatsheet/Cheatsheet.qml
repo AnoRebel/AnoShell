@@ -42,21 +42,16 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:cheatsheet"
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.keyboardFocus: root.cheatsheetOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: root.cheatsheetOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+        // Non-modal: no scrim, input only on the card (clicks elsewhere reach
+        // your windows), keyboard focus when you interact with it.
+        mask: Region { item: csCard }
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
         // Keys can't attach to a window (only to Items); a Shortcut works there.
 
         Shortcut { sequence: "Escape"; onActivated: root.close() }
-
-        // Scrim
-        Rectangle {
-            anchors.fill: parent; color: "#000000"
-            opacity: root.cheatsheetOpen ? 0.6 : 0
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
-            MouseArea { anchors.fill: parent; onClicked: root.close() }
-        }
 
         // Card
         Rectangle {

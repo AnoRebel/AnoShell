@@ -21,18 +21,12 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "quickshell:settings"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    // Non-modal: no scrim, input only on the card (clicks elsewhere reach
+    // your windows), keyboard focus when you interact with it.
+    mask: Region { item: settingsCard }
     color: "transparent"
     anchors { top: true; bottom: true; left: true; right: true }
-
-    // Scrim
-    Rectangle {
-        anchors.fill: parent
-        color: "#000000"
-        opacity: GlobalStates.settingsOpen ? 0.4 : 0
-        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
-        MouseArea { anchors.fill: parent; onClicked: GlobalStates.settingsOpen = false }
-    }
 
     // Settings card
     Rectangle {

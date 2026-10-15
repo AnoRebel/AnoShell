@@ -33,7 +33,10 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:hud"
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.keyboardFocus: GlobalStates.hudVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: GlobalStates.hudVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+        // Non-modal: no scrim, input only on the card (clicks elsewhere reach
+        // your windows), keyboard focus when you interact with it.
+        mask: Region { item: hudCard }
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
@@ -48,14 +51,6 @@ Scope {
                 if (GlobalStates.hudVisible) SpectrumService.registerComponent("hud")
                 else SpectrumService.unregisterComponent("hud")
             }
-        }
-
-        // Scrim
-        Rectangle {
-            anchors.fill: parent; color: "#000000"
-            opacity: GlobalStates.hudVisible ? 0.55 : 0
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250) } }
-            MouseArea { anchors.fill: parent; onClicked: GlobalStates.hudVisible = false }
         }
 
         // HUD card

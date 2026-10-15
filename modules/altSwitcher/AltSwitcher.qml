@@ -28,7 +28,7 @@ Scope {
     readonly property int animDurationMs: opts.animationDurationMs ?? 200
     readonly property bool useMRU: opts.useMostRecentFirst ?? true
     readonly property real backgroundOpacity: opts.backgroundOpacity ?? 0.85
-    readonly property int scrimDim: opts.scrimDim ?? 40
+    readonly property int scrimDim: opts.scrimDim ?? 0   // optional dim behind the switcher, off by default
     readonly property string panelAlignment: opts.panelAlignment ?? "center"
     readonly property bool compactStyle: opts.compactStyle ?? false
     readonly property int itemSize: compactStyle ? 48 : 72
