@@ -1453,6 +1453,15 @@
  {
   "page": 6,
   "card": "",
+  "label": "Shell mode",
+  "sublabel": "Dark or light shell; a wallpaper palette is regenerated in the new mode",
+  "keys": [
+   "appearance.colors.darkMode"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
   "label": "Apps",
   "sublabel": "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell",
   "keys": [

@@ -27,7 +27,8 @@ end=$((SECONDS + secs))
 while [ $SECONDS -lt $end ]; do
     for c in $(pgrep -P "$qspid" 2>/dev/null); do
         [[ -n "${seen[$c]:-}" ]] && continue
-        seen[$c]=$(tr '\0' ' ' < "/proc/$c/cmdline" 2>/dev/null | cut -c1-80)
+        # A short-lived child can exit between pgrep and the read.
+        seen[$c]=$( { tr '\0' ' ' < "/proc/$c/cmdline"; } 2>/dev/null | cut -c1-80 || true)
     done
     sleep 0.01
 done

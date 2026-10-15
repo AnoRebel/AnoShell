@@ -70,7 +70,8 @@ void main() {
         vec2 g = abs(fract(px / s - 0.5) - 0.5) * s;   // px to the nearest line
         float line = 1.0 - smoothstep(0.0, 1.0, min(g.x, g.y));
         // A soft scan band sweeps down only while time moves.
-        float band = exp(-pow((px.y - mod(ubuf.time * 120.0, size.y + 160.0) + 80.0) / 40.0, 2.0));
+        float bt = (px.y - mod(ubuf.time * 120.0, size.y + 160.0) + 80.0) / 40.0;
+        float band = exp(-bt * bt);   // not pow(): undefined for a negative base
         col = vec4(ubuf.tint.rgb, (line * 0.6 + band * 0.35) * ubuf.strength);
     } else if (m == 4) {
         // Soft inner light from the top-left, inner shade toward the bottom edge.

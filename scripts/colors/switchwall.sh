@@ -44,6 +44,7 @@ MODE="dark"
 MONITOR=""
 SKIP_PYWAL=false
 SKIP_APPLY=false
+SKIP_CONFIG=false
 TRANSITION="fade"
 TRANSITION_DURATION="1.5"
 
@@ -54,6 +55,7 @@ while [[ $# -gt 0 ]]; do
         --monitor)      MONITOR="$2"; shift 2 ;;
         --skip-pywal)   SKIP_PYWAL=true; shift ;;
         --skip-apply)   SKIP_APPLY=true; shift ;;
+        --skip-config)  SKIP_CONFIG=true; shift ;;   # the shell saves the path itself
         --transition)   TRANSITION="$2"; shift 2 ;;
         --duration)     TRANSITION_DURATION="$2"; shift 2 ;;
         *)              echo "[switchwall] Unknown arg: $1"; shift ;;
@@ -163,7 +165,8 @@ apply_wallpaper "$IMAGE"
 
 # ── Step 2: Generate Material You colors via matugen ─────────────────────
 generate_matugen() {
-    if [[ "$FIXED_COLORS" == true ]]; then log "Fixed colour mode: keeping the palette"; return 0; fi
+    # Generated in fixed mode too (the shell ignores it there), so switching
+    # back to a wallpaper palette has this wallpaper's colours ready.
     if ! command -v matugen &>/dev/null; then
         log "WARNING: matugen not installed — skipping Material You color generation"
         log "  Install: https://github.com/InioX/matugen"
@@ -241,8 +244,8 @@ apply_external
 
 # ── Step 5: Update config.json with new wallpaper path ───────────────────
 update_config() {
-    if ! command -v jq &>/dev/null; then return; fi
-    if [[ ! -f "$SHELL_CONFIG" ]]; then return; fi
+    if [[ "$SKIP_CONFIG" == true ]] || ! command -v jq &>/dev/null; then return; fi
+    [[ -f "$SHELL_CONFIG" ]] || { mkdir -p "$(dirname "$SHELL_CONFIG")"; echo '{}' > "$SHELL_CONFIG"; }
 
     local tmp="$TMPDIR/config_updated.json"
     jq --arg path "$IMAGE" '.background.wallpaperPath = $path' "$SHELL_CONFIG" > "$tmp" && mv "$tmp" "$SHELL_CONFIG"

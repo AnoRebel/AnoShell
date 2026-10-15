@@ -235,6 +235,21 @@ ColumnLayout {
         }
 
         ConfigRow {
+            label: "Shell mode"
+            configKey: "appearance.colors.darkMode"
+            sublabel: "Dark or light shell; a wallpaper palette is regenerated in the new mode"
+            ChoiceRow {
+                model: [{ value: true, label: "Dark", icon: "dark_mode" }, { value: false, label: "Light", icon: "light_mode" }]
+                current: Config.options?.appearance?.colors?.darkMode ?? true
+                onChose: value => {
+                    Config.setNestedValue("appearance.colors.darkMode", value)
+                    const wp = Config.options?.background?.wallpaperPath ?? ""
+                    if (appearanceRoot.committedSource === "materialYou" && wp.length > 0) Wallpapers.apply(wp, value)
+                }
+            }
+        }
+
+        ConfigRow {
             label: "Apps"
             configKey: "appearance.theme.appColorScheme"
             sublabel: "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell"

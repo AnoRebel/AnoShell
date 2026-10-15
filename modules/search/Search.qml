@@ -195,7 +195,7 @@ Scope {
                             }
                         }
                         MouseArea {
-                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor; hoverEnabled: true
                             onClicked: { Quickshell.clipboardText = root.calcResult }
                             StyledToolTip { text: "Click to copy" }
                         }

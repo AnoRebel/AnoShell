@@ -31,3 +31,18 @@ func TestValidateRejects(t *testing.T) {
 		t.Fatal("a non-object must fail")
 	}
 }
+
+func TestValidateSurfacesAndMotion(t *testing.T) {
+	var v any
+	json.Unmarshal([]byte(`{"id":"x","name":"X","motion":{"liquid":5},"surfaces":{"hud":{"shape":{"radiusScale":100}},"dock":3}}`), &v)
+	got := Validate(v, "x")
+	want := []string{"motion.liquid must be an object", "surfaces.dock must be an object", "surfaces.hud.shape.radiusScale must be a number from 0.2 to 3"}
+	if len(got) != len(want) {
+		t.Fatalf("got %q", got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("%d: got %q want %q", i, got[i], want[i])
+		}
+	}
+}

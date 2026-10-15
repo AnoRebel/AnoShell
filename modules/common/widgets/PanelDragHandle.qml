@@ -14,12 +14,18 @@ Item {
     required property Item panelCard
     property string key: ""
 
-    x: root.panelCard.x; y: root.panelCard.y; width: root.panelCard.width; height: 20
+    // A centred strip, so header buttons at the card's corners stay clickable.
+    width: Math.min(120, root.panelCard.width); height: 20
+    x: root.panelCard.x + (root.panelCard.width - width) / 2; y: root.panelCard.y
     z: 1000
     visible: root.panelCard.visible && root.panelCard.opacity > 0.01
     opacity: root.panelCard.opacity
 
+    property bool _detached: false
+    property var _pending: null   // a remembered position waiting for the layer to get its size
+
     function _detach() {
+        root._detached = true
         const c = root.panelCard, x = c.x, y = c.y
         c.anchors.centerIn = undefined
         c.anchors.top = undefined; c.anchors.bottom = undefined
@@ -39,10 +45,20 @@ Item {
         GlobalStates.panelPositions = m
     }
 
-    Component.onCompleted: {
-        const pos = root.key ? GlobalStates.panelPositions[root.key] : undefined
-        if (pos) Qt.callLater(() => { root._detach(); root._move(pos.x, pos.y) })
+    // Place a remembered position once the layer has a size, and keep a moved
+    // card on screen when the screen or the card resizes.
+    function _settle() {
+        const p = root.panelCard.parent
+        if (!p || p.width <= 0 || p.height <= 0) return
+        if (root._pending) { const pos = root._pending; root._pending = null; root._detach(); root._move(pos.x, pos.y) }
+        else if (root._detached) root._move(root.panelCard.x, root.panelCard.y)
     }
+    Component.onCompleted: {
+        root._pending = root.key ? (GlobalStates.panelPositions[root.key] ?? null) : null
+        Qt.callLater(root._settle)
+    }
+    Connections { target: root.panelCard.parent; function onWidthChanged() { root._settle() } function onHeightChanged() { root._settle() } }
+    Connections { target: root.panelCard; function onWidthChanged() { root._settle() } function onHeightChanged() { root._settle() } }
 
     Rectangle {
         anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 7 }

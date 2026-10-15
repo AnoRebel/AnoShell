@@ -81,7 +81,35 @@ func Validate(v any, fileID string) []string {
 		return []string{"the file must contain a JSON object"}
 	}
 	var e []string
-	add := func(f string, a ...any) { e = append(e, fmt.Sprintf(f, a...)) }
+	switch id, _ := look["id"].(string); {
+	case id == "":
+		e = append(e, "id is required")
+	case id != fileID:
+		e = append(e, fmt.Sprintf("id %q must match the file name %q", id, fileID))
+	}
+	if n, _ := look["name"].(string); n == "" {
+		e = append(e, "name is required")
+	}
+	e = validateBody(look, "", e)
+	if s, present := look["surfaces"]; present && s != nil {
+		surf, ok := s.(map[string]any)
+		if !ok {
+			return append(e, "surfaces must be an object")
+		}
+		for _, name := range sortedKeys(surf) {
+			if m, ok := surf[name].(map[string]any); ok {
+				e = validateBody(m, "surfaces."+name+".", e)
+			} else {
+				e = append(e, "surfaces."+name+" must be an object")
+			}
+		}
+	}
+	return e
+}
+
+// validateBody checks the keys a look and each of its surfaces share.
+func validateBody(look map[string]any, pre string, e []string) []string {
+	add := func(f string, a ...any) { e = append(e, pre+fmt.Sprintf(f, a...)) }
 	obj := func(x any, path string) map[string]any {
 		if x == nil {
 			return nil
@@ -101,20 +129,10 @@ func Validate(v any, fileID string) []string {
 			add("%s must be a number from %g to %g", path, lo, hi)
 		}
 	}
-	switch id, _ := look["id"].(string); {
-	case id == "":
-		add("id is required")
-	case id != fileID:
-		add("id %q must match the file name %q", id, fileID)
-	}
-	if n, _ := look["name"].(string); n == "" {
-		add("name is required")
-	}
 	sh := obj(look["shape"], "shape")
 	mat := obj(look["material"], "material")
 	typ := obj(look["typography"], "typography")
 	mot := obj(look["motion"], "motion")
-	obj(look["surfaces"], "surfaces")
 	num(sh, "radiusScale", 0.2, 3, "shape.radiusScale")
 	num(sh, "stroke", 0, 4, "shape.stroke")
 	num(sh, "connectedRadius", 0, 48, "shape.connectedRadius")
@@ -143,7 +161,11 @@ func Validate(v any, fileID string) []string {
 			add("motion.%s is not liquid, settle or snappy", tok)
 			continue
 		}
-		m := obj(mot[tok], "motion."+tok)
+		m, ok := mot[tok].(map[string]any)
+		if !ok {
+			add("motion.%s must be an object", tok)
+			continue
+		}
 		num(m, "spring", 0.5, 40, "motion."+tok+".spring")
 		num(m, "damping", 0.05, 1, "motion."+tok+".damping")
 		num(m, "mass", 0.2, 3, "motion."+tok+".mass")

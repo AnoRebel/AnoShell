@@ -98,7 +98,9 @@ Singleton {
 
     function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "") {
         if (!path || path.length === 0) return
-        const args = [Directories.wallpaperSwitchScriptPath, "--image", path, "--mode", darkMode ? "dark" : "light"]
+        // The shell owns its config file; the script only applies and colours.
+        Config.setNestedValue("background.wallpaperPath", path)
+        const args = [Directories.wallpaperSwitchScriptPath, "--image", path, "--mode", darkMode ? "dark" : "light", "--skip-config"]
         if (monitorName !== "") args.push("--monitor", monitorName)
         applyProc.exec(args)
         root.changed()

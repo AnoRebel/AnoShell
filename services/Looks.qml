@@ -33,7 +33,10 @@ Singleton {
     readonly property var fontAliases: ["@main", "@mono", "@reading", "@expressive"]
 
     // id -> { id, name, description, source: "bundled"|"user", path, look, errors[] }
-    property var entries: ({})
+    // Kept per folder so removing your override brings the built-in back.
+    property var _bundled: ({})
+    property var _user: ({})
+    readonly property var entries: Object.assign({}, root._bundled, root._user)
     readonly property var list: Object.values(root.entries).sort((a, b) => a.name.localeCompare(b.name))
 
     function usable(id) { const e = root.entries[id]; return !!e && e.errors.length === 0 }
@@ -88,35 +91,50 @@ Singleton {
 
     // ── Validation (looks/schema.md) ─────────────────────────────────────
     function validate(look, fileId) {
-        const e = []
-        const num = (v, lo, hi, path) => { if (v !== undefined && (typeof v !== "number" || v < lo || v > hi)) e.push(`${path} must be a number from ${lo} to ${hi}`) }
-        const obj = (v, path) => { if (v !== undefined && v !== null && (typeof v !== "object" || Array.isArray(v))) e.push(`${path} must be an object`) }
         if (!look || typeof look !== "object" || Array.isArray(look)) return ["the file must contain a JSON object"]
+        const e = []
         if (typeof look.id !== "string" || !look.id) e.push("id is required")
         else if (look.id !== fileId) e.push(`id "${look.id}" must match the file name "${fileId}"`)
         if (typeof look.name !== "string" || !look.name) e.push("name is required")
-        obj(look.shape, "shape"); obj(look.material, "material"); obj(look.typography, "typography")
-        obj(look.motion, "motion"); obj(look.surfaces, "surfaces")
-        const sh = look.shape ?? {}
-        num(sh.radiusScale, 0.2, 3, "shape.radiusScale"); num(sh.stroke, 0, 4, "shape.stroke")
-        num(sh.connectedRadius, 0, 48, "shape.connectedRadius")
-        const kind = look.material?.kind
-        if (kind !== undefined && !["solid", "paper", "clay"].includes(kind)) e.push(`material.kind "${kind}" is not solid, paper or clay`)
-        if (look.texture !== undefined && look.texture !== null) {
-            if (!root.knownShaders.includes(look.texture.shader)) e.push(`texture.shader "${look.texture.shader}" is not a known shader (${root.knownShaders.join(", ")})`)
-            if (look.texture.animate !== undefined && !["static", "interaction"].includes(look.texture.animate)) e.push("texture.animate must be static or interaction")
-        }
-        for (const role in (look.typography ?? {})) {
-            const v = look.typography[role]
-            if (typeof v !== "string") e.push(`typography.${role} must be a font name or ${root.fontAliases.join("/")}`)
-            else if (v.startsWith("@") && !root.fontAliases.includes(v)) e.push(`typography.${role}: unknown alias ${v}`)
-        }
-        for (const tok in (look.motion ?? {})) {
-            if (!["liquid", "settle", "snappy"].includes(tok)) { e.push(`motion.${tok} is not liquid, settle or snappy`); continue }
-            const m = look.motion[tok] ?? {}
-            num(m.spring, 0.5, 40, `motion.${tok}.spring`); num(m.damping, 0.05, 1, `motion.${tok}.damping`); num(m.mass, 0.2, 3, `motion.${tok}.mass`)
+        root._validateBody(look, "", e)
+        const surf = look.surfaces
+        if (surf !== undefined && surf !== null) {
+            if (typeof surf !== "object" || Array.isArray(surf)) e.push("surfaces must be an object")
+            else for (const name in surf) {
+                const v = surf[name]
+                if (!v || typeof v !== "object" || Array.isArray(v)) e.push(`surfaces.${name} must be an object`)
+                else root._validateBody(v, `surfaces.${name}.`, e)
+            }
         }
         return e
+    }
+
+    // The keys a look and each of its surfaces share; `pre` prefixes messages.
+    function _validateBody(look, pre, e) {
+        const num = (v, lo, hi, path) => { if (v !== undefined && (typeof v !== "number" || v < lo || v > hi)) e.push(`${pre}${path} must be a number from ${lo} to ${hi}`) }
+        const obj = (v, path) => { if (v !== undefined && v !== null && (typeof v !== "object" || Array.isArray(v))) { e.push(`${pre}${path} must be an object`); return false } return true }
+        const okShape = obj(look.shape, "shape"), okMat = obj(look.material, "material"), okTyp = obj(look.typography, "typography")
+        const okMot = obj(look.motion, "motion")
+        const sh = okShape ? (look.shape ?? {}) : {}
+        num(sh.radiusScale, 0.2, 3, "shape.radiusScale"); num(sh.stroke, 0, 4, "shape.stroke")
+        num(sh.connectedRadius, 0, 48, "shape.connectedRadius")
+        const kind = okMat ? look.material?.kind : undefined
+        if (kind !== undefined && !["solid", "paper", "clay"].includes(kind)) e.push(`${pre}material.kind "${kind}" is not solid, paper or clay`)
+        if (look.texture !== undefined && look.texture !== null && obj(look.texture, "texture")) {
+            if (!root.knownShaders.includes(look.texture.shader)) e.push(`${pre}texture.shader "${look.texture.shader}" is not a known shader (${root.knownShaders.join(", ")})`)
+            if (look.texture.animate !== undefined && !["static", "interaction"].includes(look.texture.animate)) e.push(`${pre}texture.animate must be static or interaction`)
+        }
+        for (const role in (okTyp ? (look.typography ?? {}) : {})) {
+            const v = look.typography[role]
+            if (typeof v !== "string") e.push(`${pre}typography.${role} must be a font name or ${root.fontAliases.join("/")}`)
+            else if (v.startsWith("@") && !root.fontAliases.includes(v)) e.push(`${pre}typography.${role}: unknown alias ${v}`)
+        }
+        for (const tok in (okMot ? (look.motion ?? {}) : {})) {
+            if (!["liquid", "settle", "snappy"].includes(tok)) { e.push(`${pre}motion.${tok} is not liquid, settle or snappy`); continue }
+            const m = look.motion[tok]
+            if (!m || typeof m !== "object" || Array.isArray(m)) { e.push(`${pre}motion.${tok} must be an object`); continue }
+            num(m.spring, 0.5, 40, `motion.${tok}.spring`); num(m.damping, 0.05, 1, `motion.${tok}.damping`); num(m.mass, 0.2, 3, `motion.${tok}.mass`)
+        }
     }
 
     function _ingest(source, path, text) {
@@ -127,19 +145,20 @@ Singleton {
         let look = null, errors
         try { look = JSON.parse(text) } catch (err) { errors = [`invalid JSON: ${err.message ?? err}`] }
         if (!errors) errors = root.validate(look, fileId)
-        const prev = root.entries[fileId]
-        // A user look overrides a built-in of the same id, but not the reverse.
-        if (prev && prev.source === "user" && source === "bundled" && prev.path !== path) return
-        const e = Object.assign({}, root.entries)
-        e[fileId] = { id: fileId, name: look?.name ?? fileId, description: look?.description ?? "", source, path,
+        const str = v => typeof v === "string" && v.length > 0 ? v : ""
+        const e = Object.assign({}, source === "user" ? root._user : root._bundled)
+        e[fileId] = { id: fileId, name: str(look?.name) || fileId, description: str(look?.description), source, path,
                       look: errors.length ? null : look, errors }
-        root.entries = e
+        if (source === "user") root._user = e; else root._bundled = e
         if (errors.length) console.warn(`[Looks] ${path}: ${errors.join("; ")}`)
     }
     function _drop(path) {
         const id = path.split("/").pop().replace(/\.json$/, "")
-        if (root.entries[id]?.path !== path) return
-        const e = Object.assign({}, root.entries); delete e[id]; root.entries = e
+        const user = path.startsWith(root.userDir + "/")
+        const m = user ? root._user : root._bundled
+        if (m[id]?.path !== path) return
+        const e = Object.assign({}, m); delete e[id]
+        if (user) root._user = e; else root._bundled = e
     }
 
     FolderListModel { id: bundledFolder; folder: "file://" + root.bundledDir; nameFilters: ["*.json"]; showDirs: false }
