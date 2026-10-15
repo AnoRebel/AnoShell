@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"time"
 
 	"ano/anod/internal/config"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
+	"ano/anod/internal/looks"
 	"ano/anod/internal/version"
 )
 
@@ -29,6 +31,7 @@ const usage = `usage: ano <command> [args]
   config migrate  [--file F] [--prune-unknown] [--dry-run]
   setup status|install|update|refresh [flags]   manage the checkout and binaries (ano setup help)
   backup categories|create|list|restore [flags]  back up and restore your setup (ano backup)
+  looks list|validate [FILE…] [--json]          list looks, or check look files (exit 1 on errors)
   version
 `
 
@@ -58,6 +61,8 @@ func main() {
 		os.Exit(setupCmd(args))
 	case "backup":
 		os.Exit(backupCmd(args))
+	case "looks":
+		os.Exit(looksCmd(args))
 	case "help", "-h", "--help":
 		fmt.Printf(usage, eventList())
 	default:
@@ -273,4 +278,47 @@ func configCmd(args []string) int {
 	}
 	fmt.Fprintf(os.Stderr, "ano: unknown config command %q\n", args[0])
 	return 2
+}
+
+// looksCmd lists the looks the shell can load, or validates files.
+func looksCmd(args []string) int {
+	if len(args) == 0 || (args[0] != "list" && args[0] != "validate") {
+		fmt.Fprintln(os.Stderr, "usage: ano looks list|validate [FILE…] [--json]")
+		return 2
+	}
+	asJSON := slices.Contains(args, "--json")
+	var entries []looks.Entry
+	for _, a := range args[1:] {
+		if a != "--json" {
+			entries = append(entries, looks.Check(a))
+		}
+	}
+	if len(entries) == 0 {
+		entries = looks.List()
+	}
+	bad := 0
+	for _, e := range entries {
+		if len(e.Errors) > 0 {
+			bad++
+		}
+	}
+	if asJSON {
+		b, _ := json.MarshalIndent(entries, "", "  ")
+		fmt.Println(string(b))
+	} else {
+		for _, e := range entries {
+			state := "ok"
+			if len(e.Errors) > 0 {
+				state = "INVALID"
+			}
+			fmt.Printf("%-12s %-8s %-8s %s\n", e.ID, e.Source, state, e.Path)
+			for _, m := range e.Errors {
+				fmt.Println("    -", m)
+			}
+		}
+	}
+	if args[0] == "validate" && bad > 0 {
+		return 1
+	}
+	return 0
 }
