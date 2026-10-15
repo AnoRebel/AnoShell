@@ -1,0 +1,16 @@
+# Read by BuildKit for docs-site/Dockerfile only; the context is the repository root.
+**/node_modules
+**/.nuxt
+**/.output
+**/.data
+.git
+anod
+assets
+external
+layouts
+modules
+plugins
+scripts
+services
+shaders
+translations
