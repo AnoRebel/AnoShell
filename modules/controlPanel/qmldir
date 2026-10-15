@@ -1,0 +1,3 @@
+module qs.modules.controlPanel
+ControlPanelContent 1.0 ControlPanelContent.qml
+ControlPanel 1.0 ControlPanel.qml
