@@ -1149,6 +1149,14 @@ Singleton {
                 property string stashDir: ""
                 property var dropTargets: []
                 property bool showLyrics: false
+                // Resting faces, switched by horizontal swipe / shift-wheel. Status
+                // is always first; media/spectrum need a player, lyrics the
+                // lyrics service.
+                property JsonObject faces: JsonObject {
+                    property bool media: true
+                    property bool spectrum: false
+                    property bool lyrics: false
+                }
                 property JsonObject workspaceHoverPreview: JsonObject {
                     property bool enable: true
                     property int openDelayMs: 200

@@ -362,6 +362,11 @@
     "stashDir": "",
     "dropTargets": [],
     "showLyrics": false,
+    "faces": {
+      "media": true,
+      "spectrum": false,
+      "lyrics": false
+    },
     "workspaceHoverPreview": {
       "enable": true,
       "openDelayMs": 200,

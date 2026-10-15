@@ -23,8 +23,36 @@ Scope {
 
     readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
     readonly property string rawPosition: Config.options?.anoSpot?.position ?? "top"
-    readonly property string position: ["top", "bottom", "left", "right"].indexOf(rawPosition) >= 0
+    readonly property string configPosition: ["top", "bottom", "left", "right"].indexOf(rawPosition) >= 0
                                         ? rawPosition : "top"
+    // The edge the pill is drawn on. An edge change tucks the pill into the
+    // old edge, switches, then grows it out of the new one (state machine:
+    // resting → leaving → arriving → resting).
+    property string position: configPosition
+    property bool edgeLeaving: false
+    onConfigPositionChanged: {
+        if (configPosition === position) return
+        if (!AnimationConfig.transitions) { position = configPosition; return }
+        edgeLeaving = true
+        edgeSwap.restart()
+    }
+    Timer {
+        id: edgeSwap
+        interval: AnimationConfig.scaledDuration(260)
+        onTriggered: { root.position = root.configPosition; root.edgeLeaving = false }
+    }
+
+    // Resting faces in cycle order: status, then media/spectrum (while a player
+    // exists) and lyrics (lyrics service on), each toggle-able.
+    readonly property var faceCfg: Config.options?.anoSpot?.faces ?? ({})
+    readonly property bool hasPlayer: AnoSpotState.mpris !== null
+    readonly property var faces: {
+        const f = ["status"]
+        if ((faceCfg.media ?? true) && hasPlayer) f.push("media")
+        if ((faceCfg.spectrum ?? false) && hasPlayer) f.push("spectrum")
+        if ((faceCfg.lyrics ?? false) && hasPlayer && (Config.options?.lyrics?.enable ?? false)) f.push("lyrics")
+        return f
+    }
     readonly property int widthPx: Config.options?.anoSpot?.widthPx ?? 420
     readonly property int heightPx: Config.options?.anoSpot?.heightPx ?? 36
     readonly property bool isVertical: position === "left" || position === "right"
@@ -39,20 +67,6 @@ Scope {
     readonly property var actions: Config.options?.anoSpot?.actions ?? ({})
     readonly property bool draggable: Config.options?.anoSpot?.draggable ?? true
     readonly property bool acceptDrops: Config.options?.anoSpot?.acceptDrops ?? true
-
-    // Snap a free pointer position to one of the four screen edges based
-    // on which edge it ended up closest to. Returns "top"/"bottom"/"left"/"right".
-    function _nearestEdge(globalX, globalY, screenW, screenH) {
-        const dTop = globalY;
-        const dBottom = screenH - globalY;
-        const dLeft = globalX;
-        const dRight = screenW - globalX;
-        const minD = Math.min(dTop, dBottom, dLeft, dRight);
-        if (minD === dTop)    return "top";
-        if (minD === dBottom) return "bottom";
-        if (minD === dLeft)   return "left";
-        return "right";
-    }
 
     function _dispatchClick(button) {
         let target = "";
@@ -137,6 +151,15 @@ Scope {
             }
         }
 
+        AnoSpotEdgePicker {
+            id: edgePicker
+            screen: spotScope.modelData
+            open: spotWindow.picking
+            current: root.position
+            onChose: edge => { spotWindow.picking = false; if (edge !== root.position) Config.setNestedValue("anoSpot.position", edge) }
+            onCancelled: spotWindow.picking = false
+        }
+
         PanelWindow {
             id: spotWindow
             readonly property var modelData: spotScope.modelData
@@ -144,13 +167,12 @@ Scope {
 
             visible: root.enabled && GlobalStates.shellSettled
             color: "transparent"
+            property bool picking: false
 
             // The pill fits its content (a fixed length clipped it), springing
             // between sizes; anoSpot.widthPx is the maximum length.
             readonly property real _lead: root.draggable ? 18 : 6
-            readonly property real _contentLen: root.isVertical
-                ? (contentLoader.item?.implicitHeight ?? 0) + _lead + 6
-                : (contentLoader.item?.implicitWidth ?? 0) + _lead + 6
+            readonly property real _contentLen: faceView.preferredLength + _lead + 6
             property real length: Math.max(root.heightPx * 2, Math.min(_contentLen, root.widthPx))
             // First appearance: the window maps transparent (a hidden window
             // doesn't lay out, so its size would be stale) and fades in once
@@ -206,7 +228,8 @@ Scope {
             }
             // Shown while hovered, and for a grace period after the pointer
             // touches the edge strip or leaves the pill.
-            readonly property bool tucked: screenFullscreen && !pillHover.hovered && !peekArea.containsMouse && !peekGrace.running
+            readonly property bool tucked: root.edgeLeaving
+                || (screenFullscreen && !pillHover.hovered && !peekArea.containsMouse && !peekGrace.running)
             function peek() { peekGrace.restart() }
             Timer { id: peekGrace; interval: 1000 }
             HoverHandler {
@@ -397,68 +420,35 @@ Scope {
                         hoverEnabled: true
                         cursorShape: Qt.SizeAllCursor
                         acceptedButtons: Qt.LeftButton
-                        // Drag tracking: we don't bind drag.target (the layer-shell
-                        // window can't free-float); we just monitor pointer
-                        // position and snap on release.
-                        property real lastGlobalX: 0
-                        property real lastGlobalY: 0
-                        onPressed: mouse => {
-                            const gp = mapToGlobal(mouse.x, mouse.y);
-                            lastGlobalX = gp.x; lastGlobalY = gp.y;
-                        }
-                        onPositionChanged: mouse => {
-                            if (!pressed) return;
-                            const gp = mapToGlobal(mouse.x, mouse.y);
-                            lastGlobalX = gp.x; lastGlobalY = gp.y;
-                        }
-                        onReleased: {
-                            const screen = spotWindow.screen;
-                            if (!screen) return;
-                            const newEdge = root._nearestEdge(
-                                lastGlobalX, lastGlobalY,
-                                screen.width, screen.height
-                            );
-                            if (newEdge !== root.position)
-                                Config.setNestedValue("anoSpot.position", newEdge);
+                        // Press the grip: the edge picker opens over the screen
+                        // (the pill's own window can't follow a drag across it);
+                        // release over an edge to move there, or click one.
+                        onPressed: spotWindow.picking = true
+                        // Released, or the grab cancelled when the overlay mapped
+                        // over the pointer: the overlay may already know the
+                        // edge under the pointer; otherwise its first pointer
+                        // report decides.
+                        onPressedChanged: {
+                            if (pressed || !spotWindow.picking) return
+                            const h = edgePicker.hovered
+                            if (h && h !== root.position) edgePicker.chose(h)
+                            else edgePicker.dropPending = true
                         }
                     }
                 }
 
-                // Horizontal layout for top/bottom; vertical for left/right
-                Loader {
-                    id: contentLoader
+                // Resting faces (status, media, spectrum, lyrics): swipe or
+                // shift-wheel to switch; the capsule morphs to the face.
+                AnoSpotFaces {
+                    id: faceView
                     anchors.fill: parent
                     anchors.margins: 6
                     // Reserve space for the drag handle on the leading edge
                     anchors.leftMargin: !root.isVertical && root.draggable ? 18 : 6
                     anchors.topMargin: root.isVertical && root.draggable ? 18 : 6
-                    sourceComponent: root.isVertical ? verticalLayout : horizontalLayout
-                }
-
-                Component {
-                    id: horizontalLayout
-                    RowLayout {
-                        spacing: 10
-                        AnoSpotWorkspace  { visible: root.showWorkspace }
-                        AnoSpotMpris      { Layout.fillWidth: true; Layout.minimumWidth: 60; visible: root.showMpris && AnoSpotState.mpris !== null }
-                        AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
-                        AnoSpotNotification { Layout.fillWidth: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
-                        AnoSpotClockWeather { visible: root.showClockWeather }
-                        AnoSpotBattery    { /* visible binding lives in the widget */ }
-                    }
-                }
-
-                Component {
-                    id: verticalLayout
-                    ColumnLayout {
-                        spacing: 10
-                        AnoSpotWorkspace  { visible: root.showWorkspace }
-                        AnoSpotMpris      { visible: root.showMpris && AnoSpotState.mpris !== null }
-                        AnoSpotRecording  { visible: root.showRecording && AnoSpotState.recording.active }
-                        AnoSpotNotification { Layout.fillHeight: true; visible: root.showNotification && AnoSpotState.latestNotification !== null }
-                        AnoSpotClockWeather { visible: root.showClockWeather }
-                        AnoSpotBattery    { /* visible binding lives in the widget */ }
-                    }
+                    vertical: root.isVertical
+                    thickness: root.heightPx
+                    faces: root.faces
                 }
             }
         }

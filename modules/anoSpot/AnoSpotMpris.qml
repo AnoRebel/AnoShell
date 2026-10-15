@@ -59,6 +59,8 @@ RowLayout {
         enabled: mprisRow.scrollAction === "audio"
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: event => {
+            // Vertical only: horizontal (and shift) wheel switches faces.
+            if (Math.abs(event.angleDelta.x) >= Math.abs(event.angleDelta.y) || (event.modifiers & Qt.ShiftModifier)) { event.accepted = false; return }
             if (event.angleDelta.y > 0) Audio.incrementVolume()
             else if (event.angleDelta.y < 0) Audio.decrementVolume()
             event.accepted = true
