@@ -120,6 +120,9 @@ Singleton {
     }
 
     function _ingest(source, path, text) {
+        // A FolderListModel lists the working directory while its folder is
+        // unset; only files really inside the look folders count.
+        if (!path.startsWith((source === "user" ? root.userDir : root.bundledDir) + "/")) return
         const fileId = path.split("/").pop().replace(/\.json$/, "")
         let look = null, errors
         try { look = JSON.parse(text) } catch (err) { errors = [`invalid JSON: ${err.message ?? err}`] }

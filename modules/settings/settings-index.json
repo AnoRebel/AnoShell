@@ -1404,6 +1404,26 @@
  },
  {
   "page": 6,
+  "card": "Look",
+  "label": "Look",
+  "sublabel": "The shell's visual identity: shape, material, texture, type and motion",
+  "keys": [
+   "appearance.look",
+   "appearance.familyLooks",
+   "appearance.lookTextures"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Surface textures",
+  "sublabel": "The look's texture on panels (caustics, paper grain, grid, clay light). Animated ones move only while you hover.",
+  "keys": [
+   "appearance.lookTextures"
+  ]
+ },
+ {
+  "page": 6,
   "card": "Theme source",
   "label": "Theme source",
   "sublabel": "Dynamic Material You (wallpaper-derived) or pick a static theme",
@@ -1419,6 +1439,24 @@
   "sublabel": "materialYou",
   "keys": [
    "appearance.theme.source"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Colour mode",
+  "sublabel": "Wallpaper palette, with the AnoShell violet/teal accent for brand moments",
+  "keys": [
+   "appearance.theme.colorMode"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Apps",
+  "sublabel": "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell",
+  "keys": [
+   "appearance.theme.appColorScheme"
   ]
  },
  {

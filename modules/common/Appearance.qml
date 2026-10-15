@@ -223,7 +223,9 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Scaled by the active look's shape.radiusScale (Looks.qml); `full` stays a pill.
     rounding: QtObject {
-        readonly property real _s: Looks.current.shape?.radiusScale ?? 1
+        // Eased, so switching looks morphs every corner instead of snapping.
+        property real _s: Looks.current.shape?.radiusScale ?? 1
+        Behavior on _s { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
         property int unsharpen: 2
         property int unsharpenmore: 6
         property int verysmall: Math.round(8 * _s)

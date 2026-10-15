@@ -8,7 +8,9 @@ ToolTip {
     property bool extraVisibleCondition: true
     property bool alternativeVisibleCondition: false
 
-    readonly property bool internalVisibleCondition: (extraVisibleCondition && (parent.hovered === undefined || parent?.hovered)) || alternativeVisibleCondition
+    // Buttons expose `hovered`, MouseAreas `containsMouse`; only a parent with
+    // neither shows the tip unconditionally.
+    readonly property bool internalVisibleCondition: (extraVisibleCondition && (parent?.hovered ?? parent?.containsMouse ?? true)) || alternativeVisibleCondition
     verticalPadding: 5
     horizontalPadding: 10
     background: null

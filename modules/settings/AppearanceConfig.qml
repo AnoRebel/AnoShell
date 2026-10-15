@@ -16,7 +16,7 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Appearance"
-        subtitle: "Theme source, colors, bezel, animations, wallpaper rotation"
+        subtitle: "Look, theme and colours, bezel, animations, wallpaper rotation"
         configRoots: ["appearance", "background", "animations"]
     }
 
@@ -70,6 +70,116 @@ ColumnLayout {
     }
 
     // ═══ Theme Source ═══
+    // ═══ Look ═══
+    SettingsCard {
+        id: lookCard
+        icon: "palette"
+        title: "Look"
+        subtitle: "The shell's visual identity: shape, material, texture, type and motion"
+        configKeys: ["appearance.look", "appearance.familyLooks", "appearance.lookTextures"]
+
+        readonly property string chosen: Config.options?.appearance?.look ?? ""
+        readonly property string familyDefault: Looks.familyDefaults[Looks.family] ?? "liquid"
+
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 8
+            rowSpacing: 8
+
+            // "Auto": the current panel family's default look.
+            RippleButton {
+                Layout.fillWidth: true; Layout.columnSpan: 2
+                implicitHeight: 40
+                buttonRadius: Appearance.rounding.small
+                toggled: lookCard.chosen === ""
+                colBackgroundToggled: Appearance.colors.colSecondaryContainer
+                onClicked: Config.setNestedValue("appearance.look", "")
+                contentItem: RowLayout {
+                    spacing: 8
+                    MaterialSymbol { Layout.leftMargin: 12; text: "auto_mode"; iconSize: 18 }
+                    StyledText {
+                        Layout.fillWidth: true; elide: Text.ElideRight
+                        text: `Auto — ${Looks.entries[lookCard.familyDefault]?.name ?? lookCard.familyDefault} (the ${Looks.family} layout's default)`
+                    }
+                }
+            }
+
+            Repeater {
+                model: Looks.list
+                SurfaceMaterial {
+                    id: tile
+                    required property var modelData
+                    readonly property bool valid: modelData.errors.length === 0
+                    readonly property bool active: Looks.activeId === modelData.id
+                    surface: "settings"
+                    Layout.fillWidth: true
+                    implicitHeight: tileCol.implicitHeight + 24
+                    radius: Math.round(14 * ((Looks.entries[modelData.id]?.look?.shape?.radiusScale) ?? 1))
+                    color: active ? Appearance.colors.colSecondaryContainer : Appearance.colors.colLayer2
+                    border.width: active ? 2 : 1
+                    border.color: active ? Appearance.colors.colPrimary : Appearance.colors.colOutlineVariant
+                    opacity: valid ? 1 : 0.75
+
+                    ColumnLayout {
+                        id: tileCol
+                        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12 }
+                        spacing: 4
+                        RowLayout {
+                            spacing: 6
+                            StyledText {
+                                text: tile.modelData.name
+                                font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold
+                            }
+                            StyledText {
+                                visible: tile.modelData.source === "user"
+                                text: "yours"; font.pixelSize: 10; opacity: 0.6
+                            }
+                            Item { Layout.fillWidth: true }
+                            MaterialSymbol { visible: tile.active; text: "check_circle"; iconSize: 18; color: Appearance.colors.colPrimary }
+                        }
+                        StyledText {
+                            Layout.fillWidth: true
+                            visible: tile.valid
+                            text: Looks.entries[tile.modelData.id]?.description ?? ""
+                            wrapMode: Text.WordWrap; font.pixelSize: 11; opacity: 0.7
+                        }
+                        // Error badge: an invalid look is listed but can't be applied.
+                        Rectangle {
+                            visible: !tile.valid
+                            Layout.fillWidth: true
+                            implicitHeight: errText.implicitHeight + 10
+                            radius: 6
+                            color: Appearance.colors.colErrorContainer
+                            StyledText {
+                                id: errText
+                                anchors { fill: parent; margins: 5 }
+                                wrapMode: Text.WordWrap; font.pixelSize: 11
+                                color: Appearance.colors.colOnErrorContainer
+                                text: "Can't apply: " + tile.modelData.errors.join("; ")
+                            }
+                        }
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: tile.valid
+                        cursorShape: tile.valid ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                        onClicked: Config.setNestedValue("appearance.look", tile.modelData.id)
+                    }
+                }
+            }
+        }
+
+        ConfigSwitch {
+            label: "Surface textures"
+            configKey: "appearance.lookTextures"
+            sublabel: "The look's texture on panels (caustics, paper grain, grid, clay light). Animated ones move only while you hover."
+            checked: Config.options?.appearance?.lookTextures ?? true
+            onCheckedChanged: Config.setNestedValue("appearance.lookTextures", checked)
+        }
+    }
+
+    // ═══ Theme Source ═══
     SettingsCard {
         icon: "auto_awesome"
         title: "Theme source"
@@ -107,6 +217,31 @@ ColumnLayout {
                         }
                     }
                 }
+            }
+        }
+
+        ConfigRow {
+            label: "Colour mode"
+            configKey: "appearance.theme.colorMode"
+            visible: appearanceRoot.committedSource === "materialYou"
+            sublabel: ({ dynamicAccent: "Wallpaper palette, with the AnoShell violet/teal accent for brand moments",
+                         dynamic: "Wallpaper palette everywhere, accent included",
+                         fixed: "The AnoShell palette; wallpaper changes leave colours (and app colours) alone" })[Config.options?.appearance?.theme?.colorMode ?? "dynamicAccent"] ?? ""
+            ChoiceRow {
+                model: [{ value: "dynamicAccent", label: "Wallpaper + accent", icon: "auto_awesome" }, { value: "dynamic", label: "Wallpaper", icon: "wallpaper" }, { value: "fixed", label: "Fixed", icon: "lock" }]
+                current: Config.options?.appearance?.theme?.colorMode ?? "dynamicAccent"
+                onChose: value => Config.setNestedValue("appearance.theme.colorMode", value)
+            }
+        }
+
+        ConfigRow {
+            label: "Apps"
+            configKey: "appearance.theme.appColorScheme"
+            sublabel: "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell"
+            ChoiceRow {
+                model: [{ value: "follow", label: "Follow shell", icon: "sync" }, { value: "light", label: "Light", icon: "light_mode" }, { value: "dark", label: "Dark", icon: "dark_mode" }]
+                current: Config.options?.appearance?.theme?.appColorScheme ?? "follow"
+                onChose: value => Config.setNestedValue("appearance.theme.appColorScheme", value)
             }
         }
 

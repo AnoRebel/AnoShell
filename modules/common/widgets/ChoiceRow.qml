@@ -59,6 +59,7 @@ Flow {
                 spacing: root.compact ? 0 : 2
 
                 MaterialSymbol {
+                    visible: text.length > 0
                     Layout.alignment: Qt.AlignHCenter
                     text: cell.modelData.icon ?? ""
                     iconSize: root.compact ? 18 : 20
