@@ -1157,6 +1157,13 @@ Singleton {
                     property bool spectrum: false
                     property bool lyrics: false
                 }
+                // Clicking grows the pill into these surfaces (same component as
+                // the standalone panel) instead of opening the panel.
+                property JsonObject growInto: JsonObject {
+                    property bool mediaControls: false
+                    property bool controlPanel: false
+                    property bool calendar: false
+                }
                 property JsonObject workspaceHoverPreview: JsonObject {
                     property bool enable: true
                     property int openDelayMs: 200

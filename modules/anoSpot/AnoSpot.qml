@@ -7,6 +7,9 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import qs.modules.mediaControls
+import qs.modules.controlPanel
+import qs.modules.calendar
 import "."
 
 /**
@@ -68,14 +71,21 @@ Scope {
     readonly property bool draggable: Config.options?.anoSpot?.draggable ?? true
     readonly property bool acceptDrops: Config.options?.anoSpot?.acceptDrops ?? true
 
-    function _dispatchClick(button) {
+    // Surfaces the pill can grow into, hosting the same content component the
+    // standalone panel uses (one implementation, one state).
+    readonly property var growTargets: ["mediaControls", "controlPanel", "calendar"]
+    function growsInto(target) {
+        return growTargets.includes(target) && (Config.options?.anoSpot?.growInto?.[target] ?? false)
+    }
+
+    function _dispatchClick(button, win) {
         let target = "";
         if (button === Qt.LeftButton)        target = root.actions.leftClick   ?? "mediaControls";
         else if (button === Qt.RightButton)  target = root.actions.rightClick  ?? "controlPanel";
         else if (button === Qt.MiddleButton) target = root.actions.middleClick ?? "anoview";
-        if (target.length > 0) {
-            Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", target, "toggle"]);
-        }
+        if (target.length === 0) return
+        if (win && root.growsInto(target)) { win.grownTarget = win.grownTarget === target ? "" : target; return }
+        Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", target, "toggle"]);
     }
 
     // ─── Event border ────────────────────────────────────────────────────
@@ -169,6 +179,25 @@ Scope {
             color: "transparent"
             property bool picking: false
 
+            // ── Grow-into: the pill becomes the target surface ──────────────
+            property string grownTarget: ""
+            readonly property bool grown: grownTarget !== ""
+            readonly property real _maxH: (modelData?.height ?? 1080) * 0.75
+            readonly property real grownW: ({ mediaControls: 440, controlPanel: 380, calendar: 400 })[grownTarget] ?? 400
+            readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
+            // Springs between resting and grown geometry.
+            property real _w: grown ? grownW : (root.isVertical ? root.heightPx : length)
+            property real _h: grown ? grownH : (root.isVertical ? length : root.heightPx)
+            // Only while growing/shrinking: resting length already springs.
+            property bool _growing: false
+            onGrownChanged: { _growing = true; growSettle.restart() }
+            Timer { id: growSettle; interval: 1400; onTriggered: spotWindow._growing = false }
+            Behavior on _w { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
+            Behavior on _h { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
+            readonly property real cornerRadius: grown ? Appearance.rounding.windowRounding : Math.min(width, height) / 2
+            WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            Shortcut { sequence: "Escape"; enabled: spotWindow.grown; onActivated: spotWindow.grownTarget = "" }
+
             // The pill fits its content (a fixed length clipped it), springing
             // between sizes; anoSpot.widthPx is the maximum length.
             readonly property real _lead: root.draggable ? 18 : 6
@@ -188,8 +217,8 @@ Scope {
             Timer { running: spotWindow._revealed && !spotWindow._animated; interval: 2000; onTriggered: spotWindow._animated = true }
             onLengthChanged: if (!spotWindow._revealed && revealTimer.running) revealTimer.restart()
             Behavior on length { enabled: spotWindow._animated; MotionSpring { token: "snappy" } }
-            implicitWidth: root.isVertical ? root.heightPx : length
-            implicitHeight: root.isVertical ? length : root.heightPx
+            implicitWidth: Math.round(_w)
+            implicitHeight: Math.round(_h)
 
             // Normal: placed past the bar on the same edge instead of over it.
             exclusionMode: ExclusionMode.Normal
@@ -256,7 +285,7 @@ Scope {
                 screenName: spotWindow.modelData?.name ?? ""
                 active: spotWindow.visible && spotWindow._revealed && spotWindow.connected && spotWindow.tuck < 0.99
                 progress: 1 - Math.max(0, Math.min(1, spotWindow.tuck))
-                surfaceRadius: Math.min(spotWindow.width, spotWindow.height) / 2
+                surfaceRadius: spotWindow.cornerRadius
                 // Where the layer shell actually puts the window (centred in
                 // the space other edges leave, e.g. beside a left bar).
                 readonly property point _o: PanelRegistry.windowOrigin(spotWindow)
@@ -283,7 +312,7 @@ Scope {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: Math.min(width, height) / 2
+                    radius: spotWindow.cornerRadius
                     layer.enabled: true
                     layer.effect: ConicalGradient {
                         angle: borderHalo.angle
@@ -323,7 +352,7 @@ Scope {
                 anchors.centerIn: parent
                 width: parent.width
                 height: parent.height
-                radius: Math.min(width, height) / 2
+                radius: spotWindow.cornerRadius
                 color: spotWindow.connected ? "transparent" : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
                 // Glass-token-driven border + opacity so static themes
                 // (aurora, angel, etc.) can dial the pill's translucency.
@@ -341,7 +370,7 @@ Scope {
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                    onClicked: mouse => root._dispatchClick(mouse.button)
+                    onClicked: mouse => root._dispatchClick(mouse.button, spotWindow)
                 }
 
                 // Drop target — files/URIs dragged from any Wayland source
@@ -376,7 +405,7 @@ Scope {
                         // Drop hover indicator: tinted overlay on the pill.
                         Rectangle {
                             anchors.fill: parent
-                            radius: Math.min(width, height) / 2
+                            radius: spotWindow.cornerRadius
                             color: Appearance?.colors?.colPrimary ?? "#a6e3a1"
                             opacity: parent.dropHover ? 0.18 : 0
                             border.width: parent.dropHover ? 2 : 0
@@ -441,6 +470,9 @@ Scope {
                 // shift-wheel to switch; the capsule morphs to the face.
                 AnoSpotFaces {
                     id: faceView
+                    opacity: spotWindow.grown ? 0 : 1
+                    visible: opacity > 0.01
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
                     anchors.fill: parent
                     anchors.margins: 6
                     // Reserve space for the drag handle on the leading edge
@@ -449,7 +481,28 @@ Scope {
                     vertical: root.isVertical
                     thickness: root.heightPx
                     faces: root.faces
+                    // Clicks on the faces: a tap, distinct from the swipe drag
+                    // (the drag handler here would otherwise swallow a left
+                    // click before the pill's click area below sees it).
+                    TapHandler {
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                        onTapped: (point, button) => root._dispatchClick(button, spotWindow)
+                    }
                 }
+
+                // Grown: the target surface's own content component.
+                Loader {
+                    id: grownLoader
+                    active: spotWindow.grown
+                    anchors.fill: parent
+                    anchors.margins: 16
+                    opacity: spotWindow.grown && spotWindow.width >= spotWindow.grownW * 0.85 ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
+                    sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
+                }
+                Component { id: grownMedia; MediaControlsContent { } }
+                Component { id: grownControl; ControlPanelContent { onCloseRequested: spotWindow.grownTarget = "" } }
+                Component { id: grownCalendar; CalendarContent { } }
             }
         }
       }

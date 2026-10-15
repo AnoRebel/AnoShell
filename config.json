@@ -367,6 +367,11 @@
       "spectrum": false,
       "lyrics": false
     },
+    "growInto": {
+      "mediaControls": false,
+      "controlPanel": false,
+      "calendar": false
+    },
     "workspaceHoverPreview": {
       "enable": true,
       "openDelayMs": 200,
