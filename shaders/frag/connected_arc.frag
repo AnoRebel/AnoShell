@@ -28,7 +28,52 @@ layout(std140, binding = 0) uniform buf {
     mat4 slot5;
     mat4 slot6;
     mat4 slot7;
+    // Look texture (looks/schema.md), as in look_texture.frag; static here.
+    // texMode: 0 none, 1 caustics, 2 paper grain, 3 grid, 4 clay light.
+    float texMode;
+    float texStrength;
+    float texParam;
+    vec4 texTint;       // straight rgb
+    vec4 texShade;      // straight rgb
 } ubuf;
+
+float texHash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+float texCaustics(vec2 uv) {
+    vec2 p = uv * 6.0;
+    float c = 0.0;
+    for (int i = 1; i <= 3; i++) {
+        float fi = float(i);
+        p += vec2(sin(p.y * 0.9), cos(p.x * 1.1)) * (0.6 / fi);
+        c += abs(sin(p.x + p.y) * cos(p.x - p.y * 0.7));
+    }
+    return pow(clamp(1.0 - c / 3.0, 0.0, 1.0), 6.0);
+}
+
+// Straight-rgb layer + alpha for pixel px at scene distance d (< 0 inside).
+vec4 lookTexture(vec2 px, float d) {
+    int m = int(ubuf.texMode + 0.5);
+    float k = ubuf.texStrength;
+    if (m == 1) return vec4(ubuf.texTint.rgb, texCaustics(px / 220.0) * k * 0.3);
+    if (m == 2) {
+        float g = texHash(floor(px)) - 0.5;
+        return g > 0.0 ? vec4(ubuf.texTint.rgb, g * k * 0.5) : vec4(ubuf.texShade.rgb, -g * k * 0.5);
+    }
+    if (m == 3) {
+        float s = max(ubuf.texParam, 4.0);
+        vec2 g = abs(fract(px / s - 0.5) - 0.5) * s;
+        return vec4(ubuf.texTint.rgb, (1.0 - smoothstep(0.0, 1.0, min(g.x, g.y))) * 0.6 * k);
+    }
+    if (m == 4) {
+        float rim = 1.0 - clamp(-d / 18.0, 0.0, 1.0);
+        return vec4(ubuf.texTint.rgb, rim * k * 0.6);
+    }
+    return vec4(0.0);
+}
 
 float sdBox(vec2 p, vec2 c, vec2 hs) {
     vec2 q = abs(p - c) - hs;
@@ -119,7 +164,12 @@ void main() {
     float d = sceneDist(px);
     float fw = max(fwidth(d), 1e-4);
     float cov = 1.0 - smoothstep(-fw, fw, d);
-    vec4 col = vec4(ubuf.surfaceColor.rgb, 1.0) * cov;
+    vec3 fill = ubuf.surfaceColor.rgb;
+    if (ubuf.texMode > 0.5) {
+        vec4 t = lookTexture(px, d);
+        fill = mix(fill, t.rgb, clamp(t.a, 0.0, 1.0));
+    }
+    vec4 col = vec4(fill, 1.0) * cov;
     if (ubuf.shadowColor.a > 0.0) {
         // Shadow comes from the chrome surfaces ONLY — see chromeOnlyDist().
         float ds = chromeOnlyDist(px);

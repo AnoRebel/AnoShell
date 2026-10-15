@@ -153,8 +153,9 @@ Scope {
                     property bool swiping: false
 
                     // Notification card with shadow
-                    Rectangle {
+                    SurfaceMaterial {
                         id: notifCard
+                        surface: "notification"
                         width: parent.width
                         x: popupDelegate.swipeX + popupDelegate.slideOffset
                         implicitHeight: cardContent.implicitHeight + 20

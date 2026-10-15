@@ -1,6 +1,8 @@
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.modules.common.functions
+import qs.services
 import "ConnectedSurfaceGeometry.js" as SurfaceGeometry
 import QtQuick
 import Quickshell
@@ -194,5 +196,17 @@ Item {
         property matrix4x4 slot5: root._slots[5]
         property matrix4x4 slot6: root._slots[6]
         property matrix4x4 slot7: root._slots[7]
+
+        // The look's texture, static on the frame (the frame spans the screen,
+        // so it isn't tied to hovering one surface).
+        readonly property var _tex: Looks.current.texture ?? null
+        readonly property real _k: { const p = _tex?.params ?? {}; return p.strength ?? p.grain ?? p.light ?? 0.2 }
+        property real texMode: (Config.options?.appearance?.lookTextures ?? true)
+            ? (({ caustics: 1, paper_grain: 2, ink_bleed: 2, grid_scan: 3, clay_soft: 4 })[_tex?.shader] ?? 0) : 0
+        property real texStrength: _k
+        property real texParam: _tex?.params?.spacing ?? 24
+        readonly property color _tint: ColorUtils.mix(Appearance.colors.colPrimary, Appearance.colors.colOnSurface, 0.5)
+        property vector4d texTint: Qt.vector4d(_tint.r, _tint.g, _tint.b, 1)
+        property vector4d texShade: Qt.vector4d(Appearance.m3colors.m3shadow.r, Appearance.m3colors.m3shadow.g, Appearance.m3colors.m3shadow.b, 1)
     }
 }

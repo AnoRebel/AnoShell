@@ -120,8 +120,9 @@ Scope {
         MouseArea { anchors.fill: parent; onClicked: GlobalStates.searchOpen = false }
 
         // Search card — positioned in upper third of screen
-        Rectangle {
+        SurfaceMaterial {
             id: searchCard
+            surface: "search"
             anchors.horizontalCenter: parent.horizontalCenter
             y: parent.height * 0.15
             width: Math.min(560, parent.width * 0.65)

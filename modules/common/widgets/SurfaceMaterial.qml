@@ -22,7 +22,8 @@ Rectangle {
     readonly property var _tex: root.look.texture ?? null
     readonly property int _mode: ({ caustics: 1, paper_grain: 2, ink_bleed: 2, grid_scan: 3, clay_soft: 4 })[root._tex?.shader] ?? 0
     readonly property real _strength: { const p = root._tex?.params ?? {}; return p.strength ?? p.grain ?? p.light ?? 0.2 }
-    readonly property bool _textured: root._mode > 0 && root._strength > 0 && (Config.options?.appearance?.lookTextures ?? true)
+    // No texture on a see-through card (e.g. one the connected frame paints).
+    readonly property bool _textured: root._mode > 0 && root._strength > 0 && root.color.a > 0.05 && (Config.options?.appearance?.lookTextures ?? true)
 
     border.width: root.look.shape?.stroke ?? 0
     border.color: Appearance.colors.colOutlineVariant

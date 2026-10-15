@@ -80,8 +80,9 @@ Scope {
             }
 
             // The card itself
-            Rectangle {
+            SurfaceMaterial {
                 id: card
+                surface: "stash"
                 anchors.centerIn: parent
                 width: 380
                 height: 460

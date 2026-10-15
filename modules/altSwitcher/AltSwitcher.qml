@@ -162,8 +162,9 @@ Scope {
         }
 
         // Switcher panel
-        Rectangle {
+        SurfaceMaterial {
             id: switcherPanel
+            surface: "altSwitcher"
             anchors.centerIn: parent
             width: root.panelWidth
             height: Math.min(panelContent.implicitHeight + 32, switcherWindow.height * 0.7)

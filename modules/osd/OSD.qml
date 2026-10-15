@@ -167,8 +167,9 @@ Scope {
                 anchors.bottom: root.position !== "top" ? parent.bottom : undefined
                 anchors.top: root.position === "top" ? parent.top : undefined
 
-            Rectangle {
+            SurfaceMaterial {
                 id: osdPill
+                surface: "osd"
                 anchors.bottom: root.position !== "top" ? parent.bottom : undefined
                 anchors.top: root.position === "top" ? parent.top : undefined
 

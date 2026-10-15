@@ -57,8 +57,9 @@ Scope {
         MouseArea { anchors.fill: parent; onClicked: GlobalStates.clipboardOpen = false }
 
         // Card
-        Rectangle {
+        SurfaceMaterial {
             id: clipCard
+            surface: "clipboard"
             anchors.centerIn: parent
             width: Math.min(600, parent.width * 0.7)
             height: Math.min(650, parent.height * 0.8)

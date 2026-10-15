@@ -224,8 +224,9 @@ Item {
                         color: "#44000000"
                         z: -1
                     }
-                    Rectangle {
+                    SurfaceMaterial {
                         id: bg
+                        surface: "popout"
                         anchors.fill: parent
                         visible: !area.connectedMode
                         radius: Appearance?.rounding.normal ?? 12

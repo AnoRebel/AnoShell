@@ -75,8 +75,9 @@ PopupWindow {
                 stackView.pop();
         }
 
-        Rectangle {
+        SurfaceMaterial {
             id: popupBackground
+            surface: "trayMenu"
             readonly property real padding: 4
             // Grows out of the tray icon away from the bar, pinned to the bar
             // edge; the menu entries are uncovered, not relaid out.

@@ -129,8 +129,9 @@ Scope {
                 // Dock background. Emerges from its own edge on a spring (no
                 // fade); in connected mode it sits flush on the edge and the
                 // frame paints it, so it drops its own fill and border.
-                Rectangle {
+                SurfaceMaterial {
                     id: dockBg
+                    surface: "dock"
                     readonly property bool connected: PanelRegistry.enabled
                     readonly property real gap: connected ? 0 : 8
                     property real shown: dockWindow.reveal ? 1 : 0
