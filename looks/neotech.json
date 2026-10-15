@@ -1,0 +1,16 @@
+{
+  "id": "neotech",
+  "name": "Neo-tech",
+  "description": "Thin precise lines, mono type, grid and scanline accents, crisp motion.",
+  "version": 1,
+  "shape": { "radiusScale": 0.35, "stroke": 1, "connectedRadius": 8, "squircle": false },
+  "material": { "kind": "solid", "glass": true },
+  "texture": { "shader": "grid_scan", "animate": "interaction", "params": { "spacing": 24, "strength": 0.08 } },
+  "typography": { "main": "@mono", "title": "@mono", "numbers": "@mono" },
+  "motion": {
+    "liquid": { "spring": 9.0, "damping": 0.8, "mass": 0.7 },
+    "settle": { "spring": 12.0, "damping": 0.9, "mass": 0.6 },
+    "snappy": { "spring": 14.0, "damping": 0.9, "mass": 0.5 }
+  },
+  "surfaces": {}
+}

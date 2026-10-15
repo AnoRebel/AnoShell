@@ -1,0 +1,16 @@
+{
+  "id": "liquid",
+  "name": "Liquid",
+  "description": "One fluid body: droplet pills, meniscus joins, ripples and caustic light. The default.",
+  "version": 1,
+  "shape": { "radiusScale": 1.15, "stroke": 0, "connectedRadius": 20, "squircle": false },
+  "material": { "kind": "solid", "glass": true },
+  "texture": { "shader": "caustics", "animate": "interaction", "params": { "strength": 0.35 } },
+  "typography": {},
+  "motion": {
+    "liquid": { "spring": 3.2, "damping": 0.28, "mass": 1.0 },
+    "settle": { "spring": 7.0, "damping": 0.65, "mass": 1.0 },
+    "snappy": { "spring": 6.0, "damping": 0.55, "mass": 0.8 }
+  },
+  "surfaces": {}
+}

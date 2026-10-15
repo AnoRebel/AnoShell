@@ -1,0 +1,16 @@
+{
+  "id": "clay",
+  "name": "Clay",
+  "description": "Squircles, soft inner light and springy motion.",
+  "version": 1,
+  "shape": { "radiusScale": 1.45, "stroke": 0, "connectedRadius": 24, "squircle": true },
+  "material": { "kind": "clay", "glass": false },
+  "texture": { "shader": "clay_soft", "animate": "static", "params": { "light": 0.25 } },
+  "typography": {},
+  "motion": {
+    "liquid": { "spring": 4.5, "damping": 0.18, "mass": 1.1 },
+    "settle": { "spring": 6.5, "damping": 0.4, "mass": 1.0 },
+    "snappy": { "spring": 7.0, "damping": 0.3, "mass": 0.8 }
+  },
+  "surfaces": {}
+}

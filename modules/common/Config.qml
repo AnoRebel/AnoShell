@@ -503,6 +503,10 @@ Singleton {
             // Appearance
             // ═══════════════════════════════════════════════════════════════
             property JsonObject appearance: JsonObject {
+                // Look (looks/*.json or ~/.config/anoshell/looks/): "" follows the
+                // panel family's default; familyLooks sets one per family.
+                property string look: ""
+                property var familyLooks: ({})
                 property int bezel: 0 // Global gap from screen edges (px) for ALL elements
                 property bool extraBackgroundTint: true
 

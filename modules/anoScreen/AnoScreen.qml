@@ -34,7 +34,10 @@ Scope {
     id: root
 
     readonly property bool enabled: Config.options?.appearance?.connectedCorners?.enable ?? false
-    readonly property int cornerRadius: Math.max(1, Config.options?.appearance?.connectedCorners?.radius ?? 18)
+    // Your radius if you set one, else the active look's.
+    readonly property int cornerRadius: { void Config.deltaRevision; return Math.max(1, Config.originOf("appearance.connectedCorners.radius") === "user"
+        ? (Config.options?.appearance?.connectedCorners?.radius ?? 18)
+        : (Looks.current.shape?.connectedRadius ?? Config.options?.appearance?.connectedCorners?.radius ?? 18)) }
     // Painted bezel width on each screen edge. 0 ⇒ corner arcs only.
     readonly property real frameThickness: Math.max(0, Config.options?.appearance?.connectedCorners?.thickness ?? 0)
     // Frame surface opacity; < 1.0 makes the frame translucent (pair with the

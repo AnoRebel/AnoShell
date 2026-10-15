@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.modules.common.functions
+import qs.services
 pragma Singleton
 pragma ComponentBehavior: Bound
 
@@ -209,17 +210,19 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Rounding (corner radius values)
     // ═══════════════════════════════════════════════════════════════════════
+    // Scaled by the active look's shape.radiusScale (Looks.qml); `full` stays a pill.
     rounding: QtObject {
+        readonly property real _s: Looks.current.shape?.radiusScale ?? 1
         property int unsharpen: 2
         property int unsharpenmore: 6
-        property int verysmall: 8
-        property int small: 12
-        property int normal: 17
-        property int large: 23
-        property int verylarge: 30
+        property int verysmall: Math.round(8 * _s)
+        property int small: Math.round(12 * _s)
+        property int normal: Math.round(17 * _s)
+        property int large: Math.round(23 * _s)
+        property int verylarge: Math.round(30 * _s)
         property int full: 9999
         property int screenRounding: large
-        property int windowRounding: 18
+        property int windowRounding: Math.round(18 * _s)
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -227,9 +230,15 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     font: QtObject {
         property QtObject family: QtObject {
-            property string main: Config.options.appearance.fonts.main
-            property string numbers: Config.options.appearance.fonts.numbers
-            property string title: Config.options.appearance.fonts.title
+            // The look's typography applies where you haven't chosen a font yourself.
+            function _pick(role, key) {
+                void Config.deltaRevision
+                const mine = Config.options.appearance.fonts[key]
+                return Config.originOf(`appearance.fonts.${key}`) === "user" ? mine : Looks.font(role, mine)
+            }
+            property string main: _pick("main", "main")
+            property string numbers: _pick("numbers", "numbers")
+            property string title: _pick("title", "title")
             property string iconMaterial: "Material Symbols Rounded"
             property string iconNerd: Config.options.appearance.fonts.iconNerd
             property string monospace: Config.options.appearance.fonts.monospace
@@ -286,12 +295,14 @@ Singleton {
     // feel liquid. Speed scales stiffness (slower motion = softer spring).
     readonly property QtObject springs: QtObject {
         readonly property real _k: 1 / Math.pow(AnimationConfig.speed, 2)
+        // From the active look's motion profile (Looks.qml); speed scales stiffness.
+        readonly property var _m: Looks.current.motion ?? ({})
         // Surfaces growing out of an edge / morphing shapes: soft, slight give.
-        readonly property QtObject liquid: QtObject { readonly property real spring: 3.2 * root.springs._k; readonly property real damping: 0.28; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
+        readonly property QtObject liquid: QtObject { readonly property real spring: (root.springs._m.liquid?.spring ?? 3.2) * root.springs._k; readonly property real damping: root.springs._m.liquid?.damping ?? 0.28; readonly property real mass: root.springs._m.liquid?.mass ?? 1.0; readonly property real epsilon: 0.25 }
         // Retracting into an edge: firm, settles flush without a long tail.
-        readonly property QtObject settle: QtObject { readonly property real spring: 7.0 * root.springs._k; readonly property real damping: 0.65; readonly property real mass: 1.0; readonly property real epsilon: 0.25 }
+        readonly property QtObject settle: QtObject { readonly property real spring: (root.springs._m.settle?.spring ?? 7.0) * root.springs._k; readonly property real damping: root.springs._m.settle?.damping ?? 0.65; readonly property real mass: root.springs._m.settle?.mass ?? 1.0; readonly property real epsilon: 0.25 }
         // Small UI elements (chips, toggles, indicators).
-        readonly property QtObject snappy: QtObject { readonly property real spring: 6.0 * root.springs._k; readonly property real damping: 0.55; readonly property real mass: 0.8; readonly property real epsilon: 0.25 }
+        readonly property QtObject snappy: QtObject { readonly property real spring: (root.springs._m.snappy?.spring ?? 6.0) * root.springs._k; readonly property real damping: root.springs._m.snappy?.damping ?? 0.55; readonly property real mass: root.springs._m.snappy?.mass ?? 0.8; readonly property real epsilon: 0.25 }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
