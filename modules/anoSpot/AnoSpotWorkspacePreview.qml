@@ -150,14 +150,17 @@ Scope {
                                         anchors.margins: 2
                                         active: !!modelData.toplevel
                                         sourceComponent: ScreencopyView {
+                                            id: thumbView
                                             anchors.fill: parent
                                             captureSource: modelData.toplevel ?? null
                                             live: true
                                             paintCursor: false
                                             layer.enabled: true
+                                            // Sized by id: the mask Rectangle has no parent, so
+                                            // parent.width was 0 and masked the whole thumbnail away.
                                             layer.effect: OpacityMask {
                                                 maskSource: Rectangle {
-                                                    width: parent.width; height: parent.height; radius: 8
+                                                    width: thumbView.width; height: thumbView.height; radius: 8
                                                 }
                                             }
                                         }
