@@ -41,3 +41,16 @@ a(B.formOf('bogus')==='full','unknown form falls back to full');
 a(B.groupsFromModules({left:['a'],right:['b']}).map(g=>g.id).join()==='start,center,end','migration');
 a(B.neckK(14,0)===14 && B.neckK(14,1)===0 && B.neckK(14,0.5)===7,'neck thins to nothing as the island separates');
 console.log('bar layout ok');
+
+// BarEdit: module moves, add/remove groups.
+const esrc=fs.readFileSync(require('path').join(__dirname,'../../modules/bar/BarEdit.js'),'utf8').replace('.pragma library','').replace(/^\.import.*$/m,'');
+const E=new Function('BarLayout',esrc+';return {editable,patch,moveModule,addGroup,removeGroup};')(B);
+let g=E.editable({modules:{left:['a','b'],center:['w'],right:['c']}});
+a(g.length===3 && g[0].modules.join()==='a,b','editable migrates');
+g=E.moveModule(g,'b','start','end',0);
+a(g[0].modules.join()==='a' && g[2].modules.join()==='b,c','move module between groups');
+g=E.addGroup(g,'end'); a(g[3].id==='group1' && g[3].zone==='end','add group');
+g=E.moveModule(g,'c','end','group1');
+g=E.removeGroup(g,'group1'); a(g.length===3 && g[2].modules.join()==='b,c','removed group hands modules to its zone');
+g=E.patch(g,'end',{attached:false}); a(g[2].attached===false && g[0].attached===true,'patch one group');
+console.log('bar edit ok');

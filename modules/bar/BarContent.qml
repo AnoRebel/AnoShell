@@ -9,6 +9,7 @@ import qs.services
 import qs.modules.bar.modules
 import "."
 import "BarLayout.js" as BarLayout
+import "BarEdit.js" as BarEdit
 
 /**
  * BarContent — Fully configurable bar content renderer.
@@ -36,6 +37,7 @@ Item {
     required property var barConfig
     required property bool isVertical
     required property string edge
+    property int barIndex: 0
 
     // ═══════════════════════════════════════════════════════════════════
     // Module lists (configurable per-bar or global fallback)
@@ -119,8 +121,22 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     // Forms and groups
     // ═══════════════════════════════════════════════════════════════════
-    readonly property string form: BarLayout.formOf(barConfig?.form ?? Config.options?.bar?.form ?? "full")
-    readonly property var groups: (barConfig?.groups?.length ?? 0) > 0 ? barConfig.groups : BarLayout.groupsFromModules(moduleConfig)
+    // liveRevision: barConfig is edited in place (Settings, the group menu).
+    readonly property string form: { void Config.liveRevision; return BarLayout.formOf(barConfig?.form ?? Config.options?.bar?.form ?? "full") }
+    readonly property var groups: {
+        void Config.liveRevision
+        return (barConfig?.groups?.length ?? 0) > 0 ? barConfig.groups.slice() : BarLayout.groupsFromModules(moduleConfig)
+    }
+
+    function _setGroups(groups) { Config.setNestedValue(`bars.${root.barIndex}.groups`, groups) }
+    function toggleAttached(id) {
+        const g = BarEdit.editable(root.barConfig)
+        const cur = g.find(x => x.id === id)
+        if (cur) root._setGroups(BarEdit.patch(g, id, { attached: cur.attached === false }))
+    }
+    function openCustomize() { GlobalStates.settingsPage = 2; GlobalStates.settingsOpen = true }
+
+    BarGroupMenu { id: groupMenu; barEdge: root.edge }
     // Gap a detached group opens on each side; inset of floating forms.
     readonly property real groupGap: barConfig?.groupGap ?? Config.options?.bar?.layout?.groupGap ?? 10
     readonly property real edgeMargin: (form === "fit" || form === "islands") ? (barConfig?.formMargin ?? Config.options?.bar?.layout?.formMargin ?? 6) : 0
@@ -196,6 +212,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
+                // The centre takes only the right button so workspace buttons keep left clicks.
                 acceptedButtons: grp.zone === "center" ? Qt.RightButton : (Qt.LeftButton | Qt.RightButton)
                 onWheel: event => {
                     const d = event.angleDelta.y
@@ -203,8 +220,21 @@ Item {
                         : grp.zone === "end" ? root.scrollRightAction : root.scrollCenterAction, d > 0)
                 }
                 onClicked: event => {
-                    if (grp.zone === "center") { if (event.button === Qt.RightButton) root.performClickAction(root.centerClickAction) }
-                    else if (event.button === Qt.LeftButton) root.performClickAction(grp.zone === "start" ? root.leftClickAction : root.rightClickAction)
+                    if (event.button === Qt.RightButton) {
+                        // Group menu; the centre's old right-click action stays first.
+                        const e = []
+                        if (grp.zone === "center" && root.centerClickAction !== "none")
+                            e.push({ icon: "apps", text: root.centerClickAction === "overview" ? "Overview" : root.centerClickAction,
+                                     run: () => root.performClickAction(root.centerClickAction) })
+                        e.push({ icon: grp.modelData.attached === false ? "link" : "link_off",
+                                 text: grp.modelData.attached === false ? "Attach group" : "Detach group",
+                                 run: () => root.toggleAttached(grp.gid) })
+                        e.push({ icon: "tune", text: "Customize bar…", run: () => root.openCustomize() })
+                        groupMenu.entries = e
+                        groupMenu.openAt(grp)
+                    } else if (grp.zone !== "center") {
+                        root.performClickAction(grp.zone === "start" ? root.leftClickAction : root.rightClickAction)
+                    }
                 }
             }
 

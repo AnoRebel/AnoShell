@@ -151,23 +151,31 @@ PanelWindow {
     // Connected mode: the frame paints every body, following the auto-hide
     // slide (hideOffset ≤ 0 pushes it out). Body 0 carries the reserved space.
     readonly property point _origin: PanelRegistry.windowOrigin(barRoot)
-    Instantiator {
-        model: barRoot.bodies.length
-        delegate: ConnectedSurfaceLease {
-            required property int index
-            readonly property var _b: barRoot.bodies[index] ?? null
-            key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}:${index}`
-            kind: "bar"; edge: barRoot.edge; priority: _b?.island ? 19 : 20
-            screenName: barRoot._screenName
-            active: barRoot.visible && _b !== null
-            detached: _b ? barRoot._detached(_b) : false
-            neckK: _b ? barRoot._neckK(_b) : undefined
-            surfaceRadius: _b?.island ? barRoot.barRadius : undefined
-            x: barRoot._origin.x + (_b?.x ?? 0); y: barRoot._origin.y + (_b?.y ?? 0)
-            w: _b?.w ?? 0; h: _b?.h ?? 0
-            progress: 1 + barContentLoader.hideOffset / Math.max(1, barRoot.barThickness)
-            reserve: index === 0 ? barRoot.exclusiveZone : 0
-        }
+    // Fixed slots, switched on and off: an Instantiator would destroy and
+    // recreate every lease when the body count changes, leaving the frame
+    // without a bar for a frame.
+    BarLease { index: 0 }
+    BarLease { index: 1 }
+    BarLease { index: 2 }
+    BarLease { index: 3 }
+    BarLease { index: 4 }
+    BarLease { index: 5 }
+    BarLease { index: 6 }
+    BarLease { index: 7 }
+    component BarLease: ConnectedSurfaceLease {
+        property int index
+        readonly property var _b: barRoot.bodies[index] ?? null
+        key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}:${index}`
+        kind: "bar"; edge: barRoot.edge; priority: _b?.island ? 19 : 20
+        screenName: barRoot._screenName
+        active: barRoot.visible && _b !== null
+        detached: _b ? barRoot._detached(_b) : false
+        neckK: _b ? barRoot._neckK(_b) : undefined
+        surfaceRadius: _b?.island ? barRoot.barRadius : undefined
+        x: barRoot._origin.x + (_b?.x ?? 0); y: barRoot._origin.y + (_b?.y ?? 0)
+        w: _b?.w ?? 0; h: _b?.h ?? 0
+        progress: 1 + barContentLoader.hideOffset / Math.max(1, barRoot.barThickness)
+        reserve: index === 0 ? barRoot.exclusiveZone : 0
     }
 
     MouseArea {
@@ -263,6 +271,7 @@ PanelWindow {
 
             sourceComponent: BarContent {
                 barConfig: barRoot.barConfig
+                barIndex: barRoot.barIndex
                 isVertical: barRoot.isVertical
                 edge: barRoot.edge
             }

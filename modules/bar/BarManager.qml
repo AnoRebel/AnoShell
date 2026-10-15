@@ -52,19 +52,22 @@ Scope {
             required property var modelData
 
             // One BarWindow per bar definition on this screen.
+            // Keyed by index: editing a bar's config (a new bars array) updates
+            // that window in place instead of recreating it, so form and group
+            // changes animate.
             Variants {
-                model: root.barDefinitions
+                model: root.barDefinitions.map((_, i) => i)
 
                 delegate: BarWindow {
-                    required property var modelData
+                    required property int modelData
                     // Skip bars that use morphingPanel — those are rendered by TopLayerPanel.
                     readonly property bool _shouldShow: GlobalStates.barOpen
                         && !GlobalStates.screenLocked
-                        && !(modelData?.morphingPanel ?? false)
+                        && !(barConfig?.morphingPanel ?? false)
 
                     screen: screenScope.modelData
-                    barConfig: modelData
-                    barIndex: root.barDefinitions.indexOf(modelData)
+                    barConfig: root.barDefinitions[modelData] ?? null
+                    barIndex: modelData
                     visible: _shouldShow
                 }
             }

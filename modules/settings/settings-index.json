@@ -695,11 +695,57 @@
  },
  {
   "page": 2,
-  "card": "Bar Modules",
-  "label": "Bar Modules",
-  "sublabel": "Drop modules into the left, center, and right sections. Reorder with the ◂ ▸ buttons.",
+  "card": "Bar layout",
+  "label": "Bar layout",
+  "sublabel": "Form, groups and modules. Detach a group to make it its own island; drag modules between groups.",
   "keys": [
-   "bars"
+   "bars",
+   "bar.form"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Form",
+  "sublabel": "Edge to edge, inset, a pill per group, or hugging the content",
+  "keys": [
+   "bars.0.form"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Full",
+  "sublabel": "",
+  "keys": [
+   "bars.0.form"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Fit",
+  "sublabel": "",
+  "keys": [
+   "bars.0.form"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Islands",
+  "sublabel": "",
+  "keys": [
+   "bars.0.form"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Notch",
+  "sublabel": "",
+  "keys": [
+   "bars.0.form"
   ]
  },
  {

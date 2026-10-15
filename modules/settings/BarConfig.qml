@@ -6,6 +6,8 @@ import qs.modules.common.functions
 import qs.modules.bar.modules
 import qs.services
 import "."
+import "../bar/BarLayout.js" as BarLayout
+import "../bar/BarEdit.js" as BarEdit
 
 /**
  * Bar configuration — elaborate settings with visual bar preview,
@@ -34,9 +36,6 @@ ColumnLayout {
     }
 
     readonly property string currentEdge: Config.options?.bars?.[0]?.edge ?? "top"
-    readonly property var leftModules: Config.options?.bars?.[0]?.modules?.left ?? ["sidebarButton", "activeWindow"]
-    readonly property var centerModules: Config.options?.bars?.[0]?.modules?.center ?? ["workspaces"]
-    readonly property var rightModules: Config.options?.bars?.[0]?.modules?.right ?? ["clock", "battery", "network", "bluetooth", "tray", "sidebarButton"]
 
     // ═══ Bar Position & Style ═══
     SettingsCard {
@@ -169,52 +168,146 @@ ColumnLayout {
         }
     }
 
-    // ═══ Bar Modules ═══
+    // ═══ Bar layout: form + groups ═══
+    // The bar is a list of groups; each is attached to the bar body or its own
+    // island, and the form shapes the whole bar. Edits apply live.
+    readonly property var barConfig0: { void Config.liveRevision; return Config.options?.bars?.[0] ?? null }
+    readonly property var groups: { void Config.liveRevision; return BarEdit.editable(root.barConfig0) }
+    readonly property string currentForm: { void Config.liveRevision; return BarLayout.formOf(root.barConfig0?.form ?? Config.options?.bar?.form ?? "full") }
+    function setGroups(arr) { Config.setNestedValue("bars.0.groups", arr) }
+    function setGroupModules(id, arr) { root.setGroups(BarEdit.patch(root.groups, id, { modules: arr })) }
+    function moveModule(moduleId, fromId, toId) { if (fromId !== toId) root.setGroups(BarEdit.moveModule(root.groups, moduleId, fromId, toId)) }
+
     SettingsCard {
         icon: "view_module"
-        title: "Bar Modules"
-        subtitle: "Drop modules into the left, center, and right sections. Reorder with the ◂ ▸ buttons."
-        configKeys: ["bars"]
+        title: "Bar layout"
+        subtitle: "Form, groups and modules. Detach a group to make it its own island; drag modules between groups."
+        configKeys: ["bars", "bar.form"]
 
-        // ── Left section ───────────────────────────────────────────────
-        ColumnLayout {
-            spacing: 6
-            Layout.fillWidth: true
-            StyledText { text: "Left section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            BarModuleSection {
-                Layout.fillWidth: true
-                section: "left"
-                modules: root.leftModules
+        ConfigRow {
+            label: "Form"
+            configKey: "bars"
+            sublabel: "Edge to edge, inset, a pill per group, or hugging the content"
+            ButtonGroup {
+                buttons: [
+                    GroupButton { label: "Full"; toggled: root.currentForm === "full"; onClicked: Config.setNestedValue("bars.0.form", "full") },
+                    GroupButton { label: "Fit"; toggled: root.currentForm === "fit"; onClicked: Config.setNestedValue("bars.0.form", "fit") },
+                    GroupButton { label: "Islands"; toggled: root.currentForm === "islands"; onClicked: Config.setNestedValue("bars.0.form", "islands") },
+                    GroupButton { label: "Notch"; toggled: root.currentForm === "notch"; onClicked: Config.setNestedValue("bars.0.form", "notch") }
+                ]
             }
         }
 
-        // ── Center section ─────────────────────────────────────────────
-        ColumnLayout {
-            spacing: 6
-            Layout.fillWidth: true
-            StyledText { text: "Center section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            BarModuleSection {
+        Repeater {
+            model: root.groups
+            delegate: Rectangle {
+                id: groupBox
+                required property var modelData
+                required property int index
+                readonly property string gid: modelData.id
                 Layout.fillWidth: true
-                section: "center"
-                modules: root.centerModules
+                implicitHeight: groupCol.implicitHeight + 16
+                radius: Appearance?.rounding.normal ?? 12
+                color: drop.containsDrag ? (Appearance?.colors.colLayer2Hover ?? "#3C3947") : (Appearance?.colors.colLayer2 ?? "#2B2930")
+                border.width: drop.containsDrag ? 2 : 0
+                border.color: Appearance?.colors.colPrimary ?? "#65558F"
+                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
+
+                // Drop target for chips dragged from another group.
+                DropArea {
+                    id: drop
+                    anchors.fill: parent
+                    keys: ["barmodule"]
+                    onDropped: root.moveModule(dragGhost.moduleId, dragGhost.groupId, groupBox.gid)
+                }
+
+                ColumnLayout {
+                    id: groupCol
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 8 }
+                    spacing: 6
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        MaterialSymbol { text: groupBox.modelData.attached === false ? "bubble_chart" : "view_week"; iconSize: 18 }
+                        StyledText {
+                            text: groupBox.gid
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                        }
+                        Item { Layout.fillWidth: true }
+                        ButtonGroup {
+                            buttons: [
+                                GroupButton { label: "Start"; toggled: groupBox.modelData.zone === "start"; onClicked: root.setGroups(BarEdit.patch(root.groups, groupBox.gid, { zone: "start" })) },
+                                GroupButton { label: "Centre"; toggled: groupBox.modelData.zone === "center"; onClicked: root.setGroups(BarEdit.patch(root.groups, groupBox.gid, { zone: "center" })) },
+                                GroupButton { label: "End"; toggled: groupBox.modelData.zone === "end"; onClicked: root.setGroups(BarEdit.patch(root.groups, groupBox.gid, { zone: "end" })) }
+                            ]
+                        }
+                        ButtonGroup {
+                            buttons: [
+                                GroupButton { label: "Attached"; toggled: groupBox.modelData.attached !== false; onClicked: root.setGroups(BarEdit.patch(root.groups, groupBox.gid, { attached: true })) },
+                                GroupButton { label: "Island"; toggled: groupBox.modelData.attached === false; onClicked: root.setGroups(BarEdit.patch(root.groups, groupBox.gid, { attached: false })) }
+                            ]
+                        }
+                        ToolbarButton {
+                            iconName: "delete"; iconSize: 16
+                            visible: root.groups.length > 1
+                            toolTipText: "Remove group (its modules move to another group)"
+                            onClicked: root.setGroups(BarEdit.removeGroup(root.groups, groupBox.gid))
+                        }
+                    }
+                    BarModuleSection {
+                        Layout.fillWidth: true
+                        groupId: groupBox.gid
+                        modules: groupBox.modelData.modules ?? []
+                    }
+                }
             }
         }
 
-        // ── Right section ──────────────────────────────────────────────
-        ColumnLayout {
-            spacing: 6
-            Layout.fillWidth: true
-            StyledText { text: "Right section"; font.weight: Font.DemiBold; font.pixelSize: Appearance?.font.pixelSize.small ?? 14 }
-            BarModuleSection {
-                Layout.fillWidth: true
-                section: "right"
-                modules: root.rightModules
+        RowLayout {
+            spacing: 8
+            RippleButton {
+                implicitHeight: 32
+                buttonRadius: Appearance?.rounding.small ?? 8
+                onClicked: root.setGroups(BarEdit.addGroup(root.groups, "end"))
+                contentItem: RowLayout {
+                    spacing: 4
+                    MaterialSymbol { text: "add"; iconSize: 16; Layout.leftMargin: 10 }
+                    StyledText { text: "Add group"; font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12; Layout.rightMargin: 10 }
+                }
+            }
+            StyledText {
+                text: "Tip: right-click a group on the bar to detach it or open these settings."
+                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                opacity: 0.6
             }
         }
+    }
 
-        NoticeBox {
-            text: "Module changes apply to bar 0 (the primary bar). Multi-bar configs are edited via config.json. Bar reload required."
-            iconName: "info"
+    // The chip being dragged, drawn above the page so it can leave its Flow.
+    Rectangle {
+        id: dragGhost
+        property string moduleId: ""
+        property string groupId: ""
+        property bool dragging: false
+        // Out of the page's layout: lives on the window's content item.
+        parent: root.Window.contentItem ?? root
+        z: 1000
+        visible: dragging
+        width: ghostLabel.implicitWidth + 20; height: 30
+        radius: Appearance?.rounding.small ?? 8
+        color: Appearance?.colors.colPrimary ?? "#65558F"
+        opacity: 0.92
+        Drag.active: dragging
+        Drag.keys: ["barmodule"]
+        Drag.hotSpot.x: width / 2
+        Drag.hotSpot.y: height / 2
+        StyledText {
+            id: ghostLabel
+            anchors.centerIn: parent
+            text: BarModuleLoader.labelFor(dragGhost.moduleId)
+            color: Appearance?.m3colors.m3onPrimary ?? "#FFFFFF"
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
         }
     }
 
@@ -223,11 +316,10 @@ ColumnLayout {
     // the available-modules palette.
     component BarModuleSection: ColumnLayout {
         id: section
-        property string section: ""           // "left" | "center" | "right"
+        property string groupId: ""
         property var modules: []              // current active list
         property bool _addingMode: false      // true while the available palette is shown
 
-        readonly property string _configPath: `bars.0.modules.${section}`
         readonly property var _allIds: BarModuleLoader.availableModuleIds ?? []
         // Available = catalogue minus what's already active
         readonly property var _availableIds: {
@@ -236,7 +328,7 @@ ColumnLayout {
         }
 
         function _writeModules(arr) {
-            Config.setNestedValue(section._configPath, arr)
+            root.setGroupModules(section.groupId, arr)
         }
 
         function _moveBy(idx, delta) {
@@ -283,6 +375,29 @@ ColumnLayout {
 
                     implicitWidth: chipRow.implicitWidth + 14
                     implicitHeight: 30
+                    opacity: dragGhost.dragging && dragGhost.moduleId === chip.moduleId ? 0.35 : 1
+
+                    // Drag the chip onto another group to move the module there.
+                    DragHandler {
+                        id: chipDrag
+                        target: null
+                        cursorShape: Qt.ClosedHandCursor
+                        onActiveChanged: {
+                            if (active) {
+                                dragGhost.moduleId = chip.moduleId
+                                dragGhost.groupId = section.groupId
+                                dragGhost.dragging = true
+                            } else {
+                                dragGhost.Drag.drop()
+                                dragGhost.dragging = false
+                            }
+                        }
+                        onCentroidChanged: if (active) {
+                            const p = dragGhost.parent.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y)
+                            dragGhost.x = p.x - dragGhost.width / 2
+                            dragGhost.y = p.y - dragGhost.height / 2
+                        }
+                    }
                     radius: Appearance?.rounding.small ?? 8
                     color: chip.isKnown
                         ? (Appearance?.colors.colSecondaryContainer ?? "#E8DEF8")

@@ -20,6 +20,10 @@ Singleton {
     property var _userDelta: ({})
     // Bumped whenever the user delta changes, so origin bindings re-evaluate.
     property int deltaRevision: 0
+    // Bumped on every in-memory change (setNestedValue), before the debounced
+    // write: bindings over mutated-in-place values (e.g. bars[i].groups) read
+    // it to update live.
+    property int liveRevision: 0
     // Keys whose user value came from a legacy-key migration.
     property var _migratedKeys: ({})
 
@@ -42,13 +46,32 @@ Singleton {
         let cur = obj;
         for (let i = 0; i < keys.length - 1; ++i) {
             if (cur[keys[i]] === undefined || cur[keys[i]] === null
-                || typeof cur[keys[i]] !== "object" || Array.isArray(cur[keys[i]])) {
+                || typeof cur[keys[i]] !== "object" || root._isArrayLike(cur[keys[i]])) {
                 if (!createMissing) return [null, null];
                 cur[keys[i]] = {};
             }
             cur = cur[keys[i]];
         }
         return [cur, keys[keys.length - 1]];
+    }
+
+    // Arrays read from a JsonAdapter list property are V4Sequence wrappers,
+    // which Array.isArray rejects.
+    function _isArrayLike(v) {
+        return Array.isArray(v) || Object.prototype.toString.call(v) === "[object V4Sequence]"
+    }
+
+    // Walk keys inside an array/object value, stepping into arrays by index
+    // and creating missing objects. Returns [parent, leafKey].
+    function _walkArrayPath(obj, keys) {
+        let cur = obj;
+        for (let i = 0; i < keys.length - 1; ++i) {
+            const k = Array.isArray(cur) ? Number(keys[i]) : keys[i];
+            if (cur[k] === undefined || cur[k] === null || typeof cur[k] !== "object") cur[k] = {};
+            cur = cur[k];
+        }
+        const last = keys[keys.length - 1];
+        return [cur, Array.isArray(cur) ? Number(last) : last];
     }
 
     // Set nested config value by dot-path (e.g., "bar.position").
@@ -64,6 +87,24 @@ Singleton {
             }
         }
 
+        // Paths into a top-level array (bars.0.groups) are copy-on-write: the
+        // whole array is cloned, changed and assigned back, live and in the
+        // delta. Assigning is what notifies bindings (reading a JsonAdapter
+        // array gives a copy, so changing it in place is lost), and storing
+        // the whole array keeps the delta an array, not {"0": …}.
+        const keys = nestedKey.split(".");
+        if (keys.length > 1 && root._isArrayLike(root.options[keys[0]])) {
+            const arr = Array.from(JSON.parse(JSON.stringify(root.options[keys[0]])));
+            const [p, leaf] = root._walkArrayPath(arr, keys.slice(1));
+            if (JSON.stringify(p[leaf]) === JSON.stringify(convertedValue)) return;
+            p[leaf] = convertedValue;
+            root.options[keys[0]] = arr;
+            root._userDelta[keys[0]] = JSON.parse(JSON.stringify(arr));
+            root.liveRevision++;
+            userDeltaWriteTimer.restart();
+            return;
+        }
+
         // 1. Live in-memory mutation — UI sees the change this tick
         const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
         // No-op when nothing changes. Controls echo their initial value
@@ -72,6 +113,7 @@ Singleton {
         // into an untouched config on first start).
         if (JSON.stringify(liveParent[liveLeaf]) === JSON.stringify(convertedValue)) return;
         liveParent[liveLeaf] = convertedValue;
+        root.liveRevision++;
 
         // 2. User delta mutation — persists to disk
         const [deltaParent, deltaLeaf] = root._walkPath(root._userDelta, nestedKey, true);
@@ -193,7 +235,16 @@ Singleton {
             const value = override[key];
             const path = prefix ? `${prefix}.${key}` : key;
             const isPlainObject = value && typeof value === "object" && !Array.isArray(value);
-            if (isPlainObject && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
+            if (isPlainObject && root._isArrayLike(target[key]) && Object.keys(value).every(k => /^\d+$/.test(k))) {
+                // Older deltas saved array edits as {"0": {…}}: merge per index.
+                const arr = JSON.parse(JSON.stringify(target[key]));
+                for (const k in value) {
+                    const i = Number(k);
+                    if (arr[i] && typeof arr[i] === "object" && value[k] && typeof value[k] === "object") root._deepMergeInto(arr[i], value[k], `${path}.${k}`);
+                    else arr[i] = value[k];
+                }
+                target[key] = arr;
+            } else if (isPlainObject && target[key] && typeof target[key] === "object" && !root._isArrayLike(target[key])) {
                 root._deepMergeInto(target[key], value, path);
             } else {
                 try {
