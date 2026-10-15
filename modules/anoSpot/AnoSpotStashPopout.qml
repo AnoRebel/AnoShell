@@ -272,7 +272,7 @@ Scope {
                                 spacing: 6
 
                                 AnoSpotActionButton {
-                                    icon: "send"; label: "LocalSend"
+                                    iconName: "send"; label: "LocalSend"
                                     accent: Appearance?.colors?.colPrimary ?? "#a6e3a1"
                                     onActivated: {
                                         footerLoader.mode = "localsend";
@@ -280,19 +280,19 @@ Scope {
                                     }
                                 }
                                 AnoSpotActionButton {
-                                    icon: "open_in_new"; label: "Open"
+                                    iconName: "open_in_new"; label: "Open"
                                     onActivated: AnoSpotStash.openAll()
                                 }
                                 AnoSpotActionButton {
-                                    icon: "content_copy"; label: "Copy path"
+                                    iconName: "content_copy"; label: "Copy path"
                                     onActivated: AnoSpotStash.copyPaths()
                                 }
                                 AnoSpotActionButton {
-                                    icon: "drive_file_move"; label: "Move to…"
+                                    iconName: "drive_file_move"; label: "Move to…"
                                     onActivated: moveToProc.running = true
                                 }
                                 AnoSpotActionButton {
-                                    icon: "folder_open"; label: "Reveal"
+                                    iconName: "folder_open"; label: "Reveal"
                                     onActivated: AnoSpotStash.revealFirst()
                                 }
                             }
@@ -309,7 +309,7 @@ Scope {
 
                                     AnoSpotActionButton {
                                         required property var modelData
-                                        icon: modelData.icon ?? "play_arrow"
+                                        iconName: modelData.icon ?? "play_arrow"
                                         label: modelData.name ?? "Custom"
                                         onActivated: AnoSpotStash.runCustomRule(modelData)
                                     }
@@ -467,8 +467,14 @@ Scope {
                 onExited: AnoSpotStash.refresh()
             }
 
-            Keys.onPressed: event => {
-                if (event.key === Qt.Key_Escape) GlobalStates.anoSpotStashOpen = false;
+            // Keys can't attach to a window (only to Items): a focused Item that
+            // fills it receives the window's keys.
+            Item {
+                anchors.fill: parent
+                focus: true
+                Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Escape) GlobalStates.anoSpotStashOpen = false;
+                }
             }
         }
     }

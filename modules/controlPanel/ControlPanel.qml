@@ -39,7 +39,8 @@ Scope {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: GlobalStates.controlPanelOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
-        Keys.onPressed: event => { if (event.key === Qt.Key_Escape) GlobalStates.controlPanelOpen = false }
+        // Keys can't attach to a window (only to Items); a Shortcut works there.
+        Shortcut { sequence: "Escape"; onActivated: GlobalStates.controlPanelOpen = false }
 
         Rectangle {
             anchors.fill: parent; color: "#000000"

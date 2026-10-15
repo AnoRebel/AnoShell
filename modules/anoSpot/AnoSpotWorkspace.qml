@@ -43,7 +43,7 @@ RowLayout {
         interval: Config.options?.anoSpot?.workspaceHoverPreview?.openDelayMs ?? 200
         repeat: false
         onTriggered: {
-            if (wsRow.hoverPreviewEnabled && wsHoverArea.containsMouse)
+            if (wsRow.hoverPreviewEnabled && wsHoverArea.hovered)
                 GlobalStates.anoSpotWorkspacePreviewOpen = true
         }
     }
@@ -53,16 +53,17 @@ RowLayout {
     // pending open without closing an already-open popup — the popup's
     // own close-delay timer handles dismissal so the user can travel
     // between widget and popup.
-    MouseArea {
+    // Handlers, not an anchored MouseArea: this is a layout.
+    HoverHandler {
         id: wsHoverArea
-        anchors.fill: parent
-        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton
-        onEntered: {
-            if (wsRow.hoverPreviewEnabled) openDelayTimer.restart()
+        onHoveredChanged: {
+            if (hovered) { if (wsRow.hoverPreviewEnabled) openDelayTimer.restart() }
+            else openDelayTimer.stop()
         }
-        onExited: openDelayTimer.stop()
-        onClicked: Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "anoview", "toggle"])
+    }
+    TapHandler {
+        acceptedButtons: Qt.LeftButton
+        onTapped: GlobalStates.overviewOpen = !GlobalStates.overviewOpen
     }
 }

@@ -49,7 +49,9 @@ Scope {
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
-        Keys.onPressed: event => { if (event.key === Qt.Key_Escape) GlobalStates.clipboardOpen = false }
+        // Keys can't attach to a window (only to Items); a Shortcut works there.
+
+        Shortcut { sequence: "Escape"; onActivated: GlobalStates.clipboardOpen = false }
 
         // Scrim
         Rectangle {

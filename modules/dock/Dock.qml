@@ -62,9 +62,18 @@ Scope {
         if (tl) {
             CompositorService.focusWindow(tl)
         } else {
-            // Not running — launch it
-            Quickshell.execDetached([appId])
+            // Not running: launch through its desktop entry when there is one
+            // (the app id is often not the executable name).
+            const entry = DesktopEntries.heuristicLookup(appId)
+            if (entry) entry.execute()
+            else Quickshell.execDetached([appId])
         }
+    }
+
+    // App ids are often not icon names (zen → zen-browser, brave-browser →
+    // brave-desktop): ask the desktop entry first.
+    function iconFor(appId) {
+        return DesktopEntries.heuristicLookup(appId)?.icon || appId
     }
 
     Variants {
@@ -187,7 +196,7 @@ Scope {
                                         anchors.centerIn: parent
                                         implicitWidth: root.iconSize
                                         implicitHeight: root.iconSize
-                                        source: `image://icon/${modelData.appId}`
+                                        source: `image://icon/${root.iconFor(modelData.appId)}`
                                     }
 
                                     MouseArea {

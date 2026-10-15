@@ -10,7 +10,8 @@ import "."
  */
 RippleButton {
     id: root
-    property string icon: "play_arrow"
+    // Not `icon`: AbstractButton.icon is FINAL in Qt 6 ("Cannot override FINAL").
+    property string iconName: "play_arrow"
     property string label: ""
     property color accent: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     signal activated()
@@ -27,7 +28,7 @@ RippleButton {
         anchors.rightMargin: 9
 
         MaterialSymbol {
-            text: root.icon
+            text: root.iconName
             iconSize: 14
             color: root.accent
         }

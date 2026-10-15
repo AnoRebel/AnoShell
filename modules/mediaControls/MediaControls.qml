@@ -44,11 +44,17 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.mediaControlsOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
-        Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape) GlobalStates.mediaControlsOpen = false
-            else if (event.key === Qt.Key_Space) MprisController.togglePlaying()
-            else if (event.key === Qt.Key_Right) MprisController.next()
-            else if (event.key === Qt.Key_Left) MprisController.previous()
+        // Keys can't attach to a window (only to Items): a focused Item that
+        // fills it receives the window's keys.
+        Item {
+            anchors.fill: parent
+            focus: true
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Escape) GlobalStates.mediaControlsOpen = false
+                else if (event.key === Qt.Key_Space) MprisController.togglePlaying()
+                else if (event.key === Qt.Key_Right) MprisController.next()
+                else if (event.key === Qt.Key_Left) MprisController.previous()
+            }
         }
 
         // Scrim

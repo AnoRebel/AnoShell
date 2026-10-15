@@ -53,19 +53,16 @@ RowLayout {
         Behavior on text { PropertyAnimation { duration: AnimationConfig.scaledDuration(150) } }
     }
 
-    // Wheel-to-volume overlay. Sits above the row so wheel events are intercepted
-    // here rather than falling through to the pill's click MouseArea.
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.NoButton
-        propagateComposedEvents: true
+    // Wheel-to-volume. A handler, not an anchored MouseArea (this is a
+    // layout), and the Audio service directly instead of spawning `qs ipc`.
+    WheelHandler {
         enabled: mprisRow.scrollAction === "audio"
-        onWheel: wheel => {
-            if (wheel.angleDelta.y > 0)
-                Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "audio", "increment"]);
-            else if (wheel.angleDelta.y < 0)
-                Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "audio", "decrement"]);
-            wheel.accepted = true;
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            if (event.angleDelta.y > 0) Audio.incrementVolume()
+            else if (event.angleDelta.y < 0) Audio.decrementVolume()
+            event.accepted = true
         }
+    }
     }
 }

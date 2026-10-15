@@ -48,7 +48,9 @@ Scope {
             WlrLayershell.keyboardFocus: GlobalStates.sessionOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             anchors { top: true; bottom: true; left: true; right: true }
 
-            Keys.onPressed: event => { if (event.key === Qt.Key_Escape) GlobalStates.sessionOpen = false }
+            // Keys can't attach to a window (only to Items); a Shortcut works there.
+
+            Shortcut { sequence: "Escape"; onActivated: GlobalStates.sessionOpen = false }
 
             // Blurred dim backdrop
             Rectangle {

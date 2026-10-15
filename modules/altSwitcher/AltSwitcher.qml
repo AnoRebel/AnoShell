@@ -123,26 +123,32 @@ Scope {
         WlrLayershell.keyboardFocus: root.panelVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
-        Keys.onPressed: event => {
-            if (event.key === Qt.Key_Escape) { root.hide(); event.accepted = true; return }
-            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.activateSelected(); event.accepted = true; return }
-            if (event.key === Qt.Key_Tab) {
-                if (event.modifiers & Qt.ShiftModifier) root.cyclePrev()
-                else root.cycleNext()
-                event.accepted = true; return
-            }
-            if (event.key === Qt.Key_Up) { root.cyclePrev(); event.accepted = true; return }
-            if (event.key === Qt.Key_Down) { root.cycleNext(); event.accepted = true; return }
-            // Type to search
-            if (event.text.length === 1 && event.text.match(/[a-zA-Z0-9 ]/)) {
-                root.searchText += event.text
-                root.selectedIndex = 0
-                event.accepted = true
-            }
-            if (event.key === Qt.Key_Backspace && root.searchText.length > 0) {
-                root.searchText = root.searchText.substring(0, root.searchText.length - 1)
-                root.selectedIndex = 0
-                event.accepted = true
+        // Keys can't attach to a window (only to Items): a focused Item that
+        // fills it receives the window's keys.
+        Item {
+            anchors.fill: parent
+            focus: true
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Escape) { root.hide(); event.accepted = true; return }
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.activateSelected(); event.accepted = true; return }
+                if (event.key === Qt.Key_Tab) {
+                    if (event.modifiers & Qt.ShiftModifier) root.cyclePrev()
+                    else root.cycleNext()
+                    event.accepted = true; return
+                }
+                if (event.key === Qt.Key_Up) { root.cyclePrev(); event.accepted = true; return }
+                if (event.key === Qt.Key_Down) { root.cycleNext(); event.accepted = true; return }
+                // Type to search
+                if (event.text.length === 1 && event.text.match(/[a-zA-Z0-9 ]/)) {
+                    root.searchText += event.text
+                    root.selectedIndex = 0
+                    event.accepted = true
+                }
+                if (event.key === Qt.Key_Backspace && root.searchText.length > 0) {
+                    root.searchText = root.searchText.substring(0, root.searchText.length - 1)
+                    root.selectedIndex = 0
+                    event.accepted = true
+                }
             }
         }
 
@@ -254,7 +260,7 @@ Scope {
                                             anchors.centerIn: parent
                                             implicitWidth: root.itemSize * 0.6
                                             implicitHeight: root.itemSize * 0.6
-                                            source: `image://icon/${modelData.appId}`
+                                            source: `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}`
                                             visible: !modelData.wayland
                                         }
                                     }

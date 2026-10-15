@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs
@@ -92,7 +93,8 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.searchOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true; right: true }
 
-        Keys.onPressed: event => {
+        // Keys can't attach to a window; the focused input forwards here.
+        function handleKey(event) {
             if (event.key === Qt.Key_Escape) { GlobalStates.searchOpen = false; event.accepted = true; return }
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (root.filteredApps.length > 0 && root.selectedIndex < root.filteredApps.length)
@@ -155,6 +157,7 @@ Scope {
                             font.pixelSize: 16
                             focus: GlobalStates.searchOpen
                             onTextChanged: { root.query = text; root.selectedIndex = 0 }
+                            Keys.onPressed: event => searchWindow.handleKey(event)
 
                             StyledText {
                                 anchors.fill: parent; verticalAlignment: Text.AlignVCenter
@@ -301,6 +304,40 @@ Scope {
                     font.pixelSize: 10; opacity: 0.3
                     Layout.alignment: Qt.AlignHCenter
                 }
+            }
+        }
+    }
+
+    // Super tap toggles search (Hyprland: the bundled binds send
+    // searchToggleRelease on Super, and an interrupt on Ctrl/click combos).
+    // 0.56 has no global catchall, so a combo is also recognised by its
+    // effect: a long hold, or a workspace/focus change while Super was down.
+    property bool _superArmed: false
+    property real _superAt: 0
+    property int _superWs: 0
+    property var _superFocus: null
+    Loader {
+        active: CompositorService.compositor === "hyprland"
+        sourceComponent: Item {
+            GlobalShortcut {
+                name: "searchToggleRelease"; description: "Toggle search (tap Super)"
+                onPressed: {
+                    root._superArmed = true
+                    root._superAt = Date.now()
+                    root._superWs = CompositorService.activeWorkspaceIndex
+                    root._superFocus = ToplevelManager.activeToplevel
+                }
+                onReleased: {
+                    const tap = root._superArmed && Date.now() - root._superAt < 500
+                        && CompositorService.activeWorkspaceIndex === root._superWs
+                        && ToplevelManager.activeToplevel === root._superFocus
+                    root._superArmed = false
+                    if (tap) GlobalStates.searchOpen = !GlobalStates.searchOpen
+                }
+            }
+            GlobalShortcut {
+                name: "searchToggleReleaseInterrupt"; description: "Cancel the Super-tap search"
+                onPressed: root._superArmed = false
             }
         }
     }

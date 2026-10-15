@@ -26,12 +26,17 @@ RippleButton {
             text: root.iconName
             iconSize: root.iconSize
             fill: root.iconFill
+            opacity: root.toggled ? 1 : 0.65
             visible: root.iconName.length > 0
             Layout.alignment: Qt.AlignVCenter
         }
         StyledText {
             text: root.label
             visible: root.showLabel && root.label.length > 0
+            // A cue that doesn't depend on the theme: low-contrast palettes
+            // put the toggled background close to the card colour.
+            font.weight: root.toggled ? Font.Bold : Font.Normal
+            opacity: root.toggled ? 1 : 0.65
             Layout.alignment: Qt.AlignVCenter
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 14
         }
