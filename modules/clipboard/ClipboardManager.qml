@@ -166,7 +166,7 @@ Scope {
                             MaterialSymbol {
                                 text: isImage ? "image" : "text_snippet"
                                 iconSize: 18; opacity: 0.4
-                                color: isImage ? "#81C784" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
+                                color: isImage ? Appearance.colors.colSuccess : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
                                 Layout.alignment: Qt.AlignTop
                             }
 

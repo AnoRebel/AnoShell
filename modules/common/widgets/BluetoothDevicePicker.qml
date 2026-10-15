@@ -98,7 +98,7 @@ Rectangle {
                     MaterialSymbol {
                         text: root.deviceIcon(modelData); iconSize: 20
                         fill: modelData.connected ? 1 : 0
-                        color: modelData.connected ? "#B388FF" : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
+                        color: modelData.connected ? Appearance.colors.colTertiary : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
                     }
                     ColumnLayout {
                         spacing: 0
@@ -109,7 +109,7 @@ Rectangle {
                             font.weight: modelData.connected ? Font.DemiBold : Font.Normal
                             elide: Text.ElideRight
                             Layout.fillWidth: true
-                            color: modelData.connected ? "#B388FF" : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
+                            color: modelData.connected ? Appearance.colors.colTertiary : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
                         }
                         StyledText {
                             visible: modelData.connected || modelData.paired
@@ -122,7 +122,7 @@ Rectangle {
                     MaterialSymbol {
                         visible: modelData.connected
                         text: "check"; iconSize: 16
-                        color: "#B388FF"
+                        color: Appearance.colors.colTertiary
                     }
                 }
 

@@ -129,14 +129,14 @@ Scope {
                         SessionButton {
                             iconName: "lock"
                             label: "Lock"
-                            accentColor: "#42A5F5"
+                            accentColor: Appearance.colors.colInfo
                             holdDuration: 500
                             onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["loginctl", "lock-session"]) }
                         }
                         SessionButton {
                             iconName: "logout"
                             label: "Logout"
-                            accentColor: "#FFB74D"
+                            accentColor: Appearance.colors.colWarning
                             holdDuration: 1200
                             requireHold: Config.options?.session?.confirmLogout ?? true
                             onActivated: {
@@ -151,21 +151,21 @@ Scope {
                         SessionButton {
                             iconName: "dark_mode"
                             label: "Sleep"
-                            accentColor: "#AB47BC"
+                            accentColor: Appearance.colors.colTertiary
                             holdDuration: 1000
                             onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["systemctl", "suspend"]) }
                         }
                         SessionButton {
                             iconName: "restart_alt"
                             label: "Reboot"
-                            accentColor: "#66BB6A"
+                            accentColor: Appearance.colors.colSuccess
                             holdDuration: 2000
                             onActivated: { GlobalStates.sessionOpen = false; root.endSession("rebooting", () => Quickshell.execDetached(["systemctl", "reboot"])) }
                         }
                         SessionButton {
                             iconName: "power_settings_new"
                             label: "Shutdown"
-                            accentColor: "#EF5350"
+                            accentColor: Appearance.colors.colError
                             holdDuration: 2500
                             requireHold: Config.options?.session?.confirmShutdown ?? true
                             onActivated: { GlobalStates.sessionOpen = false; root.endSession("shutting_down", () => Quickshell.execDetached(["systemctl", "poweroff"])) }
@@ -189,7 +189,7 @@ Scope {
         id: btn
         property string iconName: ""
         property string label: ""
-        property color accentColor: "#65558F"
+        property color accentColor: Appearance.colors.colPrimary
         property int holdDuration: 1500
         // false = a single click activates (session.confirm* off)
         property bool requireHold: true

@@ -51,7 +51,7 @@ ColumnLayout {
                 MaterialSymbol {
                     text: Ai.currentModelHasApiKey ? "check_circle" : "error"
                     iconSize: 24; fill: 1
-                    color: Ai.currentModelHasApiKey ? "#81C784" : Appearance?.m3colors.m3error ?? "#BA1A1A"
+                    color: Ai.currentModelHasApiKey ? Appearance.colors.colSuccess : Appearance?.m3colors.m3error ?? "#BA1A1A"
                 }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 1
@@ -63,7 +63,7 @@ ColumnLayout {
                     StyledText {
                         text: Ai.currentModelHasApiKey ? "API key configured" : "API key missing — use /key in chat"
                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                        color: Ai.currentModelHasApiKey ? "#81C784" : Appearance?.m3colors.m3error ?? "#BA1A1A"
+                        color: Ai.currentModelHasApiKey ? Appearance.colors.colSuccess : Appearance?.m3colors.m3error ?? "#BA1A1A"
                     }
                 }
                 ColumnLayout {
@@ -141,7 +141,7 @@ ColumnLayout {
                         MaterialSymbol {
                             text: Ai.apiKeys[Ai.models[modelData]?.key_id]?.length > 0 ? "key" : "key_off"
                             iconSize: 16
-                            color: Ai.apiKeys[Ai.models[modelData]?.key_id]?.length > 0 ? "#81C784" : Appearance?.colors.colSubtext ?? "#888"
+                            color: Ai.apiKeys[Ai.models[modelData]?.key_id]?.length > 0 ? Appearance.colors.colSuccess : Appearance?.colors.colSubtext ?? "#888"
                         }
                     }
 

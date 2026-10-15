@@ -134,7 +134,7 @@ Item {
             x: (card.width - width) / 2
             y: card.height - height - (card.height * 0.08)
             radius: 12; color: thumbContainer.hovered ? "#FF000000" : "#CC000000"
-            border.width: 1; border.color: "#ff464646"
+            border.width: 1; border.color: Appearance.colors.colOutlineVariant
             StyledText {
                 id: titleText
                 anchors.centerIn: parent; width: parent.width - 16

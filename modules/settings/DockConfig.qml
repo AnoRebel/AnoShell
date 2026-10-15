@@ -41,7 +41,7 @@ ColumnLayout {
             MaterialSymbol {
                 text: root.dockEnabled ? "check_circle" : "cancel"
                 iconSize: 24; fill: 1
-                color: root.dockEnabled ? "#81C784" : Appearance?.m3colors.m3error ?? "#BA1A1A"
+                color: root.dockEnabled ? Appearance.colors.colSuccess : Appearance?.m3colors.m3error ?? "#BA1A1A"
             }
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 1

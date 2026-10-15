@@ -72,7 +72,7 @@ Item {
                     implicitSize: 56; lineWidth: 4
                     value: Battery.percentage
                     colPrimary: Battery.isLow && !Battery.isCharging ? Appearance?.m3colors.m3error ?? "#BA1A1A"
-                        : Battery.isCharging ? "#81C784" : Appearance?.colors.colPrimary ?? "#65558F"
+                        : Battery.isCharging ? Appearance.colors.colSuccess : Appearance?.colors.colPrimary ?? "#65558F"
                 }
                 ColumnLayout {
                     spacing: 2

@@ -222,7 +222,7 @@ Scope {
                             }
                             color: Qt.rgba(1, 1, 1, 0.1)
                             border.width: passwordInput.activeFocus ? 2 : 1
-                            border.color: lockScope.authError.length > 0 ? "#EF5350" : (passwordInput.activeFocus ? Appearance?.colors.colPrimary ?? "#65558F" : "#33ffffff")
+                            border.color: lockScope.authError.length > 0 ? Appearance.colors.colError : (passwordInput.activeFocus ? Appearance?.colors.colPrimary ?? "#65558F" : "#33ffffff")
 
                             // Error shake animation
                             NumberAnimation {
@@ -273,7 +273,7 @@ Scope {
                         StyledText {
                             text: lockScope.authError
                             visible: lockScope.authError.length > 0
-                            font.pixelSize: 13; color: "#EF5350"
+                            font.pixelSize: 13; color: Appearance.colors.colError
                             Layout.alignment: Qt.AlignHCenter
                         }
 

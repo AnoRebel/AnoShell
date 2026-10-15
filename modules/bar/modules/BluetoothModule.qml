@@ -51,9 +51,9 @@ Item {
                 RowLayout {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
-                    MaterialSymbol { text: "devices"; iconSize: 16; color: "#81C784" }
+                    MaterialSymbol { text: "devices"; iconSize: 16; color: Appearance.colors.colSuccess }
                     StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: 13; Layout.fillWidth: true }
-                    StyledText { text: "Connected"; font.pixelSize: 10; opacity: 0.4; color: "#81C784" }
+                    StyledText { text: "Connected"; font.pixelSize: 10; opacity: 0.4; color: Appearance.colors.colSuccess }
                 }
             }
 

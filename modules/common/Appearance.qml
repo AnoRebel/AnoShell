@@ -203,6 +203,11 @@ Singleton {
         property color colErrorHover: ColorUtils.mix(m3colors.m3error, colLayer1Hover, 0.85)
         property color colErrorActive: ColorUtils.mix(m3colors.m3error, colLayer1Active, 0.7)
         property color colOnError: m3colors.m3onError
+        // Status colours, pulled a quarter of the way toward the primary so they
+        // sit with any wallpaper's palette.
+        property color colSuccess: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#81C784" : "#2E7D32"), m3colors.m3primary, 0.75)
+        property color colWarning: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#FFB74D" : "#B26A00"), m3colors.m3primary, 0.75)
+        property color colInfo: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#64B5F6" : "#1565C0"), m3colors.m3primary, 0.75)
         property color colErrorContainer: m3colors.m3errorContainer
         property color colOnErrorContainer: m3colors.m3onErrorContainer
     }

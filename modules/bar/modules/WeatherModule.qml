@@ -62,10 +62,10 @@ Item {
             RowLayout {
                 Layout.fillWidth: true; spacing: 12
                 RowLayout { spacing: 4
-                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#FFB74D" }
+                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: Appearance.colors.colWarning }
                     StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
                 RowLayout { spacing: 4
-                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: "#AB47BC"; rotation: 180 }
+                    MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: Appearance.colors.colTertiary; rotation: 180 }
                     StyledText { text: Weather.data.sunset || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
             }
 

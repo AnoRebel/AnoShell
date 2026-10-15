@@ -56,7 +56,7 @@ Rectangle {
             label: Network.hotspotBusy ? "..." : (Network.hotspotActive ? "Hotspot" : "Off")
             tooltip: Network.hotspotActive ? "Wi-Fi hotspot on · tap to stop" : "Wi-Fi hotspot off · tap to broadcast"
             active: Network.hotspotActive
-            activeColor: "#FFA726"
+            activeColor: Appearance.colors.colWarning
             onClicked: Network.toggleHotspot()
             Layout.fillWidth: true
         }
@@ -69,7 +69,7 @@ Rectangle {
                 ? `Bluetooth: ${BluetoothStatus.activeDeviceCount} connected · tap to turn off`
                 : (BluetoothStatus.enabled ? "Bluetooth on · tap to turn off" : "Bluetooth off · tap to turn on")
             active: BluetoothStatus.connected || BluetoothStatus.enabled
-            activeColor: "#B388FF"
+            activeColor: Appearance.colors.colTertiary
             visible: BluetoothStatus.available
             onClicked: {
                 const adapter = Bluetooth.defaultAdapter
@@ -87,7 +87,7 @@ Rectangle {
             label: Notifications.silent ? "Silent" : "Alerts"
             tooltip: Notifications.silent ? "Do Not Disturb on · tap to allow alerts" : "Alerts on · tap for Do Not Disturb"
             active: Notifications.silent
-            activeColor: "#FFB74D"
+            activeColor: Appearance.colors.colWarning
             onClicked: Notifications.silent = !Notifications.silent
             Layout.fillWidth: true
         }
@@ -98,7 +98,7 @@ Rectangle {
             label: Idle.inhibit ? "Awake" : "Idle"
             tooltip: Idle.inhibit ? "Keeping screen awake · tap to allow idle" : "Screen may sleep · tap to keep awake"
             active: Idle.inhibit
-            activeColor: "#4DB6AC"
+            activeColor: Appearance.colors.colInfo
             onClicked: Idle.toggleInhibit()
             Layout.fillWidth: true
         }
@@ -110,7 +110,7 @@ Rectangle {
                 ? `${NightLight.nightTemp}K`
                 : "Day"
             active: NightLight.enabled
-            activeColor: "#FFB74D"
+            activeColor: Appearance.colors.colWarning
             tooltip: NightLight.enabled ? `Night light on (${NightLight.nightTemp}K) · tap to turn off, ▾ to adjust` : "Night light off · tap to warm the screen"
             onClicked: NightLight.toggle()
             showChevron: true
@@ -129,7 +129,7 @@ Rectangle {
                 label: `${Math.round(Battery.percentage * 100)}%`
                 tooltip: Battery.isCharging ? `Battery ${Math.round(Battery.percentage * 100)}% · charging` : `Battery ${Math.round(Battery.percentage * 100)}%`
                 active: Battery.isCharging
-                activeColor: "#81C784"
+                activeColor: Appearance.colors.colSuccess
             }
         }
 
@@ -206,7 +206,7 @@ Rectangle {
                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                         font.family: Appearance?.font.family.numbers
                         color: NightLight.enabled
-                            ? "#FFB74D"
+                            ? Appearance.colors.colWarning
                             : (Appearance?.colors.colOnLayer1 ?? "#E6E1E5")
                     }
                     Item { Layout.fillWidth: true }

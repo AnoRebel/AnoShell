@@ -510,22 +510,22 @@ ColumnLayout {
             {
                 id: "ano", name: "Ano (Full)", icon: "terminal",
                 desc: "Everything enabled — bar, dock, sidebars, HUD, AI chat, overview, clipboard, hot corners, all overlays. The complete experience.",
-                color: "#65558F"
+                color: Appearance.colors.colPrimary
             },
             {
                 id: "minimal", name: "Minimal", icon: "remove_circle_outline",
                 desc: "Bar + essential overlays only. No dock, no sidebars, no HUD, no hot corners. Lightweight shell for minimal setups.",
-                color: "#42A5F5"
+                color: Appearance.colors.colInfo
             },
             {
                 id: "hefty", name: "Hefty", icon: "auto_awesome",
                 desc: "Full experience + morphing bar panels. Bars use polygon ShapeCanvas backgrounds that morph into popout detail panels. The hefty-hype-inspired mode.",
-                color: "#FFB74D"
+                color: Appearance.colors.colWarning
             },
             {
                 id: "clean", name: "Clean", icon: "spa",
                 desc: "Bar + sidebars + essentials. No dock, no hot corners. A focused middle ground for distraction-free work.",
-                color: "#81C784"
+                color: Appearance.colors.colSuccess
             }
         ]
 

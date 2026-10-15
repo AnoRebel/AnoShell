@@ -28,8 +28,8 @@ RowLayout {
         text: batteryRow.symbol
         iconSize: 16
         color: {
-            if (Battery.isCritical) return "#f38ba8";
-            if (Battery.isLow) return "#f9e2af";
+            if (Battery.isCritical) return Appearance.colors.colError;
+            if (Battery.isLow) return Appearance.colors.colWarning;
             return Appearance?.colors?.colOnLayer0 ?? "#cdd6f4";
         }
     }

@@ -101,7 +101,7 @@ ColumnLayout {
                 implicitSize: 56; lineWidth: 4
                 value: Battery.percentage
                 colPrimary: Battery.isLow && !Battery.isCharging ? Appearance?.m3colors.m3error ?? "#BA1A1A"
-                    : Battery.isCharging ? "#81C784" : Appearance?.colors.colPrimary ?? "#65558F"
+                    : Battery.isCharging ? Appearance.colors.colSuccess : Appearance?.colors.colPrimary ?? "#65558F"
             }
             ColumnLayout {
                 spacing: 2
@@ -116,7 +116,7 @@ ColumnLayout {
                     MaterialSymbol {
                         text: Battery.isCharging ? "bolt" : ""
                         iconSize: 20; fill: 1; visible: Battery.isCharging
-                        color: "#81C784"
+                        color: Appearance.colors.colSuccess
                     }
                 }
                 StyledText {
@@ -135,7 +135,7 @@ ColumnLayout {
                     font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
                     font.weight: Font.DemiBold
                     font.family: Appearance?.font.family.numbers ?? "monospace"
-                    color: Battery.health > 80 ? "#81C784" : Battery.health > 50 ? "#FFB74D" : Appearance?.m3colors.m3error ?? "#BA1A1A"
+                    color: Battery.health > 80 ? Appearance.colors.colSuccess : Battery.health > 50 ? Appearance.colors.colWarning : Appearance?.m3colors.m3error ?? "#BA1A1A"
                     Layout.alignment: Qt.AlignHCenter
                 }
             }

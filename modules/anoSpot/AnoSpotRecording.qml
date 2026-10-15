@@ -13,7 +13,7 @@ RowLayout {
         width: 8
         height: 8
         radius: 4
-        color: "#f38ba8"
+        color: Appearance.colors.colError
         SequentialAnimation on opacity {
             running: AnoSpotState.recording.active && AnimationConfig.continuous && (QsWindow.window?.visible ?? false)
             loops: Animation.Infinite

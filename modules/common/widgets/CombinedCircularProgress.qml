@@ -21,7 +21,7 @@ Item {
     property real outerValue: 0
     property real innerValue: 0
     property color outerColor: Appearance?.colors.colPrimary ?? "#65558F"
-    property color innerColor: "#42A5F5"
+    property color innerColor: Appearance.colors.colInfo
     property color trackColor: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
     property bool enableAnimation: true
 

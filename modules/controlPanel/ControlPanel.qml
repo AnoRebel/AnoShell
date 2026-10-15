@@ -171,7 +171,7 @@ Scope {
                             active: Battery.available; visible: active
                             sourceComponent: RowLayout {
                                 spacing: 4
-                                CircularProgress { implicitSize: 24; lineWidth: 2; value: Battery.percentage; colPrimary: Battery.isCharging ? "#81C784" : Appearance?.colors.colPrimary ?? "#65558F" }
+                                CircularProgress { implicitSize: 24; lineWidth: 2; value: Battery.percentage; colPrimary: Battery.isCharging ? Appearance.colors.colSuccess : Appearance?.colors.colPrimary ?? "#65558F" }
                                 StyledText { text: `${Math.round(Battery.percentage * 100)}%`; font.pixelSize: 12; font.family: Appearance?.font.family.mono ?? "monospace" }
                             }
                         }

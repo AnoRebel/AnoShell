@@ -12,7 +12,7 @@ Rectangle {
     property string iconName: "info"
     property string level: "info" // "info", "warning", "error"
     property color levelColor: level === "error" ? Appearance?.m3colors.m3error ?? "#BA1A1A"
-        : level === "warning" ? "#E8A800"
+        : level === "warning" ? Appearance.colors.colWarning
         : Appearance?.colors.colPrimary ?? "#65558F"
 
     implicitHeight: layout.implicitHeight + 16

@@ -287,7 +287,7 @@ Scope {
                                     Rectangle {
                                         visible: modelData.activated
                                         width: 8; height: 8; radius: 4
-                                        color: "#81C784"
+                                        color: Appearance.colors.colSuccess
                                         Layout.alignment: Qt.AlignVCenter
                                     }
                                 }

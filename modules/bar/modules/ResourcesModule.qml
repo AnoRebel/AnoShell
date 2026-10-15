@@ -37,7 +37,7 @@ Item {
                 Repeater {
                     model: [
                         { label: "CPU", value: ResourceUsage.cpuUsage, text: `${Math.round(ResourceUsage.cpuUsage * 100)}%`, color: Appearance?.colors.colPrimary ?? "#65558F" },
-                        { label: "RAM", value: ResourceUsage.memoryUsedPercentage, text: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed), color: "#42A5F5" },
+                        { label: "RAM", value: ResourceUsage.memoryUsedPercentage, text: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed), color: Appearance.colors.colInfo },
                     ]
                     ColumnLayout {
                         required property var modelData; Layout.fillWidth: true; spacing: 4
@@ -50,7 +50,7 @@ Item {
                     Layout.fillWidth: true; active: ResourceUsage.swapTotal > 1024; visible: active
                     sourceComponent: ColumnLayout {
                         spacing: 4
-                        CircularProgress { implicitSize: 48; lineWidth: 3; value: ResourceUsage.swapUsedPercentage; colPrimary: "#AB47BC"; Layout.alignment: Qt.AlignHCenter }
+                        CircularProgress { implicitSize: 48; lineWidth: 3; value: ResourceUsage.swapUsedPercentage; colPrimary: Appearance.colors.colTertiary; Layout.alignment: Qt.AlignHCenter }
                         StyledText { text: ResourceUsage.kbToGbString(ResourceUsage.swapUsed); font.pixelSize: 14; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
                         StyledText { text: "Swap"; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     }

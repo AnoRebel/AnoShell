@@ -168,7 +168,7 @@ Scope {
                         // Down
                         RowLayout {
                             spacing: 4
-                            MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: "#81C784" }
+                            MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: Appearance.colors.colSuccess }
                             StyledText {
                                 text: formatSpeed(ResourceUsage.networkDownloadSpeed)
                                 font.pixelSize: 13; font.family: Appearance?.font.family.mono ?? "monospace"
@@ -178,7 +178,7 @@ Scope {
                         // Up
                         RowLayout {
                             spacing: 4
-                            MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: "#E57373" }
+                            MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: Appearance.colors.colError }
                             StyledText {
                                 text: formatSpeed(ResourceUsage.networkUploadSpeed)
                                 font.pixelSize: 13; font.family: Appearance?.font.family.mono ?? "monospace"

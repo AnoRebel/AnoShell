@@ -115,7 +115,7 @@ Scope {
 
                         RowLayout {
                             Layout.fillWidth: true; spacing: 8
-                            MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: "#FFB74D" }
+                            MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: Appearance.colors.colWarning }
                             ColumnLayout {
                                 spacing: 0
                                 StyledText { text: "Sunrise"; font.pixelSize: 11; opacity: 0.4 }
@@ -127,7 +127,7 @@ Scope {
 
                         RowLayout {
                             Layout.fillWidth: true; spacing: 8
-                            MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: "#AB47BC"; rotation: 180 }
+                            MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: Appearance.colors.colTertiary; rotation: 180 }
                             ColumnLayout {
                                 spacing: 0
                                 StyledText { text: "Sunset"; font.pixelSize: 11; opacity: 0.4 }

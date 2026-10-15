@@ -4,7 +4,7 @@ import "shapes/morph.js" as Morph
 
 Canvas {
     id: root
-    property color color: "#685496"
+    property color color: Appearance.colors.colPrimary
     property var roundedPolygon: null
     property bool polygonIsNormalized: true
     // Normalized polygons are scaled UNIFORMLY by min(width, height) so shapes

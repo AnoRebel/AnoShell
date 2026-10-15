@@ -81,7 +81,7 @@ Rectangle {
                     gaugeColor: Battery.isLow && !Battery.isCharging
                         ? Appearance?.m3colors.m3error ?? "#BA1A1A"
                         : Battery.isCharging
-                            ? "#81C784"
+                            ? Appearance.colors.colSuccess
                             : Appearance?.colors.colPrimary ?? "#65558F"
                 }
             }
@@ -91,13 +91,13 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             spacing: 12
-            MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: "#81C784" }
+            MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: Appearance.colors.colSuccess }
             StyledText {
                 text: formatSpeed(ResourceUsage.networkDownloadSpeed)
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                 font.family: Appearance?.font.family.mono ?? "monospace"
             }
-            MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: "#E57373" }
+            MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: Appearance.colors.colError }
             StyledText {
                 text: formatSpeed(ResourceUsage.networkUploadSpeed)
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12

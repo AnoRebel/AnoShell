@@ -74,12 +74,12 @@ Item {
                 Layout.fillWidth: true; spacing: 12
                 RowLayout {
                     spacing: 4
-                    MaterialSymbol { text: "arrow_downward"; iconSize: 14; color: "#81C784" }
+                    MaterialSymbol { text: "arrow_downward"; iconSize: 14; color: Appearance.colors.colSuccess }
                     StyledText { text: formatSpeed(ResourceUsage.networkDownloadSpeed); font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
                 RowLayout {
                     spacing: 4
-                    MaterialSymbol { text: "arrow_upward"; iconSize: 14; color: "#E57373" }
+                    MaterialSymbol { text: "arrow_upward"; iconSize: 14; color: Appearance.colors.colError }
                     StyledText { text: formatSpeed(ResourceUsage.networkUploadSpeed); font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
             }

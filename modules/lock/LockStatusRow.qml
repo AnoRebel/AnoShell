@@ -34,7 +34,7 @@ RowLayout {
                 return "battery_alert"
             }
             iconSize: 16
-            color: Battery.isCritical ? "#f38ba8" : Battery.isLow ? "#f9e2af" : "white"
+            color: Battery.isCritical ? Appearance.colors.colError : Battery.isLow ? Appearance.colors.colWarning : "white"
         }
         StyledText {
             text: `${parent.pct}%`
