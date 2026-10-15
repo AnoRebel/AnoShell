@@ -85,7 +85,11 @@ Scope {
 
     PanelWindow {
         id: searchWindow
-        visible: GlobalStates.searchOpen
+        // One spring drives the open/close; the window stays mapped until the
+        // card has retracted, and reversing mid-flight retargets smoothly.
+        property real shown: GlobalStates.searchOpen ? 1 : 0
+        Behavior on shown { MotionSpring { token: GlobalStates.searchOpen ? "liquid" : "settle" } }
+        visible: GlobalStates.searchOpen || shown > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:search"
@@ -114,8 +118,7 @@ Scope {
         // Scrim
         Rectangle {
             anchors.fill: parent; color: "#000000"
-            opacity: GlobalStates.searchOpen ? 0.5 : 0
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
+            opacity: 0.5 * Math.max(0, Math.min(1, searchWindow.shown))
             MouseArea { anchors.fill: parent; onClicked: GlobalStates.searchOpen = false }
         }
 
@@ -131,10 +134,11 @@ Scope {
             border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
             clip: true
 
-            opacity: GlobalStates.searchOpen ? 1 : 0
-            scale: GlobalStates.searchOpen ? 1 : 0.92
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            // Grows down from its top edge (a drop-in, not a fade): scale from the
+            // top, with the content fading in once the card has some size.
+            transformOrigin: Item.Top
+            scale: 0.9 + 0.1 * searchWindow.shown
+            opacity: Math.max(0, Math.min(1, searchWindow.shown * 1.6 - 0.2))
 
             ColumnLayout {
                 id: searchContent
