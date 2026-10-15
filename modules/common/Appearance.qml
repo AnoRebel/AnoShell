@@ -208,6 +208,10 @@ Singleton {
         property color colSuccess: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#81C784" : "#2E7D32"), m3colors.m3primary, 0.75)
         property color colWarning: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#FFB74D" : "#B26A00"), m3colors.m3primary, 0.75)
         property color colInfo: ColorUtils.mix(Qt.color(m3colors.darkmode ? "#64B5F6" : "#1565C0"), m3colors.m3primary, 0.75)
+        // Signature accent (design D6): violet leads, teal follows. Fixed, not
+        // wallpaper-derived: for brand moments (logo, focus ring, pill glow).
+        property color colAnoAccent: m3colors.darkmode ? "#8B5CF6" : "#6D28D9"
+        property color colAnoAccent2: m3colors.darkmode ? "#2DD4BF" : "#0D9488"
         property color colErrorContainer: m3colors.m3errorContainer
         property color colOnErrorContainer: m3colors.m3onErrorContainer
     }
