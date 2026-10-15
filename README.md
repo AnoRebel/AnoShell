@@ -3,6 +3,8 @@
 A comprehensive QuickShell (v0.2.1+) desktop shell for Wayland compositors.
 Supports **Hyprland** and **Niri** with runtime auto-detection.
 
+**Documentation:** [anoshell.anorebel.net](https://anoshell.anorebel.net) (stable) · [dev.anoshell.anorebel.net](https://dev.anoshell.anorebel.net) (development) · source in [`docs/`](docs/overview.md)
+
 Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config + themes + lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
 
 ## Quick Start
