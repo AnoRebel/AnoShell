@@ -43,23 +43,27 @@ Scope {
             implicitWidth: Math.min(modelData.width - 32, contentRow.implicitWidth + 16)
             implicitHeight: contentRow.implicitHeight + 16
 
-            exclusionMode: ExclusionMode.Ignore
+            // Normal, like the pill: pushed past a bar on the same edge, so the
+            // offset below only has to clear the pill itself.
+            exclusionMode: ExclusionMode.Normal
+            exclusiveZone: 0
             WlrLayershell.namespace: "quickshell:anospot:wspreview"
             WlrLayershell.layer: WlrLayer.Overlay
 
-            // Anchor to the same edge as AnoSpot, offset further into the
-            // screen so it doesn't overlap the pill.
+            // Anchor to the same edge as AnoSpot, offset by the pill's size so
+            // it opens just past the pill.
             anchors {
                 top: root.spotPosition === "top" || root.spotIsVertical
                 bottom: root.spotPosition === "bottom" || root.spotIsVertical
                 left: root.spotPosition === "left"
                 right: root.spotPosition === "right"
             }
+            readonly property real _clear: (Config.options?.anoSpot?.heightPx ?? 36) + 10
             margins {
-                top: root.spotPosition === "top" ? 56 : 0
-                bottom: root.spotPosition === "bottom" ? 56 : 0
-                left: root.spotPosition === "left" ? 56 : 0
-                right: root.spotPosition === "right" ? 56 : 0
+                top: root.spotPosition === "top" ? _clear : 0
+                bottom: root.spotPosition === "bottom" ? _clear : 0
+                left: root.spotPosition === "left" ? _clear : 0
+                right: root.spotPosition === "right" ? _clear : 0
             }
 
             // Windows on this screen's visible workspace, from the compositor
