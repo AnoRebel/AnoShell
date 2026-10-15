@@ -40,12 +40,14 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.controlPanelOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: cpCard }
+        mask: Region { x: cpCard.x; y: cpCard.y; width: cpCard.width; height: cpCard.height }  // geometry: an item region keeps the scale-in size
         anchors { top: true; bottom: true; left: true; right: true }
         // Keys can't attach to a window (only to Items); a Shortcut works there.
         Shortcut { sequence: "Escape"; onActivated: GlobalStates.controlPanelOpen = false }
 
         // Panel card — positioned at top-right like a notification shade
+        PanelDragHandle { panelCard: cpCard; key: "controlPanel" }
+
         Rectangle {
             id: cpCard
             anchors { top: parent.top; right: parent.right; margins: (Config.options?.appearance?.bezel ?? 0) + 8 }

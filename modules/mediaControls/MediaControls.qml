@@ -44,7 +44,7 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.mediaControlsOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: mediaCard }
+        mask: Region { x: mediaCard.x; y: mediaCard.y; width: mediaCard.width; height: mediaCard.height }  // geometry: an item region keeps the scale-in size
         anchors { top: true; bottom: true; left: true; right: true }
 
         // Keys can't attach to a window (only to Items): a focused Item that
@@ -61,6 +61,8 @@ Scope {
         }
 
         // Media card
+        PanelDragHandle { panelCard: mediaCard; key: "media" }
+
         Rectangle {
             id: mediaCard
             anchors.centerIn: parent

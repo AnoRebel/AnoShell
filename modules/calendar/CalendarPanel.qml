@@ -50,9 +50,11 @@ Scope {
             WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             // Non-modal: input only on the card; clicks elsewhere reach your windows.
-            mask: Region { item: card }
+            mask: Region { x: card.x; y: card.y; width: card.width; height: card.height }  // geometry: an item region keeps the scale-in size
 
             // Card
+            PanelDragHandle { panelCard: card; key: "calendar" }
+
             Rectangle {
                 id: card
                 anchors.centerIn: parent

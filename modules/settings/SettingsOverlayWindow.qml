@@ -24,11 +24,13 @@ PanelWindow {
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     // Non-modal: no scrim, input only on the card (clicks elsewhere reach
     // your windows), keyboard focus when you interact with it.
-    mask: Region { item: settingsCard }
+    mask: Region { x: settingsCard.x; y: settingsCard.y; width: settingsCard.width; height: settingsCard.height }  // geometry: an item region keeps the scale-in size
     color: "transparent"
     anchors { top: true; bottom: true; left: true; right: true }
 
     // Settings card
+    PanelDragHandle { panelCard: settingsCard; key: "settings" }
+
     Rectangle {
         id: settingsCard
         anchors.centerIn: parent

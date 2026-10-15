@@ -16,6 +16,8 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Panel & Overlay States
     // ═══════════════════════════════════════════════════════════════════════
+    // Where each standalone panel was dragged to this session (PanelDragHandle).
+    property var panelPositions: ({})
     property bool barOpen: true
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false

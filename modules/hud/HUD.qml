@@ -36,7 +36,7 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.hudVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: hudCard }
+        mask: Region { x: hudCard.x; y: hudCard.y; width: hudCard.width; height: hudCard.height }  // geometry: an item region keeps the scale-in size
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
@@ -54,6 +54,8 @@ Scope {
         }
 
         // HUD card
+        PanelDragHandle { panelCard: hudCard; key: "hud" }
+
         Rectangle {
             id: hudCard
             anchors.centerIn: parent

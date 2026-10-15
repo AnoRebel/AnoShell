@@ -34,10 +34,12 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.weatherPanelOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: weatherCard }
+        mask: Region { x: weatherCard.x; y: weatherCard.y; width: weatherCard.width; height: weatherCard.height }  // geometry: an item region keeps the scale-in size
         anchors { top: true; bottom: true; left: true; right: true }
         // Keys can't attach to a window (only to Items); a Shortcut works there.
         Shortcut { sequence: "Escape"; onActivated: GlobalStates.weatherPanelOpen = false }
+
+        PanelDragHandle { panelCard: weatherCard; key: "weather" }
 
         Rectangle {
             id: weatherCard

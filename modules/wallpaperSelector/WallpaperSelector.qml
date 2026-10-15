@@ -29,7 +29,7 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.wallpaperSelectorOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: wpCard }
+        mask: Region { x: wpCard.x; y: wpCard.y; width: wpCard.width; height: wpCard.height }  // geometry: an item region keeps the scale-in size
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
@@ -38,6 +38,8 @@ Scope {
         Shortcut { sequence: "Escape"; onActivated: GlobalStates.wallpaperSelectorOpen = false }
 
         // Card
+        PanelDragHandle { panelCard: wpCard; key: "wallpaper" }
+
         Rectangle {
             id: wpCard
             anchors.centerIn: parent

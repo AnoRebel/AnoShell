@@ -45,7 +45,7 @@ Scope {
         WlrLayershell.keyboardFocus: root.cheatsheetOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         // Non-modal: no scrim, input only on the card (clicks elsewhere reach
         // your windows), keyboard focus when you interact with it.
-        mask: Region { item: csCard }
+        mask: Region { x: csCard.x; y: csCard.y; width: csCard.width; height: csCard.height }  // geometry: an item region keeps the scale-in size
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
 
@@ -54,6 +54,8 @@ Scope {
         Shortcut { sequence: "Escape"; onActivated: root.close() }
 
         // Card
+        PanelDragHandle { panelCard: csCard; key: "cheatsheet" }
+
         Rectangle {
             id: csCard
             anchors.centerIn: parent
