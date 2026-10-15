@@ -113,7 +113,7 @@ Scope {
                             valueText: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
                             subText: ResourceUsage.maxAvailableCpuString
                             gaugeColor: Appearance?.colors.colPrimary ?? "#65558F"
-                            Layout.fillWidth: true
+                            Layout.fillWidth: true; Layout.preferredWidth: 1; Layout.alignment: Qt.AlignTop
                         }
 
                         // Separator
@@ -125,8 +125,8 @@ Scope {
                             value: ResourceUsage.memoryUsedPercentage
                             valueText: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
                             subText: `/ ${ResourceUsage.maxAvailableMemoryString}`
-                            gaugeColor: "#42A5F5"
-                            Layout.fillWidth: true
+                            gaugeColor: Appearance?.colors.colSecondary ?? "#625B71"
+                            Layout.fillWidth: true; Layout.preferredWidth: 1; Layout.alignment: Qt.AlignTop
                         }
 
                         // Separator
@@ -134,7 +134,7 @@ Scope {
 
                         // Battery or Swap
                         Loader {
-                            Layout.fillWidth: true
+                            Layout.fillWidth: true; Layout.preferredWidth: 1; Layout.alignment: Qt.AlignTop
                             sourceComponent: Battery.available ? batteryGauge : swapGauge
                         }
                     }
@@ -276,20 +276,23 @@ Scope {
             colPrimary: gaugeColor
         }
         StyledText {
-            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
             text: valueText
             font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
             font.weight: Font.Bold
             font.family: Appearance?.font.family.numbers ?? "monospace"
         }
         StyledText {
-            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
             text: label
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
             font.weight: Font.DemiBold
         }
         StyledText {
-            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
             text: subText; visible: subText.length > 0
             font.pixelSize: 10; opacity: 0.4
         }
@@ -302,7 +305,7 @@ Scope {
             value: Battery.percentage
             valueText: `${Math.round(Battery.percentage * 100)}%`
             subText: Battery.isCharging && Battery.timeToFull > 0 ? `${Math.round(Battery.timeToFull / 60)}min` : ""
-            gaugeColor: Battery.isLow && !Battery.isCharging ? "#EF5350" : Battery.isCharging ? "#81C784" : "#FFB74D"
+            gaugeColor: Battery.isLow && !Battery.isCharging ? (Appearance?.colors.colError ?? "#B3261E") : (Appearance?.colors.colTertiary ?? "#7D5260")
         }
     }
 
@@ -313,7 +316,7 @@ Scope {
             value: ResourceUsage.swapUsedPercentage
             valueText: ResourceUsage.kbToGbString(ResourceUsage.swapUsed)
             subText: `/ ${ResourceUsage.maxAvailableSwapString}`
-            gaugeColor: "#AB47BC"
+            gaugeColor: Appearance?.colors.colTertiary ?? "#7D5260"
         }
     }
 
