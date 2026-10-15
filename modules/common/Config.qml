@@ -602,6 +602,9 @@ Singleton {
                     // moments | dynamic: wallpaper palette everywhere | fixed: the AnoShell
                     // palette (ano-dark/light); wallpaper changes leave colours alone.
                     property string colorMode: "dynamicAccent"
+                    // Light/dark for your apps (GTK color-scheme, portal-aware Qt apps):
+                    // "follow" the shell, or always "light" / "dark".
+                    property string appColorScheme: "follow"
                 }
             }
 

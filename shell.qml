@@ -43,6 +43,7 @@ ShellRoot {
         void MinimizedWindows;
         void DefaultApps;
         void Anod;
+        void AppColorScheme;
         void StaticThemeLoader; // singletons only exist once referenced; static/fixed themes need it
     }
 

@@ -257,14 +257,14 @@ update_config
 # ── Step 7: Set GNOME dark/light mode ────────────────────────────────────
 set_gtk_mode() {
     if ! command -v gsettings &>/dev/null; then return; fi
-
-    if [[ "$MODE" == "dark" ]]; then
-        gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' 2>/dev/null || true
-    else
-        gsettings set org.gnome.desktop.interface color-scheme 'prefer-light' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3' 2>/dev/null || true
-    fi
+    local scheme; scheme="$(cfg '.appearance.theme.appColorScheme // "follow"' follow)"
+    [[ "$scheme" == follow ]] && scheme="$MODE"
+    local dark=false; [[ "$scheme" == dark ]] && dark=true
+    gsettings set org.gnome.desktop.interface color-scheme "$($dark && echo prefer-dark || echo prefer-light)" 2>/dev/null || true
+    # Only flip adw-gtk3 <-> adw-gtk3-dark; a GTK theme you chose is left alone.
+    case "$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null)" in
+        "'adw-gtk3"*) gsettings set org.gnome.desktop.interface gtk-theme "$($dark && echo adw-gtk3-dark || echo adw-gtk3)" 2>/dev/null || true ;;
+    esac
 }
 
 set_gtk_mode
