@@ -59,7 +59,10 @@ QtObject {
         if (root._owner) PanelRegistry.release(root._ownedKey, root._owner)
         root._owner = ""
     }
-    function _schedule() { Qt.callLater(root._publish) }
+    // Coalesce writes to one per event-loop turn. A Timer owned by the lease
+    // (not Qt.callLater) so a pending write dies with a destroyed lease.
+    readonly property Timer _pending: Timer { interval: 0; onTriggered: root._publish() }
+    function _schedule() { root._pending.restart() }
 
     onActiveChanged: _schedule()
     onXChanged: _schedule()

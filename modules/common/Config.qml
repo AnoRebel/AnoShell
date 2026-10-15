@@ -588,7 +588,15 @@ Singleton {
                     property int centerGroupRadius: 8
                     property bool showCenterBackground: true
                     property bool showSeparators: false
+                    // Gap a detached group opens on each side, and the inset of
+                    // the floating forms (fit, islands) from the screen edge.
+                    property int groupGap: 10
+                    property int formMargin: 6
                 }
+                // Bar form: full (edge to edge) | fit (inset, floating) |
+                // islands (every group its own pill) | notch (hugs its content).
+                // Per bar: bars[].form; groups and attach state: bars[].groups.
+                property string form: "full"
 
                 // Default click/scroll actions per section.
                 property JsonObject actions: JsonObject {

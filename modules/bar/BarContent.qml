@@ -8,12 +8,21 @@ import qs.modules.common.functions
 import qs.services
 import qs.modules.bar.modules
 import "."
+import "BarLayout.js" as BarLayout
 
 /**
  * BarContent — Fully configurable bar content renderer.
  *
+ * Content is a list of groups (bars[].groups, or the legacy
+ * modules.{left,center,right} migrated into start/center/end groups). Each
+ * group is attached to the bar body or detached into its own island, and the
+ * bar's form (full | fit | islands | notch) decides where groups sit and what
+ * the body is (BarLayout.js). Positions and separation spring-animate, and
+ * `bodyRects` (the body segments plus islands, in this item's coordinates)
+ * drives the window's painting, input mask and connected-frame slots.
+ *
  * Every aspect is driven by config:
- *   - Which modules appear in left/center/right sections
+ *   - Which modules appear in each group
  *   - Spacing between modules (per-section overridable)
  *   - Edge padding (distance from bar edges to first/last module)
  *   - Center group padding and corner radius
@@ -108,207 +117,131 @@ Item {
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // Separator component
+    // Forms and groups
     // ═══════════════════════════════════════════════════════════════════
-    // Anchor-positioned (never a Layout child) — Layout.* attached props here
-    // crash Quickshell 0.3.0 via recursive refWindow() during window attach.
-    component BarSeparator: Rectangle {
-        visible: root.showSeparators
-        width: 1
-        height: 1
-        color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
-        opacity: 0.3
-        anchors.topMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
-        anchors.bottomMargin: isVertical ? 0 : Appearance.sizes.baseBarHeight / 3
-        anchors.leftMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
-        anchors.rightMargin: isVertical ? Appearance.sizes.baseBarHeight / 3 : 0
+    readonly property string form: BarLayout.formOf(barConfig?.form ?? Config.options?.bar?.form ?? "full")
+    readonly property var groups: (barConfig?.groups?.length ?? 0) > 0 ? barConfig.groups : BarLayout.groupsFromModules(moduleConfig)
+    // Gap a detached group opens on each side; inset of floating forms.
+    readonly property real groupGap: barConfig?.groupGap ?? Config.options?.bar?.layout?.groupGap ?? 10
+    readonly property real edgeMargin: (form === "fit" || form === "islands") ? (barConfig?.formMargin ?? Config.options?.bar?.layout?.formMargin ?? 6) : 0
+    readonly property real islandPad: 6
+    readonly property real along: isVertical ? height : width
+    readonly property real thickness: isVertical ? width : height
+
+    // Body segments + islands in this item's coordinates: [{x, y, w, h, island, id}]
+    property var bodyRects: []
+    property var _targets: ({})
+    // No springs until the layout has settled (modules load asynchronously and
+    // change length for a few turns), so groups appear in place instead of
+    // flying in from 0.
+    property bool _ready: false
+    Timer { id: settle; interval: 250; onTriggered: root._ready = true }
+
+    function _zoneSpacing(zone) { return zone === "start" ? root.leftSpacing : zone === "end" ? root.rightSpacing : root.centerSpacing }
+
+    // Coalesced: lengths → target positions; live positions/separation → bodies.
+    function _relayout() { Qt.callLater(root._doRelayout) }
+    function _doRelayout() {
+        const items = []
+        for (let i = 0; i < groupRep.count; i++) {
+            const it = groupRep.itemAt(i)
+            if (it) items.push(it)
+        }
+        root._targets = BarLayout.place({ length: root.along, padding: root.edgePadding, spacing: 8,
+            form: root.form, margin: root.edgeMargin }, items.map(it => ({ id: it.gid, zone: it.zone, len: it.len })))
+        const bodies = BarLayout.bodies({ length: root.along, padding: root.edgePadding, form: root.form,
+            gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin },
+            items.map(it => ({ id: it.gid, pos: it.pos, len: it.len, sep: Math.max(0, Math.min(1, it.sep)) })))
+        root.bodyRects = bodies.map(b => root.isVertical
+            ? { x: 0, y: b.pos, w: root.thickness, h: b.len, island: b.island, id: b.id ?? "", sep: b.sep ?? 0 }
+            : { x: b.pos, y: 0, w: b.len, h: root.thickness, island: b.island, id: b.id ?? "", sep: b.sep ?? 0 })
+        if (!root._ready) settle.restart()
     }
+    onAlongChanged: _relayout()
+    onFormChanged: _relayout()
+    onGroupsChanged: _relayout()
+    onEdgeMarginChanged: _relayout()
 
-    // ═══════════════════════════════════════════════════════════════════
-    // LEFT SECTION
-    // ═══════════════════════════════════════════════════════════════════
-    Item {
-        id: leftSection
-        anchors {
-            top: parent.top
-            left: parent.left
-            bottom: isVertical ? undefined : parent.bottom
-            right: isVertical ? parent.right : middleSection.left
-        }
-        height: isVertical ? leftGrid.implicitHeight + root.edgePadding : undefined
+    Repeater {
+        id: groupRep
+        model: root.groups
 
-        // Section click/scroll catcher — sits BEHIND the modules (declared
-        // first → lowest in stacking). Module-level MouseAreas (tray icons,
-        // sidebar buttons, etc.) are later siblings and grab their own clicks;
-        // only clicks on empty section space fall through to this.
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onWheel: event => {
-                const delta = event.angleDelta.y
-                if (delta !== 0) performScrollAction(scrollLeftAction, delta > 0)
-            }
-            onClicked: event => {
-                if (event.button === Qt.LeftButton) performClickAction(leftClickAction)
-            }
-        }
+        delegate: Item {
+            id: grp
+            required property var modelData
+            required property int index
+            readonly property string gid: modelData.id ?? `group${index}`
+            readonly property string zone: ["start", "center", "end"].includes(modelData.zone) ? modelData.zone : "start"
+            readonly property var mods: modelData.modules ?? []
+            readonly property real len: mods.length === 0 ? 0 : (root.isVertical ? content.implicitHeight : content.implicitWidth)
 
-        GridLayout {
-            id: leftGrid
-            anchors.fill: parent
-            anchors.leftMargin: isVertical ? 0 : root.edgePadding
-            anchors.rightMargin: isVertical ? 0 : 4
-            anchors.topMargin: isVertical ? root.edgePadding : 0
-            flow: isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-            rowSpacing: root.leftSpacing; columnSpacing: root.leftSpacing
+            // Along-axis position and separation (0 attached … 1 island).
+            property real pos: root._targets[gid] ?? 0
+            Behavior on pos { enabled: root._ready; MotionSpring { token: "snappy" } }
+            property real sep: BarLayout.sepTarget(root.form, modelData)
+            Behavior on sep { enabled: root._ready; MotionSpring { token: grp.sep < 0.5 ? "liquid" : "settle" } }
+            onPosChanged: root._relayout()
+            onSepChanged: root._relayout()
+            onLenChanged: root._relayout()
+            Component.onCompleted: root._relayout()
 
-            Repeater {
-                model: root.leftModules
-                Loader {
-                    required property string modelData
-                    Layout.fillHeight: !isVertical
-                    Layout.fillWidth: isVertical
-                    Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
-                    sourceComponent: BarModuleLoader.getModule(modelData)
-                    // Tell position-aware modules (sidebarButton) which section
-                    // they live in — reliable, unlike guessing from pixel X.
-                    onLoaded: root._place(item, "left")
+            visible: len > 0
+            x: root.isVertical ? 0 : pos
+            y: root.isVertical ? pos : 0
+            width: root.isVertical ? root.thickness : len
+            height: root.isVertical ? len : root.thickness
+
+            // Zone click/scroll catcher behind the modules. The centre takes
+            // only the right button, so workspace buttons keep left clicks.
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: grp.zone === "center" ? Qt.RightButton : (Qt.LeftButton | Qt.RightButton)
+                onWheel: event => {
+                    const d = event.angleDelta.y
+                    if (d !== 0) root.performScrollAction(grp.zone === "start" ? root.scrollLeftAction
+                        : grp.zone === "end" ? root.scrollRightAction : root.scrollCenterAction, d > 0)
+                }
+                onClicked: event => {
+                    if (grp.zone === "center") { if (event.button === Qt.RightButton) root.performClickAction(root.centerClickAction) }
+                    else if (event.button === Qt.LeftButton) root.performClickAction(grp.zone === "start" ? root.leftClickAction : root.rightClickAction)
                 }
             }
-            Item { Layout.fillWidth: !isVertical; Layout.fillHeight: isVertical }
-        }
-    }
 
-    // Optional separator
-    BarSeparator {
-        anchors {
-            right: middleSection.left; rightMargin: 4
-            top: parent.top; bottom: parent.bottom
-        }
-        visible: root.showSeparators && !isVertical && leftModules.length > 0 && centerModules.length > 0
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // CENTER SECTION
-    // ═══════════════════════════════════════════════════════════════════
-    Item {
-        id: middleSection
-        // top+bottom already pin the vertical extent; adding verticalCenter
-        // on top of them is an over-specified anchor conflict.
-        anchors {
-            top: isVertical ? leftSection.bottom : parent.top
-            bottom: isVertical ? rightSection.top : parent.bottom
-            horizontalCenter: parent.horizontalCenter
-        }
-        implicitWidth: isVertical ? parent.width : centerRow.implicitWidth
-        implicitHeight: isVertical ? centerRow.implicitHeight : parent.height
-
-        MouseArea {
-            anchors.fill: parent
-            // Only the right button is handled here (centerClickAction). Accepting
-            // the left button too would swallow it before the workspace buttons
-            // layered above could receive the click, making them non-clickable.
-            acceptedButtons: Qt.RightButton
-            onWheel: event => {
-                const delta = event.angleDelta.y
-                if (delta !== 0) performScrollAction(scrollCenterAction, delta > 0)
-            }
-            onClicked: event => {
-                if (event.button === Qt.RightButton) performClickAction(centerClickAction)
-            }
-        }
-
-        RowLayout {
-            id: centerRow
-            anchors.centerIn: parent
-            spacing: root.centerSpacing
-
-            // Center group container
             BarGroup {
-                id: centerGroup
-                padding: root.centerGroupPadding
-                visible: centerModules.length > 0
+                id: content
+                anchors.centerIn: parent
                 vertical: root.isVertical
-
-                showBackground: root.showCenterBackground
+                padding: grp.zone === "center" ? root.centerGroupPadding : 0
+                spacing: root._zoneSpacing(grp.zone)
+                showBackground: grp.zone === "center" && root.showCenterBackground
                 backgroundColor: Appearance?.colors.colLayer1 ?? "#E5E1EC"
                 backgroundRadius: root.centerGroupRadius
 
                 Repeater {
-                    model: root.centerModules
+                    // End zones read from the bar's edge inwards, as before.
+                    model: grp.zone === "end" ? grp.mods.slice().reverse() : grp.mods
                     Loader {
                         required property string modelData
-                        Layout.fillHeight: !isVertical
-                        Layout.fillWidth: isVertical
-                        Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
+                        Layout.fillHeight: !root.isVertical
+                        Layout.fillWidth: root.isVertical
+                        Layout.alignment: root.isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
                         sourceComponent: BarModuleLoader.getModule(modelData)
-                        onLoaded: root._place(item, "center")
+                        onLoaded: root._place(item, grp.zone === "start" ? "left" : grp.zone === "end" ? "right" : "center")
                     }
                 }
             }
-        }
-    }
 
-    // Optional separator
-    BarSeparator {
-        anchors {
-            left: middleSection.right; leftMargin: 4
-            top: parent.top; bottom: parent.bottom
-        }
-        visible: root.showSeparators && !isVertical && centerModules.length > 0 && rightModules.length > 0
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // RIGHT SECTION
-    // ═══════════════════════════════════════════════════════════════════
-    Item {
-        id: rightSection
-        anchors {
-            top: isVertical ? undefined : parent.top
-            bottom: parent.bottom
-            left: isVertical ? parent.left : middleSection.right
-            right: parent.right
-        }
-        height: isVertical ? rightGrid.implicitHeight + root.edgePadding : undefined
-
-        // Section click/scroll catcher behind the modules (see leftSection).
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onWheel: event => {
-                const delta = event.angleDelta.y
-                if (delta !== 0) performScrollAction(scrollRightAction, delta > 0)
+            // Optional hairline between this group and the next one.
+            Rectangle {
+                visible: root.showSeparators && grp.zone !== "end" && grp.sep < 0.02
+                color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
+                opacity: 0.3
+                width: root.isVertical ? parent.width * 0.4 : 1
+                height: root.isVertical ? 1 : parent.height * 0.4
+                x: root.isVertical ? (parent.width - width) / 2 : parent.width + 4
+                y: root.isVertical ? parent.height + 4 : (parent.height - height) / 2
             }
-            onClicked: event => {
-                if (event.button === Qt.LeftButton) performClickAction(rightClickAction)
-            }
-        }
-
-        // Laid out from the far end: right to left, or bottom up when vertical.
-        GridLayout {
-            id: rightGrid
-            anchors.fill: parent
-            anchors.leftMargin: isVertical ? 0 : 4
-            anchors.rightMargin: isVertical ? 0 : root.edgePadding
-            anchors.bottomMargin: isVertical ? root.edgePadding : 0
-            flow: isVertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-            layoutDirection: isVertical ? Qt.LeftToRight : Qt.RightToLeft
-            rowSpacing: root.rightSpacing; columnSpacing: root.rightSpacing
-
-            Repeater {
-                model: isVertical ? root.rightModules.slice().reverse() : root.rightModules
-                Loader {
-                    required property string modelData
-                    Layout.fillHeight: !isVertical
-                    Layout.fillWidth: isVertical
-                    Layout.alignment: isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
-                    sourceComponent: BarModuleLoader.getModule(modelData)
-                    onLoaded: root._place(item, "right")
-                }
-            }
-            Item { Layout.fillWidth: !isVertical }
         }
     }
 }

@@ -5,7 +5,9 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import qs.modules.anoScreen
 import "."
+import "BarLayout.js" as BarLayout
 
 /**
  * BarWindow — A single bar instance on a given screen edge.
@@ -28,7 +30,22 @@ PanelWindow {
     // Sizing (configurable per-bar → global fallback → Appearance default)
     readonly property real barThickness: barConfig?.height ?? Config.options?.bar?.layout?.height ?? (isVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight)
     readonly property real barRadius: barConfig?.radius ?? Config.options?.bar?.layout?.radius ?? Appearance?.rounding.normal ?? 12
-    readonly property real effectiveThickness: barThickness + (showBackground ? globalMargin * 2 : 0)
+    readonly property real effectiveThickness: barThickness + (showBackground ? globalMargin * 2 : 0) + formMargin
+
+    // Bar form (BarContent/BarLayout): floating forms (fit, islands) sit off
+    // the edge by formMargin, which springs so switching forms is continuous.
+    readonly property real _formMarginTarget: barContentLoader.item?.edgeMargin ?? 0
+    property real formMargin: _formMarginTarget
+    Behavior on formMargin { MotionSpring { token: "liquid" } }
+    readonly property string form: barContentLoader.item?.form ?? "full"
+
+    // The bar's bodies (attached segments + islands) in window coordinates.
+    readonly property var bodies: (barContentLoader.item?.bodyRects ?? []).map(r => ({
+        x: r.x + barContentLoader.x, y: r.y + barContentLoader.y, w: r.w, h: r.h,
+        island: r.island, id: r.id, sep: r.sep }))
+    // One edge-to-edge body: the classic bar, drawn by the plain Rectangle path.
+    readonly property bool plainBody: bodies.length <= 1 && !(bodies[0]?.island ?? false)
+        && form === "full" && formMargin < 0.5
 
     // Auto-hide hover tracking: stays shown for bar.autoHide.delay after the
     // pointer leaves, so brushing past the edge doesn't flicker it away.
@@ -78,7 +95,7 @@ PanelWindow {
     // blank (the "top space removed, then bar appears" flicker). Gating on
     // contentLoaded makes the reserved space and the bar appear together.
     readonly property bool contentLoaded: barContentLoader.status === Loader.Ready
-    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin
+    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin + formMargin
 
     // Anchoring based on edge
     anchors {
@@ -101,25 +118,56 @@ PanelWindow {
         right: (edge !== "right" && isVertical) ? 0 : globalMargin
     }
 
-    mask: Region { item: hoverMask }
+    // Input only where the bar is drawn: gaps between islands click through.
+    // While hidden, the slid-out content keeps the old hover strip behaviour.
+    mask: barRoot.effectiveHidden || barRoot.plainBody ? hoverRegion : bodyRegion
+    Region { id: hoverRegion; item: hoverMask }
+    Region {
+        id: bodyRegion
+        BodyRegion { b: barRoot.bodies[0] }
+        BodyRegion { b: barRoot.bodies[1] }
+        BodyRegion { b: barRoot.bodies[2] }
+        BodyRegion { b: barRoot.bodies[3] }
+        BodyRegion { b: barRoot.bodies[4] }
+        BodyRegion { b: barRoot.bodies[5] }
+        BodyRegion { b: barRoot.bodies[6] }
+        BodyRegion { b: barRoot.bodies[7] }
+    }
+    component BodyRegion: Region {
+        property var b
+        intersection: Intersection.Combine
+        x: b ? b.x : 0; y: b ? b.y : 0
+        width: b ? b.w : 0; height: b ? b.h : 0
+    }
 
-    // Connected mode: the frame paints this bar, flush to its edge and full
-    // length, following the auto-hide slide (hideOffset ≤ 0 pushes it out).
-    ConnectedSurfaceLease {
-        key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}`
-        kind: "bar"; edge: barRoot.edge; priority: 20
-        screenName: barRoot._screenName
-        active: barRoot.visible
-        readonly property real _off: barContentLoader.hideOffset
-        readonly property real _sw: barRoot.screen?.width ?? 0
-        readonly property real _sh: barRoot.screen?.height ?? 0
-        readonly property real _th: barRoot.barThickness
-        x: barRoot.edge === "left" ? _off : barRoot.edge === "right" ? _sw - _th - _off : 0
-        y: barRoot.edge === "top" ? _off : barRoot.edge === "bottom" ? _sh - _th - _off : 0
-        w: barRoot.isVertical ? _th : _sw
-        h: barRoot.isVertical ? _sh : _th
-        progress: 1 + _off / Math.max(1, _th)
-        reserve: barRoot.exclusiveZone
+    // How a body joins the frame: islands and floating forms keep their own
+    // rect and meet the edge through a liquid neck instead of being clamped.
+    function _detached(b) { return b.island || barRoot.formMargin > 0.5 }
+    readonly property real _neckBase: Math.max(8, (barContentLoader.item?.groupGap ?? 10) * 1.4)
+    // An island's neck thins to nothing as it finishes separating; bodies
+    // that float off the edge keep the full neck to the frame.
+    function _neckK(b) { return b.island ? BarLayout.neckK(barRoot._neckBase, b.sep) : barRoot._neckBase }
+
+    // Connected mode: the frame paints every body, following the auto-hide
+    // slide (hideOffset ≤ 0 pushes it out). Body 0 carries the reserved space.
+    readonly property point _origin: PanelRegistry.windowOrigin(barRoot)
+    Instantiator {
+        model: barRoot.bodies.length
+        delegate: ConnectedSurfaceLease {
+            required property int index
+            readonly property var _b: barRoot.bodies[index] ?? null
+            key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}:${index}`
+            kind: "bar"; edge: barRoot.edge; priority: _b?.island ? 19 : 20
+            screenName: barRoot._screenName
+            active: barRoot.visible && _b !== null
+            detached: _b ? barRoot._detached(_b) : false
+            neckK: _b ? barRoot._neckK(_b) : undefined
+            surfaceRadius: _b?.island ? barRoot.barRadius : undefined
+            x: barRoot._origin.x + (_b?.x ?? 0); y: barRoot._origin.y + (_b?.y ?? 0)
+            w: _b?.w ?? 0; h: _b?.h ?? 0
+            progress: 1 + barContentLoader.hideOffset / Math.max(1, barRoot.barThickness)
+            reserve: index === 0 ? barRoot.exclusiveZone : 0
+        }
     }
 
     MouseArea {
@@ -141,7 +189,7 @@ PanelWindow {
         // it renders underneath it. In connected mode the frame shader draws the
         // shadow for the whole fused silhouette instead.
         Loader {
-            active: barRoot.drawChrome && (Config.options?.appearance?.shadows?.enable ?? false)
+            active: barRoot.drawChrome && barRoot.plainBody && (Config.options?.appearance?.shadows?.enable ?? false)
             anchors.fill: barBackground
             sourceComponent: ElevationShadow {
                 level: 2
@@ -159,7 +207,7 @@ PanelWindow {
             }
             // Kept as a geometry anchor even when unpainted: the shadow Loader and
             // the corner decorators anchor to it.
-            visible: barRoot.drawChrome
+            visible: barRoot.drawChrome && barRoot.plainBody
             color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
             radius: barRoot.barRadius
             border.width: 1
@@ -200,7 +248,7 @@ PanelWindow {
             height: barRoot.isVertical ? undefined : barRoot.barThickness
 
             // Auto-hide / fullscreen-hide slide
-            property real hideOffset: barRoot.effectiveHidden ? -barRoot.barThickness : 0
+            property real hideOffset: barRoot.effectiveHidden ? -(barRoot.barThickness + barRoot.formMargin) : 0
             Behavior on hideOffset {
                 NumberAnimation {
                     duration: Appearance?.animation.elementMoveFast.duration ?? 200
@@ -208,10 +256,10 @@ PanelWindow {
                 }
             }
 
-            anchors.topMargin: edge === "top" ? hideOffset : 0
-            anchors.bottomMargin: edge === "bottom" ? hideOffset : 0
-            anchors.leftMargin: edge === "left" ? hideOffset : 0
-            anchors.rightMargin: edge === "right" ? hideOffset : 0
+            anchors.topMargin: edge === "top" ? hideOffset + barRoot.formMargin : 0
+            anchors.bottomMargin: edge === "bottom" ? hideOffset + barRoot.formMargin : 0
+            anchors.leftMargin: edge === "left" ? hideOffset + barRoot.formMargin : 0
+            anchors.rightMargin: edge === "right" ? hideOffset + barRoot.formMargin : 0
 
             sourceComponent: BarContent {
                 barConfig: barRoot.barConfig
@@ -220,10 +268,34 @@ PanelWindow {
             }
         }
 
+        // Floating mode, any form but the plain strip: the same SDF shader as
+        // the connected frame draws the bodies with liquid necks and rounded
+        // ends (BarSurface), with no frame ring. Async: a ShaderEffect must
+        // not attach while the layer surface is still being created.
+        Loader {
+            z: -1
+            anchors.fill: parent
+            asynchronous: true
+            active: barRoot.drawChrome && !barRoot.plainBody
+            sourceComponent: ConnectedFrame {
+                anchors.fill: parent
+                cornerRadius: 0
+                frameThickness: 0
+                connectedRadius: barRoot.barRadius
+                surfaceRadius: barRoot.barRadius
+                surfaceColor: Appearance?.colors.colLayer0 ?? "#1C1B1F"
+                surfaceOpacity: (Appearance?.colors.colLayer0 ?? Qt.rgba(0, 0, 0, 1)).a
+                surfaces: barRoot.bodies.map(b => ({
+                    side: barRoot.edge, x: b.x, y: b.y, w: b.w, h: b.h,
+                    detached: barRoot._detached(b), neckK: barRoot._neckK(b),
+                    surfaceRadius: barRoot.barRadius, progress: 1 }))
+            }
+        }
+
         // Round corner decorators (for edge-hugging bars). Connected mode draws
         // the bar→frame junction arcs in the shader, so these would double up.
         Loader {
-            active: barRoot.drawChrome && globalMargin === 0
+            active: barRoot.drawChrome && barRoot.plainBody && globalMargin === 0
             anchors {
                 left: !barRoot.isVertical ? parent.left : undefined
                 right: !barRoot.isVertical ? parent.right : undefined

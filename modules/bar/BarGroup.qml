@@ -17,6 +17,7 @@ Item {
     property bool showBackground: true
     property color backgroundColor: Appearance?.colors.colLayer1 ?? "#E5E1EC"
     property real backgroundRadius: Appearance?.rounding.small ?? 8
+    property real spacing: 4   // between modules along the bar
     default property alias items: gridLayout.children
 
     implicitWidth: gridLayout.implicitWidth + padding * 2
@@ -47,7 +48,7 @@ Item {
             bottom: root.vertical ? parent.bottom : undefined
             margins: root.padding
         }
-        columnSpacing: 4
-        rowSpacing: 12
+        columnSpacing: root.spacing
+        rowSpacing: root.vertical ? Math.max(root.spacing, 4) : 12
     }
 }
