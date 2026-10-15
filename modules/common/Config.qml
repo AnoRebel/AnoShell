@@ -507,6 +507,8 @@ Singleton {
                 // panel family's default; familyLooks sets one per family.
                 property string look: ""
                 property var familyLooks: ({})
+                // The look's surface texture (caustics, grain, grid, clay light).
+                property bool lookTextures: true
                 property int bezel: 0 // Global gap from screen edges (px) for ALL elements
                 property bool extraBackgroundTint: true
 

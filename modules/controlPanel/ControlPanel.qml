@@ -48,8 +48,9 @@ Scope {
         // Panel card — positioned at top-right like a notification shade
         PanelDragHandle { panelCard: cpCard; key: "controlPanel" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: cpCard
+            surface: "controlPanel"
             anchors { top: parent.top; right: parent.right; margins: (Config.options?.appearance?.bezel ?? 0) + 8 }
             anchors.topMargin: (Config.options?.bar?.layout?.height ?? 42) + (Config.options?.appearance?.bezel ?? 0) + 12
             width: Math.min(380, parent.width * 0.4)

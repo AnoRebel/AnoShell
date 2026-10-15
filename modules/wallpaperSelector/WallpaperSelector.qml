@@ -40,8 +40,9 @@ Scope {
         // Card
         PanelDragHandle { panelCard: wpCard; key: "wallpaper" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: wpCard
+            surface: "wallpaper"
             anchors.centerIn: parent
             width: Math.min(1100, parent.width * 0.88)
             height: Math.min(750, parent.height * 0.88)

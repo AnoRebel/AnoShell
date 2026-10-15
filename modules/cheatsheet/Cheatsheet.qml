@@ -56,8 +56,9 @@ Scope {
         // Card
         PanelDragHandle { panelCard: csCard; key: "cheatsheet" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: csCard
+            surface: "cheatsheet"
             anchors.centerIn: parent
             width: Math.min(900, parent.width * 0.85)
             height: Math.min(700, parent.height * 0.85)

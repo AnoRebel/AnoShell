@@ -63,8 +63,9 @@ Scope {
         // Media card
         PanelDragHandle { panelCard: mediaCard; key: "media" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: mediaCard
+            surface: "media"
             anchors.centerIn: parent
             width: Math.min(480, parent.width * 0.55)
             height: mediaContent.implicitHeight + 48

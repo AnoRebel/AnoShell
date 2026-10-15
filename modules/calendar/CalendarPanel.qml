@@ -55,8 +55,9 @@ Scope {
             // Card
             PanelDragHandle { panelCard: card; key: "calendar" }
 
-            Rectangle {
+            SurfaceMaterial {
                 id: card
+                surface: "calendar"
                 anchors.centerIn: parent
                 width: 420
                 height: Math.min(620, parent.height * 0.85)

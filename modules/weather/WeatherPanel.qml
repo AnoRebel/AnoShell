@@ -41,8 +41,9 @@ Scope {
 
         PanelDragHandle { panelCard: weatherCard; key: "weather" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: weatherCard
+            surface: "weather"
             anchors.centerIn: parent
             width: Math.min(420, parent.width * 0.5)
             height: weatherContent.implicitHeight + 48

@@ -31,8 +31,9 @@ PanelWindow {
     // Settings card
     PanelDragHandle { panelCard: settingsCard; key: "settings" }
 
-    Rectangle {
+    SurfaceMaterial {
         id: settingsCard
+        surface: "settings"
         anchors.centerIn: parent
         width: Math.min(900, parent.width * 0.85)
         height: Math.min(700, parent.height * 0.85)

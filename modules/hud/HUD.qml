@@ -56,8 +56,9 @@ Scope {
         // HUD card
         PanelDragHandle { panelCard: hudCard; key: "hud" }
 
-        Rectangle {
+        SurfaceMaterial {
             id: hudCard
+            surface: "hud"
             anchors.centerIn: parent
             width: Math.min(520, parent.width * 0.6)
             height: hudContent.implicitHeight + 48
