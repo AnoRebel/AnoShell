@@ -218,7 +218,9 @@ ColumnLayout {
                     id: drop
                     anchors.fill: parent
                     keys: ["barmodule"]
-                    onDropped: root.moveModule(dragGhost.moduleId, dragGhost.groupId, groupBox.gid)
+                    // Deferred: the write rebuilds the chips, and the dragged chip's
+                    // handler must finish (clearing the ghost) before it is destroyed.
+                    onDropped: Qt.callLater(root.moveModule, dragGhost.moduleId, dragGhost.groupId, groupBox.gid)
                 }
 
                 ColumnLayout {
@@ -390,6 +392,7 @@ ColumnLayout {
                             } else {
                                 dragGhost.Drag.drop()
                                 dragGhost.dragging = false
+                                dragGhost.moduleId = ""
                             }
                         }
                         onCentroidChanged: if (active) {
