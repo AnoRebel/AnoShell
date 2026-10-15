@@ -568,7 +568,7 @@ hl.window_rule({ match = { class = "^(org.freedesktop.impl.portal.desktop.gtk)$"
 
 -- QuickShell layer rules — blur + entry animation for every Ano layer surface.
 -- NOTE: the QML surfaces use WlrLayershell.namespace = "quickshell:*" (e.g.
--- "quickshell:sidebarRight", "quickshell:bar:main"), so the match patterns must
+-- "quickshell:sidebarRight", "quickshell:bar:0"), so the match patterns must
 -- target that prefix. The old "ano.*" patterns matched nothing, so no surface
 -- was ever blurred.
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })

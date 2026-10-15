@@ -33,9 +33,10 @@ if (( prebuilt )); then
     if [[ ! -x "$src/ano" || ! -x "$src/anod" ]]; then
         # No local build: fetch the release tarball and verify its checksum.
         repo="https://github.com/AnoRebel/AnoShell/releases"
-        branch="$(git -C .. symbolic-ref --short HEAD 2>/dev/null || true)"
+        branch="$(git -C .. branch --show-current 2>/dev/null || true)"
         [[ "$branch" == dev ]] && default_channel=dev || default_channel=stable
-        rel="${ANO_RELEASE:-${ANO_CHANNEL:-$default_channel}}"
+        # A version is its own tag; channels are the rolling channel-<name> tags.
+        if [[ -n "${ANO_RELEASE:-}" ]]; then rel="$ANO_RELEASE"; else rel="channel-${ANO_CHANNEL:-$default_channel}"; fi
         url="${ANO_RELEASE_URL:-$repo/download/$rel}" # a mirror, or a local server for testing
         asset="anoshell-linux-$arch.tar.gz"
         tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT

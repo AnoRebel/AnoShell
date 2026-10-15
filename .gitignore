@@ -1,5 +1,6 @@
 # Agent scratchpads / private working notes
 .Claude/
+.mcp.json
 
 # Compiled QML / JS bytecode
 *.qmlc

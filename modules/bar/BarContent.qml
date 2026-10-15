@@ -47,9 +47,6 @@ Item {
         "center": ["workspaces"],
         "right": ["clock", "battery", "network", "bluetooth", "tray", "sidebarButton"]
     }
-    readonly property var leftModules: moduleConfig.left ?? []
-    readonly property var centerModules: moduleConfig.center ?? []
-    readonly property var rightModules: moduleConfig.right ?? []
 
     // ═══════════════════════════════════════════════════════════════════
     // Spacing & Padding (configurable at bar level → global fallback)
@@ -121,11 +118,16 @@ Item {
     // ═══════════════════════════════════════════════════════════════════
     // Forms and groups
     // ═══════════════════════════════════════════════════════════════════
-    // liveRevision: barConfig is edited in place (Settings, the group menu).
-    readonly property string form: { void Config.liveRevision; return BarLayout.formOf(barConfig?.form ?? Config.options?.bar?.form ?? "full") }
+    // Edits to a bar replace the bars array (Config copy-on-write), so
+    // barConfig changes by itself. Groups are memoised by content: a new array
+    // would make the Repeater rebuild every module on any unrelated change.
+    readonly property string form: BarLayout.formOf(barConfig?.form ?? Config.options?.bar?.form ?? "full")
+    readonly property var _groupsMemo: ({ key: "", value: [] })
     readonly property var groups: {
-        void Config.liveRevision
-        return (barConfig?.groups?.length ?? 0) > 0 ? barConfig.groups.slice() : BarLayout.groupsFromModules(moduleConfig)
+        const g = (barConfig?.groups?.length ?? 0) > 0 ? barConfig.groups : BarLayout.groupsFromModules(moduleConfig)
+        const key = JSON.stringify(g)
+        if (key !== root._groupsMemo.key) { root._groupsMemo.key = key; root._groupsMemo.value = g }
+        return root._groupsMemo.value
     }
 
     function _setGroups(groups) { Config.setNestedValue(`bars.${root.barIndex}.groups`, groups) }
@@ -139,6 +141,7 @@ Item {
     BarGroupMenu { id: groupMenu; barEdge: root.edge }
     // Gap a detached group opens on each side; inset of floating forms.
     readonly property real groupGap: barConfig?.groupGap ?? Config.options?.bar?.layout?.groupGap ?? 10
+    readonly property real groupSpacing: barConfig?.groupSpacing ?? Config.options?.bar?.layout?.groupSpacing ?? 8
     readonly property real edgeMargin: (form === "fit" || form === "islands") ? (barConfig?.formMargin ?? Config.options?.bar?.layout?.formMargin ?? 6) : 0
     readonly property real islandPad: 6
     readonly property real along: isVertical ? height : width
@@ -163,7 +166,7 @@ Item {
             const it = groupRep.itemAt(i)
             if (it) items.push(it)
         }
-        root._targets = BarLayout.place({ length: root.along, padding: root.edgePadding, spacing: 8,
+        root._targets = BarLayout.place({ length: root.along, padding: root.edgePadding, spacing: root.groupSpacing,
             form: root.form, margin: root.edgeMargin }, items.map(it => ({ id: it.gid, zone: it.zone, len: it.len })))
         const bodies = BarLayout.bodies({ length: root.along, padding: root.edgePadding, form: root.form,
             gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin },

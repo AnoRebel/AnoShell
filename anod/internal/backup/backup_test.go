@@ -142,3 +142,23 @@ func TestSymlinkedRootInsideHome(t *testing.T) {
 		t.Fatal("restore did not write through the in-home symlink")
 	}
 }
+
+// One refused destination stops the restore before anything is written.
+func TestRestoreIsAllOrNothing(t *testing.T) {
+	src, dst := t.TempDir(), t.TempDir()
+	put(t, src, ".config/anoshell/config.json", "new", 0o644)
+	put(t, src, ".config/anoshell/themes/x.json", "theme", 0o644)
+	arc := filepath.Join(t.TempDir(), "b.tar.gz")
+	cats, _ := Lookup([]string{"config", "themes"})
+	Create(src, arc, cats, time.Now())
+	put(t, dst, "elsewhere.json", "target", 0o644)
+	os.MkdirAll(filepath.Join(dst, ".config/anoshell"), 0o755)
+	os.Symlink(filepath.Join(dst, "elsewhere.json"), filepath.Join(dst, ".config/anoshell/config.json"))
+	got, err := Restore(dst, arc, cats, "", false, time.Now())
+	if err == nil || len(got) != 0 {
+		t.Fatalf("want a refusal with nothing written, got %v %v", got, err)
+	}
+	if _, e := os.Stat(filepath.Join(dst, ".config/anoshell/themes/x.json")); e == nil {
+		t.Fatal("a file was written before the refusal")
+	}
+}

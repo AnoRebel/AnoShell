@@ -181,8 +181,10 @@ from off-screen or by fading alone.
 - **Arrays may be V4Sequence:** arrays read from a JsonAdapter list property
   are `V4Sequence` wrappers that fail `Array.isArray`; use
   `Config._isArrayLike`.
-- **`liveRevision`:** bumps on every in-memory change, so bindings over values
-  edited in place can re-read them. `deltaRevision` bumps only after the
+- **Bindings over config objects:** a new array (from copy-on-write) notifies,
+  so bars update live. Memoise anything derived from it that feeds a Repeater
+  (see BarContent's `groups`): returning a fresh array on every change makes
+  the Repeater rebuild all its delegates. `deltaRevision` bumps only after the
   debounced write.
 
 ## Quickshell 0.3 / Qt 6.11 constraints

@@ -126,8 +126,10 @@ func upstream(dir string) (string, error) {
 	if u, err := git(dir, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"); err == nil && u != "" {
 		return u, nil
 	}
-	b, err := git(dir, "symbolic-ref", "--short", "HEAD")
-	if err != nil {
+	// branch --show-current, not symbolic-ref --short: the latter prints
+	// heads/<name> when a tag shares the branch's name.
+	b, err := git(dir, "branch", "--show-current")
+	if err != nil || b == "" {
 		return "", errors.New("detached HEAD: check out a branch first")
 	}
 	return "origin/" + b, nil
@@ -155,7 +157,7 @@ func setupStatus(dir string, fetch, asJSON bool) int {
 		if fetch {
 			git(dir, "fetch", "--quiet", "origin")
 		}
-		st["branch"], _ = git(dir, "symbolic-ref", "--short", "HEAD")
+		st["branch"], _ = git(dir, "branch", "--show-current")
 		st["commit"], _ = git(dir, "rev-parse", "--short", "HEAD")
 		dirty, _ := git(dir, "status", "--porcelain")
 		st["dirty"] = dirty != ""
@@ -258,14 +260,18 @@ func setupUpdate(r *runner, force bool) error {
 	remote, _, _ := strings.Cut(u, "/")
 	before, _ := git(r.dir, "rev-parse", "--short", "HEAD")
 	stamp := time.Now().Format("20060102-150405")
+	// Fetch first: if it fails (offline, auth), nothing has been touched yet.
+	if err := r.run(r.dir, "fetch "+remote, "git", "fetch", "--quiet", remote); err != nil {
+		return err
+	}
 	if dirty != "" {
 		// Untracked files too: a reset must not be blocked by, or clobber, them.
 		if err := r.run(r.dir, "stash local changes", "git", "stash", "push", "--include-untracked", "-m", "ano setup update --force "+stamp); err != nil {
 			return err
 		}
-	}
-	if err := r.run(r.dir, "fetch "+remote, "git", "fetch", "--quiet", remote); err != nil {
-		return err
+		if !r.dry {
+			defer fmt.Println("your changes are in `git stash list` (restore with `git stash pop`)")
+		}
 	}
 	if force {
 		// Local commits stay reachable on a backup branch before the reset.
@@ -288,9 +294,6 @@ func setupUpdate(r *runner, force bool) error {
 			fmt.Println("already up to date")
 		} else {
 			fmt.Printf("updated %s → %s\n", before, after)
-		}
-		if dirty != "" {
-			fmt.Println("your changes are in `git stash list` (restore with `git stash pop`)")
 		}
 	}
 	return nil

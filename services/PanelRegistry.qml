@@ -72,7 +72,9 @@ Singleton {
         if (root._owner[key] !== owner) return root._reject(key, "foreign")
         const prev = root._byKey[key]
         if (prev && prev.owner === owner && rev <= prev.rev) return root._reject(key, "stale-revision")
-        if (!geom || (geom.w ?? 0) <= 0 || (geom.h ?? 0) <= 0) {
+        // A zero-size entry is kept while it reserves space (a bar whose
+        // content hasn't laid out yet): it counts for insets but gets no slot.
+        if (!geom || (((geom.w ?? 0) <= 0 || (geom.h ?? 0) <= 0) && (geom.reserve ?? 0) <= 0)) {
             if (prev) { delete root._byKey[key]; root._schedule() }
             return true
         }
@@ -169,7 +171,7 @@ Singleton {
     // The (at most `limit`) highest-priority panels on a screen, ready for the
     // frame's slots. Ties break on `key` so the order is stable across rebuilds.
     function surfacesForScreen(screenName, limit) {
-        const out = root.panelsForScreen(screenName).slice()
+        const out = root.panelsForScreen(screenName).filter(p => p.w > 0 && p.h > 0)
         out.sort((a, b) => (b.priority - a.priority) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
         return out.slice(0, limit ?? 8).map(p => ({
             "side": p.edge,

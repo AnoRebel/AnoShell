@@ -30,8 +30,9 @@ arm64), checked against the release's `SHA256SUMS` before anything is installed.
 
 `ANO_RELEASE_URL` points at a mirror. The channels are published by
 `.github/workflows/release.yml`, which also runs vet, tests and the cross-build
-on every pull request. `stable` and `dev` are rolling releases: each push moves
-their tag and replaces the tarballs.
+on every pull request. `stable` and `dev` are rolling releases under the tags
+`channel-stable` and `channel-dev` (prefixed so no tag shares a branch's name):
+each push moves the tag and replaces the tarballs.
 
 ## Autostart
 

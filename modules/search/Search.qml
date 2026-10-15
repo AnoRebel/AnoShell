@@ -26,7 +26,8 @@ Scope {
     readonly property var filteredApps: {
         // Closed launcher: no list, so DesktopEntries churn (dozens of updates
         // at startup) doesn't rebuild thousands of hidden delegates.
-        if (!GlobalStates.searchOpen) return []
+        // Kept through the close animation so the card doesn't flash empty.
+        if (!GlobalStates.searchOpen && !(searchWindow.shown > 0.01)) return []
         if (query.length === 0) {
             // Show recent apps, then alphabetical
             const recents = (Config.options?.search?.recentApps ?? []).map(id => allApps.find(a => a.id === id)).filter(a => !!a)

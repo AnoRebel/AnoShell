@@ -72,7 +72,10 @@ Scope {
 
     // App ids are often not icon names (zen → zen-browser, brave-browser →
     // brave-desktop): ask the desktop entry first.
+    // Reads the entry list so bindings re-run once desktop entries load (they
+    // load asynchronously; a lookup before that returns null).
     function iconFor(appId) {
+        void DesktopEntries.applications.values.length
         return DesktopEntries.heuristicLookup(appId)?.icon || appId
     }
 
@@ -147,17 +150,31 @@ Scope {
                     border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
                     ConnectedSurfaceLease {
+                        id: dockLease
                         key: "dock:" + (dockWindow.modelData?.name ?? "")
                         kind: "dock"; edge: root.position; priority: 8
                         screenName: dockWindow.modelData?.name ?? ""
                         active: dockWindow.visible && dockBg.shown > 0.001
                         progress: dockBg.shown
                         surfaceRadius: root.isPillStyle ? Math.min(dockBg.width, dockBg.height) / 2 : undefined
-                        // The window spans the dock's edge, so window coords map to
-                        // the screen by its edge offset.
-                        readonly property real _ox: root.isVertical && !root.isLeft ? (dockWindow.screen?.width ?? 0) - dockWindow.width : 0
-                        readonly property real _oy: !root.isVertical && !root.isTop ? (dockWindow.screen?.height ?? 0) - dockWindow.height : 0
-                        x: _ox + dockBg.x; y: _oy + dockBg.y
+                        // Where the layer shell actually puts the window: it is
+                        // pushed in by the band and any bar on the same edge.
+                        // Not a binding: see BarWindow._origin (binding loop).
+                        property point _o: Qt.point(0, 0)
+                        function _update() { _o = PanelRegistry.windowOrigin(dockWindow) }
+                        readonly property Connections _watch: Connections {
+                            target: PanelRegistry
+                            function onRevisionChanged() { Qt.callLater(dockLease._update) }
+                        }
+                        readonly property Connections _watchWin: Connections {
+                            target: dockWindow
+                            function onWidthChanged() { Qt.callLater(dockLease._update) }
+                            function onHeightChanged() { Qt.callLater(dockLease._update) }
+                            function onExclusiveZoneChanged() { Qt.callLater(dockLease._update) }
+                        }
+                        x: _o.x + dockBg.x; y: _o.y + dockBg.y
+                        // A pinned dock reserves its edge; insets (sidebars) count it.
+                        reserve: dockWindow.exclusiveZone
                         w: dockBg.width; h: dockBg.height
                     }
 

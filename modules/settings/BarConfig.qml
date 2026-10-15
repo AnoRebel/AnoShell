@@ -171,9 +171,9 @@ ColumnLayout {
     // ═══ Bar layout: form + groups ═══
     // The bar is a list of groups; each is attached to the bar body or its own
     // island, and the form shapes the whole bar. Edits apply live.
-    readonly property var barConfig0: { void Config.liveRevision; return Config.options?.bars?.[0] ?? null }
-    readonly property var groups: { void Config.liveRevision; return BarEdit.editable(root.barConfig0) }
-    readonly property string currentForm: { void Config.liveRevision; return BarLayout.formOf(root.barConfig0?.form ?? Config.options?.bar?.form ?? "full") }
+    readonly property var barConfig0: Config.options?.bars?.[0] ?? null
+    readonly property var groups: BarEdit.editable(root.barConfig0)
+    readonly property string currentForm: BarLayout.formOf(root.barConfig0?.form ?? Config.options?.bar?.form ?? "full")
     function setGroups(arr) { Config.setNestedValue("bars.0.groups", arr) }
     function setGroupModules(id, arr) { root.setGroups(BarEdit.patch(root.groups, id, { modules: arr })) }
     function moveModule(moduleId, fromId, toId) { if (fromId !== toId) root.setGroups(BarEdit.moveModule(root.groups, moduleId, fromId, toId)) }

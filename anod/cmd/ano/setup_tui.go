@@ -184,6 +184,9 @@ func start(args []string, dryRun bool) (*job, error) {
 	c := exec.Command(self, args...)
 	c.Stdout, c.Stderr = pw, pw
 	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // cancel stops its children too
+	// The child is in a background process group: a git/ssh prompt on the tty
+	// would stop it (SIGTTIN) and hang the run. Fail fast instead.
+	c.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_SSH_COMMAND=ssh -o BatchMode=yes")
 	if err := c.Start(); err != nil {
 		return nil, err
 	}
@@ -312,6 +315,7 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Stop the whole process group; the run ends with its exit status.
 			m.cancelled = true
 			syscall.Kill(-m.job.cmd.Process.Pid, syscall.SIGINT)
+			syscall.Kill(-m.job.cmd.Process.Pid, syscall.SIGCONT) // in case it was stopped
 			return m, nil
 		case key.Matches(msg, keys.Quit):
 			if m.scr != scrRunning {

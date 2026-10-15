@@ -46,14 +46,22 @@ QtObject {
             return
         }
         if (!root._owner) { root._owner = PanelRegistry.claim(root.key); root._ownedKey = root.key }
-        PanelRegistry.publish(root.key, root._owner, ++root._rev, {
+        const geom = {
             "kind": root.kind, "screenName": root.screenName, "edge": root.edge,
             "x": root.x, "y": root.y, "w": root.w, "h": root.h,
             "progress": Math.max(0, Math.min(1, root.progress)), "reserve": root.reserve,
             "detached": root.detached, "neckK": root.neckK,
             "priority": root.priority, "surfaceRadius": root.surfaceRadius,
             "omitStartConnector": root.omitStartConnector, "omitEndConnector": root.omitEndConnector
-        })
+        }
+        if (!PanelRegistry.publish(root.key, root._owner, ++root._rev, geom)
+                && PanelRegistry._owner[root.key] === undefined) {
+            // Ownership was pruned under us (a monitor came and went): claim
+            // again. A key taken by another live lease stays theirs.
+            root._owner = PanelRegistry.claim(root.key)
+            root._ownedKey = root.key
+            PanelRegistry.publish(root.key, root._owner, ++root._rev, geom)
+        }
     }
     function _release() {
         if (root._owner) PanelRegistry.release(root._ownedKey, root._owner)

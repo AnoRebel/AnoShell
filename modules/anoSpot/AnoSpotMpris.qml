@@ -64,5 +64,4 @@ RowLayout {
             event.accepted = true
         }
     }
-    }
 }

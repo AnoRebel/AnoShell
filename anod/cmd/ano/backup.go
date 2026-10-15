@@ -155,6 +155,9 @@ func backupCmd(args []string) int {
 			fmt.Println("  ~/" + f)
 		}
 		if err != nil {
+			if snap != "" && len(files) > 0 {
+				fmt.Println("the files above were restored before the error; the previous versions are in", snap)
+			}
 			return fail(err)
 		}
 		switch {

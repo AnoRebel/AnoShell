@@ -260,7 +260,7 @@ Scope {
                                             anchors.centerIn: parent
                                             implicitWidth: root.itemSize * 0.6
                                             implicitHeight: root.itemSize * 0.6
-                                            source: `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}`
+                                            source: { void DesktopEntries.applications.values.length; return `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}` }
                                             visible: !modelData.wayland
                                         }
                                     }

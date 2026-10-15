@@ -271,6 +271,17 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 	if err != nil || dryRun || len(picked) == 0 {
 		return picked, err
 	}
+	// Check every destination before writing anything, so a refused path
+	// can't leave the restore half-done.
+	for _, rel := range picked {
+		dst := filepath.Join(home, rel)
+		if !within(home, filepath.Dir(dst)) {
+			return nil, fmt.Errorf("refusing to restore %s: it resolves outside %s (nothing was restored)", rel, home)
+		}
+		if fi, err := os.Lstat(dst); err == nil && fi.Mode()&os.ModeSymlink != 0 {
+			return nil, fmt.Errorf("refusing to overwrite symlink %s (nothing was restored)", dst)
+		}
+	}
 	if snapshot != "" {
 		if _, err := Create(home, snapshot, cats, now); err != nil {
 			return nil, fmt.Errorf("snapshot before restore: %w", err)
@@ -280,13 +291,18 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 	for _, p := range picked {
 		want[p] = true
 	}
+	var written []string
 	err = walk(archive, func(h *tar.Header, r io.Reader) error {
 		if !want[h.Name] {
 			return nil
 		}
-		return writeFile(home, h.Name, os.FileMode(h.Mode).Perm(), r)
+		if err := writeFile(home, h.Name, os.FileMode(h.Mode).Perm(), r); err != nil {
+			return err
+		}
+		written = append(written, h.Name)
+		return nil
 	})
-	return picked, err
+	return written, err
 }
 
 // within reports whether path resolves (through any symlinks in its existing

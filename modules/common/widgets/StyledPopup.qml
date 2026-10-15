@@ -118,6 +118,12 @@ Item {
         popupLoader.item?.anchor.updateAnchor()
     }
     onShownChanged: if (shown) _measure()
+    // Follow the bar while open (auto-hide, form changes, other edges' zones).
+    Connections {
+        target: PanelRegistry
+        enabled: root.shown
+        function onRevisionChanged() { root._measure() }
+    }
     onPopupWidthChanged: if (shown) _measure()
     onPopupHeightChanged: if (shown) _measure()
 

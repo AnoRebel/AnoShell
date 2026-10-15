@@ -1,9 +1,11 @@
 # Builds and tests anod + ano on every push and pull request, and publishes
 # release channels that `anod/install.sh` downloads on machines without Go:
-#   main   -> rolling "stable" release (latest stable; marked Latest)
-#   dev    -> rolling "dev" pre-release (development builds)
+#   main   -> rolling "channel-stable" release (latest stable; marked Latest)
+#   dev    -> rolling "channel-dev" pre-release (development builds)
 #   v*     -> a pinned versioned release (vX.Y.Z)
 # Rolling channels move their tag to the built commit and replace the assets.
+# The tags are prefixed so none can share a name with a branch (a `dev` tag
+# next to the `dev` branch makes `git checkout dev` ambiguous).
 name: build and release
 
 on:
@@ -16,10 +18,12 @@ on:
 permissions:
   contents: read
 
-# One publish per channel at a time; a newer push supersedes a queued one.
+# One publish per channel at a time. Only pull-request runs are cancelled by
+# a newer push: cancelling a release mid-upload could leave a channel without
+# its tarball.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -99,8 +103,8 @@ jobs:
         env:
           CHANNEL: ${{ needs.build.outputs.channel }}
         run: |
-          git tag -f "$CHANNEL" "$GITHUB_SHA"
-          git push -f origin "refs/tags/$CHANNEL"
+          git tag -f "channel-$CHANNEL" "$GITHUB_SHA"
+          git push -f origin "refs/tags/channel-$CHANNEL"
 
       - name: publish a versioned release
         if: needs.build.outputs.channel == 'tag'
@@ -117,7 +121,7 @@ jobs:
         if: needs.build.outputs.channel != 'tag'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ needs.build.outputs.channel }}
+          tag_name: channel-${{ needs.build.outputs.channel }}
           name: ${{ needs.build.outputs.channel == 'stable' && 'Stable (main)' || 'Development (dev)' }}
           body: |
             Rolling ${{ needs.build.outputs.channel }} build of ${{ github.ref_name }} at ${{ github.sha }}.

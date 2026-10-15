@@ -20,10 +20,6 @@ Singleton {
     property var _userDelta: ({})
     // Bumped whenever the user delta changes, so origin bindings re-evaluate.
     property int deltaRevision: 0
-    // Bumped on every in-memory change (setNestedValue), before the debounced
-    // write: bindings over mutated-in-place values (e.g. bars[i].groups) read
-    // it to update live.
-    property int liveRevision: 0
     // Keys whose user value came from a legacy-key migration.
     property var _migratedKeys: ({})
 
@@ -100,7 +96,6 @@ Singleton {
             p[leaf] = convertedValue;
             root.options[keys[0]] = arr;
             root._userDelta[keys[0]] = JSON.parse(JSON.stringify(arr));
-            root.liveRevision++;
             userDeltaWriteTimer.restart();
             return;
         }
@@ -113,7 +108,6 @@ Singleton {
         // into an untouched config on first start).
         if (JSON.stringify(liveParent[liveLeaf]) === JSON.stringify(convertedValue)) return;
         liveParent[liveLeaf] = convertedValue;
-        root.liveRevision++;
 
         // 2. User delta mutation — persists to disk
         const [deltaParent, deltaLeaf] = root._walkPath(root._userDelta, nestedKey, true);
@@ -642,6 +636,7 @@ Singleton {
                     // Gap a detached group opens on each side, and the inset of
                     // the floating forms (fit, islands) from the screen edge.
                     property int groupGap: 10
+                    property int groupSpacing: 8   // between attached groups
                     property int formMargin: 6
                 }
                 // Bar form: full (edge to edge) | fit (inset, floating) |

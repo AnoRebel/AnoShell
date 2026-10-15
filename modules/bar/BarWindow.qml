@@ -80,7 +80,10 @@ PanelWindow {
     readonly property bool connectedMode: PanelRegistry.enabled
     readonly property bool drawChrome: showBackground && !connectedMode
 
-    WlrLayershell.namespace: `quickshell:bar:${barConfig?.id ?? barIndex}`
+    // Index, not the bar's id: bars are keyed by index (BarManager), so when a
+    // bar is removed the next one moves into this window, and a layer surface
+    // can't change its namespace after creation.
+    WlrLayershell.namespace: `quickshell:bar:${barIndex}`
     // Overlay (above Top) so the bar always draws above the connected-corners
     // frame (AnoScreen, on Top). Two same-layer surfaces order by commit time,
     // which let the frame cover the bar content until a hover event; Overlay makes
@@ -95,7 +98,9 @@ PanelWindow {
     // blank (the "top space removed, then bar appears" flicker). Gating on
     // contentLoaded makes the reserved space and the bar appear together.
     readonly property bool contentLoaded: barContentLoader.status === Loader.Ready
-    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin + formMargin
+    // The target margin, not the spring: an animating zone would make the
+    // compositor re-lay out every tiled window on each frame.
+    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin + _formMarginTarget
 
     // Anchoring based on edge
     anchors {
@@ -150,7 +155,19 @@ PanelWindow {
 
     // Connected mode: the frame paints every body, following the auto-hide
     // slide (hideOffset ≤ 0 pushes it out). Body 0 carries the reserved space.
-    readonly property point _origin: PanelRegistry.windowOrigin(barRoot)
+    // Recomputed a turn after anything it depends on changes, not as a binding:
+    // reading the window's own geometry inside its binding re-entered it (a
+    // binding loop) at startup.
+    property point _origin: Qt.point(0, 0)
+    function _updateOrigin() { barRoot._origin = PanelRegistry.windowOrigin(barRoot) }
+    onWidthChanged: Qt.callLater(_updateOrigin)
+    onHeightChanged: Qt.callLater(_updateOrigin)
+    onScreenChanged: Qt.callLater(_updateOrigin)
+    onExclusiveZoneChanged: Qt.callLater(_updateOrigin)
+    Connections {
+        target: PanelRegistry
+        function onRevisionChanged() { Qt.callLater(barRoot._updateOrigin) }
+    }
     // Fixed slots, switched on and off: an Instantiator would destroy and
     // recreate every lease when the body count changes, leaving the frame
     // without a bar for a frame.
@@ -168,7 +185,9 @@ PanelWindow {
         key: `bar:${barRoot.barConfig?.id ?? barRoot.barIndex}:${barRoot._screenName}:${index}`
         kind: "bar"; edge: barRoot.edge; priority: _b?.island ? 19 : 20
         screenName: barRoot._screenName
-        active: barRoot.visible && _b !== null
+        // Slot 0 stays published without a body so the bar's reserved space
+        // never lapses (the band's exclusion would reappear under the bar).
+        active: barRoot.visible && (_b !== null || index === 0)
         detached: _b ? barRoot._detached(_b) : false
         neckK: _b ? barRoot._neckK(_b) : undefined
         surfaceRadius: _b?.island ? barRoot.barRadius : undefined
