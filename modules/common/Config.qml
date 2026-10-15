@@ -598,6 +598,10 @@ Singleton {
                 property JsonObject theme: JsonObject {
                     property string source: "materialYou"  // "materialYou" | "static"
                     property string name: ""                // theme name without .json suffix
+                    // dynamicAccent: wallpaper palette + the fixed AnoShell accent for brand
+                    // moments | dynamic: wallpaper palette everywhere | fixed: the AnoShell
+                    // palette (ano-dark/light); wallpaper changes leave colours alone.
+                    property string colorMode: "dynamicAccent"
                 }
             }
 

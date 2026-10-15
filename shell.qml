@@ -43,6 +43,7 @@ ShellRoot {
         void MinimizedWindows;
         void DefaultApps;
         void Anod;
+        void StaticThemeLoader; // singletons only exist once referenced; static/fixed themes need it
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -53,7 +54,7 @@ ShellRoot {
         function onReadyChanged() {
             if (!Config.ready) return;
             root._log("Config ready, initializing services");
-            MaterialThemeLoader.reapplyTheme();
+            StaticThemeLoader.reapplyTheme(); // static/fixed theme, else Material You
             Wallpapers.load();
         }
     }

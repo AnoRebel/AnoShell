@@ -22,7 +22,8 @@ Singleton {
     function applyColors(fileContent) {
         // Short-circuit when a static theme is selected. StaticThemeLoader
         // owns the m3colors writes in that mode.
-        if ((Config.options?.appearance?.theme?.source ?? "materialYou") !== "materialYou")
+        if ((Config.options?.appearance?.theme?.source ?? "materialYou") !== "materialYou"
+                || Config.options?.appearance?.theme?.colorMode === "fixed")
             return
 
         // Preview-tokens overlay (set by AppearanceConfig hover-preview)

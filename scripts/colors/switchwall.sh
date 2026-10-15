@@ -32,8 +32,7 @@ CACHE_DIR="$XDG_CACHE_HOME/anoshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="$CACHE_DIR/backups"
 COLORS_JSON="$STATE_DIR/colors.json"
-MATUGEN_DIR="$XDG_CONFIG_HOME/matugen"
-SHELL_CONFIG="$CONFIG_DIR/config.json"
+SHELL_CONFIG="$XDG_CONFIG_HOME/anoshell/config.json"  # your config (not the bundled defaults)
 
 # ── Temp directory ───────────────────────────────────────────────────────
 TMPDIR="/tmp/anoshell-switchwall"
@@ -73,6 +72,15 @@ if [[ ! -f "$IMAGE" ]]; then
 fi
 
 log() { echo "[switchwall] $*"; }
+
+# Colour mode (appearance.theme.colorMode): "fixed", or a static theme, keeps
+# the palette as is: no matugen, no pywal, no app colours on a wallpaper change.
+cfg() { [[ -f "$SHELL_CONFIG" ]] && command -v jq &>/dev/null && jq -r "$1" "$SHELL_CONFIG" 2>/dev/null || echo "$2"; }
+FIXED_COLORS=false
+if [[ "$(cfg '.appearance.theme.colorMode // "dynamicAccent"' dynamicAccent)" == fixed || \
+      "$(cfg '.appearance.theme.source // "materialYou"' materialYou)" == static ]]; then
+    FIXED_COLORS=true
+fi
 
 # ── Safety: Backup current state ─────────────────────────────────────────
 backup_current() {
@@ -118,8 +126,7 @@ restore_backup() {
         fi
     fi
 
-    # Notify shell to reload
-    notify_shell
+    # The shell watches colors.json and reloads by itself.
     return 0
 }
 
@@ -156,96 +163,25 @@ apply_wallpaper "$IMAGE"
 
 # ── Step 2: Generate Material You colors via matugen ─────────────────────
 generate_matugen() {
+    if [[ "$FIXED_COLORS" == true ]]; then log "Fixed colour mode: keeping the palette"; return 0; fi
     if ! command -v matugen &>/dev/null; then
         log "WARNING: matugen not installed — skipping Material You color generation"
         log "  Install: https://github.com/InioX/matugen"
         return 1
     fi
+    if ! command -v jq &>/dev/null; then log "WARNING: jq not installed — skipping colors"; return 1; fi
 
-    # Ensure matugen config exists
-    if [[ ! -f "$MATUGEN_DIR/config.toml" ]]; then
-        mkdir -p "$MATUGEN_DIR/templates"
-        log "Creating default matugen config..."
-        cat > "$MATUGEN_DIR/config.toml" << 'MATUGENEOF'
-[config]
-reload_apps = false
-strip = true
+    local type_flag="scheme-$(cfg '.appearance.colors.schemeType // "tonal-spot"' tonal-spot)"
+    local is_dark=true; [[ "$MODE" == "light" ]] && is_dark=false
 
-[templates.colors-json]
-input_path = "~/.config/matugen/templates/colors.json"
-output_path = "~/.local/state/anoshell/generated/colors.json"
-MATUGENEOF
-    fi
-
-    # Ensure template exists
-    if [[ ! -f "$MATUGEN_DIR/templates/colors.json" ]]; then
-        mkdir -p "$MATUGEN_DIR/templates"
-        cat > "$MATUGEN_DIR/templates/colors.json" << 'TEMPLATEEOF'
-{
-    "primary": "<primary>",
-    "onPrimary": "<on_primary>",
-    "primaryContainer": "<primary_container>",
-    "onPrimaryContainer": "<on_primary_container>",
-    "secondary": "<secondary>",
-    "onSecondary": "<on_secondary>",
-    "secondaryContainer": "<secondary_container>",
-    "onSecondaryContainer": "<on_secondary_container>",
-    "tertiary": "<tertiary>",
-    "onTertiary": "<on_tertiary>",
-    "tertiaryContainer": "<tertiary_container>",
-    "onTertiaryContainer": "<on_tertiary_container>",
-    "error": "<error>",
-    "onError": "<on_error>",
-    "errorContainer": "<error_container>",
-    "onErrorContainer": "<on_error_container>",
-    "background": "<background>",
-    "onBackground": "<on_background>",
-    "surface": "<surface>",
-    "onSurface": "<on_surface>",
-    "surfaceVariant": "<surface_variant>",
-    "onSurfaceVariant": "<on_surface_variant>",
-    "outline": "<outline>",
-    "outlineVariant": "<outline_variant>",
-    "shadow": "<shadow>",
-    "scrim": "<scrim>",
-    "inverseSurface": "<inverse_surface>",
-    "inverseOnSurface": "<inverse_on_surface>",
-    "inversePrimary": "<inverse_primary>",
-    "surfaceDim": "<surface_dim>",
-    "surfaceBright": "<surface_bright>",
-    "surfaceContainerLowest": "<surface_container_lowest>",
-    "surfaceContainerLow": "<surface_container_low>",
-    "surfaceContainer": "<surface_container>",
-    "surfaceContainerHigh": "<surface_container_high>",
-    "surfaceContainerHighest": "<surface_container_highest>",
-    "darkmode": true,
-    "sourceColor": "<source_color>"
-}
-TEMPLATEEOF
-    fi
-
-    local mode_flag="$MODE"
-    local type_flag="scheme-tonal-spot"
-
-    # Read scheme type from config if available
-    if command -v jq &>/dev/null && [[ -f "$SHELL_CONFIG" ]]; then
-        local cfg_scheme
-        cfg_scheme=$(jq -r '.appearance.colors.schemeType // "tonal-spot"' "$SHELL_CONFIG" 2>/dev/null || echo "tonal-spot")
-        type_flag="scheme-${cfg_scheme}"
-    fi
-
-    log "Generating Material You colors (mode=$mode_flag, type=$type_flag)..."
-    matugen --config "$MATUGEN_DIR/config.toml" image "$IMAGE" --mode "$mode_flag" --type "$type_flag" 2>&1 | while read -r line; do
-        log "  matugen: $line"
-    done
-
-    # Fix darkmode field based on actual mode
-    if command -v jq &>/dev/null && [[ -f "$COLORS_JSON" ]]; then
-        local is_dark="true"
-        [[ "$mode_flag" == "light" ]] && is_dark="false"
-        local tmp="$TMPDIR/colors_fixed.json"
-        jq --argjson dm "$is_dark" '.darkmode = $dm' "$COLORS_JSON" > "$tmp" && mv "$tmp" "$COLORS_JSON"
-    fi
+    # matugen's JSON dump, flattened to {role: hex}: no template or matugen
+    # config needed, and your own matugen setup is left alone.
+    log "Generating Material You colors (mode=$MODE, type=$type_flag)..."
+    local tmp="$TMPDIR/colors.json"
+    matugen image "$IMAGE" --mode "$MODE" --type "$type_flag" \
+        --prefer "$(cfg '.appearance.colors.prefer // "saturation"' saturation)" --json hex --dry-run 2>/dev/null \
+        | jq --argjson dm "$is_dark" '.colors | map_values(.default.color) + {darkmode: $dm}' > "$tmp" \
+        && [[ -s "$tmp" ]] && mv "$tmp" "$COLORS_JSON" || { log "WARNING: matugen failed"; return 1; }
 
     log "Material You colors generated: $COLORS_JSON"
     return 0
@@ -255,7 +191,7 @@ generate_matugen || true
 
 # ── Step 3: Optionally run pywal ─────────────────────────────────────────
 run_pywal() {
-    if [[ "$SKIP_PYWAL" == true ]]; then return; fi
+    if [[ "$SKIP_PYWAL" == true || "$FIXED_COLORS" == true ]]; then return; fi
     if ! command -v wal &>/dev/null; then return; fi
 
     log "Running pywal for terminal colors..."
@@ -290,7 +226,7 @@ run_pywal
 
 # ── Step 4: Apply colors to external apps ────────────────────────────────
 apply_external() {
-    if [[ "$SKIP_APPLY" == true ]]; then return; fi
+    if [[ "$SKIP_APPLY" == true || "$FIXED_COLORS" == true ]]; then return; fi
 
     local apply_script="$SCRIPT_DIR/applycolor.sh"
     if [[ -x "$apply_script" ]]; then
@@ -315,14 +251,8 @@ update_config() {
 
 update_config
 
-# ── Step 6: Notify QuickShell to reload theme ────────────────────────────
-notify_shell() {
-    if command -v qs &>/dev/null; then
-        qs -c ano ipc call wallpapers apply "$IMAGE" 2>/dev/null || true
-    fi
-}
-
-notify_shell
+# ── Step 6: the shell watches colors.json and its config, so it reloads by
+# itself. (Calling `qs ipc wallpapers apply` here re-ran this script: a loop.)
 
 # ── Step 7: Set GNOME dark/light mode ────────────────────────────────────
 set_gtk_mode() {

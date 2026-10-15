@@ -25,8 +25,12 @@ Singleton {
     id: root
 
     readonly property string source: Config.options?.appearance?.theme?.source ?? "materialYou"
-    readonly property string staticName: Config.options?.appearance?.theme?.name ?? ""
-    readonly property bool active: source === "static" && staticName.length > 0
+    readonly property bool fixedMode: source !== "static" && (Config.options?.appearance?.theme?.colorMode ?? "") === "fixed"
+    // Fixed colour mode is the brand palette, in the configured dark/light mode.
+    readonly property string staticName: fixedMode
+        ? ((Config.options?.appearance?.colors?.darkMode ?? true) ? "ano-dark" : "ano-light")
+        : (Config.options?.appearance?.theme?.name ?? "")
+    readonly property bool active: (source === "static" || fixedMode) && staticName.length > 0
 
     // Resolved on demand — checks user dir first, falls back to bundled.
     property string resolvedPath: ""
@@ -143,6 +147,9 @@ Singleton {
     // React to config changes — re-resolve and reload when source/name flips.
     onSourceChanged: _resolve()
     onStaticNameChanged: _resolve()
+    // staticName can change before `active` does, so resolve again here;
+    // leaving fixed/static mode hands the colours back to Material You.
+    onActiveChanged: active ? _resolve() : reapplyTheme()
     Component.onCompleted: _resolve()
 
     onResolvedPathChanged: {
