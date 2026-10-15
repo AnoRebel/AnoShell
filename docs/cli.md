@@ -37,6 +37,13 @@ bundled `config.json` (see [Configuration](configuration.md)).
 | `ano config validate [--file F] [--json]` | checks the config against the schema: wrong types are errors (exit 1), unknown keys are warnings |
 | `ano config migrate [--file F] [--prune-unknown] [--dry-run]` | rewrites old keys (`hud.enabled`, `activSpot`, `appearance.theme.static`, `bar.bars`, and `bars[0].autoHide`/`showBackground`). It first writes a new `config.json.bak-YYYYMMDD-HHMMSS`, follows a symlinked config and keeps the file's permissions. `--prune-unknown` also removes keys the shell ignores |
 
+## Looks
+
+| Command | What it does |
+|---|---|
+| `ano looks list [--json]` | every look the shell can load (built-in and yours), with what's wrong with any invalid one |
+| `ano looks validate [FILE…] [--json]` | checks look files (all of them when none is given) against the rules in [Looks](looks.md#reference). Exits 1 on errors |
+
 ## Setup: install, update, refresh
 
 | Command | What it does |
