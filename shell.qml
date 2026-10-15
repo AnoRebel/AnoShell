@@ -50,12 +50,17 @@ ShellRoot {
     // ═══════════════════════════════════════════════════════════════════════
     // Config Ready Hook
     // ═══════════════════════════════════════════════════════════════════════
+    // Startup settle: give layout one beat after the config is ready (bars
+    // measure their groups, the pill its content, the frame its reserves).
+    Timer { id: settleTimer; interval: 800; onTriggered: GlobalStates.shellSettled = true }
+
     Connections {
         target: Config
         function onReadyChanged() {
             if (!Config.ready) return;
             root._log("Config ready, initializing services");
             StaticThemeLoader.reapplyTheme(); // static/fixed theme, else Material You
+            settleTimer.start();
             Wallpapers.load();
         }
     }

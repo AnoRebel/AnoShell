@@ -16,6 +16,9 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Panel & Overlay States
     // ═══════════════════════════════════════════════════════════════════════
+    // True once the config is ready and startup layout has settled; the bar,
+    // pill, dock and frame map only then, so nothing jumps or flashes at start.
+    property bool shellSettled: false
     // Where each standalone panel was dragged to this session (PanelDragHandle).
     property var panelPositions: ({})
     property bool barOpen: true

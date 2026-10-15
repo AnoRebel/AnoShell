@@ -110,8 +110,25 @@ Scope {
     // A painted band would cover the edges of windows, so one thin, empty,
     // click-through window per edge reserves the band's thickness, except on
     // edges a bar already reserves (no double gap).
+    // Until the bars have mapped and published their reserves, an edge band
+    // follows the config (is a reserving bar declared on that edge?) so the
+    // bands are right from the first frame; after that, the live registry.
+    property bool reservesArmed: false
+    Timer { running: GlobalStates.shellSettled; interval: 600; onTriggered: root.reservesArmed = true }
+    function _barDeclared(screenName, edge) {
+        const list = Config.options?.bar?.screenList ?? []
+        if (list.length > 0 && !list.includes(screenName)) return false
+        const bars = Config.options?.bars ?? [{ edge: "top" }]
+        for (let i = 0; i < bars.length; i++) {
+            const b = bars[i]
+            if ((b?.edge ?? "top") === edge && !b?.morphingPanel && !b?.autoHide) return true
+        }
+        return false
+    }
+
     Variants {
-        model: root.enabled && root.frameThickness > 0 ? Quickshell.screens : []
+        // After the config is ready, so the bands map at your thickness.
+        model: Config.ready && root.enabled && root.frameThickness > 0 ? Quickshell.screens : []
         Scope {
             id: excl
             required property var modelData
@@ -121,7 +138,9 @@ Scope {
                     required property string modelData
                     readonly property string edge: modelData
                     screen: excl.modelData
-                    visible: PanelRegistry.reserved(excl.modelData?.name ?? "", edge) <= 0
+                    visible: root.reservesArmed
+                        ? PanelRegistry.reserved(excl.modelData?.name ?? "", edge) <= 0
+                        : !root._barDeclared(excl.modelData?.name ?? "", edge)
                     WlrLayershell.namespace: "quickshell:frameExclusion"
                     WlrLayershell.layer: WlrLayer.Bottom
                     color: "transparent"
@@ -173,7 +192,7 @@ Scope {
             // the window unmaps once fully retracted.
             property real shown: screenFullscreen ? 0 : 1
             Behavior on shown { MotionSpring { token: win.screenFullscreen ? "settle" : "liquid" } }
-            visible: root.enabled && (!screenFullscreen || shown > 0.001)
+            visible: GlobalStates.shellSettled && root.enabled && (!screenFullscreen || shown > 0.001)
 
             readonly property real sw: width
             readonly property real sh: height

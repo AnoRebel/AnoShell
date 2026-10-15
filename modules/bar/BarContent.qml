@@ -154,7 +154,10 @@ Item {
     // change length for a few turns), so groups appear in place instead of
     // flying in from 0.
     property bool _ready: false
-    Timer { id: settle; interval: 250; onTriggered: root._ready = true }
+    // Hidden until then (see BarWindow.laidOut), then a short fade in.
+    opacity: _ready ? 1 : 0
+    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
+    Timer { id: settle; interval: 250; onTriggered: root._ready = root.along > 0 }
 
     function _zoneSpacing(zone) { return zone === "start" ? root.leftSpacing : zone === "end" ? root.rightSpacing : root.centerSpacing }
 
@@ -174,7 +177,9 @@ Item {
         root.bodyRects = bodies.map(b => root.isVertical
             ? { x: 0, y: b.pos, w: root.thickness, h: b.len, island: b.island, id: b.id ?? "", sep: b.sep ?? 0 }
             : { x: b.pos, y: 0, w: b.len, h: root.thickness, island: b.island, id: b.id ?? "", sep: b.sep ?? 0 })
-        if (!root._ready) settle.restart()
+        // Only a laid-out bar counts: before its window maps the length is 0,
+        // and settling then would spring every group in from 0 once it maps.
+        if (!root._ready && root.along > 0 && root.visible) settle.restart()
     }
     onAlongChanged: _relayout()
     onFormChanged: _relayout()

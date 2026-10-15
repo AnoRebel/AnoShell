@@ -142,7 +142,7 @@ Scope {
             readonly property var modelData: spotScope.modelData
             screen: modelData
 
-            visible: root.enabled
+            visible: root.enabled && GlobalStates.shellSettled
             color: "transparent"
 
             // The pill fits its content (a fixed length clipped it), springing
@@ -152,7 +152,20 @@ Scope {
                 ? (contentLoader.item?.implicitHeight ?? 0) + _lead + 6
                 : (contentLoader.item?.implicitWidth ?? 0) + _lead + 6
             property real length: Math.max(root.heightPx * 2, Math.min(_contentLen, root.widthPx))
-            Behavior on length { MotionSpring { token: "snappy" } }
+            // First appearance: the window maps transparent (a hidden window
+            // doesn't lay out, so its size would be stale) and fades in once
+            // the pill's width has held for 600 ms (clock, weather, media
+            // arriving). Late content in the first 2 s snaps; the spring runs
+            // after that.
+            property bool _revealed: false
+            property real _fade: _revealed ? 1 : 0
+            Behavior on _fade { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
+            Binding { target: spotWindow.contentItem; property: "opacity"; value: spotWindow._fade }
+            property bool _animated: false
+            Timer { id: revealTimer; interval: 600; running: GlobalStates.shellSettled && !spotWindow._revealed; onTriggered: spotWindow._revealed = true }
+            Timer { running: spotWindow._revealed && !spotWindow._animated; interval: 2000; onTriggered: spotWindow._animated = true }
+            onLengthChanged: if (!spotWindow._revealed && revealTimer.running) revealTimer.restart()
+            Behavior on length { enabled: spotWindow._animated; MotionSpring { token: "snappy" } }
             implicitWidth: root.isVertical ? root.heightPx : length
             implicitHeight: root.isVertical ? length : root.heightPx
 
@@ -218,7 +231,7 @@ Scope {
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
                 kind: "pill"; edge: root.position; priority: 15
                 screenName: spotWindow.modelData?.name ?? ""
-                active: spotWindow.visible && spotWindow.connected && spotWindow.tuck < 0.99
+                active: spotWindow.visible && spotWindow._revealed && spotWindow.connected && spotWindow.tuck < 0.99
                 progress: 1 - Math.max(0, Math.min(1, spotWindow.tuck))
                 surfaceRadius: Math.min(spotWindow.width, spotWindow.height) / 2
                 // Where the layer shell actually puts the window (centred in

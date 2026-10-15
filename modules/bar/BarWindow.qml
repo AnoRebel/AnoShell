@@ -15,6 +15,7 @@ import "BarLayout.js" as BarLayout
  */
 PanelWindow {
     id: barRoot
+    visible: GlobalStates.shellSettled
     required property var barConfig
     required property int barIndex
 
@@ -91,13 +92,20 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
 
     color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
+    // Respect other surfaces' zones (the frame's edge bands) from the first
+    // frame; a zone of 0 under Ignore placed the bar full-width until its
+    // content loaded and the zone switched it over (a visible side jump).
+    // Hidden, it overlaps them as before.
+    exclusionMode: barRoot.effectiveHidden ? ExclusionMode.Ignore : ExclusionMode.Normal
     // Reserve the top space only once the (async) bar content has actually
     // loaded — otherwise the exclusion zone appears a frame or two before the
     // bar visuals, so the desktop reflows to make room while the strip is still
     // blank (the "top space removed, then bar appears" flicker). Gating on
     // contentLoaded makes the reserved space and the bar appear together.
     readonly property bool contentLoaded: barContentLoader.status === Loader.Ready
+    // The content has placed its groups (BarContent._ready): before that, groups
+    // sit at 0, so neither the content nor the body is shown.
+    readonly property bool laidOut: barContentLoader.item?._ready ?? false
     // The target margin, not the spring: an animating zone would make the
     // compositor re-lay out every tiled window on each frame.
     exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin + _formMarginTarget
@@ -187,7 +195,8 @@ PanelWindow {
         screenName: barRoot._screenName
         // Slot 0 stays published without a body so the bar's reserved space
         // never lapses (the band's exclusion would reappear under the bar).
-        active: barRoot.visible && (_b !== null || index === 0)
+        // Body and content appear together, once the layout has settled.
+        active: barRoot.visible && barRoot.laidOut && (_b !== null || index === 0)
         detached: _b ? barRoot._detached(_b) : false
         neckK: _b ? barRoot._neckK(_b) : undefined
         surfaceRadius: _b?.island ? barRoot.barRadius : undefined
@@ -234,7 +243,7 @@ PanelWindow {
             }
             // Kept as a geometry anchor even when unpainted: the shadow Loader and
             // the corner decorators anchor to it.
-            visible: barRoot.drawChrome && barRoot.plainBody
+            visible: barRoot.drawChrome && barRoot.plainBody && barRoot.laidOut
             color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
             radius: barRoot.barRadius
             border.width: 1
@@ -304,7 +313,7 @@ PanelWindow {
             z: -1
             anchors.fill: parent
             asynchronous: true
-            active: barRoot.drawChrome && !barRoot.plainBody
+            active: barRoot.drawChrome && !barRoot.plainBody && barRoot.laidOut
             sourceComponent: ConnectedFrame {
                 anchors.fill: parent
                 cornerRadius: 0

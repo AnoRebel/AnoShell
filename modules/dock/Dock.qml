@@ -90,7 +90,7 @@ Scope {
             id: dockWindow
             required property var modelData
             screen: modelData
-            visible: !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? true)
+            visible: GlobalStates.shellSettled && !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? true)
 
             readonly property bool hoverToReveal: Config.options?.dock?.hoverToReveal ?? true
             property bool reveal: root.pinned
