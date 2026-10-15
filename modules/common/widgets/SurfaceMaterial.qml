@@ -30,6 +30,32 @@ Rectangle {
 
     HoverHandler { id: hover }
 
+    // Look transition: `ink_bleed` soaks the card in when it appears (it goes
+    // from invisible to visible). The effect layer exists only while it runs.
+    readonly property bool _inkBleed: root.look.transition === "ink_bleed" && AnimationConfig.enabled
+    property real _reveal: 1
+    property bool _shown: false
+    function _checkShown() {
+        const shown = root.visible && root.opacity > 0.01
+        if (shown && !root._shown && root._inkBleed) { revealAnim.restart() }
+        root._shown = shown
+    }
+    onOpacityChanged: _checkShown()
+    onVisibleChanged: _checkShown()
+    Component.onCompleted: _checkShown()
+    NumberAnimation {
+        id: revealAnim
+        target: root; property: "_reveal"; from: 0; to: 1
+        duration: AnimationConfig.scaledDuration(560); easing.type: Easing.OutCubic
+    }
+    layer.enabled: revealAnim.running
+    layer.effect: ShaderEffect {
+        fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/ink_reveal.frag.qsb"))
+        property real progress: root._reveal
+        property real widthPx: root.width
+        property real heightPx: root.height
+    }
+
     ShaderEffect {
         id: texture
         anchors.fill: parent

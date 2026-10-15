@@ -147,6 +147,9 @@ func validateBody(look map[string]any, pre string, e []string) []string {
 			add("texture.animate must be static or interaction")
 		}
 	}
+	if t, present := look["transition"]; present && t != "none" && t != "ink_bleed" {
+		add("transition must be none or ink_bleed")
+	}
 	for _, role := range sortedKeys(typ) {
 		s, ok := typ[role].(string)
 		switch {

@@ -16,6 +16,7 @@ the same id overrides a built-in). See docs/looks.md for authoring.
 | `material.kind` | string | `solid`, `paper` or `clay` |
 | `material.glass` | bool | whether the glass material may be layered on |
 | `texture` | object or null | `shader` one of `caustics`, `paper_grain`, `ink_bleed`, `grid_scan`, `clay_soft`; `animate` `static` or `interaction`; `params` object |
+| `transition` | string | `none` (default) or `ink_bleed`: how a panel card appears |
 | `typography.main/title/numbers/mono` | string | a font family, or `@main`, `@mono`, `@reading`, `@expressive` for your configured fonts |
 | `motion.liquid/settle/snappy` | object | `spring` 0.5–40, `damping` 0.05–1, `mass` 0.2–3 |
 | `surfaces.<surface>` | object | per-surface overrides of the keys above |

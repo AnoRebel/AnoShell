@@ -64,6 +64,7 @@ can't be applied until it's fixed.
 | `texture.shader` | `caustics`, `paper_grain`, `grid_scan`, `clay_soft` (`ink_bleed` is accepted and drawn as paper grain for now) |
 | `texture.animate` | `static`, or `interaction` (moves only while you hover) |
 | `texture.params` | `strength` (or `grain` / `light`), and `spacing` px for `grid_scan` |
+| `transition` | `none`, or `ink_bleed`: panels soak in like ink when they open (Ink uses it) |
 | `typography.main/title/numbers/mono` | a font family, or `@main`, `@mono`, `@reading`, `@expressive` for the fonts set in Settings → Appearance → Fonts |
 | `motion.liquid/settle/snappy` | `spring` 0.5–40, `damping` 0.05–1, `mass` 0.2–3 |
 | `surfaces.<surface>` | the same keys again, for one surface only (`hud`, `settings`, `controlPanel`, `media`, `weather`, `cheatsheet`, `wallpaper`, `calendar`) |

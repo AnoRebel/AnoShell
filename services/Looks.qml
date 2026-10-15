@@ -124,6 +124,7 @@ Singleton {
             if (!root.knownShaders.includes(look.texture.shader)) e.push(`${pre}texture.shader "${look.texture.shader}" is not a known shader (${root.knownShaders.join(", ")})`)
             if (look.texture.animate !== undefined && !["static", "interaction"].includes(look.texture.animate)) e.push(`${pre}texture.animate must be static or interaction`)
         }
+        if (look.transition !== undefined && !["none", "ink_bleed"].includes(look.transition)) e.push(`${pre}transition must be none or ink_bleed`)
         for (const role in (okTyp ? (look.typography ?? {}) : {})) {
             const v = look.typography[role]
             if (typeof v !== "string") e.push(`${pre}typography.${role} must be a font name or ${root.fontAliases.join("/")}`)

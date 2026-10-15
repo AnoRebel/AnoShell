@@ -3,14 +3,44 @@
   "name": "Ink",
   "description": "Brush edges, paper grain and ink-bleed transitions.",
   "version": 1,
-  "shape": { "radiusScale": 0.6, "stroke": 1, "connectedRadius": 12, "squircle": false },
-  "material": { "kind": "paper", "glass": false },
-  "texture": { "shader": "paper_grain", "animate": "static", "params": { "grain": 0.06 } },
-  "typography": { "main": "@reading", "title": "@expressive" },
+  "shape": {
+    "radiusScale": 0.6,
+    "stroke": 1,
+    "connectedRadius": 12,
+    "squircle": false
+  },
+  "material": {
+    "kind": "paper",
+    "glass": false
+  },
+  "texture": {
+    "shader": "paper_grain",
+    "animate": "static",
+    "params": {
+      "grain": 0.06
+    }
+  },
+  "transition": "ink_bleed",
+  "typography": {
+    "main": "@reading",
+    "title": "@expressive"
+  },
   "motion": {
-    "liquid": { "spring": 2.6, "damping": 0.55, "mass": 1.1 },
-    "settle": { "spring": 5.5, "damping": 0.75, "mass": 1.0 },
-    "snappy": { "spring": 5.0, "damping": 0.7, "mass": 0.9 }
+    "liquid": {
+      "spring": 2.6,
+      "damping": 0.55,
+      "mass": 1.1
+    },
+    "settle": {
+      "spring": 5.5,
+      "damping": 0.75,
+      "mass": 1.0
+    },
+    "snappy": {
+      "spring": 5.0,
+      "damping": 0.7,
+      "mass": 0.9
+    }
   },
   "surfaces": {}
 }
