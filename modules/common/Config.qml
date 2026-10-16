@@ -689,7 +689,22 @@ Singleton {
             property JsonObject background: JsonObject {
                 property string wallpaperPath: ""
                 property string thumbnailPath: "" // for video wallpapers
-                property string wallpaperDir: "~/Pictures/hyprwallpapers"
+                property string wallpaperDir: "~/Pictures/hyprwallpapers" // the picker's folder; Wallhaven downloads land here
+                // Favourite wallpapers (absolute paths), hearted in the picker.
+                property var favourites: []
+                // The card-deck picker (modules/wallpaperSelector).
+                property JsonObject picker: JsonObject {
+                    property bool livePreview: true // videos and animated images play in the preview
+                }
+                // Wallhaven search filters. The API key is NOT here: it lives in
+                // $XDG_DATA_HOME/anoshell/secrets/wallhaven (0600), set via anod.
+                property JsonObject wallhaven: JsonObject {
+                    property string categories: "111" // general, anime, people
+                    property string purity: "100"     // sfw, sketchy, nsfw (nsfw needs the key)
+                    property string sorting: "date_added" // date_added | toplist | views | favorites | random | relevance
+                    property string order: "desc"
+                    property string topRange: "1M"    // for toplist: 1d 3d 1w 1M 3M 6M 1y
+                }
                 // How awww fits images (crop | fit | stretch | no); recorded so glass
                 // lines up with what's on screen.
                 property string resize: "fit"

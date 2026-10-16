@@ -10,33 +10,39 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * Wallpaper service with directory browsing, random rotation,
- * thumbnail generation, and per-monitor wallpaper application.
- * Compositor-agnostic — wallpapers are applied by anod (wallpaper.set): awww,
- * matugen colours and the background.hooks.
+ * Wallpapers: the wallpaper folder (background.wallpaperDir) as a list the
+ * picker deals from, anod's palette for it (palette.scan: source colour, hue,
+ * video stills), favourites, and applying a wallpaper. Compositor-agnostic —
+ * wallpapers are applied by anod (wallpaper.set): awww, matugen colours and
+ * the background.hooks.
  */
 Singleton {
     id: root
 
-    property alias directory: folderModel.folder
-    readonly property string effectiveDirectory: FileUtils.trimFileProtocol(folderModel.folder.toString())
-    property url defaultFolder: Qt.resolvedUrl(`${Directories.pictures}/Wallpapers`)
-    property alias folderModel: folderModel
-    property string searchQuery: ""
+    readonly property string effectiveDirectory: {
+        const d = (Config.options?.background?.wallpaperDir ?? "~/Pictures/hyprwallpapers").trim().replace(/\/+$/, "")
+        return d === "~" || d.startsWith("~/") ? Directories.home + d.substring(1) : d
+    }
     readonly property list<string> extensions: [
-        "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg", "mp4", "mkv", "webm", "avi", "mov", "m4v", "ogv"
+        "jpg", "jpeg", "png", "webp", "avif", "bmp", "gif", "svg", "mp4", "mkv", "webm", "avi", "mov", "m4v", "ogv"
     ]
-    property list<string> wallpapers: []
-    readonly property bool thumbnailGenerationRunning: thumbgenProc.running
-    property real thumbnailGenerationProgress: 0
+    // Every wallpaper in the folder: [{ name, path, url, modified (ms), size }],
+    // kept up to date so the picker opens on a ready list.
+    property var entries: []
+    // anod's palette for the folder: { path: { source, hue, luminance, still, video, … } }.
+    property var palette: ({})
+    property bool paletteScanning: false
+    property bool _scanAgain: false
+    // The picker's order, kept for the session: "name" | "hue" | "date".
+    property string deckSort: "name"
 
     signal changed()
-    signal thumbnailGenerated(directory: string)
-    signal thumbnailGeneratedFile(filePath: string)
 
     function load() {} // Force initialization
 
     property list<string> videoExtensions: ["mp4", "mkv", "webm", "avi", "mov", "m4v", "ogv"]
+    // A file:// URL for a path (names may hold '#', '?' or spaces).
+    function fileUrl(path) { return path ? "file://" + path.split("/").map(encodeURIComponent).join("/") : "" }
     function isVideoFile(name) { return videoExtensions.some(ext => name.endsWith("." + ext)) }
 
     Process { id: applyProc }
@@ -49,13 +55,14 @@ Singleton {
         }
     }
 
-    // Random wallpaper rotation
+    // Random wallpaper rotation without anod (anod rotates when it runs, so
+    // this would fight it otherwise).
     property list<string> randomWallpaperList: []
 
     Timer {
         id: randomWallpaperTimer
         interval: Config.options.background.randomize.interval * 1000
-        running: Config.options.background.randomize.enable && Config.options.background.randomize.directory.length > 0
+        running: !Anod.available && Config.options.background.randomize.enable && Config.options.background.randomize.directory.length > 0
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -91,117 +98,90 @@ Singleton {
         target: Config.options.background.randomize
         function onDirectoryChanged() {
             root.randomWallpaperList = []
-            if (Config.options.background.randomize.enable && Config.options.background.randomize.directory.length > 0) {
-                getRandomWallpapersProc.running = true
-            }
+            if (randomWallpaperTimer.running) getRandomWallpapersProc.running = true
         }
     }
 
-    function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "") {
+    // instant: no awww transition (the picker's card grows into the wallpaper itself).
+    function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "", instant = false) {
         if (!path || path.length === 0) return
         // The shell owns its config file; anod applies (awww), colours
         // (matugen) and runs the hooks (pywal, apps, cava …).
         Config.setNestedValue("background.wallpaperPath", path)
         const req = { image: path, mode: darkMode ? "dark" : "light" }
         if (monitorName !== "") req.outputs = [monitorName]
+        if (instant) req.transition = "none"
         const sent = Anod.call("wallpaper.set", req, (res, err) => {
             if (err) Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Wallpaper", `Couldn't apply: ${err.message}`])
         })
         // Without anod: just show it (no colours or hooks).
-        if (!sent) applyProc.exec(["awww", "img", "--resize", Config.options?.background?.resize ?? "fit", "--", path])
+        if (!sent) applyProc.exec(["awww", "img", "--resize", Config.options?.background?.resize ?? "fit"]
+            .concat(instant ? ["--transition-type", "none"] : []).concat(monitorName !== "" ? ["--outputs", monitorName] : []).concat(["--", path]))
         root.changed()
     }
 
-    Process {
-        id: selectProc
-        property string filePath: ""
-        property bool darkMode: Appearance.m3colors.darkmode
-        property string monitorName: ""
-        function select(fp, dm = Appearance.m3colors.darkmode, mn = "") {
-            selectProc.filePath = fp; selectProc.darkMode = dm; selectProc.monitorName = mn
-            selectProc.exec(["test", "-d", FileUtils.trimFileProtocol(fp)])
+    // ── Favourites (background.favourites: absolute paths) ──────────────────
+    readonly property var favourites: Array.from(Config.options?.background?.favourites ?? []) // a plain array (config lists are V4Sequences)
+    function isFavourite(path) {
+        for (let i = 0; i < root.favourites.length; i++) if (root.favourites[i] === path) return true
+        return false
+    }
+    function toggleFavourite(path) {
+        if (!path) return
+        const next = []
+        let removed = false
+        for (let i = 0; i < root.favourites.length; i++) {
+            if (root.favourites[i] === path) removed = true
+            else next.push(root.favourites[i])
         }
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0) { setDirectory(selectProc.filePath); return }
-            root.apply(selectProc.filePath, selectProc.darkMode, selectProc.monitorName)
-        }
+        if (!removed) next.push(path)
+        Config.setNestedValue("background.favourites", next)
     }
 
-    function select(filePath, darkMode = Appearance.m3colors.darkmode, monitorName = "") {
-        selectProc.select(filePath, darkMode, monitorName)
-    }
-
-    function randomFromCurrentFolder(darkMode = Appearance.m3colors.darkmode, monitorName = "") {
-        if (folderModel.count === 0) return
-        const randomIndex = Math.floor(Math.random() * folderModel.count)
-        root.select(folderModel.get(randomIndex, "filePath"), darkMode, monitorName)
-    }
-
-    Process {
-        id: validateDirProc
-        property string nicePath: ""
-        function setDirectoryIfValid(path) {
-            validateDirProc.nicePath = FileUtils.trimFileProtocol(path).replace(/\/+$/, "")
-            if (/^\/*$/.test(validateDirProc.nicePath)) validateDirProc.nicePath = "/"
-            validateDirProc.exec(["bash", "-c",
-                `if [ -d "${validateDirProc.nicePath}" ]; then echo dir; elif [ -f "${validateDirProc.nicePath}" ]; then echo file; else echo invalid; fi`
-            ])
-        }
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const result = text.trim()
-                if (result === "dir") root.directory = Qt.resolvedUrl(validateDirProc.nicePath)
-                else if (result === "file") root.directory = Qt.resolvedUrl(FileUtils.parentDirectory(validateDirProc.nicePath))
+    // ── Palette (anod palette.scan; cached there by path + size + mtime) ────
+    // Without anod there's no palette: the picker shows plain cards and the
+    // hue sort falls back to name order for unread files.
+    function scanPalette() {
+        if (root.paletteScanning) { root._scanAgain = true; return }
+        const dir = root.effectiveDirectory
+        root.paletteScanning = Anod.call("palette.scan", { dir: dir }, (res, err) => {
+            root.paletteScanning = false
+            if (err) console.warn("[Wallpapers] palette.scan:", err.message)
+            else if (dir === root.effectiveDirectory) {
+                const map = {}
+                for (const e of res ?? []) map[e.path] = e
+                root.palette = map
             }
-        }
+            if (root._scanAgain) { root._scanAgain = false; root.scanPalette() }
+        })
     }
-
-    function setDirectory(path) { validateDirProc.setDirectoryIfValid(path) }
-    function navigateUp() { folderModel.navigateUp() }
+    onEffectiveDirectoryChanged: root.palette = ({})
 
     FolderListModel {
         id: folderModel
-        folder: Qt.resolvedUrl(root.defaultFolder)
+        folder: "file://" + root.effectiveDirectory
         caseSensitive: false
         nameFilters: root.extensions.map(ext => `*.${ext}`)
-        showDirs: true
-        showDotAndDotDot: false
+        showDirs: false
         showOnlyReadable: true
-        sortField: FolderListModel.Time
-        sortReversed: false
-        onCountChanged: {
-            root.wallpapers = []
+        sortField: FolderListModel.Name
+        onCountChanged: rebuild.restart()
+        onStatusChanged: rebuild.restart()
+    }
+    // One rebuild per batch of changes (the model fills in steps).
+    Timer {
+        id: rebuild
+        interval: 30
+        onTriggered: {
+            const arr = []
             for (let i = 0; i < folderModel.count; i++) {
-                const path = folderModel.get(i, "filePath") || FileUtils.trimFileProtocol(folderModel.get(i, "fileURL"))
-                if (path && path.length) root.wallpapers.push(path)
+                const path = folderModel.get(i, "filePath")
+                if (!path) continue
+                arr.push({ name: folderModel.get(i, "fileName"), path: path, url: String(folderModel.get(i, "fileUrl")),
+                    modified: folderModel.get(i, "fileModified")?.getTime?.() ?? 0, size: folderModel.get(i, "fileSize") ?? 0 })
             }
+            root.entries = arr
         }
-    }
-
-    // Thumbnail generation
-    function generateThumbnail(size) {
-        if (!["normal", "large", "x-large", "xx-large"].includes(size)) throw new Error("Invalid thumbnail size")
-        thumbgenProc.running = false
-        const scriptPath = `${FileUtils.trimFileProtocol(Directories.scriptPath)}/thumbnails/thumbgen-venv.sh`
-        const fallbackPath = `${FileUtils.trimFileProtocol(Directories.scriptPath)}/thumbnails/generate-thumbnails-magick.sh`
-        thumbgenProc.command = ["bash", "-c",
-            `${scriptPath} --size ${size} --machine_progress -d ${effectiveDirectory} || ${fallbackPath} --size ${size} -d ${effectiveDirectory}`
-        ]
-        root.thumbnailGenerationProgress = 0
-        thumbgenProc.running = true
-    }
-
-    Process {
-        id: thumbgenProc
-        stdout: SplitParser {
-            onRead: data => {
-                let match = data.match(/PROGRESS (\d+)\/(\d+)/)
-                if (match) root.thumbnailGenerationProgress = parseInt(match[1]) / parseInt(match[2])
-                match = data.match(/FILE (.+)/)
-                if (match) root.thumbnailGeneratedFile(match[1])
-            }
-        }
-        onExited: root.thumbnailGenerated(effectiveDirectory)
     }
 
     IpcHandler {
