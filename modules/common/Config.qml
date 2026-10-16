@@ -690,6 +690,18 @@ Singleton {
                 property string wallpaperPath: ""
                 property string thumbnailPath: "" // for video wallpapers
                 property string wallpaperDir: "~/Pictures/hyprwallpapers"
+                // How awww fits images (crop | fit | stretch | no); recorded so glass
+                // lines up with what's on screen.
+                property string resize: "fit"
+                // Run in order after each wallpaper change (by anod): argv with
+                // {image} {mode} {colors}; builtin "cava" recolours cava from pywal.
+                // Skipped when not installed, disabled, or in fixed colour mode.
+                property var hooks: [
+                    { "name": "pywal", "enable": true, "command": ["wal", "-i", "{image}", "-n", "-q"], "timeoutSeconds": 30 },
+                    { "name": "swaync", "enable": true, "command": ["swaync-client", "--reload-css"] },
+                    { "name": "cava", "enable": true, "builtin": "cava" },
+                    { "name": "themes", "enable": true, "command": ["~/.config/awww/scripts/awww_generate_themes.sh"], "timeoutSeconds": 30 }
+                ]
 
                 // Wallpaper rotation. Property name matches the bundled
                 // config.json (`background.randomize.*`) and Wallpapers.qml's

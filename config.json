@@ -210,6 +210,43 @@
   "background": {
     "wallpaperPath": "",
     "thumbnailPath": "",
+    "wallpaperDir": "~/Pictures/hyprwallpapers",
+    "resize": "fit",
+    "hooks": [
+      {
+        "name": "pywal",
+        "enable": true,
+        "command": [
+          "wal",
+          "-i",
+          "{image}",
+          "-n",
+          "-q"
+        ],
+        "timeoutSeconds": 30
+      },
+      {
+        "name": "swaync",
+        "enable": true,
+        "command": [
+          "swaync-client",
+          "--reload-css"
+        ]
+      },
+      {
+        "name": "cava",
+        "enable": true,
+        "builtin": "cava"
+      },
+      {
+        "name": "themes",
+        "enable": true,
+        "command": [
+          "~/.config/awww/scripts/awww_generate_themes.sh"
+        ],
+        "timeoutSeconds": 30
+      }
+    ],
     "randomize": {
       "enable": false,
       "directory": "~/Pictures/Wallpapers",

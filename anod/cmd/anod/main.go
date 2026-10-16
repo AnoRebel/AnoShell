@@ -22,6 +22,7 @@ import (
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
+	"ano/anod/internal/wallpaper"
 )
 
 func main() {
@@ -109,6 +110,51 @@ func main() {
 		return s.Validate(m), nil
 	})
 
+	// Wallpaper pipeline (replaces switchwall.sh and the awww randomize loop).
+	stateDir := filepath.Join(xdgState(), "anoshell")
+	wp := &wallpaper.Pipeline{
+		ColorsPath: filepath.Join(stateDir, "generated", "colors.json"),
+		StatePath:  filepath.Join(stateDir, "wallpaper.json"),
+		Logf:       log.Printf,
+	}
+	announce := func(res wallpaper.Result, s wallpaper.Settings) {
+		data := map[string]string{"wallpaper": res.Image, "themeMode": s.Mode}
+		runner.Fire("wallpaper_changed", data)
+		srv.Broadcast("wallpaper_changed", map[string]any{"wallpaper": res.Image, "themeMode": s.Mode, "resize": res.Resize, "steps": res.Steps})
+	}
+	rot := &wallpaper.Rotator{
+		Pipeline: wp,
+		BagPath:  filepath.Join(stateDir, "rotation.json"),
+		Settings: wallpaperSettings,
+		OnApply:  func(r wallpaper.Result) { _, s := wallpaperSettings(); announce(r, s) },
+	}
+	srv.Handle("wallpaper.set", func(p json.RawMessage) (any, error) {
+		var req struct {
+			wallpaper.Request
+			Mode string `json:"mode"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Image == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?}")
+		}
+		_, s := wallpaperSettings()
+		if req.Mode == "dark" || req.Mode == "light" {
+			s.Mode = req.Mode
+		}
+		res, err := wp.Apply(ctx, req.Request, s)
+		if err != nil {
+			return res, err
+		}
+		announce(res, s)
+		return res, nil
+	})
+	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
+	srv.Handle("wallpaper.status", func(json.RawMessage) (any, error) {
+		rs, _ := wallpaperSettings()
+		return map[string]any{"state": wp.LoadState(), "rotation": map[string]any{
+			"enable": rs.Enable, "dir": rs.Dir, "intervalSeconds": int(rs.Interval.Seconds())}}, nil
+	})
+	go rot.Run(ctx)
+
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)
 	}
@@ -141,6 +187,55 @@ func hookConfig() hooks.Config {
 		c.Commands[ev] = config.String(m, "hooks."+key, "")
 	}
 	return c
+}
+
+func xdgState() string {
+	if d := os.Getenv("XDG_STATE_HOME"); d != "" {
+		return d
+	}
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "state")
+}
+
+// wallpaperSettings reads background.* and the colour settings on every use.
+func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
+	m, err := config.Effective()
+	if err != nil {
+		log.Printf("wallpaper: %v", err)
+		m = map[string]any{}
+	}
+	trans := config.String(m, "background.transition.type", "fade")
+	switch trans {
+	case "crossfade", "":
+		trans = "fade"
+	}
+	if !config.Bool(m, "background.transition.enable", true) {
+		trans = "none"
+	}
+	mode := "dark"
+	if !config.Bool(m, "appearance.colors.darkMode", true) {
+		mode = "light"
+	}
+	s := wallpaper.Settings{
+		Resize:     config.String(m, "background.resize", "fit"),
+		Transition: trans,
+		DurationMs: config.Int(m, "background.transition.duration", 800),
+		Mode:       mode,
+		SchemeType: config.String(m, "appearance.colors.schemeType", "tonal-spot"),
+		Prefer:     config.String(m, "appearance.colors.prefer", "saturation"),
+		FixedColor: config.String(m, "appearance.theme.colorMode", "dynamicAccent") == "fixed" ||
+			config.String(m, "appearance.theme.source", "materialYou") == "static",
+	}
+	if raw, ok := config.Get(m, "background.hooks"); ok {
+		b, _ := json.Marshal(raw)
+		_ = json.Unmarshal(b, &s.Hooks)
+	}
+	rs := wallpaper.RotationSettings{
+		Enable:   config.Bool(m, "background.randomize.enable", false),
+		Dir:      config.String(m, "background.randomize.directory", "~/Pictures/Wallpapers"),
+		Interval: time.Duration(config.Int(m, "background.randomize.interval", 300)) * time.Second,
+	}
+	return rs, s
 }
 
 func notify(title, body string) {
