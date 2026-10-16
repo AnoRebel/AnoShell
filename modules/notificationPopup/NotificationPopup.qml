@@ -190,7 +190,7 @@ Scope {
 
                                 StyledImage {
                                     anchors.centerIn: parent; width: 20; height: 20
-                                    source: modelData?.image?.length > 0 ? modelData.image : modelData?.appIcon?.length > 0 ? modelData.appIcon : ""
+                                    source: FileUtils.iconSource(modelData?.image || modelData?.appIcon || "")
                                     visible: source.toString().length > 0
                                 }
                                 MaterialSymbol {

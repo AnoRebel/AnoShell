@@ -54,10 +54,7 @@ Item {
                 StyledImage {
                     anchors.centerIn: parent
                     width: 24; height: 24
-                    source: root.notification?.image?.length > 0
-                        ? root.notification.image
-                        : root.notification?.appIcon?.length > 0
-                            ? root.notification.appIcon : ""
+                    source: FileUtils.iconSource(root.notification?.image || root.notification?.appIcon || "")
                     visible: source.toString().length > 0
                 }
                 MaterialSymbol {

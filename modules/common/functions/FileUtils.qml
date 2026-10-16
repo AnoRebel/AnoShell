@@ -18,6 +18,15 @@ Singleton {
         return "file://" + path;
     }
 
+    // Image source for an icon given as a theme name, a path or a URL
+    // (notification appIcon/image can be any of these).
+    function iconSource(icon) {
+        if (typeof icon !== "string" || icon.length === 0) return "";
+        if (icon.includes("://")) return icon;
+        if (icon.startsWith("/")) return "file://" + icon;
+        return "image://icon/" + icon;
+    }
+
     // Get filename from path
     function basename(path) {
         if (typeof path !== "string") return "";
