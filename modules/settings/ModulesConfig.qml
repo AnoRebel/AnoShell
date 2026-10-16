@@ -309,6 +309,17 @@ ColumnLayout {
         subtitle: "Window switching overlay appearance and behavior"
         configKeys: ["altSwitcher"]
 
+        ConfigRow {
+            label: "Style"
+            configKey: "altSwitcher.style"
+            sublabel: ({ fan: "Cards on an arc from the pill's edge", list: "A list with thumbnails", fullscreen: "The overview" })[Config.options?.altSwitcher?.style ?? "fan"] ?? ""
+            ChoiceRow {
+                model: [{ value: "fan", label: "Fan", icon: "view_carousel" }, { value: "list", label: "List", icon: "view_list" }, { value: "fullscreen", label: "Overview", icon: "grid_view" }]
+                current: Config.options?.altSwitcher?.style ?? "fan"
+                onChose: value => Config.setNestedValue("altSwitcher.style", value)
+            }
+        }
+
         ConfigSwitch {
             label: "Enable animations"
             configKey: "altSwitcher.enableAnimation"

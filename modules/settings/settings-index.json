@@ -319,6 +319,15 @@
  {
   "page": 1,
   "card": "",
+  "label": "Style",
+  "sublabel": "Cards on an arc from the pill's edge",
+  "keys": [
+   "altSwitcher.style"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
   "label": "Enable animations",
   "sublabel": "",
   "keys": [
