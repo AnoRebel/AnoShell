@@ -177,7 +177,23 @@ Item {
                 text: AnoSpotState.mpris?.playing ? "music_note" : "pause"
                 iconSize: 14; color: Appearance.colors.colPrimary
             }
-            AnoSpotBattery { Layout.alignment: Qt.AlignHCenter }
+            // Compact battery for the narrow capsule: icon over the number.
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                visible: Battery.available && (Config.options?.anoSpot?.showBattery ?? true)
+                spacing: 0
+                MaterialSymbol {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Battery.isCharging ? "battery_charging_full" : "battery_full"
+                    iconSize: 14
+                    color: Battery.isLow && !Battery.isCharging ? Appearance.colors.colError : Appearance.colors.colOnLayer0
+                }
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Math.round(Battery.percentage * 100)
+                    font.pixelSize: Appearance.font.pixelSize.smallest
+                }
+            }
         }
     }
 

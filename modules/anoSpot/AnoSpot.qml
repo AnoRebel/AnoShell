@@ -150,8 +150,8 @@ Scope {
                 left: root.position === "left"
                 right: root.position === "right"
             }
-            implicitWidth: root.isVertical ? 3 : spotWindow.width
-            implicitHeight: root.isVertical ? spotWindow.height : 3
+            implicitWidth: root.isVertical ? 3 : spotWindow._w
+            implicitHeight: root.isVertical ? spotWindow._h : 3
             MouseArea {
                 id: peekArea
                 anchors.fill: parent
@@ -194,12 +194,23 @@ Scope {
             property real _h: grown ? grownH : root.isVertical ? (transientShown ? Math.max(length, 120) : length) : root.heightPx
             // Only while growing/shrinking: resting length already springs.
             property bool _growing: false
-            onGrownChanged: { _growing = true; growSettle.restart() }
+            onGrownChanged: { if (grown) _big = true; _growing = true; growSettle.restart() }
             onTransientShownChanged: { _growing = true; growSettle.restart() }
-            Timer { id: growSettle; interval: 1400; onTriggered: spotWindow._growing = false }
+            Timer { id: growSettle; interval: 1400; onTriggered: { spotWindow._growing = false; if (!spotWindow.grown) spotWindow._big = false } }
             Behavior on _w { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
             Behavior on _h { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
-            readonly property real cornerRadius: grown ? Appearance.rounding.windowRounding : Math.min(width, height) / 2
+            readonly property real cornerRadius: grown ? Appearance.rounding.windowRounding : Math.min(_w, _h) / 2
+
+            // ── Envelope ────────────────────────────────────────────────────
+            // The window keeps a fixed size while the pill animates inside it
+            // (pillBody): resizing a Wayland surface every frame is a configure
+            // round trip per frame, which made every pill animation stutter.
+            // It only changes when a grow starts (to the grow size) and after
+            // a shrink has settled (back to the resting size).
+            property bool _big: false
+            readonly property real _maxAlong: Math.max(root.widthPx, 460)
+            readonly property real _envW: !root.isVertical ? _maxAlong : (_big ? _maxAlong : root.heightPx)
+            readonly property real _envH: !root.isVertical ? (_big ? _maxH : root.heightPx) : (_big ? _maxH : _maxAlong)
             WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             Shortcut { sequence: "Escape"; enabled: spotWindow.grown; onActivated: spotWindow.grownTarget = "" }
 
@@ -222,8 +233,8 @@ Scope {
             Timer { running: spotWindow._revealed && !spotWindow._animated; interval: 2000; onTriggered: spotWindow._animated = true }
             onLengthChanged: if (!spotWindow._revealed && revealTimer.running) revealTimer.restart()
             Behavior on length { enabled: spotWindow._animated; MotionSpring { token: "snappy" } }
-            implicitWidth: Math.round(_w)
-            implicitHeight: Math.round(_h)
+            implicitWidth: Math.round(_envW)
+            implicitHeight: Math.round(_envH)
 
             // Normal: placed past the bar on the same edge instead of over it.
             exclusionMode: ExclusionMode.Normal
@@ -273,7 +284,7 @@ Scope {
             // 0 = shown, 1 = fully inside the edge.
             property real tuck: tucked ? 1 : 0
             Behavior on tuck { MotionSpring { token: spotWindow.tucked ? "settle" : "liquid" } }
-            readonly property real _depth: (root.isVertical ? width : height) + gap
+            readonly property real _depth: (root.isVertical ? _w : _h) + gap
             readonly property real _shift: Math.max(0, tuck) * _depth
             // The whole content slides; the window itself stays put.
             Binding {
@@ -282,7 +293,7 @@ Scope {
                 value: (root.position === "top" || root.position === "left") ? -spotWindow._shift : spotWindow._shift
             }
             // Fully tucked: click-through (only the peek strip takes input).
-            mask: Region { item: spotWindow.tuck > 0.99 ? null : spotWindow.contentItem }
+            mask: Region { item: spotWindow.tuck > 0.99 ? null : pillBody }
 
             ConnectedSurfaceLease {
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
@@ -295,8 +306,8 @@ Scope {
                 // the space other edges leave, e.g. beside a left bar).
                 readonly property point _o: PanelRegistry.windowOrigin(spotWindow)
                 readonly property real _s: (root.position === "top" || root.position === "left") ? -spotWindow._shift : spotWindow._shift
-                x: _o.x + (root.isVertical ? _s : 0); y: _o.y + (root.isVertical ? 0 : _s)
-                w: spotWindow.width; h: spotWindow.height
+                x: _o.x + pillBody.x + (root.isVertical ? _s : 0); y: _o.y + pillBody.y + (root.isVertical ? 0 : _s)
+                w: pillBody.width; h: pillBody.height
             }
 
             // Animated gradient ring rendered behind the pill. When the
@@ -306,9 +317,7 @@ Scope {
             // whose hue rotates over the pulse cycle.
             Item {
                 id: borderHalo
-                anchors.centerIn: parent
-                width: parent.width
-                height: parent.height
+                anchors.fill: pillBody
                 opacity: 0
                 visible: opacity > 0
                 z: -1
@@ -353,10 +362,14 @@ Scope {
                 }
             }
 
+            // The visible pill: animates inside the fixed window, pinned to its
+            // edge and centred along it.
             Rectangle {
-                anchors.centerIn: parent
-                width: parent.width
-                height: parent.height
+                id: pillBody
+                width: Math.round(spotWindow._w)
+                height: Math.round(spotWindow._h)
+                x: root.position === "right" ? parent.width - width : root.position === "left" ? 0 : Math.round((parent.width - width) / 2)
+                y: root.position === "bottom" ? parent.height - height : root.position === "top" ? 0 : Math.round((parent.height - height) / 2)
                 radius: spotWindow.cornerRadius
                 color: spotWindow.connected ? "transparent" : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
                 // Glass-token-driven border + opacity so static themes
@@ -501,7 +514,7 @@ Scope {
                     active: spotWindow.grown
                     anchors.fill: parent
                     anchors.margins: 16
-                    opacity: spotWindow.grown && spotWindow.width >= spotWindow.grownW * 0.85 ? 1 : 0
+                    opacity: spotWindow.grown && spotWindow._w >= spotWindow.grownW * 0.85 ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
                     sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
                 }
