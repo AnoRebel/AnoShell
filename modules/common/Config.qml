@@ -1165,6 +1165,9 @@ Singleton {
                 property string stashDir: ""
                 property var dropTargets: []
                 property bool showLyrics: false
+                // Status zones (track, notification, battery) collapse to their icon
+                // and open on hover.
+                property bool accordion: true
                 // Resting faces, switched by horizontal swipe / shift-wheel. Status
                 // is always first; media/spectrum need a player, lyrics the
                 // lyrics service.

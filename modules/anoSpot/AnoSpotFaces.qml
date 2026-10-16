@@ -25,6 +25,7 @@ Item {
     property bool vertical: false
     // Pill-bar style: the status face carries the bar's workspaces and tray.
     property bool barMode: false
+    readonly property bool accordion: Config.options?.anoSpot?.accordion ?? true
     property real thickness: 36
     // Face ids in cycle order; the caller drops disabled/unavailable ones.
     property var faces: ["status"]
@@ -148,11 +149,25 @@ Item {
             spacing: 10
             AnoSpotWorkspace  { visible: !root.barMode && (Config.options?.anoSpot?.showWorkspace ?? true) }
             WorkspacesModule  { visible: root.barMode }
-            AnoSpotMpris      { Layout.minimumWidth: 60; visible: (Config.options?.anoSpot?.showMpris ?? true) && AnoSpotState.mpris !== null }
+            // Long zones collapse to their icon and open on hover
+            // (anoSpot.accordion); the clock always shows.
+            AnoSpotAccordion {
+                enabled: root.accordion
+                visible: (Config.options?.anoSpot?.showMpris ?? true) && AnoSpotState.mpris !== null
+                AnoSpotMpris { }
+            }
             AnoSpotRecording  { visible: (Config.options?.anoSpot?.showRecording ?? true) && AnoSpotState.recording.active }
-            AnoSpotNotification { visible: (Config.options?.anoSpot?.showNotification ?? true) && AnoSpotState.latestNotification !== null }
+            AnoSpotAccordion {
+                enabled: root.accordion
+                visible: (Config.options?.anoSpot?.showNotification ?? true) && AnoSpotState.latestNotification !== null
+                AnoSpotNotification { }
+            }
             AnoSpotClockWeather { visible: Config.options?.anoSpot?.showClockWeather ?? true }
-            AnoSpotBattery    { }
+            AnoSpotAccordion {
+                enabled: root.accordion
+                visible: Battery.available && (Config.options?.anoSpot?.showBattery ?? true)
+                AnoSpotBattery { }
+            }
             TrayModule        { visible: root.barMode }
         }
     }

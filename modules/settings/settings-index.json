@@ -1309,7 +1309,17 @@
    "anoSpot.showClockWeather",
    "anoSpot.showWorkspace",
    "anoSpot.showBattery",
-   "anoSpot.showLyrics"
+   "anoSpot.showLyrics",
+   "anoSpot.accordion"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Collapse to icons",
+  "sublabel": "The track, notification and battery show as icons and open when you hover them",
+  "keys": [
+   "anoSpot.accordion"
   ]
  },
  {

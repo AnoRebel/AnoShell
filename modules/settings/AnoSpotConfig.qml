@@ -188,7 +188,15 @@ ColumnLayout {
         icon: "widgets"
         title: "Widgets"
         subtitle: "Which slots to render"
-        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.showBattery", "anoSpot.showLyrics"]
+        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.showBattery", "anoSpot.showLyrics", "anoSpot.accordion"]
+
+        ConfigSwitch {
+            label: "Collapse to icons"
+            configKey: "anoSpot.accordion"
+            sublabel: "The track, notification and battery show as icons and open when you hover them"
+            checked: Config.options?.anoSpot?.accordion ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.accordion", checked)
+        }
 
         ConfigSwitch {
             label: "Now playing (Mpris)"

@@ -18,6 +18,7 @@
   "animations.reducedMotion": "bool",
   "animations.speed": "real",
   "anoSpot.acceptDrops": "bool",
+  "anoSpot.accordion": "bool",
   "anoSpot.actions.leftClick": "string",
   "anoSpot.actions.middleClick": "string",
   "anoSpot.actions.rightClick": "string",

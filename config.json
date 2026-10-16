@@ -371,6 +371,7 @@
     "stashDir": "",
     "dropTargets": [],
     "showLyrics": false,
+    "accordion": true,
     "faces": {
       "media": true,
       "spectrum": false,
