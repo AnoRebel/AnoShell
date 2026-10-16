@@ -55,9 +55,9 @@ Singleton {
         { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
         // Features with their own Settings pages (not listed on the Modules page)
         { id: "anoScreen", source: "modules/anoScreen/AnoScreen.qml", key: "appearance.connectedCorners.enable", listed: false },
-        { id: "anoSpot", source: "modules/anoSpot/AnoSpot.qml", key: "anoSpot.enable", listed: false },
-        { id: "anoSpotStash", source: "modules/anoSpot/AnoSpotStashPopout.qml", key: "anoSpot.enable", listed: false },
-        { id: "anoSpotWorkspacePreview", source: "modules/anoSpot/AnoSpotWorkspacePreview.qml", key: "anoSpot.enable", listed: false },
+        { id: "anoSpot", source: "modules/anoSpot/AnoSpot.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
+        { id: "anoSpotStash", source: "modules/anoSpot/AnoSpotStashPopout.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
+        { id: "anoSpotWorkspacePreview", source: "modules/anoSpot/AnoSpotWorkspacePreview.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
         { id: "anoMorphLayer", source: "modules/common/widgets/TopLayerPanel.qml", listed: false, effective: "morphingPanels" },
     ]
 
@@ -116,7 +116,9 @@ Singleton {
         const m = root.module(id)
         if (!m || !root.hosted(id) || !root.userEnabled(id)) return false
         if (root.pillOnly && root._pillOnlyHides.includes(id)) return false
-        if (m.key && !(root._keyValue(m.key) ?? false)) return false
+        // The pill also loads when it is the bar (bar.style pill), whatever
+        // anoSpot.enable says.
+        if (m.key && !(root._keyValue(m.key) ?? false) && !(m.orPillBar && BarStyle.pillBar)) return false
         if (m.effective && !root[m.effective]) return false
         if (m.compositor && CompositorService.compositor !== m.compositor) return false
         if (m.capability && !(CompositorService.supports[m.capability] ?? false)) return false
