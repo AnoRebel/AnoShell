@@ -14,12 +14,14 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
 	"ano/anod/internal/config"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
+	"ano/anod/internal/palette"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
 	"ano/anod/internal/wallpaper"
@@ -155,6 +157,19 @@ func main() {
 	})
 	go rot.Run(ctx)
 
+	// Palette cache for the wallpaper picker (hue sort) and glass (luminance).
+	cacheDir := filepath.Join(xdgCache(), "anoshell")
+	pal := &palette.Cache{Path: filepath.Join(cacheDir, "palette.json"), StillDir: filepath.Join(cacheDir, "stills"), Logf: log.Printf}
+	srv.Handle("palette.scan", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Dir string `json:"dir"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Dir == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {dir}")
+		}
+		return pal.Scan(ctx, expandHome(req.Dir))
+	})
+
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)
 	}
@@ -187,6 +202,22 @@ func hookConfig() hooks.Config {
 		c.Commands[ev] = config.String(m, "hooks."+key, "")
 	}
 	return c
+}
+
+func xdgCache() string {
+	if d := os.Getenv("XDG_CACHE_HOME"); d != "" {
+		return d
+	}
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".cache")
+}
+
+func expandHome(p string) string {
+	if p == "~" || strings.HasPrefix(p, "~/") {
+		home, _ := os.UserHomeDir()
+		return filepath.Join(home, strings.TrimPrefix(p, "~"))
+	}
+	return p
 }
 
 func xdgState() string {
