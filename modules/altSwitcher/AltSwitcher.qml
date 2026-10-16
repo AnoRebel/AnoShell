@@ -41,6 +41,13 @@ Scope {
     // Opened with Alt+Tab (IPC next/prev): releasing Alt picks the window.
     property bool viaAlt: false
 
+    // Workspace flip (fan style): going past the last window flips the deck to
+    // workspace cards; going back past the first workspace flips back.
+    property bool wsMode: false
+    property int wsIndex: 0
+    readonly property var workspaceList: CompositorService.workspaces
+    onWsModeChanged: wsMode ? CompositorService.acquireWindows("altSwitcherFlip") : CompositorService.releaseWindows("altSwitcherFlip")
+
     // State
     property bool panelVisible: false
     property var windowSnapshot: []
@@ -81,9 +88,15 @@ Scope {
     function hide() {
         panelVisible = false
         viaAlt = false
+        wsMode = false
     }
 
     function activateSelected() {
+        if (wsMode) {
+            const ws = workspaceList[wsIndex]
+            if (ws) CompositorService.focusWorkspace(ws.number, ws.output)
+            hide(); return
+        }
         const windows = filteredWindows
         if (selectedIndex < 0 || selectedIndex >= windows.length) { hide(); return }
         const win = windows[selectedIndex]
@@ -92,12 +105,23 @@ Scope {
     }
 
     function cycleNext() {
+        if (wsMode) { wsIndex = Math.min(wsIndex + 1, workspaceList.length - 1); return }
         const total = filteredWindows.length
         if (total <= 0) return
+        if (style === "fan" && selectedIndex === total - 1 && workspaceList.length > 0) {
+            wsIndex = Math.max(0, workspaceList.findIndex(w => w.focused))
+            wsMode = true
+            return
+        }
         selectedIndex = (selectedIndex + 1) % total
     }
 
     function cyclePrev() {
+        if (wsMode) {
+            if (wsIndex <= 0) { wsMode = false; selectedIndex = Math.max(0, filteredWindows.length - 1) }
+            else wsIndex--
+            return
+        }
         const total = filteredWindows.length
         if (total <= 0) return
         selectedIndex = (selectedIndex - 1 + total) % total

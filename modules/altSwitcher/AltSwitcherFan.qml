@@ -63,16 +63,39 @@ PanelWindow {
         }
     }
 
+    // Flip between windows and workspaces: fold the deck edge-on, swap what it
+    // shows, unfold. Reversible mid-way (it just plays the other way).
+    property bool showingWs: false
+    property real flip: 0          // 0 flat … 1 edge-on
+    Connections {
+        target: root.switcher
+        function onWsModeChanged() { flipAnim.restart() }
+    }
+    SequentialAnimation {
+        id: flipAnim
+        NumberAnimation { target: root; property: "flip"; to: 1; duration: AnimationConfig.scaledDuration(150); easing.type: Easing.InCubic }
+        ScriptAction { script: root.showingWs = root.switcher.wsMode }
+        NumberAnimation { target: root; property: "flip"; to: 0; duration: AnimationConfig.scaledDuration(190); easing.type: Easing.OutCubic }
+    }
+    onOpenChanged: if (!open) { flipAnim.stop(); flip = 0; showingWs = false }
+
     // The deck slides out of the edge as it opens.
     Item {
         id: deck
         anchors.fill: parent
         opacity: Math.min(1, root.shown * 1.4)
         readonly property real slide: (1 - Math.max(0, Math.min(1, root.shown))) * root.depth * 0.6
-        transform: Translate {
-            x: root.edge === "left" ? -deck.slide : root.edge === "right" ? deck.slide : 0
-            y: root.edge === "top" ? -deck.slide : root.edge === "bottom" ? deck.slide : 0
-        }
+        transform: [
+            Translate {
+                x: root.edge === "left" ? -deck.slide : root.edge === "right" ? deck.slide : 0
+                y: root.edge === "top" ? -deck.slide : root.edge === "bottom" ? deck.slide : 0
+            },
+            Rotation {
+                origin.x: deck.width / 2; origin.y: deck.height / 2
+                axis { x: root.vertical ? 0 : 1; y: root.vertical ? 1 : 0; z: 0 }
+                angle: root.flip * 90
+            }
+        ]
 
         WheelHandler {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -82,14 +105,14 @@ PanelWindow {
         PathView {
             id: fan
             anchors.fill: parent
-            model: root.switcher.filteredWindows
+            model: root.showingWs ? root.switcher.workspaceList : root.switcher.filteredWindows
             interactive: false
             pathItemCount: Math.min(count, 7)
             preferredHighlightBegin: 0.5
             preferredHighlightEnd: 0.5
             highlightRangeMode: PathView.StrictlyEnforceRange
             highlightMoveDuration: AnimationConfig.scaledDuration(260)
-            currentIndex: root.switcher.selectedIndex
+            currentIndex: root.showingWs ? root.switcher.wsIndex : root.switcher.selectedIndex
             // An arc bulging away from the edge: ends near the edge, middle out.
             readonly property real m: 40      // edge margin
             // How far a card centre may go from the edge and stay inside.
@@ -134,8 +157,45 @@ PanelWindow {
                 Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.OutCubic } }
                 opacity: 0.55 + 0.45 * lift
 
+                // Workspace card (flipped): number and its windows' icons.
+                Rectangle {
+                    visible: root.showingWs
+                    anchors.fill: parent
+                    radius: Appearance.rounding.normal
+                    color: Appearance.colors.colLayer1
+                    border.width: card.current ? 2 : 1
+                    border.color: card.current ? Appearance.colors.colPrimary : Appearance.colors.colOutlineVariant
+                    readonly property var wins: root.showingWs ? CompositorService.windows.filter(w => w.workspace === card.modelData.number) : []
+                    StyledText {
+                        anchors { left: parent.left; top: parent.top; margins: 10 }
+                        text: card.modelData.name ?? card.modelData.number ?? ""
+                        font.pixelSize: Appearance.font.pixelSize.hugeass
+                        font.weight: Font.Bold
+                        color: card.modelData.focused ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+                    }
+                    Flow {
+                        anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10 }
+                        spacing: 6
+                        Repeater {
+                            model: parent.parent.wins.slice(0, 12)
+                            IconImage {
+                                required property var modelData
+                                implicitSize: 26
+                                source: `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}`
+                            }
+                        }
+                    }
+                    StyledText {
+                        visible: parent.wins.length === 0
+                        anchors.centerIn: parent
+                        text: "empty"; opacity: 0.5
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                    }
+                }
+
                 Rectangle {
                     id: face
+                    visible: !root.showingWs
                     anchors.fill: parent
                     radius: Appearance.rounding.normal
                     color: Appearance.colors.colLayer1
@@ -148,7 +208,7 @@ PanelWindow {
                     Loader {
                         id: thumb
                         anchors { fill: parent; margins: 4; bottomMargin: 30 }
-                        active: root.capture && root.open && !!card.modelData.toplevel
+                        active: !root.showingWs && root.capture && root.open && !!card.modelData.toplevel
                         sourceComponent: ScreencopyView {
                             captureSource: card.modelData.toplevel
                             live: true
@@ -174,8 +234,8 @@ PanelWindow {
                     }
                 }
 
-                HoverHandler { onHoveredChanged: if (hovered) root.switcher.selectedIndex = card.index }
-                TapHandler { onTapped: { root.switcher.selectedIndex = card.index; root.switcher.activateSelected() } }
+                HoverHandler { onHoveredChanged: if (hovered) { if (root.showingWs) root.switcher.wsIndex = card.index; else root.switcher.selectedIndex = card.index } }
+                TapHandler { onTapped: { if (root.showingWs) root.switcher.wsIndex = card.index; else root.switcher.selectedIndex = card.index; root.switcher.activateSelected() } }
             }
         }
     }
