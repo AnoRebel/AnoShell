@@ -21,7 +21,7 @@ Singleton {
 
     readonly property string effectiveDirectory: {
         const d = (Config.options?.background?.wallpaperDir ?? "~/Pictures/hyprwallpapers").trim().replace(/\/+$/, "")
-        return d === "~" || d.startsWith("~/") ? Directories.home + d.substring(1) : d
+        return d === "~" || d.startsWith("~/") ? FileUtils.trimFileProtocol(Directories.home) + d.substring(1) : d
     }
     readonly property list<string> extensions: [
         "jpg", "jpeg", "png", "webp", "avif", "bmp", "gif", "svg", "mp4", "mkv", "webm", "avi", "mov", "m4v", "ogv"
@@ -77,7 +77,7 @@ Singleton {
 
     Process {
         id: getRandomWallpapersProc
-        property string expandedDir: Config.options.background.randomize.directory.replace(/^~/, Directories.home)
+        property string expandedDir: Config.options.background.randomize.directory.replace(/^~/, FileUtils.trimFileProtocol(Directories.home))
         command: ["find", expandedDir, "-type", "f", "-regex", ".*\\.\\(jpg\\|jpeg\\|png\\|webp\\|avif\\|bmp\\|svg\\|mp4\\|mkv\\|webm\\|avi\\|mov\\|m4v\\|ogv\\)"]
         stdout: StdioCollector {
             id: randomWallpapersCollector

@@ -4,6 +4,7 @@ import QtQuick.Effects
 import Quickshell
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "deck.js" as Deck
@@ -952,7 +953,7 @@ Item {
             text: root.online ? (Wallhaven.error || (Wallhaven.fetching ? "Searching Wallhaven…" : "No results"))
                 : root.mode === "favourites" ? "No favourites yet: press F on a wallpaper you like"
                 : root.query !== "" ? "Nothing matches “" + root.query + "”"
-                : "No wallpapers in " + Wallpapers.effectiveDirectory.replace(Directories.home, "~")
+                : "No wallpapers in " + Wallpapers.effectiveDirectory.replace(FileUtils.trimFileProtocol(Directories.home), "~")
             font.pixelSize: (Appearance?.font.pixelSize.normal ?? 16) * root.u
             color: Qt.rgba(1, 1, 1, 1)
         }
