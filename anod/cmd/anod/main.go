@@ -22,6 +22,7 @@ import (
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/palette"
+	"ano/anod/internal/secrets"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
 	"ano/anod/internal/wallpaper"
@@ -133,14 +134,18 @@ func main() {
 	srv.Handle("wallpaper.set", func(p json.RawMessage) (any, error) {
 		var req struct {
 			wallpaper.Request
-			Mode string `json:"mode"`
+			Mode       string `json:"mode"`
+			Transition string `json:"transition"` // "none": the caller animates (the picker's card grows into it)
 		}
 		if err := json.Unmarshal(p, &req); err != nil || req.Image == "" {
-			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?}")
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?, transition?}")
 		}
 		_, s := wallpaperSettings()
 		if req.Mode == "dark" || req.Mode == "light" {
 			s.Mode = req.Mode
+		}
+		if req.Transition == "none" {
+			s.Transition = "none"
 		}
 		res, err := wp.Apply(ctx, req.Request, s)
 		if err != nil {
@@ -160,7 +165,8 @@ func main() {
 	// Palette cache for the wallpaper picker (hue sort) and glass (luminance).
 	cacheDir := filepath.Join(xdgCache(), "anoshell")
 	pal := &palette.Cache{Path: filepath.Join(cacheDir, "palette.json"), StillDir: filepath.Join(cacheDir, "stills"), Logf: log.Printf}
-	srv.Handle("palette.scan", func(p json.RawMessage) (any, error) {
+	// Slow: a cold scan runs matugen per file; the shell's other calls go on meanwhile.
+	srv.HandleSlow("palette.scan", func(p json.RawMessage) (any, error) {
 		var req struct {
 			Dir string `json:"dir"`
 		}
@@ -168,6 +174,25 @@ func main() {
 			return nil, ipc.Errorf(ipc.CodeBadInput, "want {dir}")
 		}
 		return pal.Scan(ctx, expandHome(req.Dir))
+	})
+
+	// API keys live in $XDG_DATA_HOME/anoshell/secrets/<name> (0600), never
+	// in config.json. The shell reads the file; it writes through here.
+	srv.Handle("secret.set", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Name  string `json:"name"`
+			Value string `json:"value"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Name == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {name, value}")
+		}
+		if _, err := secrets.Path(req.Name); err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
+		}
+		if err := secrets.Set(req.Name, req.Value); err != nil {
+			return nil, err
+		}
+		return true, nil
 	})
 
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {

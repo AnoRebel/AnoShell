@@ -141,6 +141,19 @@ notification and checks again the next time anod restarts.
 Methods also include `shutdown`, which a new session's anod uses to retire a
 stale one.
 
+Wallpaper methods: `wallpaper.set` (`{"image", "outputs"?, "mode"?, "transition"?}`;
+`"transition": "none"` skips awww's transition, for the picker whose card grows into the wallpaper),
+`wallpaper.next`, `wallpaper.status` and `palette.scan` (`{"dir"}`: per file
+its source colour, hue, luminance and a video still, cached by path, size and
+mtime). `palette.scan` is a slow method: it runs beside the connection's other
+requests, so its reply can arrive after later ones (match replies by `id`).
+
+`secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
+`$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),
+written atomically; an empty value removes it. The shell reads the file
+directly, so there is no `secret.get`. The Wallhaven key lives there as
+`wallhaven`, never in `config.json`.
+
 From the shell: `qs -c ano ipc call anod status` shows whether the shell is connected.
 
 ## Files

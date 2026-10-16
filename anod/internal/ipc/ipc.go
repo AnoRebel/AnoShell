@@ -84,6 +84,7 @@ type Server struct {
 	path     string
 	lock     *os.File
 	handlers map[string]Handler
+	slow     map[string]bool // methods served off the connection's read loop
 	mu       sync.Mutex
 	conns    map[*conn]struct{}
 	ln       net.Listener
@@ -109,11 +110,20 @@ func (c *conn) send(v any) error {
 }
 
 func NewServer(path string) *Server {
-	return &Server{path: path, handlers: map[string]Handler{}, conns: map[*conn]struct{}{}}
+	return &Server{path: path, handlers: map[string]Handler{}, slow: map[string]bool{}, conns: map[*conn]struct{}{}}
 }
 
 // Handle registers a method. Call before Listen.
 func (s *Server) Handle(method string, h Handler) { s.handlers[method] = h }
+
+// HandleSlow registers a method that may take long (a cold palette scan):
+// it runs in its own goroutine, so later requests on the same connection
+// are answered meanwhile (replies carry their id; clients match on it).
+// Other methods stay in order per connection.
+func (s *Server) HandleSlow(method string, h Handler) {
+	s.handlers[method] = h
+	s.slow[method] = true
+}
 
 // Listen prepares the private directory, takes the instance lock (returns
 // ErrRunning if another anod holds it), clears a stale socket and binds with
@@ -213,6 +223,14 @@ func (s *Server) serveConn(c *conn) {
 	sc.Buffer(make([]byte, 0, 4096), 1<<20)
 	for sc.Scan() {
 		if len(sc.Bytes()) == 0 {
+			continue
+		}
+		var head struct {
+			Method string `json:"method"`
+		}
+		if json.Unmarshal(sc.Bytes(), &head) == nil && s.slow[head.Method] {
+			line := append([]byte(nil), sc.Bytes()...) // the scanner reuses its buffer
+			go func() { _ = c.send(s.dispatch(c, line)) }()
 			continue
 		}
 		if err := c.send(s.dispatch(c, sc.Bytes())); err != nil {

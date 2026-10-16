@@ -158,3 +158,38 @@ func TestRefusesSecondInstanceAndClearsStale(t *testing.T) {
 	}
 	s.ln.Close()
 }
+
+// A slow method doesn't hold up later requests on the same connection.
+func TestSlowMethodDoesNotBlockConnection(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ano", "anod.sock")
+	s := NewServer(path)
+	release := make(chan struct{})
+	s.HandleSlow("scan", func(json.RawMessage) (any, error) { <-release; return "scanned", nil })
+	s.Handle("ping", func(json.RawMessage) (any, error) { return "pong", nil })
+	if err := s.Listen(); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() { s.Serve(ctx); close(done) }()
+	defer func() { cancel(); <-done }()
+
+	c, err := net.Dial("unix", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	c.SetDeadline(time.Now().Add(3 * time.Second))
+	c.Write([]byte(`{"v":1,"id":1,"method":"scan"}` + "\n" + `{"v":1,"id":2,"method":"ping"}` + "\n"))
+	r := bufio.NewScanner(c)
+	var got []string
+	for i := 0; i < 2 && r.Scan(); i++ {
+		got = append(got, r.Text())
+		if i == 0 {
+			close(release)
+		}
+	}
+	if len(got) != 2 || !strings.Contains(got[0], `"id":2`) || !strings.Contains(got[1], `"scanned"`) {
+		t.Fatalf("replies = %q, want ping (id 2) first, then the scan", got)
+	}
+}
