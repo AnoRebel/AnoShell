@@ -143,3 +143,31 @@ func TestBagNoRepeatAndPersist(t *testing.T) {
 		t.Fatal("repeated the last image across the refill")
 	}
 }
+
+// The hook example in docs/wallpaper.md parses and runs.
+func TestDocsHookExampleRuns(t *testing.T) {
+	doc, err := os.ReadFile("../../../docs/wallpaper.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := strings.Index(string(doc), "### Example: your own hook")
+	block := string(doc)[i:]
+	block = block[strings.Index(block, "```json")+7:]
+	block = block[:strings.Index(block, "```")]
+	var h Hook
+	if err := json.Unmarshal([]byte(block), &h); err != nil {
+		t.Fatalf("example: %v\n%s", err, block)
+	}
+	bin, home, p := setup(t)
+	fakeBin(t, bin, h.Command[0], "exit 0")
+	img := image(t, home, "a.png")
+	res, err := p.Apply(context.Background(), Request{Image: img}, Settings{Hooks: []Hook{h}})
+	last := res.Steps[len(res.Steps)-1]
+	if err != nil || last.Name != "notify" || !last.OK {
+		t.Fatalf("%v %+v", err, last)
+	}
+	log, _ := os.ReadFile(filepath.Join(bin, h.Command[0]+".log"))
+	if !strings.Contains(string(log), "Wallpaper "+img) {
+		t.Fatalf("argv: %q", log)
+	}
+}

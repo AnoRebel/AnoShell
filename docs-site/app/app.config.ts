@@ -31,6 +31,7 @@ export default defineAppConfig({
       { slug: "installation", group: "guide", title: "Installation", description: "Clone the shell, install anod and the ano CLI, pick a release channel." },
       { slug: "configuration", group: "guide", title: "Configuration", description: "Your config delta, the Settings pages, bar forms and groups." },
       { slug: "anospot", group: "guide", title: "The pill", description: "AnoSpot: pill bar style, faces, grow-into, transients, every setting." },
+      { slug: "wallpaper", group: "guide", title: "Wallpapers", description: "The wallpaper pipeline, rotation, hooks and migrating from awww scripts." },
       { slug: "looks", group: "guide", title: "Looks and colours", description: "Liquid, Ink, Neo-tech, Clay; your own looks; colour modes." },
       { slug: "cli", group: "guide", title: "The ano CLI", description: "status, doctor, config, setup, backup and looks from a terminal." },
       { slug: "anod", group: "internals", title: "anod", description: "The companion daemon: supervision, event hooks, socket protocol." },

@@ -86,3 +86,21 @@ Settings → Appearance → Theme source:
 (GTK's color-scheme, and Qt apps through the desktop portal). A GTK theme you
 picked yourself is never replaced; only adw-gtk3 is switched between its light
 and dark variants.
+
+## Glass
+
+Glass works with any look (Settings → Appearance → Look → Glass). Panels become
+a tint over the compositor's blur, with the wallpaper bending slightly at their
+edges like a lens, and a light along the rim.
+
+| Setting | Default | |
+|---|---|---|
+| `appearance.glass.enable` | `false` | |
+| `appearance.glass.tint` | `0.55` | how solid the tint is (the lower limit: see below) |
+| `appearance.glass.edgeLight` | `0.6` | the rim light |
+| `appearance.glass.refraction` | `0.5` | the lens effect at the edges; off for video wallpapers |
+
+Over a bright part of the wallpaper the tint thickens on its own so text keeps
+at least 4.5:1 contrast. In connected mode the frame (bar, sidebars, pill) gets
+the rim light; its translucency is the frame opacity setting.
+
