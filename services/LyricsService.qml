@@ -435,7 +435,7 @@ Singleton {
     Timer {
         id: positionPoll
         running: !!root.player && root.player.playbackState === MprisPlaybackState.Playing
-                 && root.lyricsModel.count > 0
+                 && root.model.count > 0   // was root.lyricsModel: undefined, so the poll never ran
         interval: 250  // 4Hz — smooth enough for line-level highlight, light on CPU
         repeat: true
         onTriggered: {
