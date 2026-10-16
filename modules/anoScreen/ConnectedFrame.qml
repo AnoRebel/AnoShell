@@ -208,5 +208,8 @@ Item {
         readonly property color _tint: ColorUtils.mix(Appearance.colors.colPrimary, Appearance.colors.colOnSurface, 0.5)
         property vector4d texTint: Qt.vector4d(_tint.r, _tint.g, _tint.b, 1)
         property vector4d texShade: Qt.vector4d(Appearance.m3colors.m3shadow.r, Appearance.m3colors.m3shadow.g, Appearance.m3colors.m3shadow.b, 1)
+        // Glass (appearance.glass): an edge light on the silhouette.
+        readonly property color _glassLight: ColorUtils.mix(Appearance.colors.colOnSurface, Appearance.colors.colPrimary, 0.7)
+        property vector4d glassEdge: Qt.vector4d(_glassLight.r, _glassLight.g, _glassLight.b, Glass.enabled ? Glass.edgeLight : 0)
     }
 }

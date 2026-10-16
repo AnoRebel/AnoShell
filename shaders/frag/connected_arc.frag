@@ -35,6 +35,7 @@ layout(std140, binding = 0) uniform buf {
     float texParam;
     vec4 texTint;       // straight rgb
     vec4 texShade;      // straight rgb
+    vec4 glassEdge;     // glass edge light: rgb, a = strength (0 off)
 } ubuf;
 
 float texHash(vec2 p) {
@@ -168,6 +169,14 @@ void main() {
     if (ubuf.texMode > 0.5) {
         vec4 t = lookTexture(px, d);
         fill = mix(fill, t.rgb, clamp(t.a, 0.0, 1.0));
+    }
+    // Glass: a light rim along the silhouette's edge, brightest top-left.
+    float rimA = 0.0;
+    if (ubuf.glassEdge.a > 0.0) {
+        vec2 uvn = px / vec2(ubuf.widthPx, ubuf.heightPx);
+        float dirLight = clamp(1.25 - (uvn.x * 0.6 + uvn.y), 0.0, 1.0);
+        rimA = (1.0 - smoothstep(0.0, 2.5, -d)) * (0.35 + 0.65 * dirLight) * ubuf.glassEdge.a;
+        fill = mix(fill, ubuf.glassEdge.rgb, clamp(rimA, 0.0, 1.0));
     }
     vec4 col = vec4(fill, 1.0) * cov;
     if (ubuf.shadowColor.a > 0.0) {
