@@ -82,7 +82,7 @@ Scope {
                     Layout.fillWidth: true; spacing: 12
                     MaterialSymbol { text: "content_paste"; iconSize: 24; color: Appearance?.colors.colPrimary ?? "#65558F" }
                     StyledText { text: "Clipboard"; font.pixelSize: Appearance?.font.pixelSize.huger ?? 22; font.weight: Font.Bold; Layout.fillWidth: true }
-                    StyledText { text: `${Cliphist.entries.length} items`; font.pixelSize: 12; opacity: 0.4 }
+                    StyledText { text: `${Cliphist.entries.length} items`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
 
                     // Superpaste
                     RippleButtonWithIcon {
@@ -116,11 +116,11 @@ Scope {
                             id: clipSearch
                             Layout.fillWidth: true
                             verticalAlignment: TextInput.AlignVCenter
-                            font.pixelSize: 14; focus: GlobalStates.clipboardOpen
+                            font.pixelSize: Appearance.font.pixelSize.small; focus: GlobalStates.clipboardOpen
                             onTextChanged: root.searchQuery = text
                             StyledText {
                                 anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                                text: "Search clipboard..."; opacity: 0.4; font.pixelSize: 14
+                                text: "Search clipboard..."; opacity: 0.4; font.pixelSize: Appearance.font.pixelSize.small
                                 visible: !clipSearch.text || clipSearch.text.length === 0
                             }
                         }
@@ -140,7 +140,7 @@ Scope {
                     StyledText {
                         visible: root.filteredEntries.length === 0
                         text: root.searchQuery.length > 0 ? "No matching entries" : "Clipboard is empty"
-                        font.pixelSize: 14; opacity: 0.4
+                        font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
                         anchors.horizontalCenter: parent.horizontalCenter
                         y: 40
                     }
@@ -179,7 +179,7 @@ Scope {
                                 StyledText {
                                     visible: isImage
                                     text: displayText
-                                    font.pixelSize: 13; font.italic: true
+                                    font.pixelSize: Appearance.font.pixelSize.smallie; font.italic: true
                                     opacity: 0.6; Layout.fillWidth: true
                                 }
 
@@ -187,7 +187,7 @@ Scope {
                                 StyledText {
                                     visible: !isImage
                                     text: displayText.substring(0, 300) + (displayText.length > 300 ? "..." : "")
-                                    font.pixelSize: 13
+                                    font.pixelSize: Appearance.font.pixelSize.smallie
                                     wrapMode: Text.Wrap; maximumLineCount: 4
                                     elide: Text.ElideRight; Layout.fillWidth: true
                                 }
@@ -230,7 +230,7 @@ Scope {
                 // Footer
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: "Click to paste • Right-click to copy • Esc to close"; font.pixelSize: 11; opacity: 0.3; Layout.fillWidth: true }
+                    StyledText { text: "Click to paste • Right-click to copy • Esc to close"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; Layout.fillWidth: true }
                 }
             }
         }

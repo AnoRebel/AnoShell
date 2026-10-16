@@ -246,7 +246,7 @@ ColumnLayout {
                             anchors.centerIn: parent
                             spacing: 2
                             MaterialSymbol { text: "photo_camera"; iconSize: 22; color: "white"; Layout.alignment: Qt.AlignHCenter }
-                            StyledText { text: "Change"; font.pixelSize: 10; color: "white"; Layout.alignment: Qt.AlignHCenter }
+                            StyledText { text: "Change"; font.pixelSize: Appearance.font.pixelSize.smallest; color: "white"; Layout.alignment: Qt.AlignHCenter }
                         }
                     }
 

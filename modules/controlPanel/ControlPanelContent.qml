@@ -91,8 +91,8 @@ ColumnLayout {
                 MaterialSymbol { text: MprisController.isPlaying ? "music_note" : "pause"; iconSize: 20; fill: 1; color: Appearance?.colors.colPrimary ?? "#65558F" }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 1
-                    StyledText { text: MprisController.activeTrack?.title ?? ""; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: MprisController.activeTrack?.artist ?? ""; font.pixelSize: 11; opacity: 0.4; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.title ?? ""; font.pixelSize: Appearance.font.pixelSize.smallie; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.artist ?? ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; elide: Text.ElideRight; Layout.fillWidth: true }
                 }
                 ToolbarButton { iconName: "skip_previous"; iconSize: 18; onClicked: MprisController.previous() }
                 ToolbarButton { iconName: MprisController.isPlaying ? "pause" : "play_arrow"; iconSize: 20; onClicked: MprisController.togglePlaying() }
@@ -110,15 +110,15 @@ ColumnLayout {
         }
         ColumnLayout {
             Layout.fillWidth: true; spacing: 0
-            StyledText { text: `CPU ${Math.round(ResourceUsage.cpuUsage * 100)}% • RAM ${Math.round(ResourceUsage.memoryUsedPercentage * 100)}%`; font.pixelSize: 12; font.family: Appearance?.font.family.mono ?? "monospace" }
-            StyledText { text: `Up ${DateTime.uptime}`; font.pixelSize: 10; opacity: 0.3 }
+            StyledText { text: `CPU ${Math.round(ResourceUsage.cpuUsage * 100)}% • RAM ${Math.round(ResourceUsage.memoryUsedPercentage * 100)}%`; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
+            StyledText { text: `Up ${DateTime.uptime}`; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3 }
         }
         Loader {
             active: Battery.available; visible: active
             sourceComponent: RowLayout {
                 spacing: 4
                 CircularProgress { implicitSize: 24; lineWidth: 2; value: Battery.percentage; colPrimary: Battery.isCharging ? Appearance.colors.colSuccess : Appearance?.colors.colPrimary ?? "#65558F" }
-                StyledText { text: `${Math.round(Battery.percentage * 100)}%`; font.pixelSize: 12; font.family: Appearance?.font.family.mono ?? "monospace" }
+                StyledText { text: `${Math.round(Battery.percentage * 100)}%`; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
             }
         }
     }
@@ -141,7 +141,7 @@ ColumnLayout {
         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
         ColumnLayout { anchors.centerIn: parent; spacing: 1
             MaterialSymbol { text: iconName; iconSize: 18; fill: active ? 1 : 0; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; Layout.alignment: Qt.AlignHCenter }
-            StyledText { text: label; font.pixelSize: 10; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.maximumWidth: 80; Layout.alignment: Qt.AlignHCenter; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5" }
+            StyledText { text: label; font.pixelSize: Appearance.font.pixelSize.smallest; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.maximumWidth: 80; Layout.alignment: Qt.AlignHCenter; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5" }
         }
         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.clicked() }
     }

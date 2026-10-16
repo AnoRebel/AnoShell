@@ -78,12 +78,12 @@ Item {
                     spacing: 2
                     StyledText {
                         text: `${Math.round(Battery.percentage * 100)}%`
-                        font.pixelSize: 24; font.weight: Font.Bold
+                        font.pixelSize: Appearance.font.pixelSize.hugeass; font.weight: Font.Bold
                         font.family: Appearance?.font.family.numbers ?? "monospace"
                     }
                     StyledText {
                         text: Battery.isCharging ? "Charging" : "On battery"
-                        font.pixelSize: 12; opacity: 0.5
+                        font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5
                     }
                 }
             }
@@ -102,8 +102,8 @@ Item {
                 RowLayout {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: modelData.label; font.pixelSize: 12; opacity: 0.5; Layout.fillWidth: true }
-                    StyledText { text: modelData.value; font.pixelSize: 12; font.family: Appearance?.font.family.mono ?? "monospace" }
+                    StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5; Layout.fillWidth: true }
+                    StyledText { text: modelData.value; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
             }
         }

@@ -156,14 +156,14 @@ Scope {
                             id: searchInput
                             Layout.fillWidth: true
                             verticalAlignment: TextInput.AlignVCenter
-                            font.pixelSize: 16
+                            font.pixelSize: Appearance.font.pixelSize.normal
                             focus: GlobalStates.searchOpen
                             onTextChanged: { root.query = text; root.selectedIndex = 0 }
                             Keys.onPressed: event => searchWindow.handleKey(event)
 
                             StyledText {
                                 anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                                text: "Search apps..."; opacity: 0.3; font.pixelSize: 16
+                                text: "Search apps..."; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.normal
                                 visible: !searchInput.text || searchInput.text.length === 0
                             }
                         }
@@ -189,7 +189,7 @@ Scope {
                             MaterialSymbol { text: "calculate"; iconSize: 20; color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" }
                             StyledText {
                                 text: `= ${root.calcResult}`
-                                font.pixelSize: 18; font.weight: Font.Bold; font.family: Appearance?.font.family.mono ?? "monospace"
+                                font.pixelSize: Appearance.font.pixelSize.larger; font.weight: Font.Bold; font.family: Appearance?.font.family.mono ?? "monospace"
                                 color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20"
                                 Layout.fillWidth: true
                             }
@@ -236,7 +236,7 @@ Scope {
                         StyledText {
                             visible: root.query.length === 0 && (Config.options?.search?.recentApps ?? []).length > 0
                             text: "Recent"
-                            font.pixelSize: 11; opacity: 0.4; font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; font.weight: Font.DemiBold
                             Layout.fillWidth: true; Layout.topMargin: 4
                         }
 
@@ -268,13 +268,13 @@ Scope {
                                         Layout.fillWidth: true; spacing: 0
                                         StyledText {
                                             text: modelData.name ?? modelData.id ?? ""
-                                            font.pixelSize: 14
+                                            font.pixelSize: Appearance.font.pixelSize.small
                                             font.weight: isSelected ? Font.DemiBold : Font.Normal
                                             elide: Text.ElideRight; Layout.fillWidth: true
                                         }
                                         StyledText {
                                             text: modelData.comment ?? ""
-                                            font.pixelSize: 11; opacity: 0.4
+                                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4
                                             elide: Text.ElideRight; Layout.fillWidth: true
                                             visible: (modelData.comment ?? "").length > 0
                                         }
@@ -294,7 +294,7 @@ Scope {
                         StyledText {
                             visible: root.filteredApps.length === 0
                             text: root.query.length > 0 ? "No apps found" : "No applications"
-                            font.pixelSize: 14; opacity: 0.4
+                            font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
                             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 20
                         }
                     }
@@ -303,7 +303,7 @@ Scope {
                 // Footer
                 StyledText {
                     text: "↑↓ Navigate • Enter to launch • Esc to close"
-                    font.pixelSize: 10; opacity: 0.3
+                    font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3
                     Layout.alignment: Qt.AlignHCenter
                 }
             }

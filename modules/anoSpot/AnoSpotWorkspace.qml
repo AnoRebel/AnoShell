@@ -30,7 +30,7 @@ RowLayout {
             if (wsRow.wsName && isNaN(parseInt(wsRow.wsName))) return wsRow.wsName;
             return String(wsRow.wsIndex);
         }
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         font.weight: Font.Medium
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     }

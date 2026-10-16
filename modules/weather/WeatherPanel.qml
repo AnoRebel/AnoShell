@@ -121,8 +121,8 @@ Scope {
                             MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: Appearance.colors.colWarning }
                             ColumnLayout {
                                 spacing: 0
-                                StyledText { text: "Sunrise"; font.pixelSize: 11; opacity: 0.4 }
-                                StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: 16; font.weight: Font.DemiBold; font.family: Appearance?.font.family.numbers ?? "monospace" }
+                                StyledText { text: "Sunrise"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
+                                StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; font.family: Appearance?.font.family.numbers ?? "monospace" }
                             }
                         }
 
@@ -133,8 +133,8 @@ Scope {
                             MaterialSymbol { text: "wb_twilight"; iconSize: 22; color: Appearance.colors.colTertiary; rotation: 180 }
                             ColumnLayout {
                                 spacing: 0
-                                StyledText { text: "Sunset"; font.pixelSize: 11; opacity: 0.4 }
-                                StyledText { text: Weather.data.sunset || "--"; font.pixelSize: 16; font.weight: Font.DemiBold; font.family: Appearance?.font.family.numbers ?? "monospace" }
+                                StyledText { text: "Sunset"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
+                                StyledText { text: Weather.data.sunset || "--"; font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; font.family: Appearance?.font.family.numbers ?? "monospace" }
                             }
                         }
                     }
@@ -143,7 +143,7 @@ Scope {
                 // Last refresh + refresh button
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: `Last: ${Weather.data.lastRefresh || "never"}`; font.pixelSize: 10; opacity: 0.3; Layout.fillWidth: true }
+                    StyledText { text: `Last: ${Weather.data.lastRefresh || "never"}`; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.fillWidth: true }
                     ToolbarButton { iconName: "refresh"; iconSize: 18; onClicked: Weather.getData(); toolTipText: "Refresh weather" }
                 }
             }
@@ -155,6 +155,6 @@ Scope {
         spacing: 2; Layout.fillWidth: true
         MaterialSymbol { text: icon; iconSize: 20; color: Appearance?.colors.colPrimary ?? "#65558F"; Layout.alignment: Qt.AlignHCenter }
         StyledText { text: value; font.pixelSize: Appearance?.font.pixelSize.small ?? 14; font.weight: Font.DemiBold; Layout.alignment: Qt.AlignHCenter; font.family: Appearance?.font.family.mono ?? "monospace" }
-        StyledText { text: label; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+        StyledText { text: label; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
     }
 }

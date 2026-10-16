@@ -214,7 +214,7 @@ Scope {
                                     }
                                     StyledText {
                                         text: modelData?.appName ?? ""
-                                        font.pixelSize: 10; opacity: 0.4
+                                        font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4
                                     }
                                 }
 

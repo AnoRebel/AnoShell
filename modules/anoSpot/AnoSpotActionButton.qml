@@ -34,7 +34,7 @@ RippleButton {
         }
         StyledText {
             text: root.label
-            font.pixelSize: 11
+            font.pixelSize: Appearance.font.pixelSize.smaller
             color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
         }
     }

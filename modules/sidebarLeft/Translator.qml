@@ -146,7 +146,7 @@ Item {
             // Method indicator
             StyledText {
                 text: root.useAiFallback ? "AI" : "trans"
-                font.pixelSize: 9; opacity: 0.3
+                font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3
                 font.family: Appearance?.font.family.mono ?? "monospace"
             }
         }

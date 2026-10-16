@@ -42,7 +42,7 @@ Item {
                 spacing: 8
                 MaterialSymbol { text: "notifications"; iconSize: 20; color: Appearance?.colors.colPrimary ?? "#65558F" }
                 StyledText { text: "Notifications"; font.pixelSize: Appearance?.font.pixelSize.normal ?? 16; font.weight: Font.DemiBold; Layout.fillWidth: true }
-                StyledText { text: `${Notifications.list.length}`; font.pixelSize: 12; opacity: 0.4 }
+                StyledText { text: `${Notifications.list.length}`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
                 Loader {
                     active: root.showClearAll && Notifications.list.length > 0; visible: active
                     sourceComponent: ToolbarButton {
@@ -60,7 +60,7 @@ Item {
             sourceComponent: ColumnLayout {
                 spacing: 8; Layout.topMargin: 20
                 MaterialSymbol { text: "notifications_none"; iconSize: 36; opacity: 0.2; Layout.alignment: Qt.AlignHCenter }
-                StyledText { text: "No notifications"; font.pixelSize: 14; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                StyledText { text: "No notifications"; font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
             }
         }
 
@@ -90,7 +90,7 @@ Item {
                     }
                     StyledText {
                         text: `${group.notifs.length}`
-                        font.pixelSize: 10; opacity: 0.3
+                        font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3
                     }
                     ToolbarButton {
                         visible: group.stackable

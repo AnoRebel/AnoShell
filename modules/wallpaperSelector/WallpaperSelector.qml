@@ -100,7 +100,7 @@ Scope {
                                     const v = Config.options?.background?.randomize?.interval ?? 300
                                     return v >= 3600 ? `${(v / 3600).toFixed(1)}h` : v >= 60 ? `${Math.round(v / 60)}m` : `${v}s`
                                 }
-                                font.pixelSize: 11; color: Appearance?.colors.colPrimary ?? "#65558F"
+                                font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance?.colors.colPrimary ?? "#65558F"
                             }
                         }
                     }
@@ -165,7 +165,7 @@ Scope {
                                 visible: fileIsDir
                                 spacing: 4
                                 MaterialSymbol { text: "folder"; iconSize: 36; color: Appearance?.colors.colPrimary ?? "#65558F"; Layout.alignment: Qt.AlignHCenter }
-                                StyledText { text: fileName; font.pixelSize: 11; elide: Text.ElideMiddle; Layout.maximumWidth: 160; Layout.alignment: Qt.AlignHCenter }
+                                StyledText { text: fileName; font.pixelSize: Appearance.font.pixelSize.smaller; elide: Text.ElideMiddle; Layout.maximumWidth: 160; Layout.alignment: Qt.AlignHCenter }
                             }
 
                             // Name badge
@@ -180,7 +180,7 @@ Scope {
                                     anchors { centerIn: parent; leftMargin: 6; rightMargin: 6 }
                                     width: parent.width - 12
                                     text: fileName
-                                    font.pixelSize: 10; color: "white"
+                                    font.pixelSize: Appearance.font.pixelSize.smallest; color: "white"
                                     elide: Text.ElideMiddle
                                     horizontalAlignment: Text.AlignHCenter
                                 }
@@ -239,7 +239,7 @@ Scope {
                         sourceComponent: RowLayout {
                             spacing: 6
                             StyledProgressBar { Layout.preferredWidth: 100; value: Wallpapers.thumbnailGenerationProgress; valueBarHeight: 4 }
-                            StyledText { text: "Generating thumbnails..."; font.pixelSize: 11; opacity: 0.5 }
+                            StyledText { text: "Generating thumbnails..."; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5 }
                         }
                     }
                 }

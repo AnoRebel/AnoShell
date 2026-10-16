@@ -433,7 +433,7 @@ Scope {
                     anchors.centerIn: parent
                     text: indicator.timeString
                     font.family: Appearance?.font?.family?.monospace ?? "monospace"
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     font.weight: Font.Medium
                     color: Appearance?.colors?.colOnLayer2 ?? "#cdd6f4"
                 }

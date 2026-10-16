@@ -41,8 +41,8 @@ Item {
             RowLayout {
                 spacing: 10
                 MaterialSymbol { text: "bluetooth"; iconSize: 24; fill: 1; color: Appearance?.colors.colPrimary ?? "#65558F" }
-                StyledText { text: "Bluetooth"; font.pixelSize: 16; font.weight: Font.DemiBold; Layout.fillWidth: true }
-                StyledText { text: BluetoothStatus.enabled ? "On" : "Off"; font.pixelSize: 12; opacity: 0.4 }
+                StyledText { text: "Bluetooth"; font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; Layout.fillWidth: true }
+                StyledText { text: BluetoothStatus.enabled ? "On" : "Off"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
             }
 
             // Connected devices
@@ -52,8 +52,8 @@ Item {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
                     MaterialSymbol { text: "devices"; iconSize: 16; color: Appearance.colors.colSuccess }
-                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: 13; Layout.fillWidth: true }
-                    StyledText { text: "Connected"; font.pixelSize: 10; opacity: 0.4; color: Appearance.colors.colSuccess }
+                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; Layout.fillWidth: true }
+                    StyledText { text: "Connected"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; color: Appearance.colors.colSuccess }
                 }
             }
 
@@ -64,14 +64,14 @@ Item {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
                     MaterialSymbol { text: "devices"; iconSize: 16; opacity: 0.3 }
-                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: 13; opacity: 0.5; Layout.fillWidth: true }
-                    StyledText { text: "Paired"; font.pixelSize: 10; opacity: 0.3 }
+                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.5; Layout.fillWidth: true }
+                    StyledText { text: "Paired"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3 }
                 }
             }
 
             StyledText {
                 visible: BluetoothStatus.friendlyDeviceList.length === 0 && !root.pinned
-                text: "No devices"; font.pixelSize: 12; opacity: 0.4; Layout.alignment: Qt.AlignHCenter
+                text: "No devices"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.alignment: Qt.AlignHCenter
             }
 
             // Interactive device picker (connect/disconnect/scan) — only when

@@ -68,7 +68,7 @@ ColumnLayout {
                 }
                 ColumnLayout {
                     spacing: 1
-                    StyledText { text: "Tokens"; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                    StyledText { text: "Tokens"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     StyledText {
                         text: Ai.tokenCount.total > 0 ? `${Ai.tokenCount.total}` : "—"
                         font.pixelSize: Appearance?.font.pixelSize.small ?? 14
@@ -211,8 +211,8 @@ ColumnLayout {
                     required property var modelData
                     spacing: 4; Layout.fillWidth: true
                     CircularProgress { implicitSize: 36; lineWidth: 3; value: modelData.value; Layout.alignment: Qt.AlignHCenter }
-                    StyledText { text: modelData.text; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
-                    StyledText { text: modelData.label; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                    StyledText { text: modelData.text; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
+                    StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                 }
             }
         }
@@ -296,7 +296,7 @@ ColumnLayout {
                 color: gmEnable.checked && GameMode.active
                     ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
                     : Qt.rgba(1, 1, 1, 0.3)
-                font.pixelSize: 18
+                font.pixelSize: Appearance.font.pixelSize.larger
             }
         }
     }
@@ -352,7 +352,7 @@ ColumnLayout {
                             anchors.leftMargin: 10
                             anchors.rightMargin: 10
                             MaterialSymbol { text: symbol; iconSize: 14 }
-                            StyledText { text: label; font.pixelSize: 12 }
+                            StyledText { text: label; font.pixelSize: Appearance.font.pixelSize.smaller }
                         }
                         onClicked: PowerProfiles.profile = modelData
                     }
@@ -393,7 +393,7 @@ ColumnLayout {
                         colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
                         contentItem: StyledText {
                             text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                             anchors.leftMargin: 10
                             anchors.rightMargin: 10
                         }
@@ -518,7 +518,7 @@ ColumnLayout {
                 color: VPN.connected
                     ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
                     : Qt.rgba(1, 1, 1, 0.3)
-                font.pixelSize: 18
+                font.pixelSize: Appearance.font.pixelSize.larger
             }
         }
 
@@ -537,7 +537,7 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     text: "VPN providers must be configured in config.json — supported builtins: tailscale, netbird, warp, wireguard. Custom providers use { name, enabled, connectCmd, disconnectCmd, interface, displayName }."
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     wrapMode: Text.Wrap
                     opacity: 0.75
                 }
@@ -548,7 +548,7 @@ ColumnLayout {
                         spacing: 6
                         anchors.leftMargin: 10; anchors.rightMargin: 10
                         MaterialSymbol { text: "edit"; iconSize: 14 }
-                        StyledText { text: "Open config.json"; font.pixelSize: 11 }
+                        StyledText { text: "Open config.json"; font.pixelSize: Appearance.font.pixelSize.smaller }
                     }
                     onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
                 }
@@ -593,7 +593,7 @@ ColumnLayout {
                 spacing: 8
                 StyledText {
                     text: CalendarSync.fetching ? "syncing…" : (CalendarSync.ready ? "ready" : "idle")
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     opacity: 0.6
                     font.family: Appearance?.font.family.mono ?? "monospace"
                 }
@@ -604,7 +604,7 @@ ColumnLayout {
                         spacing: 6
                         anchors.leftMargin: 10; anchors.rightMargin: 10
                         MaterialSymbol { text: "edit"; iconSize: 14 }
-                        StyledText { text: "Open config.json"; font.pixelSize: 11 }
+                        StyledText { text: "Open config.json"; font.pixelSize: Appearance.font.pixelSize.smaller }
                     }
                     onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
                 }
@@ -701,7 +701,7 @@ ColumnLayout {
                         colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
                         contentItem: StyledText {
                             text: modelData === "" ? "Auto" : modelData
-                            font.pixelSize: 11
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                             anchors.leftMargin: 8
                             anchors.rightMargin: 8
                         }

@@ -143,7 +143,7 @@ Scope {
                                     width: Math.min(titleText.implicitWidth + 16, parent.width * 0.8)
                                     height: titleText.implicitHeight + 8; radius: 10
                                     color: "#CC000000"
-                                    StyledText { id: titleText; anchors.centerIn: parent; text: modelData.win?.title ?? ""; color: "white"; font.pixelSize: 11; elide: Text.ElideRight; width: parent.width - 12 }
+                                    StyledText { id: titleText; anchors.centerIn: parent; text: modelData.win?.title ?? ""; color: "white"; font.pixelSize: Appearance.font.pixelSize.smaller; elide: Text.ElideRight; width: parent.width - 12 }
                                 }
 
                                 MouseArea {
@@ -179,7 +179,7 @@ Scope {
                                         : wsMA.containsMouse ? Appearance?.colors.colLayer1 ?? "#E5E1EC" : "transparent"
                                     border.width: 1
                                     border.color: tvRoot.getCurrentWorkspaceId() === index + 1 ? "transparent" : "#33ffffff"
-                                    StyledText { anchors.centerIn: parent; text: `${index + 1}`; font.pixelSize: 11; color: tvRoot.getCurrentWorkspaceId() === index + 1 ? Appearance?.colors.colOnPrimary ?? "white" : "#aaa" }
+                                    StyledText { anchors.centerIn: parent; text: `${index + 1}`; font.pixelSize: Appearance.font.pixelSize.smaller; color: tvRoot.getCurrentWorkspaceId() === index + 1 ? Appearance?.colors.colOnPrimary ?? "white" : "#aaa" }
                                     MouseArea {
                                         id: wsMA; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                                         onClicked: {

@@ -195,7 +195,7 @@ Scope {
                             anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                             spacing: 6
                             MaterialSymbol { text: "search"; iconSize: 16; opacity: 0.5 }
-                            StyledText { text: root.searchText; font.pixelSize: 14; Layout.fillWidth: true }
+                            StyledText { text: root.searchText; font.pixelSize: Appearance.font.pixelSize.small; Layout.fillWidth: true }
                         }
                     }
                 }
@@ -278,7 +278,7 @@ Scope {
                                         }
                                         StyledText {
                                             text: modelData.appId ?? ""
-                                            font.pixelSize: 11; opacity: 0.4
+                                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4
                                             visible: !root.compactStyle && modelData.title !== modelData.appId
                                             elide: Text.ElideRight; Layout.fillWidth: true
                                         }
@@ -308,7 +308,7 @@ Scope {
                 // Footer hint
                 StyledText {
                     text: `${root.filteredWindows.length} window${root.filteredWindows.length !== 1 ? "s" : ""} • Tab/↑↓ to navigate • Enter to activate • Type to filter`
-                    font.pixelSize: 10; opacity: 0.3
+                    font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3
                     Layout.alignment: Qt.AlignHCenter
                 }
             }

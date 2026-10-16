@@ -159,7 +159,7 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 visible: Config.options?.anoSpot?.showWorkspace ?? true
                 text: CompositorService.activeWorkspaceIndex
-                font.pixelSize: 12; font.weight: Font.DemiBold
+                font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.DemiBold
                 color: Appearance.colors.colSecondary
             }
             // Stacked clock: hours over minutes.
@@ -168,8 +168,8 @@ Item {
                 visible: Config.options?.anoSpot?.showClockWeather ?? true
                 spacing: -2
                 readonly property var _hm: (AnoSpotState.clockWeather.time ?? "").split(/[:.]/)
-                StyledText { Layout.alignment: Qt.AlignHCenter; text: parent._hm[0] ?? ""; font.pixelSize: 14; font.weight: Font.Bold; font.family: Appearance.font.family.numbers }
-                StyledText { Layout.alignment: Qt.AlignHCenter; text: (parent._hm[1] ?? "").slice(0, 2); font.pixelSize: 14; font.family: Appearance.font.family.numbers; opacity: 0.8 }
+                StyledText { Layout.alignment: Qt.AlignHCenter; text: parent._hm[0] ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance.font.family.numbers }
+                StyledText { Layout.alignment: Qt.AlignHCenter; text: (parent._hm[1] ?? "").slice(0, 2); font.pixelSize: Appearance.font.pixelSize.small; font.family: Appearance.font.family.numbers; opacity: 0.8 }
             }
             MaterialSymbol {
                 Layout.alignment: Qt.AlignHCenter
@@ -195,7 +195,7 @@ Item {
                 Layout.maximumWidth: 220
                 elide: Text.ElideRight
                 text: { const m = MprisController.activeTrack; return m ? (m.artist ? `${m.title} — ${m.artist}` : (m.title ?? "")) : "" }
-                font.pixelSize: 12
+                font.pixelSize: Appearance.font.pixelSize.smaller
             }
             MediaButton { icon: "skip_previous"; onTap: MprisController.previous() }
             MediaButton { icon: MprisController.isPlaying ? "pause" : "play_arrow"; onTap: MprisController.togglePlaying() }
@@ -272,7 +272,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
-                font.pixelSize: 12
+                font.pixelSize: Appearance.font.pixelSize.smaller
                 font.italic: !lyr.has
                 opacity: lyr.has ? 1 : 0.6
                 text: lyr.has ? (lyr.line || "♪") : "No lyrics for this track"

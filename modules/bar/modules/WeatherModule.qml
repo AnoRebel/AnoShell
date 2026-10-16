@@ -37,8 +37,8 @@ Item {
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 2
                 StyledText { text: Weather.data.temp || "--"; font.pixelSize: 36; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
-                StyledText { text: `Feels like ${Weather.data.tempFeelsLike || "--"}`; font.pixelSize: 12; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
-                StyledText { text: Weather.data.city || ""; font.pixelSize: 11; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                StyledText { text: `Feels like ${Weather.data.tempFeelsLike || "--"}`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
+                StyledText { text: Weather.data.city || ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
             }
 
             // Quick stats
@@ -53,7 +53,7 @@ Item {
                     RowLayout {
                         required property var modelData; spacing: 4; Layout.fillWidth: true
                         MaterialSymbol { text: modelData.icon; iconSize: 14; color: Appearance?.colors.colPrimary ?? "#65558F" }
-                        StyledText { text: modelData.value; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                        StyledText { text: modelData.value; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                     }
                 }
             }
@@ -63,13 +63,13 @@ Item {
                 Layout.fillWidth: true; spacing: 12
                 RowLayout { spacing: 4
                     MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: Appearance.colors.colWarning }
-                    StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
+                    StyledText { text: Weather.data.sunrise || "--"; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" } }
                 RowLayout { spacing: 4
                     MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: Appearance.colors.colTertiary; rotation: 180 }
-                    StyledText { text: Weather.data.sunset || "--"; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" } }
+                    StyledText { text: Weather.data.sunset || "--"; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" } }
             }
 
-            StyledText { text: "Click for full weather"; font.pixelSize: 9; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+            StyledText { text: "Click for full weather"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
         }
     }
 }

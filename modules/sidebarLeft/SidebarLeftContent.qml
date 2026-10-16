@@ -58,7 +58,7 @@ Rectangle {
                     StyledText {
                         anchors.centerIn: parent
                         text: Notifications.unread > 9 ? "9+" : `${Notifications.unread}`
-                        font.pixelSize: 9; color: Appearance?.m3colors.m3onPrimary ?? "white"
+                        font.pixelSize: Appearance.font.pixelSize.smallest; color: Appearance?.m3colors.m3onPrimary ?? "white"
                     }
                 }
             }

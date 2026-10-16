@@ -163,7 +163,7 @@ Scope {
                             }
                             StyledText {
                                 text: DateTime.collapsedCalendarFormat
-                                font.pixelSize: 18; color: "white"; opacity: 0.6
+                                font.pixelSize: Appearance.font.pixelSize.larger; color: "white"; opacity: 0.6
                                 Layout.alignment: Qt.AlignHCenter
                             }
                         }
@@ -192,7 +192,7 @@ Scope {
                         // Username
                         StyledText {
                             text: Quickshell.env("USER") || "user"
-                            font.pixelSize: 20; font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.huge; font.weight: Font.DemiBold
                             font.capitalization: Font.Capitalize
                             color: "white"; Layout.alignment: Qt.AlignHCenter
                         }
@@ -243,7 +243,7 @@ Scope {
                                     id: passwordInput
                                     Layout.fillWidth: true
                                     echoMode: TextInput.Password
-                                    font.pixelSize: 16; color: "white"
+                                    font.pixelSize: Appearance.font.pixelSize.normal; color: "white"
                                     focus: GlobalStates.screenLocked
                                     verticalAlignment: TextInput.AlignVCenter
                                     enabled: !lockScope.authenticating
@@ -254,7 +254,7 @@ Scope {
                                     }
                                     Text {
                                         anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                                        text: "Password"; color: "white"; opacity: 0.3; font.pixelSize: 16
+                                        text: "Password"; color: "white"; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.normal
                                         visible: !passwordInput.text || passwordInput.text.length === 0
                                     }
                                 }
@@ -273,7 +273,7 @@ Scope {
                         StyledText {
                             text: lockScope.authError
                             visible: lockScope.authError.length > 0
-                            font.pixelSize: 13; color: Appearance.colors.colError
+                            font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colError
                             Layout.alignment: Qt.AlignHCenter
                         }
 
@@ -281,7 +281,7 @@ Scope {
                         StyledText {
                             text: "Authenticating..."
                             visible: lockScope.authenticating
-                            font.pixelSize: 13; color: "white"; opacity: 0.5
+                            font.pixelSize: Appearance.font.pixelSize.smallie; color: "white"; opacity: 0.5
                             Layout.alignment: Qt.AlignHCenter
                         }
 

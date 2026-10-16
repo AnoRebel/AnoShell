@@ -72,7 +72,7 @@ ColumnLayout {
 
                 StyledText {
                     text: modelData.appName || "Notification"
-                    font.pixelSize: 9
+                    font.pixelSize: Appearance.font.pixelSize.smallest
                     color: "white"
                     opacity: 0.55
                     Layout.fillWidth: true
@@ -80,7 +80,7 @@ ColumnLayout {
                 }
                 StyledText {
                     text: modelData.summary
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     font.weight: Font.DemiBold
                     color: "white"
                     Layout.fillWidth: true
@@ -89,7 +89,7 @@ ColumnLayout {
                 StyledText {
                     visible: text.length > 0
                     text: StringUtils.stripImgTags(modelData.body ?? "")
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     color: "white"
                     opacity: 0.75
                     Layout.fillWidth: true

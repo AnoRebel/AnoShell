@@ -75,7 +75,7 @@ Item {
                 RowLayout {
                     spacing: 4
                     MaterialSymbol { text: "schedule"; iconSize: 14; opacity: 0.4 }
-                    StyledText { text: `Up ${DateTime.uptime}`; font.pixelSize: 11; opacity: 0.4 }
+                    StyledText { text: `Up ${DateTime.uptime}`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
                 }
                 Item { Layout.fillWidth: true }
                 Loader {
@@ -84,7 +84,7 @@ Item {
                     sourceComponent: RowLayout {
                         spacing: 4
                         MaterialSymbol { text: "thermostat"; iconSize: 14; color: Appearance?.colors.colPrimary ?? "#65558F" }
-                        StyledText { text: Weather.data.temp; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                        StyledText { text: Weather.data.temp; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                     }
                 }
             }

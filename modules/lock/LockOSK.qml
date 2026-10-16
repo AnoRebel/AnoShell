@@ -71,7 +71,7 @@ ColumnLayout {
                     StyledText {
                         anchors.centerIn: parent
                         text: parent.modelData
-                        font.pixelSize: 14
+                        font.pixelSize: Appearance.font.pixelSize.small
                         font.weight: Font.Medium
                         color: "white"
                     }
@@ -98,7 +98,7 @@ ColumnLayout {
                         StyledText {
                             anchors.centerIn: parent
                             text: "Shift"
-                            font.pixelSize: 11
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                             color: "white"
                         }
                         MouseArea {

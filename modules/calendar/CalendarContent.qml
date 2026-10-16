@@ -29,7 +29,7 @@ ColumnLayout {
         }
         StyledText {
             text: "Calendar"
-            font.pixelSize: 15; font.weight: Font.DemiBold
+            font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold
             Layout.fillWidth: true
         }
         StyledText {
@@ -38,7 +38,7 @@ ColumnLayout {
                 : (CalendarSync.ready
                     ? `${CalendarSync.events.length} event${CalendarSync.events.length === 1 ? "" : "s"}`
                     : "no feeds")
-            font.pixelSize: 10
+            font.pixelSize: Appearance.font.pixelSize.smallest
             opacity: 0.5
         }
     }
@@ -63,7 +63,7 @@ ColumnLayout {
             text: root.showingUpcoming
                 ? "Upcoming"
                 : Qt.locale().toString(root.filterDate, "dddd, MMM d")
-            font.pixelSize: 13
+            font.pixelSize: Appearance.font.pixelSize.smallie
             font.weight: Font.DemiBold
             Layout.fillWidth: true
         }
@@ -72,7 +72,7 @@ ColumnLayout {
             implicitHeight: 22
             buttonRadius: 6
             contentItem: StyledText {
-                text: "Upcoming"; font.pixelSize: 10
+                text: "Upcoming"; font.pixelSize: Appearance.font.pixelSize.smallest
                 anchors.leftMargin: 8; anchors.rightMargin: 8
             }
             onClicked: root.showingUpcoming = true
@@ -138,7 +138,7 @@ ColumnLayout {
 
                 StyledText {
                     text: modelData.title || "(untitled)"
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     font.weight: Font.DemiBold
                     Layout.fillWidth: true
                     elide: Text.ElideRight
@@ -152,12 +152,12 @@ ColumnLayout {
                             if (modelData.allDay) return "All day"
                             return Qt.locale().toString(start, "ddd MMM d · h:mm AP")
                         }
-                        font.pixelSize: 10; opacity: 0.65
+                        font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.65
                     }
                     StyledText {
                         visible: !!modelData.location
                         text: modelData.location ? `· ${modelData.location}` : ""
-                        font.pixelSize: 10; opacity: 0.5
+                        font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.5
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                     }
@@ -165,7 +165,7 @@ ColumnLayout {
                 StyledText {
                     visible: !!modelData.description && modelData.description.length > 0
                     text: modelData.description ?? ""
-                    font.pixelSize: 10
+                    font.pixelSize: Appearance.font.pixelSize.smallest
                     opacity: 0.5
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
@@ -193,7 +193,7 @@ ColumnLayout {
                     ? "No calendar feeds configured. Add one in Settings → Services → Calendar sync."
                     : `No upcoming events in the next ${Config.options?.calendar?.upcomingDays ?? 7} days`)
                 : "No events on this day"
-            font.pixelSize: 11
+            font.pixelSize: Appearance.font.pixelSize.smaller
             opacity: 0.55
             Layout.alignment: Qt.AlignHCenter
             horizontalAlignment: Text.AlignHCenter

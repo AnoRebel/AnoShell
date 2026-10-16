@@ -117,7 +117,7 @@ Scope {
                     StyledText {
                         visible: previewWindow.windowList.length === 0
                         text: "No windows on this workspace"
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.font.pixelSize.smaller
                         opacity: 0.55
                     }
 
@@ -191,7 +191,7 @@ Scope {
                                 StyledText {
                                     Layout.fillWidth: true
                                     text: modelData.title || modelData.appId || "(window)"
-                                    font.pixelSize: 10
+                                    font.pixelSize: Appearance.font.pixelSize.smallest
                                     elide: Text.ElideRight
                                     horizontalAlignment: Text.AlignHCenter
                                 }

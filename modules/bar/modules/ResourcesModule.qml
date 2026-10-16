@@ -42,8 +42,8 @@ Item {
                     ColumnLayout {
                         required property var modelData; Layout.fillWidth: true; spacing: 4
                         CircularProgress { implicitSize: 48; lineWidth: 3; value: modelData.value; colPrimary: modelData.color; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: modelData.text; font.pixelSize: 14; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: modelData.label; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: modelData.text; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     }
                 }
                 Loader {
@@ -51,8 +51,8 @@ Item {
                     sourceComponent: ColumnLayout {
                         spacing: 4
                         CircularProgress { implicitSize: 48; lineWidth: 3; value: ResourceUsage.swapUsedPercentage; colPrimary: Appearance.colors.colTertiary; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: ResourceUsage.kbToGbString(ResourceUsage.swapUsed); font.pixelSize: 14; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: "Swap"; font.pixelSize: 10; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: ResourceUsage.kbToGbString(ResourceUsage.swapUsed); font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: "Swap"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     }
                 }
             }
@@ -74,12 +74,12 @@ Item {
                 RowLayout {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: modelData.label; font.pixelSize: 11; opacity: 0.4; Layout.fillWidth: true }
-                    StyledText { text: modelData.value; font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                    StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.fillWidth: true }
+                    StyledText { text: modelData.value; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
             }
 
-            StyledText { text: "Click to open HUD"; font.pixelSize: 9; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+            StyledText { text: "Click to open HUD"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
         }
     }
 }

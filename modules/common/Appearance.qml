@@ -247,7 +247,12 @@ Singleton {
             function _pick(role, key) {
                 void Config.deltaRevision
                 const mine = Config.options.appearance.fonts[key]
-                return Config.originOf(`appearance.fonts.${key}`) === "user" ? mine : Looks.font(role, mine)
+                if (Config.originOf(`appearance.fonts.${key}`) === "user") return mine
+                // You chose a main font but not this one: follow your main font,
+                // so titles and numbers don't switch family mid-row.
+                if (key !== "main" && Config.originOf("appearance.fonts.main") === "user")
+                    return Config.options.appearance.fonts.main
+                return Looks.font(role, mine)
             }
             property string main: _pick("main", "main")
             property string numbers: _pick("numbers", "numbers")

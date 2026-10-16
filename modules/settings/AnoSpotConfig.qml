@@ -119,7 +119,7 @@ ColumnLayout {
                 StyledText {
                     anchors.centerIn: parent
                     text: "Desktop"
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     opacity: 0.3
                 }
 
@@ -297,7 +297,7 @@ ColumnLayout {
                 StyledText {
                     Layout.fillWidth: true
                     text: "Each rule becomes a button in the popout footer. Placeholders are substituted in the command:"
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     wrapMode: Text.Wrap
                     opacity: 0.8
                     color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
@@ -307,7 +307,7 @@ ColumnLayout {
                     text: "  {path}   first item's full path        {paths}  newline-joined paths\n" +
                           "  {name}   first item's basename         {names}  newline-joined basenames\n" +
                           "  {dir}    first item's parent dir       {ext}    first item's extension"
-                    font.pixelSize: 10
+                    font.pixelSize: Appearance.font.pixelSize.smallest
                     font.family: Appearance?.font.family.monospace ?? "monospace"
                     wrapMode: Text.NoWrap
                     color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
@@ -317,7 +317,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     text: "Action: 'exec' = argv-split (safe; no shell). 'shell' = bash -c (pipes work; quote your paths). " +
                           "Toggle 'Per item' to invoke the command once per staged file instead of once with all paths."
-                    font.pixelSize: 11
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                     wrapMode: Text.Wrap
                     opacity: 0.8
                     color: Appearance?.colors.colOnLayer0 ?? "#cdd6f4"
@@ -349,7 +349,7 @@ ColumnLayout {
                         spacing: 6
                         StyledText {
                             text: "Name"
-                            font.pixelSize: 11; opacity: 0.7
+                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                             Layout.preferredWidth: 64
                         }
                         StyledTextInput {
@@ -359,7 +359,7 @@ ColumnLayout {
                         }
                         StyledText {
                             text: "Icon"
-                            font.pixelSize: 11; opacity: 0.7
+                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                         }
                         StyledTextInput {
                             Layout.preferredWidth: 110
@@ -384,7 +384,7 @@ ColumnLayout {
                         spacing: 6
                         StyledText {
                             text: "Action"
-                            font.pixelSize: 11; opacity: 0.7
+                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                             Layout.preferredWidth: 64
                         }
                         // exec/shell selector — ChoiceRow keeps the click
@@ -412,7 +412,7 @@ ColumnLayout {
                         spacing: 6
                         StyledText {
                             text: "Command"
-                            font.pixelSize: 11; opacity: 0.7
+                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                             Layout.preferredWidth: 64
                         }
                         StyledTextInput {
@@ -436,7 +436,7 @@ ColumnLayout {
                 MaterialSymbol { text: "add"; iconSize: 14 }
                 StyledText {
                     text: "Add custom action"
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
             onClicked: root._addRule()

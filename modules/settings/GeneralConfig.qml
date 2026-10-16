@@ -129,7 +129,7 @@ ColumnLayout {
             // Health indicator
             ColumnLayout {
                 spacing: 2; visible: Battery.health > 0
-                StyledText { text: "Health"; font.pixelSize: 11; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                StyledText { text: "Health"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                 StyledText {
                     text: `${Math.round(Battery.health)}%`
                     font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
@@ -236,7 +236,7 @@ ColumnLayout {
                     font.family: Appearance?.font.family.numbers ?? "monospace"
                 }
                 StyledText {
-                    text: "•"; font.pixelSize: 20; opacity: 0.3
+                    text: "•"; font.pixelSize: Appearance.font.pixelSize.huge; opacity: 0.3
                 }
                 StyledText {
                     text: DateTime.longDate
@@ -332,7 +332,7 @@ ColumnLayout {
                 color: Appearance?.colors.colLayer2 ?? "#2B2930"
                 border.width: 1
                 border.color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"
-                StyledText { anchors.centerIn: parent; text: "Screen"; font.pixelSize: 11; opacity: 0.3 }
+                StyledText { anchors.centerIn: parent; text: "Screen"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3 }
                 Repeater {
                     model: [
                         { pos: "topLeft", x: 8, y: 8 }, { pos: "topCenter", x: 76, y: 8 }, { pos: "topRight", x: 144, y: 8 },

@@ -98,14 +98,14 @@ Scope {
                             id: csSearch
                             Layout.fillWidth: true
                             verticalAlignment: TextInput.AlignVCenter
-                            font.pixelSize: 14
+                            font.pixelSize: Appearance.font.pixelSize.small
                             focus: root.cheatsheetOpen
                             text: root.searchQuery
                             onTextChanged: root.searchQuery = text
 
                             StyledText {
                                 anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                                text: "Search keybinds..."; opacity: 0.4; font.pixelSize: 14
+                                text: "Search keybinds..."; opacity: 0.4; font.pixelSize: Appearance.font.pixelSize.small
                                 visible: !csSearch.text || csSearch.text.length === 0
                             }
                         }
@@ -131,8 +131,8 @@ Scope {
                             visible: keybindData.children.length === 0
                             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 60; spacing: 8
                             MaterialSymbol { text: "info"; iconSize: 48; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
-                            StyledText { text: "No keybinds loaded"; font.pixelSize: 16; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
-                            StyledText { text: "Keybinds are loaded from your compositor config"; font.pixelSize: 13; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+                            StyledText { text: "No keybinds loaded"; font.pixelSize: Appearance.font.pixelSize.normal; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
+                            StyledText { text: "Keybinds are loaded from your compositor config"; font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
                         }
 
                         Repeater {
@@ -180,7 +180,7 @@ Scope {
                                         }
                                         StyledText {
                                             text: `${sectionDelegate.filteredBinds.length}`
-                                            font.pixelSize: 11; opacity: 0.4
+                                            font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4
                                         }
                                         MaterialSymbol {
                                             text: sectionDelegate.expanded ? "expand_less" : "expand_more"

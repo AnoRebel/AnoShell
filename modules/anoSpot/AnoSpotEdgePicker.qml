@@ -124,7 +124,7 @@ PanelWindow {
     StyledText {
         anchors.centerIn: parent
         text: "Move to an edge (or click it) to put the pill there · right-click to cancel"
-        font.pixelSize: 14
+        font.pixelSize: Appearance.font.pixelSize.small
         color: Appearance.colors.colOnLayer0
         style: Text.Outline
         styleColor: ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)

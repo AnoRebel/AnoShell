@@ -46,8 +46,8 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true; spacing: 8
-                StyledText { text: "Notifications"; font.pixelSize: 14; font.weight: Font.DemiBold; Layout.fillWidth: true }
-                StyledText { text: `${Notifications.list.length}`; font.pixelSize: 11; opacity: 0.4 }
+                StyledText { text: "Notifications"; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold; Layout.fillWidth: true }
+                StyledText { text: `${Notifications.list.length}`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
                 ToolbarButton { iconName: "delete_sweep"; iconSize: 14; onClicked: Notifications.discardAllNotifications() }
             }
 
@@ -71,8 +71,8 @@ Item {
                                 MaterialSymbol { text: "notifications"; iconSize: 14; opacity: 0.4 }
                                 ColumnLayout {
                                     Layout.fillWidth: true; spacing: 0
-                                    StyledText { text: modelData?.summary ?? ""; font.pixelSize: 12; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                                    StyledText { text: StringUtils.stripImgTags(modelData?.body ?? ""); font.pixelSize: 10; opacity: 0.5; elide: Text.ElideRight; maximumLineCount: 1; Layout.fillWidth: true }
+                                    StyledText { text: modelData?.summary ?? ""; font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                                    StyledText { text: StringUtils.stripImgTags(modelData?.body ?? ""); font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.5; elide: Text.ElideRight; maximumLineCount: 1; Layout.fillWidth: true }
                                 }
                                 ToolbarButton { iconName: "close"; iconSize: 12; implicitWidth: 20; implicitHeight: 20; onClicked: Notifications.discardNotification(modelData.notificationId) }
                             }

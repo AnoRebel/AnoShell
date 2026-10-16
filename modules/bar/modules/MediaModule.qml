@@ -66,9 +66,9 @@ Item {
                 }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 2
-                    StyledText { text: MprisController.activeTrack?.title ?? ""; textFormat: Text.PlainText; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: MprisController.activeTrack?.artist ?? ""; textFormat: Text.PlainText; font.pixelSize: 12; opacity: 0.5; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: MprisController.activeTrack?.album ?? ""; textFormat: Text.PlainText; font.pixelSize: 11; opacity: 0.3; visible: (MprisController.activeTrack?.album ?? "").length > 0; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.title ?? ""; textFormat: Text.PlainText; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.artist ?? ""; textFormat: Text.PlainText; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: MprisController.activeTrack?.album ?? ""; textFormat: Text.PlainText; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; visible: (MprisController.activeTrack?.album ?? "").length > 0; elide: Text.ElideRight; Layout.fillWidth: true }
                 }
             }
 
@@ -105,7 +105,7 @@ Item {
             }
 
             // Click hint
-            StyledText { text: "Middle-click for full player"; font.pixelSize: 9; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+            StyledText { text: "Middle-click for full player"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
         }
     }
 }

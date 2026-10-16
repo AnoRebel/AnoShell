@@ -121,13 +121,13 @@ Scope {
                             StyledText {
                                 Layout.fillWidth: true
                                 text: "Stash"
-                                font.pixelSize: 16
+                                font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.DemiBold
                                 color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                             }
                             StyledText {
                                 text: `${AnoSpotStash.count} ${AnoSpotStash.count === 1 ? "item" : "items"} · ${AnoSpotStash.totalSizeText}`
-                                font.pixelSize: 11
+                                font.pixelSize: Appearance.font.pixelSize.smaller
                                 opacity: 0.7
                                 color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                             }
@@ -196,7 +196,7 @@ Scope {
                                     StyledText {
                                         Layout.fillWidth: true
                                         text: cellRoot.name
-                                        font.pixelSize: 10
+                                        font.pixelSize: Appearance.font.pixelSize.smallest
                                         elide: Text.ElideMiddle
                                         horizontalAlignment: Text.AlignHCenter
                                         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
@@ -205,7 +205,7 @@ Scope {
                                     StyledText {
                                         Layout.fillWidth: true
                                         text: cellRoot.sizeText
-                                        font.pixelSize: 9
+                                        font.pixelSize: Appearance.font.pixelSize.smallest
                                         opacity: 0.6
                                         horizontalAlignment: Text.AlignHCenter
                                         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
@@ -333,7 +333,7 @@ Scope {
                                             color: Appearance?.colors?.colError ?? "#f38ba8"
                                         }
                                         StyledText {
-                                            text: "Clear all"; font.pixelSize: 11
+                                            text: "Clear all"; font.pixelSize: Appearance.font.pixelSize.smaller
                                             color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                                         }
                                     }
@@ -363,7 +363,7 @@ Scope {
                                         : (AnoSpotStash.discoveredDevices.count === 0
                                             ? "No devices found on this network"
                                             : `${AnoSpotStash.discoveredDevices.count} device${AnoSpotStash.discoveredDevices.count === 1 ? "" : "s"} found`)
-                                    font.pixelSize: 11
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
                                     color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                                 }
                                 RippleButton {
@@ -372,7 +372,7 @@ Scope {
                                     contentItem: RowLayout {
                                         spacing: 4
                                         MaterialSymbol { text: "refresh"; iconSize: 12 }
-                                        StyledText { text: "Rescan"; font.pixelSize: 11 }
+                                        StyledText { text: "Rescan"; font.pixelSize: Appearance.font.pixelSize.smaller }
                                     }
                                     onClicked: AnoSpotStash.localSendDiscover()
                                 }
@@ -382,7 +382,7 @@ Scope {
                                     contentItem: RowLayout {
                                         spacing: 4
                                         MaterialSymbol { text: "arrow_back"; iconSize: 12 }
-                                        StyledText { text: "Back"; font.pixelSize: 11 }
+                                        StyledText { text: "Back"; font.pixelSize: Appearance.font.pixelSize.smaller }
                                     }
                                     onClicked: {
                                         AnoSpotStash.localSendStop();
@@ -423,13 +423,13 @@ Scope {
                                         StyledText {
                                             Layout.fillWidth: true
                                             text: parent.parent.alias
-                                            font.pixelSize: 12
+                                            font.pixelSize: Appearance.font.pixelSize.smaller
                                             elide: Text.ElideRight
                                             color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                                         }
                                         StyledText {
                                             text: parent.parent.ip
-                                            font.pixelSize: 10
+                                            font.pixelSize: Appearance.font.pixelSize.smallest
                                             opacity: 0.55
                                             color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
                                         }

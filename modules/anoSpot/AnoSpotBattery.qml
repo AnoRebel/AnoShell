@@ -36,7 +36,7 @@ RowLayout {
 
     StyledText {
         text: `${batteryRow.pct}%`
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     }
 }

@@ -38,7 +38,7 @@ RowLayout {
         }
         StyledText {
             text: `${parent.pct}%`
-            font.pixelSize: 12
+            font.pixelSize: Appearance.font.pixelSize.smaller
             color: "white"
             opacity: 0.85
         }
@@ -56,7 +56,7 @@ RowLayout {
         }
         StyledText {
             text: Network.networkName || (Network.wifiStatus === "connected" ? "" : "offline")
-            font.pixelSize: 12
+            font.pixelSize: Appearance.font.pixelSize.smaller
             color: "white"
             opacity: 0.8
             visible: text.length > 0
@@ -66,7 +66,7 @@ RowLayout {
     // Compact clock — supplements (doesn't replace) the big clock above
     StyledText {
         text: DateTime.time
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         font.family: Appearance?.font.family.numbers ?? "monospace"
         color: "white"
         opacity: 0.85

@@ -52,8 +52,8 @@ Item {
                 MaterialSymbol { text: Network.materialSymbol; iconSize: 28; color: Appearance?.colors.colPrimary ?? "#65558F"; fill: 1 }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 1
-                    StyledText { text: Network.ethernet ? "Ethernet" : (Network.wifi ? Network.networkName : "Disconnected"); font.pixelSize: 16; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
-                    StyledText { text: Network.wifiStatus; font.pixelSize: 11; opacity: 0.5 }
+                    StyledText { text: Network.ethernet ? "Ethernet" : (Network.wifi ? Network.networkName : "Disconnected"); font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: Network.wifiStatus; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5 }
                 }
             }
 
@@ -63,8 +63,8 @@ Item {
                     spacing: 4
                     RowLayout {
                         Layout.fillWidth: true
-                        StyledText { text: "Signal"; font.pixelSize: 11; opacity: 0.5; Layout.fillWidth: true }
-                        StyledText { text: `${Network.networkStrength}%`; font.pixelSize: 12; font.family: Appearance?.font.family.mono ?? "monospace" }
+                        StyledText { text: "Signal"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5; Layout.fillWidth: true }
+                        StyledText { text: `${Network.networkStrength}%`; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                     }
                     StyledProgressBar { Layout.fillWidth: true; valueBarHeight: 4; value: Network.networkStrength / 100 }
                 }
@@ -75,18 +75,18 @@ Item {
                 RowLayout {
                     spacing: 4
                     MaterialSymbol { text: "arrow_downward"; iconSize: 14; color: Appearance.colors.colSuccess }
-                    StyledText { text: formatSpeed(ResourceUsage.networkDownloadSpeed); font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                    StyledText { text: formatSpeed(ResourceUsage.networkDownloadSpeed); font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
                 RowLayout {
                     spacing: 4
                     MaterialSymbol { text: "arrow_upward"; iconSize: 14; color: Appearance.colors.colError }
-                    StyledText { text: formatSpeed(ResourceUsage.networkUploadSpeed); font.pixelSize: 11; font.family: Appearance?.font.family.mono ?? "monospace" }
+                    StyledText { text: formatSpeed(ResourceUsage.networkUploadSpeed); font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
             }
 
             RowLayout {
                 Layout.fillWidth: true; spacing: 8
-                StyledText { text: "WiFi"; font.pixelSize: 12; Layout.fillWidth: true }
+                StyledText { text: "WiFi"; font.pixelSize: Appearance.font.pixelSize.smaller; Layout.fillWidth: true }
                 StyledSwitch { checked: Network.wifiEnabled; onCheckedChanged: Network.enableWifi(checked) }
             }
 

@@ -396,7 +396,7 @@ Item {
                         StyledText {
                             horizontalAlignment: Text.AlignHCenter
                             font.weight: Font.DemiBold
-                            font.pixelSize: 18
+                            font.pixelSize: Appearance.font.pixelSize.larger
                             color: Appearance.colors.colOnLayer0
                             text: root.isWeekView ? "Week Overview" :
                                 (root.selectedAppClass !== "" ? `${root.selectedAppName} - ${root.getFancyDate(root.activeDate)}` :
@@ -429,9 +429,9 @@ Item {
                         radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                         ColumnLayout {
                             anchors.centerIn: parent; spacing: 2
-                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.m3outline; text: "Daily average" }
-                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 20; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
-                            StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 11; color: Appearance.m3colors.m3outline; text: root.weekRangeStr; visible: root.weekRangeStr !== "" }
+                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.m3colors.m3outline; text: "Daily average" }
+                            StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: Appearance.font.pixelSize.huge; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
+                            StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.m3colors.m3outline; text: root.weekRangeStr; visible: root.weekRangeStr !== "" }
                         }
                     }
 
@@ -458,18 +458,18 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter; spacing: 6
                                 visible: !(root.totalSeconds === 0 && root.yesterdaySeconds === 0) && root.totalSeconds !== root.yesterdaySeconds
                                 StyledText {
-                                    font.weight: Font.Bold; font.pixelSize: 16
+                                    font.weight: Font.Bold; font.pixelSize: Appearance.font.pixelSize.normal
                                     color: (root.totalSeconds - root.yesterdaySeconds) > 0 ? Appearance.m3colors.m3error : Appearance.m3colors.m3primary
                                     text: ((root.totalSeconds - root.yesterdaySeconds) > 0 ? "\u2191 " : "\u2193 ") + root.formatTimeList(Math.abs(root.totalSeconds - root.yesterdaySeconds))
                                 }
                             }
                             StyledText {
-                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 14; color: Appearance.m3colors.m3outline
+                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance.m3colors.m3outline
                                 text: (root.totalSeconds === 0 && root.yesterdaySeconds === 0) ? "No data" : (root.totalSeconds === root.yesterdaySeconds ? "Same time" : "")
                                 visible: (root.totalSeconds === 0 && root.yesterdaySeconds === 0) || root.totalSeconds === root.yesterdaySeconds
                             }
                             StyledText {
-                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13; color: Appearance.m3colors.m3outline
+                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.m3colors.m3outline
                                 text: "vs yesterday"; visible: !(root.totalSeconds === 0 && root.yesterdaySeconds === 0)
                             }
                         }
@@ -510,7 +510,7 @@ Item {
                                     }
                                     StyledText {
                                         id: dayLbl; anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
-                                        font.weight: Font.DemiBold; font.pixelSize: 12
+                                        font.weight: Font.DemiBold; font.pixelSize: Appearance.font.pixelSize.smaller
                                         color: model.isTarget ? Appearance.colors.colOnLayer0 : Appearance.m3colors.m3outline
                                         text: model.dayName
                                     }
@@ -526,7 +526,7 @@ Item {
                         ColumnLayout {
                             anchors.fill: parent; anchors.margins: 12; spacing: 4
                             StyledText {
-                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: 13
+                                Layout.alignment: Qt.AlignHCenter; font.weight: Font.DemiBold; font.pixelSize: Appearance.font.pixelSize.smallie
                                 color: Appearance.colors.colOnLayer0; text: root.monthNames[root.activeDate.getMonth()] + " " + root.activeDate.getFullYear()
                             }
                             Grid {
@@ -582,7 +582,7 @@ Item {
                             model: 5
                             delegate: StyledText {
                                 Layout.fillWidth: true; horizontalAlignment: index === 0 ? Text.AlignLeft : (index === 4 ? Text.AlignRight : Text.AlignHCenter)
-                                font.pixelSize: 9; color: Appearance.m3colors.m3outline; text: (index * 6) + ":00"
+                                font.pixelSize: Appearance.font.pixelSize.smallest; color: Appearance.m3colors.m3outline; text: (index * 6) + ":00"
                             }
                         }
                     }
@@ -625,7 +625,7 @@ Item {
                                     }
                                     StyledText {
                                         Layout.fillWidth: true; text: model.name
-                                        font.pixelSize: 14; color: Appearance.colors.colOnLayer0; elide: Text.ElideRight
+                                        font.pixelSize: Appearance.font.pixelSize.small; color: Appearance.colors.colOnLayer0; elide: Text.ElideRight
                                     }
                                     Rectangle {
                                         Layout.preferredWidth: Math.max(60, Math.min(200, 200 * model.percent / 100))
@@ -638,11 +638,11 @@ Item {
                                         }
                                     }
                                     StyledText {
-                                        text: root.formatTimeList(model.seconds); font.pixelSize: 13; font.weight: Font.DemiBold
+                                        text: root.formatTimeList(model.seconds); font.pixelSize: Appearance.font.pixelSize.smallie; font.weight: Font.DemiBold
                                         color: Appearance.colors.colOnLayer0; Layout.preferredWidth: 60; horizontalAlignment: Text.AlignRight
                                     }
                                     StyledText {
-                                        text: model.percent.toFixed(1) + "%"; font.pixelSize: 11
+                                        text: model.percent.toFixed(1) + "%"; font.pixelSize: Appearance.font.pixelSize.smaller
                                         color: Appearance.m3colors.m3outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight
                                     }
                                 }
@@ -664,8 +664,8 @@ Item {
                             radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Peak hours" }
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 18; color: Appearance.colors.colOnLayer0; text: root.peakUsageHours }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.m3colors.m3outline; text: "Peak hours" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: Appearance.font.pixelSize.larger; color: Appearance.colors.colOnLayer0; text: root.peakUsageHours }
                             }
                         }
                         Rectangle {
@@ -673,8 +673,8 @@ Item {
                             radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Weekly average" }
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 18; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.m3colors.m3outline; text: "Weekly average" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: Appearance.font.pixelSize.larger; color: Appearance.colors.colOnLayer0; text: root.formatTimeList(root.averageSeconds) }
                             }
                         }
                         Rectangle {
@@ -682,8 +682,8 @@ Item {
                             radius: Appearance.rounding.small; color: Appearance.colors.colLayer1
                             ColumnLayout {
                                 anchors.centerIn: parent; spacing: 2
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: 12; color: Appearance.m3colors.m3outline; text: "Week range" }
-                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: 14; color: Appearance.colors.colOnLayer0; text: root.weekRangeStr }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.m3colors.m3outline; text: "Week range" }
+                                StyledText { Layout.alignment: Qt.AlignHCenter; font.weight: Font.Bold; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance.colors.colOnLayer0; text: root.weekRangeStr }
                             }
                         }
                     }
@@ -702,7 +702,7 @@ Item {
                                     model: 24
                                     delegate: StyledText {
                                         width: (parent.parent.parent.width - 34 - 46) / 24; height: 14
-                                        text: index % 3 === 0 ? index.toString() : ""; font.pixelSize: 9
+                                        text: index % 3 === 0 ? index.toString() : ""; font.pixelSize: Appearance.font.pixelSize.smallest
                                         color: Appearance.m3colors.m3outline; horizontalAlignment: Text.AlignHCenter
                                     }
                                 }
@@ -715,7 +715,7 @@ Item {
                                     spacing: 2
                                     StyledText {
                                         width: 30; height: 20; text: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dayIdx]
-                                        font.pixelSize: 10; font.weight: Font.DemiBold; color: Appearance.m3colors.m3outline
+                                        font.pixelSize: Appearance.font.pixelSize.smallest; font.weight: Font.DemiBold; color: Appearance.m3colors.m3outline
                                         verticalAlignment: Text.AlignVCenter
                                     }
                                     Repeater {
@@ -756,9 +756,9 @@ Item {
                                             sourceSize: Qt.size(20, 20); Layout.preferredWidth: 20; Layout.preferredHeight: 20
                                             fillMode: Image.PreserveAspectFit; visible: model.icon !== ""
                                         }
-                                        StyledText { Layout.fillWidth: true; text: model.name; font.pixelSize: 13; color: Appearance.colors.colOnLayer0; elide: Text.ElideRight }
-                                        StyledText { text: root.formatTimeList(model.seconds); font.pixelSize: 13; font.weight: Font.DemiBold; color: Appearance.colors.colOnLayer0 }
-                                        StyledText { text: model.percent.toFixed(1) + "%"; font.pixelSize: 11; color: Appearance.m3colors.m3outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
+                                        StyledText { Layout.fillWidth: true; text: model.name; font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colOnLayer0; elide: Text.ElideRight }
+                                        StyledText { text: root.formatTimeList(model.seconds); font.pixelSize: Appearance.font.pixelSize.smallie; font.weight: Font.DemiBold; color: Appearance.colors.colOnLayer0 }
+                                        StyledText { text: model.percent.toFixed(1) + "%"; font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.m3colors.m3outline; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight }
                                     }
                                 }
                             }

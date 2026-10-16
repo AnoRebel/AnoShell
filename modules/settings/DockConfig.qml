@@ -89,7 +89,7 @@ ColumnLayout {
                 StyledText {
                     anchors.centerIn: parent
                     text: "Desktop"
-                    font.pixelSize: 11; opacity: 0.2
+                    font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.2
                 }
 
                 // Dock indicator for each possible edge
@@ -245,7 +245,7 @@ ColumnLayout {
                         }
                         StyledText {
                             text: modelData.desc
-                            font.pixelSize: 10; opacity: 0.4
+                            font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4
                             Layout.alignment: Qt.AlignHCenter
                             Layout.maximumWidth: 120
                             horizontalAlignment: Text.AlignHCenter
@@ -400,7 +400,7 @@ ColumnLayout {
                             StyledText {
                                 anchors.centerIn: parent
                                 text: `${index + 1}`
-                                font.pixelSize: 11; font.weight: Font.DemiBold
+                                font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.DemiBold
                                 color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20"
                             }
                         }
@@ -443,7 +443,7 @@ ColumnLayout {
             StyledText {
                 visible: (Config.options?.dock?.pinnedApps ?? []).length === 0
                 text: "No pinned apps. Add some below."
-                font.pixelSize: 13; opacity: 0.4
+                font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.4
                 Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 8
             }
         }
@@ -465,7 +465,7 @@ ColumnLayout {
                     verticalAlignment: TextInput.AlignVCenter
                     StyledText {
                         anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                        text: "App ID (e.g., firefox, code, spotify)"; opacity: 0.3; font.pixelSize: 13
+                        text: "App ID (e.g., firefox, code, spotify)"; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.smallie
                         visible: !addAppInput.text || addAppInput.text.length === 0
                     }
                     Keys.onReturnPressed: addButton.addApp()

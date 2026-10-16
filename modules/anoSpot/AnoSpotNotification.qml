@@ -23,7 +23,7 @@ RowLayout {
             if (n.summary && n.body) return `${n.summary}: ${n.body}`;
             return n.summary || n.body || n.appName || "";
         }
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     }
 }

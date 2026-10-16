@@ -61,7 +61,7 @@ ColumnLayout {
                 StyledText {
                     anchors.centerIn: parent
                     text: "Desktop"
-                    font.pixelSize: 11; opacity: 0.3
+                    font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3
                 }
 
                 // Bar indicator for each edge
@@ -606,7 +606,7 @@ ColumnLayout {
             StyledText {
                 anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
                 text: `${Config.options?.bar?.layout?.height ?? 42}px tall • ${Config.options?.bar?.layout?.radius ?? 12}px radius`
-                font.pixelSize: 10; opacity: 0.4
+                font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4
             }
         }
 

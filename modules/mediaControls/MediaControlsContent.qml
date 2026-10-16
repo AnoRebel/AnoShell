@@ -220,7 +220,7 @@ ColumnLayout {
         visible: active
         sourceComponent: RowLayout {
             Layout.fillWidth: true; spacing: 4
-            StyledText { text: "Players:"; font.pixelSize: 11; opacity: 0.4 }
+            StyledText { text: "Players:"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
             Repeater {
                 model: MprisController.players
                 GroupButton {

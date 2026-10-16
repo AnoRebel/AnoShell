@@ -585,7 +585,7 @@ ColumnLayout {
                                     active: familyCard.currentFamily === modelData.id; visible: active
                                     sourceComponent: StyledText {
                                         text: "Active"
-                                        font.pixelSize: 10; color: modelData.color
+                                        font.pixelSize: Appearance.font.pixelSize.smallest; color: modelData.color
                                         font.weight: Font.DemiBold
                                     }
                                 }

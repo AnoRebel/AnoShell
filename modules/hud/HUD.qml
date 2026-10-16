@@ -174,7 +174,7 @@ Scope {
                             MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: Appearance.colors.colSuccess }
                             StyledText {
                                 text: formatSpeed(ResourceUsage.networkDownloadSpeed)
-                                font.pixelSize: 13; font.family: Appearance?.font.family.mono ?? "monospace"
+                                font.pixelSize: Appearance.font.pixelSize.smallie; font.family: Appearance?.font.family.mono ?? "monospace"
                             }
                         }
 
@@ -184,7 +184,7 @@ Scope {
                             MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: Appearance.colors.colError }
                             StyledText {
                                 text: formatSpeed(ResourceUsage.networkUploadSpeed)
-                                font.pixelSize: 13; font.family: Appearance?.font.family.mono ?? "monospace"
+                                font.pixelSize: Appearance.font.pixelSize.smallie; font.family: Appearance?.font.family.mono ?? "monospace"
                             }
                         }
                     }
@@ -233,12 +233,12 @@ Scope {
                                 Layout.fillWidth: true; spacing: 1
                                 StyledText {
                                     text: MprisController.activeTrack?.title ?? ""
-                                    font.pixelSize: 14; font.weight: Font.DemiBold
+                                    font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.DemiBold
                                     elide: Text.ElideRight; Layout.fillWidth: true
                                 }
                                 StyledText {
                                     text: MprisController.activeTrack?.artist ?? ""
-                                    font.pixelSize: 12; opacity: 0.5
+                                    font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5
                                     elide: Text.ElideRight; Layout.fillWidth: true
                                 }
                             }
@@ -297,7 +297,7 @@ Scope {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter; elide: Text.ElideRight
             text: subText; visible: subText.length > 0
-            font.pixelSize: 10; opacity: 0.4
+            font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4
         }
     }
 

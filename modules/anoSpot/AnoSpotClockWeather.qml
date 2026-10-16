@@ -10,7 +10,7 @@ RowLayout {
 
     StyledText {
         text: AnoSpotState.clockWeather.time
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         font.weight: Font.Medium
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     }
@@ -21,7 +21,7 @@ RowLayout {
             const t = AnoSpotState.clockWeather.weatherTemp;
             return t ? `· ${t}` : "";
         }
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         color: Appearance?.colors?.colOnLayer0Subtle ?? "#a6adc8"
     }
 }

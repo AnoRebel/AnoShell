@@ -27,7 +27,7 @@ Rectangle {
         anchors.leftMargin: 16; anchors.rightMargin: 16
         verticalAlignment: TextInput.AlignVCenter
         color: Appearance?.m3colors.m3onBackground ?? "white"
-        font.pixelSize: 16
+        font.pixelSize: Appearance.font.pixelSize.normal
         activeFocusOnTab: false
         focus: true
 
@@ -37,7 +37,7 @@ Rectangle {
             anchors.fill: parent
             verticalAlignment: Text.AlignVCenter
             color: Appearance?.colors.colOnLayer1Inactive ?? "#88ffffff"
-            font.pixelSize: 14
+            font.pixelSize: Appearance.font.pixelSize.small
             text: "Type to filter windows..."
             visible: !searchInput.text || searchInput.text.length === 0
         }

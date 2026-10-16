@@ -133,7 +133,7 @@ ColumnLayout {
                             }
                             StyledText {
                                 visible: tile.modelData.source === "user"
-                                text: "yours"; font.pixelSize: 10; opacity: 0.6
+                                text: "yours"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.6
                             }
                             Item { Layout.fillWidth: true }
                             MaterialSymbol { visible: tile.active; text: "check_circle"; iconSize: 18; color: Appearance.colors.colPrimary }
@@ -142,7 +142,7 @@ ColumnLayout {
                             Layout.fillWidth: true
                             visible: tile.valid
                             text: Looks.entries[tile.modelData.id]?.description ?? ""
-                            wrapMode: Text.WordWrap; font.pixelSize: 11; opacity: 0.7
+                            wrapMode: Text.WordWrap; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                         }
                         // Error badge: an invalid look is listed but can't be applied.
                         Rectangle {
@@ -154,7 +154,7 @@ ColumnLayout {
                             StyledText {
                                 id: errText
                                 anchors { fill: parent; margins: 5 }
-                                wrapMode: Text.WordWrap; font.pixelSize: 11
+                                wrapMode: Text.WordWrap; font.pixelSize: Appearance.font.pixelSize.smaller
                                 color: Appearance.colors.colOnErrorContainer
                                 text: "Can't apply: " + tile.modelData.errors.join("; ")
                             }
@@ -205,7 +205,7 @@ ColumnLayout {
                         colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
                         contentItem: StyledText {
                             text: modelData === "materialYou" ? "Material You" : "Static"
-                            font.pixelSize: 12
+                            font.pixelSize: Appearance.font.pixelSize.smaller
                             anchors.leftMargin: 10; anchors.rightMargin: 10
                         }
                         onClicked: {
@@ -314,7 +314,7 @@ ColumnLayout {
                                 spacing: 6
                                 StyledText {
                                     text: modelData.displayName
-                                    font.pixelSize: 13
+                                    font.pixelSize: Appearance.font.pixelSize.smallie
                                     font.weight: Font.DemiBold
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
@@ -329,7 +329,7 @@ ColumnLayout {
                                         id: userBadge
                                         anchors.centerIn: parent
                                         text: "user"
-                                        font.pixelSize: 9
+                                        font.pixelSize: Appearance.font.pixelSize.smallest
                                     }
                                 }
                                 MaterialSymbol {
@@ -368,7 +368,7 @@ ColumnLayout {
                             StyledText {
                                 Layout.fillWidth: true
                                 text: modelData.description
-                                font.pixelSize: 10
+                                font.pixelSize: Appearance.font.pixelSize.smallest
                                 opacity: 0.6
                                 wrapMode: Text.Wrap
                                 maximumLineCount: 2
@@ -459,7 +459,7 @@ ColumnLayout {
                     }
                     StyledText {
                         text: modelData.name
-                        font.pixelSize: 9
+                        font.pixelSize: Appearance.font.pixelSize.smallest
                         opacity: 0.4
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
@@ -573,7 +573,7 @@ ColumnLayout {
                     StyledText {
                         anchors.centerIn: parent
                         text: `${Config.options?.appearance?.bezel ?? 0}px gap`
-                        font.pixelSize: 11; opacity: 0.6
+                        font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.6
                     }
                 }
             }
@@ -625,7 +625,7 @@ ColumnLayout {
             Layout.topMargin: 4
             wrapMode: Text.WordWrap
             opacity: 0.7
-            font.pixelSize: 12
+            font.pixelSize: Appearance.font.pixelSize.smaller
             text: shellModeCard.connected
                 ? "Connected: bar + panels share one full-screen surface with rounded screen corners (noctalia-style)."
                 : "Floating: independent bar and widget windows with gaps between them (classic)."

@@ -29,7 +29,7 @@ RowLayout {
             const ss = String(s % 60).padStart(2, '0');
             return `REC ${mm}:${ss}`;
         }
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         font.weight: Font.Medium
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
     }

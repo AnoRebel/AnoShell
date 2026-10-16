@@ -47,7 +47,7 @@ RowLayout {
             if (m.title && m.artist) return `${m.title} — ${m.artist}`;
             return m.title || m.artist || "";
         }
-        font.pixelSize: 12
+        font.pixelSize: Appearance.font.pixelSize.smaller
         font.italic: mprisRow.showLyrics && mprisRow.currentLyric.length > 0
         color: Appearance?.colors?.colOnLayer0 ?? "#cdd6f4"
         Behavior on text { PropertyAnimation { duration: AnimationConfig.scaledDuration(150) } }
