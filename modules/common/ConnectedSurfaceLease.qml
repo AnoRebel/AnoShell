@@ -35,6 +35,11 @@ QtObject {
     property var surfaceRadius: undefined
     property bool omitStartConnector: false
     property bool omitEndConnector: false
+    // Publish in the same turn instead of coalescing to the next one. For a
+    // surface that animates its own shape (the pill): the frame then draws
+    // the shape in the same frame as the surface's content, instead of one
+    // behind (content ran ahead of its background).
+    property bool immediate: false
 
     property string _owner: ""
     property string _ownedKey: ""
@@ -54,7 +59,7 @@ QtObject {
             "priority": root.priority, "surfaceRadius": root.surfaceRadius,
             "omitStartConnector": root.omitStartConnector, "omitEndConnector": root.omitEndConnector
         }
-        if (!PanelRegistry.publish(root.key, root._owner, ++root._rev, geom)
+        if (!PanelRegistry.publish(root.key, root._owner, ++root._rev, geom, root.immediate)
                 && PanelRegistry._owner[root.key] === undefined) {
             // Ownership was pruned under us (a monitor came and went): claim
             // again. A key taken by another live lease stays theirs.
@@ -70,7 +75,7 @@ QtObject {
     // Coalesce writes to one per event-loop turn. A Timer owned by the lease
     // (not Qt.callLater) so a pending write dies with a destroyed lease.
     readonly property Timer _pending: Timer { interval: 0; onTriggered: root._publish() }
-    function _schedule() { root._pending.restart() }
+    function _schedule() { if (root.immediate) root._publish(); else root._pending.restart() }
 
     onActiveChanged: _schedule()
     onXChanged: _schedule()

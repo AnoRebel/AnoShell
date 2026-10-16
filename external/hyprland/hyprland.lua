@@ -587,6 +587,9 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.1 })
 -- (the same rule the shell applies at runtime; a `hyprctl reload` drops that).
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, ignore_alpha = 0 })
+-- The pill's window is a fixed envelope larger than the pill (so it animates
+-- without resizing): blur only where it actually paints.
+hl.layer_rule({ match = { namespace = "^quickshell:anospot$" }, ignore_alpha = 0.3 })
 -- No compositor blur on shell layers that are opaque cards or draw their own
 -- shapes: the blur can't be seen there, yet every animated frame paid for it
 -- (3 passes). Measured on an iGPU: control panel open/close went from p90

@@ -67,7 +67,9 @@ Singleton {
     }
 
     /// Write the current geometry. False when not the owner or `rev` is stale.
-    function publish(key, owner, rev, geom) {
+    // immediate: rebuild now rather than next turn (a surface animating its
+    // own shape, so the frame draws it in the same frame).
+    function publish(key, owner, rev, geom, immediate) {
         if (!root.enabled || !key) return false
         if (root._owner[key] !== owner) return root._reject(key, "foreign")
         const prev = root._byKey[key]
@@ -93,7 +95,7 @@ Singleton {
             "omitStartConnector": geom.omitStartConnector ?? false,
             "omitEndConnector": geom.omitEndConnector ?? false
         }
-        root._schedule()
+        if (immediate) root._rebuild(); else root._schedule()
         return true
     }
 

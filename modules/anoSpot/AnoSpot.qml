@@ -231,7 +231,13 @@ Scope {
             property bool _animated: false
             Timer { id: revealTimer; interval: 600; running: GlobalStates.shellSettled && !spotWindow._revealed; onTriggered: spotWindow._revealed = true }
             Timer { running: spotWindow._revealed && !spotWindow._animated; interval: 2000; onTriggered: spotWindow._animated = true }
-            onLengthChanged: if (!spotWindow._revealed && revealTimer.running) revealTimer.restart()
+            onLengthChanged: { if (!spotWindow._revealed && revealTimer.running) revealTimer.restart(); spotWindow._moving = true; movingSettle.restart() }
+            property bool _moving: false
+            Timer { id: movingSettle; interval: 500; onTriggered: spotWindow._moving = false }
+            // Only when the frame is opaque (a translucent one would show the
+            // overlap darker).
+            readonly property bool _paintBody: (_growing || _moving || tuck > 0.001)
+                && (Config.options?.appearance?.connectedCorners?.opacity ?? 1) >= 0.999
             Behavior on length { enabled: spotWindow._animated; MotionSpring { token: "snappy" } }
             implicitWidth: Math.round(_envW)
             implicitHeight: Math.round(_envH)
@@ -293,11 +299,19 @@ Scope {
                 value: (root.position === "top" || root.position === "left") ? -spotWindow._shift : spotWindow._shift
             }
             // Fully tucked: click-through (only the peek strip takes input).
-            mask: Region { item: spotWindow.tuck > 0.99 ? null : pillBody }
+            // Explicit geometry (an item region doesn't reliably follow the
+            // body's moves), in window coordinates incl. the tuck slide.
+            mask: Region {
+                x: spotWindow.tuck > 0.99 ? 0 : pillBody.x + spotWindow.contentItem.x
+                y: spotWindow.tuck > 0.99 ? 0 : pillBody.y + spotWindow.contentItem.y
+                width: spotWindow.tuck > 0.99 ? 0 : pillBody.width
+                height: spotWindow.tuck > 0.99 ? 0 : pillBody.height
+            }
 
             ConnectedSurfaceLease {
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
                 kind: "pill"; edge: root.position; priority: 15
+                immediate: true
                 screenName: spotWindow.modelData?.name ?? ""
                 active: spotWindow.visible && spotWindow._revealed && spotWindow.connected && spotWindow.tuck < 0.99
                 progress: 1 - Math.max(0, Math.min(1, spotWindow.tuck))
@@ -366,12 +380,21 @@ Scope {
             // edge and centred along it.
             Rectangle {
                 id: pillBody
+                // Content never shows outside its background.
+                clip: true
                 width: Math.round(spotWindow._w)
                 height: Math.round(spotWindow._h)
                 x: root.position === "right" ? parent.width - width : root.position === "left" ? 0 : Math.round((parent.width - width) / 2)
                 y: root.position === "bottom" ? parent.height - height : root.position === "top" ? 0 : Math.round((parent.height - height) / 2)
                 radius: spotWindow.cornerRadius
-                color: spotWindow.connected ? "transparent" : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
+                // Connected: the frame paints the body, but from another window
+                // that learns the new size a frame or more later, so while the
+                // pill moves the content led its background. While moving, the
+                // pill paints the same opaque body itself (in step with its
+                // content); at rest it hands back to the frame (texture, joins).
+                color: spotWindow.connected
+                    ? (spotWindow._paintBody ? Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g, Appearance.colors.colLayer0.b, 1) : "transparent")
+                    : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
                 // Glass-token-driven border + opacity so static themes
                 // (aurora, angel, etc.) can dial the pill's translucency.
                 // Material You and "neutral" static themes leave the
@@ -512,9 +535,14 @@ Scope {
                 Loader {
                     id: grownLoader
                     active: spotWindow.grown
-                    anchors.fill: parent
-                    anchors.margins: 16
-                    opacity: spotWindow.grown && spotWindow._w >= spotWindow.grownW * 0.85 ? 1 : 0
+                    // Laid out once at the grown size, pinned to the pill's edge;
+                    // the growing body (clipped) reveals it — no relayout per
+                    // frame, and nothing outside its background.
+                    width: spotWindow.grownW - 32
+                    height: spotWindow.grownH - 32
+                    x: root.position === "right" ? parent.width - width - 16 : root.position === "left" ? 16 : Math.round((parent.width - width) / 2)
+                    y: root.position === "bottom" ? parent.height - height - 16 : root.position === "top" ? 16 : Math.round((parent.height - height) / 2)
+                    opacity: spotWindow.grown && spotWindow._w >= spotWindow.grownW * 0.85 && spotWindow._h >= spotWindow.grownH * 0.6 ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
                     sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
                 }
