@@ -119,16 +119,19 @@ func main() {
 		StatePath:  filepath.Join(stateDir, "wallpaper.json"),
 		Logf:       log.Printf,
 	}
-	announce := func(res wallpaper.Result, s wallpaper.Settings) {
-		data := map[string]string{"wallpaper": res.Image, "themeMode": s.Mode}
-		runner.Fire("wallpaper_changed", data)
-		srv.Broadcast("wallpaper_changed", map[string]any{"wallpaper": res.Image, "themeMode": s.Mode, "resize": res.Resize, "steps": res.Steps})
+	// hook: run the user's wallpaper_changed hook (once per change/cycle).
+	announce := func(res wallpaper.Result, s wallpaper.Settings, hook bool) {
+		if hook {
+			runner.Fire("wallpaper_changed", map[string]string{"wallpaper": res.Image, "themeMode": s.Mode})
+		}
+		srv.Broadcast("wallpaper_changed", map[string]any{"wallpaper": res.Image, "outputs": res.Outputs,
+			"themeMode": s.Mode, "resize": res.Resize, "engine": s.Engine, "steps": res.Steps})
 	}
 	rot := &wallpaper.Rotator{
 		Pipeline: wp,
 		BagPath:  filepath.Join(stateDir, "rotation.json"),
 		Settings: wallpaperSettings,
-		OnApply:  func(r wallpaper.Result) { _, s := wallpaperSettings(); announce(r, s) },
+		OnApply:  func(r wallpaper.Result, first bool) { _, s := wallpaperSettings(); announce(r, s, first) },
 	}
 	srv.Handle("wallpaper.set", func(p json.RawMessage) (any, error) {
 		var req struct {
@@ -146,7 +149,7 @@ func main() {
 		if err != nil {
 			return res, err
 		}
-		announce(res, s)
+		announce(res, s, true)
 		return res, nil
 	})
 	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
@@ -258,6 +261,7 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 	}
 	s := wallpaper.Settings{
 		Resize:     config.String(m, "background.resize", "fit"),
+		Engine:     config.String(m, "background.engine", "awww"),
 		Transition: trans,
 		DurationMs: config.Int(m, "background.transition.duration", 800),
 		Mode:       mode,

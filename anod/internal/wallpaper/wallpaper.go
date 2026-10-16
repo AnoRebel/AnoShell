@@ -44,6 +44,7 @@ type Settings struct {
 	Prefer     string // matugen --prefer
 	FixedColor bool   // appearance.theme.colorMode fixed (or a static theme): skip colour hooks
 	SkipColors bool   // another output's image already set the colours this cycle
+	Engine     string // "awww" (default) or "shell": the shell draws it, awww is skipped
 	Hooks      []Hook
 }
 
@@ -55,10 +56,11 @@ type Request struct {
 
 // Result reports what happened, step by step.
 type Result struct {
-	Image  string       `json:"image"`
-	Resize string       `json:"resize"`
-	Colors string       `json:"colors"`
-	Steps  []StepResult `json:"steps"`
+	Image   string       `json:"image"`
+	Outputs []string     `json:"outputs,omitempty"` // empty: every output
+	Resize  string       `json:"resize"`
+	Colors  string       `json:"colors"`
+	Steps   []StepResult `json:"steps"`
 }
 
 type StepResult struct {
@@ -110,13 +112,17 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 	if s.Resize == "" {
 		s.Resize = "crop"
 	}
-	res := Result{Image: img, Resize: s.Resize, Colors: p.ColorsPath}
+	res := Result{Image: img, Outputs: req.Outputs, Resize: s.Resize, Colors: p.ColorsPath}
 
-	// 1. awww
-	step := p.run(ctx, "awww", 20*time.Second, awwwArgs(img, req.Outputs, s), nil)
-	res.Steps = append(res.Steps, step)
-	if !step.OK {
-		return res, fmt.Errorf("awww: %s", step.Error)
+	// 1. awww (unless the shell draws the wallpaper itself)
+	if s.Engine == "shell" {
+		res.Steps = append(res.Steps, StepResult{Name: "awww", Skipped: "shell-drawn background"})
+	} else {
+		step := p.run(ctx, "awww", 20*time.Second, awwwArgs(img, req.Outputs, s), nil)
+		res.Steps = append(res.Steps, step)
+		if !step.OK {
+			return res, fmt.Errorf("awww: %s", step.Error)
+		}
 	}
 	p.saveState(img, req.Outputs, s.Resize)
 

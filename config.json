@@ -218,6 +218,10 @@
     "thumbnailPath": "",
     "wallpaperDir": "~/Pictures/hyprwallpapers",
     "resize": "fit",
+    "engine": "awww",
+    "video": {
+      "allScreens": false
+    },
     "hooks": [
       {
         "name": "pywal",

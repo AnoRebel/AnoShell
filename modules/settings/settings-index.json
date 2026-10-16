@@ -1586,6 +1586,44 @@
  },
  {
   "page": 6,
+  "card": "Wallpaper engine",
+  "label": "Wallpaper engine",
+  "sublabel": "Who draws the wallpaper; anod applies it either way (colours, hooks)",
+  "keys": [
+   "background.engine",
+   "background.video",
+   "background.resize"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Engine",
+  "sublabel": "awww",
+  "keys": [
+   "background.engine"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Fit",
+  "sublabel": "",
+  "keys": [
+   "background.resize"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Play video wallpapers on every screen",
+  "sublabel": "Off: only the screen you're using decodes it; the others show a still (much lighter)",
+  "keys": [
+   "background.video.allScreens"
+  ]
+ },
+ {
+  "page": 6,
   "card": "Look",
   "label": "Look",
   "sublabel": "The shell's visual identity: shape, material, texture, type and motion",

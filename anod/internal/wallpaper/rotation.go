@@ -110,7 +110,7 @@ type Rotator struct {
 	Pipeline *Pipeline
 	BagPath  string
 	Settings func() (RotationSettings, Settings)
-	OnApply  func(Result)
+	OnApply  func(r Result, first bool) // first: the image the colours came from
 
 	mu   sync.Mutex
 	kick chan struct{}
@@ -169,7 +169,6 @@ func (r *Rotator) step(ctx context.Context, forced bool) {
 	if len(outs) == 0 {
 		outs = []string{""}
 	}
-	var first *Result
 	for i, o := range outs {
 		img := bag.Next(r.last)
 		if img == "" {
@@ -185,11 +184,8 @@ func (r *Rotator) step(ctx context.Context, forced bool) {
 			ss.Hooks, ss.SkipColors = nil, true // colours and hooks once per cycle
 		}
 		res, err := r.Pipeline.Apply(ctx, req, ss)
-		if err == nil && first == nil {
-			first = &res
+		if err == nil && r.OnApply != nil {
+			r.OnApply(res, i == 0)
 		}
-	}
-	if first != nil && r.OnApply != nil {
-		r.OnApply(*first)
 	}
 }

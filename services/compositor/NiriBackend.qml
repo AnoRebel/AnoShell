@@ -55,6 +55,20 @@ QtObject {
         return out
     }
 
+    readonly property var coveredOutputs: {
+        void root.revision
+        const out = {}
+        const wsById = {}
+        for (const ws of (NiriService.allWorkspaces ?? [])) wsById[ws.id] = ws
+        for (const t of Array.from(ToplevelManager.toplevels?.values ?? [])) {
+            if (!t?.fullscreen && !t?.maximized) continue
+            const found = NiriService.findNiriWindow(t)
+            const ws = found ? wsById[found.niriWindow.workspace_id] : null
+            if (ws?.is_active && ws.output) out[ws.output] = true
+        }
+        return out
+    }
+
     // Fullscreen toggles change no niri IPC state, so watch each toplevel.
     property var _fullscreenWatch: Instantiator {
         model: ToplevelManager.toplevels
@@ -62,6 +76,7 @@ QtObject {
             required property var modelData
             target: modelData
             function onFullscreenChanged() { root.revision++ }
+            function onMaximizedChanged() { root.revision++ }
         }
     }
     property var _niriChanges: Connections {

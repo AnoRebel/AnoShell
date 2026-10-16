@@ -90,10 +90,22 @@ why it was skipped.
 
 ## Video wallpapers
 
-awww shows stills and GIFs. Video wallpapers come with the shell-drawn
-background (in progress); one video decodes on one screen at a time (the
-focused one), and the other screens show a still of it. Glass doesn't refract a
-video wallpaper.
+awww shows stills and GIFs. For video, switch to the shell-drawn background
+(experimental): Settings → Appearance → Wallpaper engine, or
+
+```json
+"background": { "engine": "shell" }
+```
+
+The shell then draws the wallpaper itself, with fade, wipe or grow transitions
+(`background.transition`). One video decodes on one screen at a time — the
+focused one (`background.video.allScreens: true` decodes on every screen, at
+that many times the cost); the other screens show a still of it. Decoding
+pauses while a maximised or fullscreen window covers the screen. Glass doesn't
+refract a video wallpaper.
+
+Cost, measured on a 1080p H.264 loop: a still costs nothing once drawn; a
+playing video costs about 11% of one CPU core; covered, about 2%.
 
 ## Colours of every wallpaper
 

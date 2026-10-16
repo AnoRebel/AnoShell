@@ -29,6 +29,8 @@ QtObject {
     property var monitors: []          // j/monitors
     property var rawWorkspaces: []     // j/workspaces
     property var fullscreenOutputs: ({})
+    // Maximised or fullscreen (the wallpaper can't be seen): video pauses.
+    property var coveredOutputs: ({})
     property int revision: 0
     property int windowLeases: 0      // set by CompositorService
     property var clients: []           // j/clients, kept only while leased
@@ -150,12 +152,17 @@ QtObject {
         const visible = {}
         for (const m of root.monitors) visible[m.activeWorkspace?.id] = m.name
         const candidates = root.rawWorkspaces.filter(ws => ws.hasfullscreen && visible[ws.id])
-        if (candidates.length === 0) { root.fullscreenOutputs = {}; root.revision++; return }
+        if (candidates.length === 0) { root.fullscreenOutputs = {}; root.coveredOutputs = {}; root.revision++; return }
         root._request("j/clients", clients => {
-            const out = {}
-            for (const c of clients)
-                if ((c.fullscreen ?? 0) >= 2 && visible[c.workspace?.id]) out[visible[c.workspace.id]] = true
+            const out = {}, cov = {}
+            for (const c of clients) {
+                const on = visible[c.workspace?.id]
+                if (!on) continue
+                if ((c.fullscreen ?? 0) >= 2) out[on] = true
+                if ((c.fullscreen ?? 0) >= 1) cov[on] = true   // 1 = maximised
+            }
             root.fullscreenOutputs = out
+            root.coveredOutputs = cov
             root.revision++
         })
     }

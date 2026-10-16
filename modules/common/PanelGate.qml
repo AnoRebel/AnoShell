@@ -56,6 +56,7 @@ Singleton {
         { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
         // Features with their own Settings pages (not listed on the Modules page)
         { id: "anoScreen", source: "modules/anoScreen/AnoScreen.qml", key: "appearance.connectedCorners.enable", listed: false },
+        { id: "anoBackground", source: "modules/background/ShellBackground.qml", effective: "shellBackground", listed: false },
         { id: "anoSpot", source: "modules/anoSpot/AnoSpot.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
         { id: "anoSpotStash", source: "modules/anoSpot/AnoSpotStashPopout.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
         { id: "anoSpotWorkspacePreview", source: "modules/anoSpot/AnoSpotWorkspacePreview.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
@@ -66,7 +67,7 @@ Singleton {
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen",
-        "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview"]
+        "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer"]
@@ -82,6 +83,7 @@ Singleton {
 
     // Family-dependent effective values (computed, never written to config).
     // Hefty is the morphing family; Clean/Minimal never morph; Ano follows the setting.
+    readonly property bool shellBackground: (Config.options?.background?.engine ?? "awww") === "shell"
     readonly property bool morphingPanels: family === "hefty" ? true
         : family === "ano" ? (Config.options?.bar?.morphingPanels ?? false) : false
 

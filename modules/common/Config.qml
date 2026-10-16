@@ -702,6 +702,14 @@ Singleton {
                 // How awww fits images (crop | fit | stretch | no); recorded so glass
                 // lines up with what's on screen.
                 property string resize: "fit"
+                // Who draws it: "awww" (default), or "shell" (experimental: transitions,
+                // GIF and video drawn by the shell; video pauses when covered).
+                property string engine: "awww"
+                property JsonObject video: JsonObject {
+                    // Decode a video wallpaper on every screen (N× the cost) instead of
+                    // only the focused one (the others show a still).
+                    property bool allScreens: false
+                }
                 // Run in order after each wallpaper change (by anod): argv with
                 // {image} {mode} {colors}; builtin "cava" recolours cava from pywal.
                 // Skipped when not installed, disabled, or in fixed colour mode.

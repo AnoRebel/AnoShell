@@ -69,6 +69,44 @@ ColumnLayout {
         Config.setNestedValue("appearance.theme.source", "materialYou")
     }
 
+    // ═══ Wallpaper engine ═══
+    SettingsCard {
+        icon: "wallpaper"
+        title: "Wallpaper engine"
+        subtitle: "Who draws the wallpaper; anod applies it either way (colours, hooks)"
+        configKeys: ["background.engine", "background.video", "background.resize"]
+
+        ConfigRow {
+            label: "Engine"
+            configKey: "background.engine"
+            sublabel: (Config.options?.background?.engine ?? "awww") === "shell"
+                ? "Experimental: transitions, GIFs and video drawn by the shell; video pauses under maximised windows"
+                : "awww draws it (stills and GIFs)"
+            ChoiceRow {
+                model: [{ value: "awww", label: "awww", icon: "image" }, { value: "shell", label: "Shell (beta)", icon: "movie" }]
+                current: Config.options?.background?.engine ?? "awww"
+                onChose: value => Config.setNestedValue("background.engine", value)
+            }
+        }
+        ConfigRow {
+            label: "Fit"
+            configKey: "background.resize"
+            ChoiceRow {
+                model: [{ value: "fit", label: "Fit", icon: "fit_screen" }, { value: "crop", label: "Fill", icon: "crop" }, { value: "stretch", label: "Stretch", icon: "open_in_full" }]
+                current: Config.options?.background?.resize ?? "fit"
+                onChose: value => Config.setNestedValue("background.resize", value)
+            }
+        }
+        ConfigSwitch {
+            label: "Play video wallpapers on every screen"
+            configKey: "background.video.allScreens"
+            sublabel: "Off: only the screen you're using decodes it; the others show a still (much lighter)"
+            enabled: (Config.options?.background?.engine ?? "awww") === "shell"
+            checked: Config.options?.background?.video?.allScreens ?? false
+            onCheckedChanged: Config.setNestedValue("background.video.allScreens", checked)
+        }
+    }
+
     // ═══ Theme Source ═══
     // ═══ Look ═══
     SettingsCard {

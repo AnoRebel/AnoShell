@@ -50,6 +50,9 @@ Singleton {
     // Outputs currently showing a fullscreen window (bar/frame hide there).
     readonly property var fullscreenScreens: backend?.fullscreenOutputs ?? ({})
     readonly property int fullscreenRevision: backend?.revision ?? 0
+    // Outputs whose wallpaper is hidden (a maximised or fullscreen window).
+    readonly property var coveredScreens: backend?.coveredOutputs ?? ({})
+    function isCovered(screenName) { void root.fullscreenRevision; return !!root.coveredScreens[screenName] }
     function hasFullscreenOnScreen(screenName): bool {
         return !!root.fullscreenScreens[screenName]
     }

@@ -70,12 +70,20 @@ QtObject {
             if (t?.fullscreen) for (const s of (t.screens ?? [])) out[s.name] = true
         return out
     }
+    readonly property var coveredOutputs: {
+        void root.revision
+        const out = {}
+        for (const t of Array.from(ToplevelManager.toplevels?.values ?? []))
+            if (t?.fullscreen || t?.maximized) for (const s of (t.screens ?? [])) out[s.name] = true
+        return out
+    }
     property var _fullscreenWatch: Instantiator {
         model: ToplevelManager.toplevels
         delegate: Connections {
             required property var modelData
             target: modelData
             function onFullscreenChanged() { root.revision++ }
+            function onMaximizedChanged() { root.revision++ }
         }
     }
 
