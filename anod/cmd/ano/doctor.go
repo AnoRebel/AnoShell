@@ -182,11 +182,16 @@ func runChecks() []check {
 
 	// Competing wallpaper rotators.
 	if found := runningMatching(rotators); len(found) > 0 {
-		level := "info"
-		if config.Bool(eff, "background.randomize.enable", false) {
-			level = "warn" // both would change the wallpaper
+		// anod applies and rotates wallpapers now: another rotator changes the
+		// wallpaper behind its back (and can run twice).
+		copies := 0
+		dirs, _ := filepath.Glob("/proc/[0-9]*/cmdline")
+		for _, p := range dirs {
+			if b, err := os.ReadFile(p); err == nil && strings.Contains(string(b), "awww_randomize") {
+				copies++
+			}
 		}
-		add(level, "wallpaper rotator", "also running: %s", strings.Join(found, ", "))
+		add("warn", "wallpaper rotator", "also running: %s (%d process(es)) — run `ano wallpaper migrate` to hand rotation to anod", strings.Join(found, ", "), copies)
 	}
 	return out
 }

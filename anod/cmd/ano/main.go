@@ -35,6 +35,7 @@ const usage = `usage: ano <command> [args]
   looks list|validate [FILE…] [--json]          list looks, or check look files (exit 1 on errors)
   wallpaper set IMAGE [--output O] [--mode dark|light]   apply (awww, colours, hooks) via anod
   wallpaper next|status [--json]                 next rotation image now / current wallpaper
+  wallpaper migrate [--yes] [--dry-run]          replace an awww randomize autostart with anod's rotation
   version
 `
 
@@ -371,6 +372,8 @@ func wallpaperCmd(args []string) int {
 			req["outputs"] = []string{*output}
 		}
 		return show(ipc.CallTimeout(sock, "wallpaper.set", req, 3*time.Minute))
+	case "migrate":
+		return wallpaperMigrate(args[1:])
 	case "next":
 		return show(ipc.Call(sock, "wallpaper.next", nil))
 	case "status":
