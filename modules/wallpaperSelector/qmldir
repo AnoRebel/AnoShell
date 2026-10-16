@@ -1,0 +1,13 @@
+module qs.modules.wallpaperSelector
+WallpaperSelector 1.0 WallpaperSelector.qml
+WallpaperDeck 1.0 WallpaperDeck.qml
+DeckCard 1.0 DeckCard.qml
+DeckPreview 1.0 DeckPreview.qml
+DeckHeader 1.0 DeckHeader.qml
+DeckGlass 1.0 DeckGlass.qml
+DeckButton 1.0 DeckButton.qml
+DeckSegments 1.0 DeckSegments.qml
+DeckSettings 1.0 DeckSettings.qml
+SpectrumRibbon 1.0 SpectrumRibbon.qml
+WallhavenFilters 1.0 WallhavenFilters.qml
+CardPicture 1.0 CardPicture.qml

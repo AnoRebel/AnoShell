@@ -217,6 +217,17 @@
     "wallpaperPath": "",
     "thumbnailPath": "",
     "wallpaperDir": "~/Pictures/hyprwallpapers",
+    "favourites": [],
+    "picker": {
+      "livePreview": true
+    },
+    "wallhaven": {
+      "categories": "111",
+      "purity": "100",
+      "sorting": "date_added",
+      "order": "desc",
+      "topRange": "1M"
+    },
     "resize": "fit",
     "engine": "awww",
     "video": {

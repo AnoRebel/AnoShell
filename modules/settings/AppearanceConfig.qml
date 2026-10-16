@@ -891,6 +891,60 @@ ColumnLayout {
         }
     }
 
+    // ═══ Wallpaper Picker (the card deck) ═══
+    SettingsCard {
+        id: pickerCard
+        icon: "style"
+        title: "Wallpaper Picker"
+        subtitle: "The card deck: its folder, live preview and the Wallhaven key"
+        configKeys: ["background.wallpaperDir", "background.picker", "background.wallhaven", "background.favourites"]
+
+        property string keyStatus: ""
+
+        ConfigRow {
+            label: "Wallpaper folder"
+            configKey: "background.wallpaperDir"
+            sublabel: "What the picker deals from; Wallhaven downloads are saved here (supports ~)"
+            ConfigTextInput {
+                Layout.preferredWidth: 260
+                placeholderText: "~/Pictures/hyprwallpapers"
+                text: Config.options?.background?.wallpaperDir ?? ""
+                onEditingFinished: if (text.trim() !== "") Config.setNestedValue("background.wallpaperDir", text.trim())
+            }
+        }
+
+        ConfigSwitch {
+            label: "Live preview"
+            configKey: "background.picker.livePreview"
+            sublabel: "Videos and animated images play in the picker's preview (V in the picker)"
+            checked: Config.options?.background?.picker?.livePreview ?? true
+            onCheckedChanged: Config.setNestedValue("background.picker.livePreview", checked)
+        }
+
+        ConfigRow {
+            label: "Wallhaven API key"
+            sublabel: pickerCard.keyStatus !== "" ? pickerCard.keyStatus
+                : Wallhaven.hasKey ? "Saved in ~/.local/share/anoshell/secrets/wallhaven (0600). Paste a new one to replace it, or save an empty field to remove it."
+                : "Optional (wallhaven.cc → Settings → Account): unlocks NSFW results. Stored by anod in ~/.local/share/anoshell/secrets/wallhaven, never in config.json."
+            ConfigTextInput {
+                id: wallhavenKeyInput
+                Layout.preferredWidth: 260
+                echoMode: TextInput.Password
+                placeholderText: Wallhaven.hasKey ? "•••••• (saved)" : "Paste key"
+                iconAction: "save"
+                function save() {
+                    pickerCard.keyStatus = "Saving…"
+                    const value = text
+                    Wallhaven.setApiKey(value, err => {
+                        pickerCard.keyStatus = err !== "" ? err : value.trim() === "" ? "Key removed" : "Key saved"
+                        if (err === "") wallhavenKeyInput.text = ""
+                    })
+                }
+                onIconClicked: save()
+            }
+        }
+    }
+
     // ═══ Wallpaper Transitions ═══
     SettingsCard {
         icon: "swap_horiz"

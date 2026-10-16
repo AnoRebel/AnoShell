@@ -68,7 +68,8 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `MaterialThemeLoader` | Watches the wallpaper-derived MD3 JSON and writes into `Appearance.m3colors` when source is Material You. |
 | `StaticThemeLoader` | Loads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json`) when source is static. Defers to `Appearance.previewTokens` during Settings hover-preview. |
 | `ThemeRegistry` | Discovers + indexes all available themes (bundled + user). Exposes `themes` ListModel and `themeContents` (parsed JSON cache). |
-| `Wallpapers` | Directory browse + scheduled rotation. |
+| `Wallpapers` | The wallpaper folder for the picker, anod palette (hue, stills), favourites, apply via anod. |
+| `Wallhaven` | Wallhaven search + download for the picker; API key in `~/.local/share/anoshell/secrets/wallhaven` (0600). |
 | `AntiFlashbang` | Hyprland GLSL shader that darkens bright screens. IPC-controlled. |
 | `NightLight` | wlsunset wrapper. Cross-compositor warm-shift, manual or schedule mode. Opt-in. |
 
@@ -582,7 +583,7 @@ Wallpapers are applied by anod: `ano wallpaper set IMAGE` (awww, matugen colours
 Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanvas backgrounds that morph between states. The `BarModulePopout` wrapper auto-detects morph mode — 8 bar modules have rich morph-capable popouts.
 
 ## Credits
-Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system)
+Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
 
 ## Architecture
 
@@ -633,7 +634,7 @@ ano/
 │   ├── notifications/              # Notification list component
 │   ├── notificationPopup/          # Floating popup notifications
 │   ├── cheatsheet/                 # Searchable keybinds viewer
-│   ├── wallpaperSelector/          # Wallpaper browser
+│   ├── wallpaperSelector/          # Wallpaper card deck (local / favourites / Wallhaven)
 │   ├── lock/                       # Niri lock screen + opt-in notifications/OSK/status row
 │   ├── focusTime/                  # App-usage tracker UI
 │   ├── displayManager/             # Hyprland-only monitor config

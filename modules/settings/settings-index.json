@@ -2007,6 +2007,36 @@
  },
  {
   "page": 6,
+  "card": "Wallpaper Picker",
+  "label": "Wallpaper Picker",
+  "sublabel": "The card deck: its folder, live preview and the Wallhaven key",
+  "keys": [
+   "background.wallpaperDir",
+   "background.picker",
+   "background.wallhaven",
+   "background.favourites"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Wallpaper folder",
+  "sublabel": "What the picker deals from; Wallhaven downloads are saved here (supports ~)",
+  "keys": [
+   "background.wallpaperDir"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Live preview",
+  "sublabel": "Videos and animated images play in the picker's preview (V in the picker)",
+  "keys": [
+   "background.picker.livePreview"
+  ]
+ },
+ {
+  "page": 6,
   "card": "Wallpaper Transitions",
   "label": "Wallpaper Transitions",
   "sublabel": "Animation when switching between wallpapers (from inir backdrop)",
