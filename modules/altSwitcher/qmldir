@@ -1,0 +1,3 @@
+module qs.modules.altSwitcher
+AltSwitcher 1.0 AltSwitcher.qml
+AltSwitcherFan 1.0 AltSwitcherFan.qml

@@ -180,11 +180,15 @@ Scope {
                     }
 
                     // App items layout
-                    RowLayout {
+                    // A row on top/bottom, a column on the sides. (A RowLayout
+                    // can't stack vertically: Qt.TopToBottom isn't a
+                    // LayoutDirection, so a side dock stayed a row.)
+                    GridLayout {
                         id: dockLayout
                         anchors.centerIn: parent
-                        spacing: root.isMacosStyle ? 2 : 6
-                        layoutDirection: root.isVertical ? Qt.TopToBottom : Qt.LeftToRight
+                        columns: root.isVertical ? 1 : -1
+                        rowSpacing: root.isMacosStyle ? 2 : 6
+                        columnSpacing: root.isMacosStyle ? 2 : 6
 
                         Repeater {
                             model: root.dockItems

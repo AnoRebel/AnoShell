@@ -34,6 +34,12 @@ Scope {
     readonly property int itemSize: compactStyle ? 48 : 72
     readonly property int panelWidth: compactStyle ? 400 : 500
     readonly property int maxVisible: opts.maxVisible ?? 12
+    // fan (default): cards on an arc from the pill's edge; list: this panel;
+    // fullscreen: the overview. Read at each opening, so a change applies to
+    // the next one.
+    readonly property string style: ["fan", "list", "fullscreen"].includes(opts.style) ? opts.style : "fan"
+    // Opened with Alt+Tab (IPC next/prev): releasing Alt picks the window.
+    property bool viaAlt: false
 
     // State
     property bool panelVisible: false
@@ -52,26 +58,19 @@ Scope {
     }
 
     function buildSnapshot() {
-        const toplevels = ToplevelManager.toplevels.values
+        // Shared most-recently-used order (focus history).
+        const toplevels = useMRU ? WindowMru.ordered : ToplevelManager.toplevels.values
         let windows = toplevels.map(tl => ({
             toplevel: tl,
             title: tl.title ?? "",
             appId: tl.appId ?? "",
             activated: tl.activated,
-            wayland: tl.wayland ?? null,
         }))
-        // MRU: activated window first
-        if (useMRU) {
-            windows.sort((a, b) => {
-                if (a.activated && !b.activated) return -1
-                if (!a.activated && b.activated) return 1
-                return 0
-            })
-        }
         return windows.slice(0, maxVisible)
     }
 
     function show() {
+        if (style === "fullscreen") { GlobalStates.overviewOpen = true; return }
         windowSnapshot = buildSnapshot()
         if (windowSnapshot.length === 0) return
         selectedIndex = Math.min(1, windowSnapshot.length - 1) // Start at second item (first is current)
@@ -81,6 +80,7 @@ Scope {
 
     function hide() {
         panelVisible = false
+        viaAlt = false
     }
 
     function activateSelected() {
@@ -106,16 +106,25 @@ Scope {
     // IPC
     IpcHandler {
         target: "altSwitcher"
-        function show(): void { root.show() }
+        // Not "show": `qs ipc call X show` is taken by the CLI (it lists the target).
+        function open(): void { root.show() }
+        function toggle(): void { if (root.panelVisible) root.hide(); else root.show() }
         function hide(): void { root.hide() }
-        function next(): void { if (!root.panelVisible) root.show(); else root.cycleNext() }
-        function prev(): void { if (!root.panelVisible) root.show(); else root.cyclePrev() }
+        // Alt+Tab / Alt+Shift+Tab: open on the previous window, then cycle.
+        function next(): void { if (!root.panelVisible) { root.show(); root.viaAlt = root.panelVisible } else root.cycleNext() }
+        function prev(): void { if (!root.panelVisible) { root.show(); root.viaAlt = root.panelVisible } else root.cyclePrev() }
         function activate(): void { root.activateSelected() }
+    }
+
+    // Fan style.
+    LazyLoader {
+        active: root.style === "fan"
+        AltSwitcherFan { switcher: root }
     }
 
     PanelWindow {
         id: switcherWindow
-        visible: root.panelVisible
+        visible: root.panelVisible && root.style === "list"
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:altSwitcher"
@@ -128,6 +137,7 @@ Scope {
         Item {
             anchors.fill: parent
             focus: true
+            Keys.onReleased: event => { if (event.key === Qt.Key_Alt && root.viaAlt) { root.activateSelected(); event.accepted = true } }
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) { root.hide(); event.accepted = true; return }
                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { root.activateSelected(); event.accepted = true; return }
@@ -204,6 +214,9 @@ Scope {
                 StyledFlickable {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    // A Flickable has no implicit height; without this the panel
+                    // sized itself to the footer and showed no rows.
+                    Layout.preferredHeight: windowColumn.implicitHeight
                     contentHeight: windowColumn.implicitHeight
                     clip: true
 
@@ -248,10 +261,10 @@ Scope {
                                         // Live thumbnail
                                         Loader {
                                             anchors.fill: parent
-                                            active: !!modelData.wayland
+                                            active: !!modelData.toplevel
                                             sourceComponent: ScreencopyView {
                                                 anchors.fill: parent
-                                                captureSource: modelData.wayland
+                                                captureSource: modelData.toplevel
                                                 live: false; paintCursor: false
                                             }
                                         }
@@ -262,7 +275,7 @@ Scope {
                                             implicitWidth: root.itemSize * 0.6
                                             implicitHeight: root.itemSize * 0.6
                                             source: { void DesktopEntries.applications.values.length; return `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}` }
-                                            visible: !modelData.wayland
+                                            visible: !modelData.toplevel
                                         }
                                     }
 

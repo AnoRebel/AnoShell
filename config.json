@@ -313,6 +313,9 @@
       "expandOnFocus": true
     }
   },
+  "altSwitcher": {
+    "style": "fan"
+  },
   "lyrics": {
     "enable": false,
     "visible": true,

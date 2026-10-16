@@ -11,6 +11,7 @@
   "altSwitcher.enableAnimation": "bool",
   "altSwitcher.maxVisible": "int",
   "altSwitcher.scrimDim": "real",
+  "altSwitcher.style": "string",
   "altSwitcher.useMostRecentFirst": "bool",
   "animations.batterySaver": "bool",
   "animations.enable": "bool",

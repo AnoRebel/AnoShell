@@ -852,16 +852,11 @@ hl.bind("CTRL + " .. MAIN_MOD .. " + L", hl.dsp.exec_cmd(PYPR .. " lost_windows"
 -- ─── Window management ─────────────────────────────────────────────────────
 
 hl.bind(MAIN_MOD .. " + G", hl.dsp.layout("togglegroup"))
--- ALT+Tab: cycle workspace and bring the active window to the top (two
--- actions on one bind via a lambda, in order).
-hl.bind("ALT + Tab", function()
-	hl.dispatch(hl.dsp.focus({ workspace = "e+1" }))
-	hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top" }))
-end)
-hl.bind("ALT + SHIFT + Tab", function()
-	hl.dispatch(hl.dsp.focus({ workspace = "e-1" }))
-	hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top" }))
-end)
+-- ALT+Tab: the AnoShell window switcher (altSwitcher.style: fan / list /
+-- fullscreen); keep Alt held and press Tab to cycle, let go to switch. Without
+-- the shell running it falls back to cycling workspaces.
+hl.bind("ALT + Tab", hl.dsp.exec_cmd(qs_or("altSwitcher", "next", [[hyprctl dispatch 'hl.dsp.focus({ workspace = "e+1" })']])))
+hl.bind("ALT + SHIFT + Tab", hl.dsp.exec_cmd(qs_or("altSwitcher", "prev", [[hyprctl dispatch 'hl.dsp.focus({ workspace = "e-1" })']])))
 hl.bind("ALT + F4", hl.dsp.window.close())
 hl.bind(MAIN_MOD .. " + Q", hl.dsp.window.close())
 hl.bind(MAIN_MOD .. " + SHIFT + ALT + Q", hl.dsp.exec_cmd("hyprctl kill"))

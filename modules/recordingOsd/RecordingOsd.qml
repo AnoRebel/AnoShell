@@ -514,7 +514,8 @@ Scope {
                 root.stopRecording()
         }
 
-        function show(): void {
+        // Not "show": `qs ipc call X show` is taken by the CLI.
+        function open(): void {
             root.collapsed = false
         }
 

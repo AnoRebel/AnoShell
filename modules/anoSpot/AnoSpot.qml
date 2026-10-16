@@ -210,7 +210,8 @@ Scope {
             // It only changes when a grow starts (to the grow size) and after
             // a shrink has settled (back to the resting size).
             property bool _big: false
-            readonly property real _maxAlong: Math.max(root.widthPx, 460)
+            readonly property real _screenAlong: (root.isVertical ? modelData?.height : modelData?.width) ?? 1080
+            readonly property real _maxAlong: Math.min(Math.max(root.widthPx, 460), _screenAlong - 40)
             readonly property real _envW: !root.isVertical ? _maxAlong : (_big ? _maxAlong : root.heightPx)
             readonly property real _envH: !root.isVertical ? (_big ? _maxH : root.heightPx) : (_big ? _maxH : _maxAlong)
             WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -220,7 +221,7 @@ Scope {
             // between sizes; anoSpot.widthPx is the maximum length.
             readonly property real _lead: root.draggable ? 18 : 6
             readonly property real _contentLen: faceView.preferredLength + _lead + 6
-            property real length: Math.max(root.heightPx * 2, Math.min(_contentLen, root.widthPx))
+            property real length: Math.max(root.heightPx * 2, Math.min(_contentLen, root.widthPx, _maxAlong))
             // First appearance: the window maps transparent (a hidden window
             // doesn't lay out, so its size would be stale) and fades in once
             // the pill's width has held for 600 ms (clock, weather, media

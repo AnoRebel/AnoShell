@@ -1091,6 +1091,8 @@ Singleton {
 
             // Alt-tab window switcher
             property JsonObject altSwitcher: JsonObject {
+                // fan: cards on an arc from the pill's edge | list | fullscreen (overview)
+                property string style: "fan"
                 property bool enableAnimation: true
                 property int animationDurationMs: 200
                 property bool useMostRecentFirst: true
