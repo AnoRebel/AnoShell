@@ -367,6 +367,15 @@
       "spectrum": false,
       "lyrics": false
     },
+    "transients": {
+      "volume": true,
+      "brightness": true,
+      "mic": true,
+      "keyboard": true,
+      "notification": true,
+      "charging": true,
+      "recording": true
+    },
     "growInto": {
       "mediaControls": false,
       "controlPanel": false,

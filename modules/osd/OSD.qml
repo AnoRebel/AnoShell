@@ -45,6 +45,8 @@ Scope {
 
     function show(indicator, value, muted, label) {
         if (!root._armed) return
+        // The pill shows it instead (anoSpot.transients.<kind>).
+        if (PillTransient.show(indicator, value, muted, label)) return
         root.currentIndicator = indicator
         root.currentValue = value ?? 0
         root.currentMuted = muted ?? false

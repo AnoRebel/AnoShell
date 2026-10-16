@@ -1159,6 +1159,17 @@ Singleton {
                 }
                 // Clicking grows the pill into these surfaces (same component as
                 // the standalone panel) instead of opening the panel.
+                // States the pill morphs into for a moment; the ones it takes the
+                // standalone OSD doesn't show.
+                property JsonObject transients: JsonObject {
+                    property bool volume: true
+                    property bool brightness: true
+                    property bool mic: true
+                    property bool keyboard: true
+                    property bool notification: true
+                    property bool charging: true
+                    property bool recording: true
+                }
                 property JsonObject growInto: JsonObject {
                     property bool mediaControls: false
                     property bool controlPanel: false

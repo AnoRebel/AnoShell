@@ -186,11 +186,16 @@ Scope {
             readonly property real grownW: ({ mediaControls: 440, controlPanel: 380, calendar: 400 })[grownTarget] ?? 400
             readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
             // Springs between resting and grown geometry.
-            property real _w: grown ? grownW : (root.isVertical ? root.heightPx : length)
-            property real _h: grown ? grownH : (root.isVertical ? length : root.heightPx)
+            // Transient (volume, notification, …): on the focused screen only.
+            readonly property bool transientShown: !grown && PillTransient.active
+                && (CompositorService.focusedMonitorName === "" || CompositorService.focusedMonitorName === (modelData?.name ?? ""))
+            readonly property real transientLen: Math.max(root.heightPx * 4, (transientView.implicitWidth ?? 0) + 28)
+            property real _w: grown ? grownW : root.isVertical ? root.heightPx : (transientShown ? transientLen : length)
+            property real _h: grown ? grownH : root.isVertical ? (transientShown ? Math.max(length, 120) : length) : root.heightPx
             // Only while growing/shrinking: resting length already springs.
             property bool _growing: false
             onGrownChanged: { _growing = true; growSettle.restart() }
+            onTransientShownChanged: { _growing = true; growSettle.restart() }
             Timer { id: growSettle; interval: 1400; onTriggered: spotWindow._growing = false }
             Behavior on _w { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
             Behavior on _h { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
@@ -470,7 +475,7 @@ Scope {
                 // shift-wheel to switch; the capsule morphs to the face.
                 AnoSpotFaces {
                     id: faceView
-                    opacity: spotWindow.grown ? 0 : 1
+                    opacity: spotWindow.grown || spotWindow.transientShown ? 0 : 1
                     visible: opacity > 0.01
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
                     anchors.fill: parent
@@ -500,6 +505,55 @@ Scope {
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
                     sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
                 }
+                // Transient: icon + level bar (volume/brightness/mic) or label.
+                RowLayout {
+                    id: transientView
+                    visible: opacity > 0.01
+                    opacity: spotWindow.transientShown ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
+                    anchors.centerIn: parent
+                    spacing: 10
+                    readonly property bool level: ["volume", "brightness", "mic"].includes(PillTransient.kind)
+                    MaterialSymbol {
+                        iconSize: 18; fill: 1
+                        color: PillTransient.kind === "recording" && !PillTransient.muted ? Appearance.colors.colError : Appearance.colors.colPrimary
+                        text: ({
+                            volume: PillTransient.muted ? "volume_off" : PillTransient.value < 0.35 ? "volume_down" : "volume_up",
+                            brightness: "light_mode",
+                            mic: PillTransient.muted ? "mic_off" : "mic",
+                            keyboard: "keyboard",
+                            notification: "notifications",
+                            charging: PillTransient.muted ? "battery_5_bar" : "battery_charging_full",
+                            recording: PillTransient.muted ? "stop_circle" : "fiber_manual_record"
+                        })[PillTransient.kind] ?? "info"
+                    }
+                    Rectangle {
+                        visible: transientView.level
+                        implicitWidth: 120; implicitHeight: 6; radius: 3
+                        color: Appearance.colors.colLayer2
+                        Rectangle {
+                            width: parent.width * Math.max(0, Math.min(1, PillTransient.value)); height: parent.height; radius: 3
+                            color: PillTransient.muted ? Appearance.colors.colOutline : Appearance.colors.colPrimary
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.OutCubic } }
+                        }
+                    }
+                    StyledText {
+                        visible: transientView.level
+                        text: Math.round(PillTransient.value * 100)
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.family: Appearance.font.family.numbers
+                        Layout.preferredWidth: 26
+                        horizontalAlignment: Text.AlignRight
+                    }
+                    StyledText {
+                        visible: !transientView.level
+                        text: PillTransient.kind === "charging" ? `${PillTransient.label} · ${Math.round(PillTransient.value * 100)}%` : PillTransient.label
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: 280
+                    }
+                }
+
                 Component { id: grownMedia; MediaControlsContent { } }
                 Component { id: grownControl; ControlPanelContent { onCloseRequested: spotWindow.grownTarget = "" } }
                 Component { id: grownCalendar; CalendarContent { } }
