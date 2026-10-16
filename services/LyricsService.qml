@@ -175,8 +175,11 @@ Singleton {
 
         const artistStr = Array.isArray(meta.artist) ? meta.artist.join(", ") : String(meta.artist || "");
         const titleStr = Array.isArray(meta.title) ? meta.title.join(", ") : String(meta.title || "");
+        // Track metadata is untrusted (any player, any title): passed as
+        // arguments, never spliced into the shell string.
         findLyricsInSubdirs.command = ["sh", "-c",
-            `find ${_shEsc(cleanDir)} -type f -iname "*${artistStr.replace(/"/g, '\\"')}*${titleStr.replace(/"/g, '\\"')}*.lrc" 2>/dev/null | head -n 1`
+            'find "$1" -type f -iname "*$2*$3*.lrc" 2>/dev/null | head -n 1',
+            "sh", cleanDir, artistStr, titleStr
         ];
         findLyricsInSubdirs.requestId = requestId;
         findLyricsInSubdirs.foundFile = false;
