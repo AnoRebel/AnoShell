@@ -83,18 +83,24 @@ Item {
         property real startProgress: 0
         onActiveChanged: {
             if (active) { settle.stop(); startProgress = root.progress }
-            else root.settleTo(Math.round(root.progress))
+            else root.settleFrom(startProgress)
         }
         onTranslationChanged: {
             if (!active) return
-            const raw = startProgress - (root.vertical ? translation.y : translation.x) / 160
+            const raw = startProgress - (root.vertical ? translation.y : translation.x) / 120
             root.progress = raw < 0 ? raw * 0.25 : raw > root.count - 1 ? (root.count - 1) + (raw - root.count + 1) * 0.25 : raw
         }
     }
     Timer {
         id: idle
         interval: 150
-        onTriggered: { root._swiping = false; root.settleTo(Math.round(root.progress)) }
+        onTriggered: { root._swiping = false; root.settleFrom(root._start) }
+    }
+    // Past a quarter of a face in one direction commits to the next face that
+    // way (a short swipe is enough); less springs back.
+    function settleFrom(start) {
+        const d = root.progress - start
+        root.settleTo(d > 0.25 ? Math.ceil(root.progress) : d < -0.25 ? Math.floor(root.progress) : Math.round(root.progress))
     }
     function settleTo(i) {
         settle.to = Math.max(0, Math.min(root.count - 1, i))
@@ -260,8 +266,11 @@ Item {
         property string icon
         signal tap()
         text: icon; iconSize: 18; fill: 1
-        color: tapArea.containsMouse ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
-        MouseArea { id: tapArea; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: mb.tap() }
+        color: mbHover.hovered ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
+        // Handlers, not a MouseArea: a press here can still become a swipe
+        // (a MouseArea took the press and blocked swiping on the media face).
+        HoverHandler { id: mbHover; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: mb.tap() }
     }
 
     // Spectrum: registered with cava only while this face is in view.
