@@ -225,6 +225,7 @@
   "media.preferredPlayer": "string",
   "network.hotspot.password": "string",
   "network.hotspot.ssid": "string",
+  "network.panelStyle": "string",
   "network.usage.enable": "bool",
   "network.usage.historyLength": "int",
   "network.usage.intervalMs": "int",

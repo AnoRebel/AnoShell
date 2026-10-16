@@ -71,6 +71,15 @@ Singleton {
         connectProc.exec(["nmcli", "dev", "wifi", "connect", accessPoint.ssid])
     }
 
+    // Connect with a password typed into a UI (SSID and password are separate
+    // argv elements, never part of a shell string). A wrong password leaves
+    // the access point asking for one again (askingPassword).
+    function connectToWifiNetworkWithPassword(accessPoint, password: string): void {
+        accessPoint.askingPassword = false
+        root.wifiConnectTarget = accessPoint
+        connectProc.exec(["nmcli", "dev", "wifi", "connect", accessPoint.ssid, "password", password])
+    }
+
     function disconnectWifiNetwork(): void {
         if (active) disconnectProc.exec(["nmcli", "connection", "down", active.ssid])
     }

@@ -1028,6 +1028,9 @@ Singleton {
 
             // Network usage + hotspot
             property JsonObject network: JsonObject {
+                // Which panel the network/Bluetooth entry points open:
+                // "classic" (inline pickers) or "orbit" (the NetworkOrbit panel).
+                property string panelStyle: "classic"
                 property JsonObject usage: JsonObject {
                     property bool enable: false
                     property int intervalMs: 1000

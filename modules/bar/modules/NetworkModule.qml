@@ -1,3 +1,4 @@
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -28,6 +29,7 @@ Item {
 
     // Left-click pins the popout open so the network picker is usable (hover
     // alone would dismiss it as you move to the popup). Click again to unpin.
+    // With network.panelStyle "orbit" it opens the Network Orbit panel instead.
     property bool pinned: false
 
     MouseArea {
@@ -36,7 +38,10 @@ Item {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.pinned = !root.pinned
+        onClicked: {
+            if (GlobalStates.networkOrbitStyle) GlobalStates.toggleNetworkOrbit(Network.ethernet ? "eth" : "wifi")
+            else root.pinned = !root.pinned
+        }
     }
 
     BarModulePopout {

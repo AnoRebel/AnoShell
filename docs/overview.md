@@ -21,7 +21,7 @@ loads or unloads the modules that differ.
 
 | Family | Hosts |
 |---|---|
-| `ano` (default) | everything: bar, overlays, both sidebars, dock, HUD, task view, control panel, media controls, weather, wallpaper selector, screen corners, Focus Time, Display Manager |
+| `ano` (default) | everything: bar, overlays, both sidebars, dock, HUD, task view, control panel, Network Orbit, media controls, weather, wallpaper selector, screen corners, Focus Time, Display Manager |
 | `hefty` | the same minus Focus Time and Display Manager; morphing panels always on |
 | `clean` | the core plus the sidebars, clipboard, cheatsheet and calendar; no dock or HUD |
 | `minimal` | the core only: bar, overview, notifications, OSD, session screen, settings, search, window switcher, lock screen and the pill |

@@ -37,6 +37,7 @@ Singleton {
         { id: "anoAltSwitcher", name: "Alt-Tab Switcher", icon: "tab", desc: "Window switcher with thumbnails", category: "Overlays", source: "modules/altSwitcher/AltSwitcher.qml" },
         { id: "anoSearch", name: "App Launcher", icon: "search", desc: "Application search and launch", category: "Overlays", source: "modules/search/Search.qml" },
         { id: "anoControlPanel", name: "Control Panel", icon: "tune", desc: "Quick-access system controls", category: "Overlays", source: "modules/controlPanel/ControlPanel.qml" },
+        { id: "anoNetworkOrbit", name: "Network Orbit", icon: "hub", desc: "Animated Wi-Fi / Bluetooth / VPN panel (network.panelStyle \"orbit\")", category: "Overlays", source: "modules/networkOrbit/NetworkOrbit.qml" },
         { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel", category: "Overlays", source: "modules/mediaControls/MediaControls.qml" },
         { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information", category: "Overlays", source: "modules/weather/WeatherPanel.qml" },
         { id: "anoCalendar", name: "Calendar", icon: "calendar_month", desc: "Calendar panel with events and holidays", category: "Overlays", source: "modules/calendar/CalendarPanel.qml" },
@@ -67,7 +68,7 @@ Singleton {
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen",
         "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoCheatsheet", "anoCalendar"]
-    readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoMediaControls",
+    readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer"]
     readonly property var familyModules: ({
         "ano": _core.concat(_sidebars, _rich, ["anoFocusTime", "anoDisplayManager"]),

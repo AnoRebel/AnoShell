@@ -51,6 +51,27 @@ Singleton {
     property bool anoSpotStashOpen: false
     property bool anoSpotWorkspacePreviewOpen: false
     property bool calendarOpen: false
+    // Network Orbit panel (modules/networkOrbit) and its tab: wifi, bt, vpn, eth.
+    property bool networkOrbitOpen: false
+    property string networkOrbitTab: "wifi"
+    // True when network.panelStyle is "orbit" and the panel is loaded: the bar
+    // and sidebar network/Bluetooth entry points then open it instead of their
+    // inline pickers.
+    readonly property bool networkOrbitStyle: (Config.options?.network?.panelStyle ?? "classic") === "orbit"
+        && PanelGate.enabled("anoNetworkOrbit")
+    function openNetworkOrbit(tab: string): void {
+        const t = String(tab ?? "").toLowerCase()
+        const alias = { wlan: "wifi", bluetooth: "bt", ethernet: "eth", wired: "eth" }
+        const m = alias[t] ?? t
+        if (["wifi", "bt", "vpn", "eth"].includes(m)) root.networkOrbitTab = m
+        root.networkOrbitOpen = true
+    }
+    // Closes it when it is already open on that tab (or tab is ""), else opens it there.
+    function toggleNetworkOrbit(tab: string): void {
+        const t = String(tab ?? "")
+        if (root.networkOrbitOpen && (t === "" || t === root.networkOrbitTab)) root.networkOrbitOpen = false
+        else root.openNetworkOrbit(t)
+    }
 
     // Lock screen
     property bool screenLocked: false

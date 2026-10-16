@@ -505,12 +505,36 @@ ColumnLayout {
         }
     }
 
+    // ═══ Network panel ═══
+    SettingsCard {
+        icon: "hub"
+        title: "Network panel"
+        subtitle: "What the bar's network and Bluetooth icons (and the sidebar's Wi-Fi / Bluetooth chevrons) open"
+        configKeys: ["network.panelStyle"]
+
+        ConfigRow {
+            label: "Network panel style"
+            configKey: "network.panelStyle"
+            sublabel: (Config.options?.network?.panelStyle ?? "classic") === "orbit"
+                ? "Orbit: the animated Network Orbit panel (Wi-Fi, Bluetooth, Ethernet, VPN tabs)"
+                : "Classic: the inline network and device pickers"
+            ChoiceRow {
+                model: [
+                    { value: "classic", label: "Classic", icon: "list" },
+                    { value: "orbit", label: "Orbit", icon: "hub", enabled: PanelGate.hosted("anoNetworkOrbit") }
+                ]
+                current: Config.options?.network?.panelStyle ?? "classic"
+                onChose: value => Config.setNestedValue("network.panelStyle", value)
+            }
+        }
+    }
+
     // ═══ Network Usage ═══
     SettingsCard {
         icon: "monitoring"
         title: "Network usage tracking"
         subtitle: "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface."
-        configKeys: ["network"]
+        configKeys: ["network.usage"]
 
         ConfigSwitch {
             id: nuEnable

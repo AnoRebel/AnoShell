@@ -1,0 +1,6 @@
+module qs.modules.networkOrbit
+NetworkOrbit 1.0 NetworkOrbit.qml
+OrbitView 1.0 OrbitView.qml
+OrbitCores 1.0 OrbitCores.qml
+OrbitCards 1.0 OrbitCards.qml
+OrbitControls 1.0 OrbitControls.qml
