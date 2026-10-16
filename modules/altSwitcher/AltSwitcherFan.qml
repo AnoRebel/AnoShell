@@ -87,6 +87,35 @@ PanelWindow {
         else { flipAnim.stop(); flip = 0; showingWs = false }
     }
 
+    // The fan's panel: grows out of the edge with the cards on it. In
+    // connected mode the frame paints it (one silhouette with the pill and
+    // bar); otherwise it is drawn here.
+    readonly property bool connected: PanelRegistry.enabled
+    readonly property real plateDepth: root.depth * Math.max(0, Math.min(1, root.shown))
+    ConnectedSurfaceLease {
+        key: "fan:" + (root.screen?.name ?? "")
+        kind: "fan"; edge: root.edge; priority: 12
+        screenName: root.screen?.name ?? ""
+        active: root.visible && root.connected && root.shown > 0.01
+        immediate: true
+        progress: Math.max(0, Math.min(1, root.shown))
+        readonly property point _o: PanelRegistry.windowOrigin(root)
+        x: _o.x + (root.edge === "right" ? root.width - root.plateDepth : 0)
+        y: _o.y + (root.edge === "bottom" ? root.height - root.plateDepth : 0)
+        w: root.vertical ? root.plateDepth : root.width
+        h: root.vertical ? root.height : root.plateDepth
+    }
+    SurfaceMaterial {
+        visible: !root.connected
+        surface: "altSwitcher"
+        color: Appearance.colors.colLayer0
+        radius: Appearance.rounding.windowRounding
+        x: root.edge === "right" ? root.width - root.plateDepth : 0
+        y: root.edge === "bottom" ? root.height - root.plateDepth : 0
+        width: root.vertical ? root.plateDepth : root.width
+        height: root.vertical ? root.height : root.plateDepth
+    }
+
     // The deck slides out of the edge as it opens.
     Item {
         id: deck
