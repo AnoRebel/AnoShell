@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
@@ -35,6 +34,8 @@ PanelWindow {
     property real shown: open ? 1 : 0
     Behavior on shown { MotionSpring { token: root.open ? "liquid" : "settle" } }
     visible: open || shown > 0.01
+    // On the monitor you're using (it opened on the first one).
+    screen: Quickshell.screens.find(sc => sc.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]
     color: "transparent"
     exclusionMode: ExclusionMode.Normal   // past the bar/pill on that edge
     WlrLayershell.namespace: "quickshell:altSwitcher"
@@ -118,60 +119,60 @@ PanelWindow {
             onWheel: event => { (event.angleDelta.y || event.angleDelta.x) < 0 ? root.switcher.cycleNext() : root.switcher.cyclePrev() }
         }
 
-        // The fan's body: a ribbon along the cards' arc and a stem down to the
-        // pill, in the frame's colour, so the cards sit on one surface grown
-        // out of the pill (not a rectangle). Drawn opaque in a layer and faded
-        // as a whole, so the overlapping parts don't darken.
-        Item {
+        // The fan's body: every visible card's rounded rect plus a stem down
+        // to the pill, melted into one silhouette (fan_body.frag), in the
+        // frame's colour — it hugs the cards instead of boxing them.
+        ShaderEffect {
             id: body
             anchors.fill: parent
+            fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/fan_body.frag.qsb"))
             readonly property bool connected: PanelRegistry.enabled
-            opacity: connected ? Math.max(0.001, Config.options?.appearance?.connectedCorners?.opacity ?? 1) : 0.92
-            layer.enabled: true
-            readonly property color tone: Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g, Appearance.colors.colLayer0.b, 1)
-            readonly property real band: (root.vertical ? root.cardW : root.cardH) + 26
-            Shape {
-                anchors.fill: parent
-                preferredRendererType: Shape.CurveRenderer
-                // Ribbon: the cards' path, stroked wide with round ends.
-                ShapePath {
-                    strokeColor: body.tone
-                    strokeWidth: body.band
-                    fillColor: "transparent"
-                    capStyle: ShapePath.RoundCap
-                    joinStyle: ShapePath.RoundJoin
-                    startX: fan.px(fan.e0, fan.near).x; startY: fan.px(fan.e0, fan.near).y
-                    PathCubic {
-                        x: fan.px(0.5, fan.far).x; y: fan.px(0.5, fan.far).y
-                        control1X: fan.px(fan.e0 + 0.1, fan.far).x; control1Y: fan.px(fan.e0 + 0.1, fan.far).y
-                        control2X: fan.px(0.32, fan.far).x; control2Y: fan.px(0.32, fan.far).y
-                    }
-                    PathCubic {
-                        x: fan.px(1 - fan.e0, fan.near).x; y: fan.px(1 - fan.e0, fan.near).y
-                        control1X: fan.px(0.68, fan.far).x; control1Y: fan.px(0.68, fan.far).y
-                        control2X: fan.px(0.9 - fan.e0, fan.far).x; control2Y: fan.px(0.9 - fan.e0, fan.far).y
-                    }
+            readonly property color tone: Appearance.colors.colLayer0
+            property real widthPx: width
+            property real heightPx: height
+            property real radius: Appearance.rounding.normal + 8
+            property real k: 34
+            property vector4d color: Qt.vector4d(tone.r, tone.g, tone.b,
+                connected ? (Config.options?.appearance?.connectedCorners?.opacity ?? 1) : 0.92)
+            // Card rects follow the cards as they glide (offset) and scale.
+            readonly property var rects: {
+                void fan.offset; void fan.count
+                // Each card's rect, stretched along the arc to meet its
+                // neighbours (on side edges the cards sit further apart than
+                // the joins can bridge, which left separate blobs).
+                const cards = fan.children.filter(c => c.isFanCard && c.visible).map(c => ({
+                    cx: c.x + c.width / 2, cy: c.y + c.height / 2,
+                    w: c.width * c.scale + 20, h: c.height * c.scale + 20 }))
+                const al = c => root.vertical ? c.cy : c.cx
+                cards.sort((a, b) => al(a) - al(b))
+                const out = []
+                for (let i = 0; i < cards.length; i++) {
+                    const c = cards[i], half = root.vertical ? c.h / 2 : c.w / 2
+                    let lo = half, hi = half
+                    if (i > 0) lo = Math.max(half, (al(c) - al(cards[i - 1])) / 2 + 6)
+                    if (i < cards.length - 1) hi = Math.max(half, (al(cards[i + 1]) - al(c)) / 2 + 6)
+                    out.push(root.vertical
+                        ? Qt.vector4d(c.cx - c.w / 2, c.cy - lo, c.w, lo + hi)
+                        : Qt.vector4d(c.cx - lo, c.cy - c.h / 2, lo + hi, c.h))
                 }
-                // Stem: from the pill's edge, flaring into the ribbon's middle,
-                // with concave (meniscus) sides.
-                ShapePath {
-                    id: stem
-                    strokeColor: "transparent"
-                    fillColor: body.tone
-                    readonly property real w0: Math.min(fan.stemBase, (root.vertical ? fan.height : fan.width) * 0.5) / 2
-                    readonly property real w1: (root.vertical ? root.cardH : root.cardW) * 0.45
-                    startX: fan.px(0.5, 0).x - (root.vertical ? 0 : w0); startY: fan.px(0.5, 0).y - (root.vertical ? w0 : 0)
-                    PathQuad {
-                        x: fan.px(0.5, fan.far).x - (root.vertical ? 0 : stem.w1); y: fan.px(0.5, fan.far).y - (root.vertical ? stem.w1 : 0)
-                        controlX: fan.px(0.5, fan.far * 0.55).x - (root.vertical ? 0 : stem.w1 * 0.55); controlY: fan.px(0.5, fan.far * 0.55).y - (root.vertical ? stem.w1 * 0.55 : 0)
-                    }
-                    PathLine { x: fan.px(0.5, fan.far).x + (root.vertical ? 0 : stem.w1); y: fan.px(0.5, fan.far).y + (root.vertical ? stem.w1 : 0) }
-                    PathQuad {
-                        x: fan.px(0.5, 0).x + (root.vertical ? 0 : stem.w0); y: fan.px(0.5, 0).y + (root.vertical ? stem.w0 : 0)
-                        controlX: fan.px(0.5, fan.far * 0.55).x + (root.vertical ? 0 : stem.w1 * 0.55); controlY: fan.px(0.5, fan.far * 0.55).y + (root.vertical ? stem.w1 * 0.55 : 0)
-                    }
-                }
+                // Stem: from the window's edge (where the pill is) to the arc's middle.
+                const along = root.vertical ? height : width
+                const sw = Math.min(fan.stemBase, along * 0.5), mid = fan.far
+                const st = root.edge === "bottom" ? Qt.vector4d(width / 2 - sw / 2, height - mid, sw, mid)
+                    : root.edge === "top" ? Qt.vector4d(width / 2 - sw / 2, 0, sw, mid)
+                    : root.edge === "left" ? Qt.vector4d(0, height / 2 - sw / 2, mid, sw)
+                    : Qt.vector4d(width - mid, height / 2 - sw / 2, mid, sw)
+                out.unshift(st)
+                return out.slice(0, 8)
             }
+            property vector4d r0: rects[0] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r1: rects[1] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r2: rects[2] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r3: rects[3] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r4: rects[4] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r5: rects[5] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r6: rects[6] ?? Qt.vector4d(0, 0, 0, 0)
+            property vector4d r7: rects[7] ?? Qt.vector4d(0, 0, 0, 0)
         }
 
         PathView {
@@ -223,6 +224,7 @@ PanelWindow {
 
             delegate: Item {
                 id: card
+                readonly property bool isFanCard: true
                 required property var modelData
                 required property int index
                 readonly property bool current: PathView.isCurrentItem
