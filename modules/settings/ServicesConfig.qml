@@ -20,12 +20,71 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather"
+        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording"
         configRoots: [
             "ai", "gameMode", "powerProfiles", "network", "vpn",
             "nightLight", "lyrics", "calendar", "resources", "light",
-            "shell", "weather"
+            "shell", "weather", "recording"
         ]
+    }
+
+    // ═══ Screen recording ═══
+    SettingsCard {
+        icon: "screen_record"
+        title: "Screen recording"
+        subtitle: "Which recorder to use, audio, and where recordings go"
+        configKeys: ["recording"]
+
+        ConfigRow {
+            label: "Recorder"
+            configKey: "recording.backend"
+            sublabel: RecorderStatus.available
+                ? `Using ${RecorderStatus.backend}` + ((Config.options?.recording?.backend ?? "auto") === "auto" ? " (auto: first installed)" : "")
+                : "No recorder installed"
+            ChoiceRow {
+                model: [{ value: "auto", label: "Auto", icon: "auto_mode" }].concat(RecorderStatus.known.map(b => ({
+                    value: b, label: b.replace("-screen-recorder", "-sr"), icon: "videocam",
+                    enabled: RecorderStatus.installed.includes(b)
+                })))
+                current: Config.options?.recording?.backend ?? "auto"
+                onChose: value => Config.setNestedValue("recording.backend", value)
+            }
+        }
+
+        // Nothing installed: what to install, and why each.
+        NoticeBox {
+            visible: !RecorderStatus.available
+            Layout.fillWidth: true
+            iconName: "download"
+            level: "warning"
+            text: "Install one of: " + RecorderStatus.suggestions.map(x => `${x.name} (${x.why})`).join("; ") + ". Then reopen Settings."
+        }
+        StyledText {
+            visible: RecorderStatus.available && RecorderStatus.installed.length < RecorderStatus.known.length
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.6
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            text: "Also available: " + RecorderStatus.suggestions.filter(x => !RecorderStatus.installed.includes(x.name)).map(x => `${x.name} — ${x.why}`).join("; ")
+        }
+
+        ConfigSwitch {
+            label: "Record desktop audio"
+            configKey: "recording.audio"
+            checked: Config.options?.recording?.audio ?? false
+            onCheckedChanged: Config.setNestedValue("recording.audio", checked)
+        }
+        ConfigRow {
+            label: "Folder"
+            configKey: "recording.dir"
+            sublabel: "Empty: ~/Videos"
+            ConfigTextInput {
+                Layout.preferredWidth: 240
+                placeholderText: "~/Videos"
+                text: Config.options?.recording?.dir ?? ""
+                onEditingFinished: Config.setNestedValue("recording.dir", text.trim())
+            }
+        }
     }
 
     // ═══ AI Chat ═══

@@ -329,6 +329,11 @@
       "bottomRight": "settingsOpen"
     }
   },
+  "recording": {
+    "backend": "auto",
+    "dir": "",
+    "audio": false
+  },
   "anoSpot": {
     "enable": false,
     "position": "top",

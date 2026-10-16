@@ -1876,6 +1876,42 @@
  },
  {
   "page": 8,
+  "card": "Screen recording",
+  "label": "Screen recording",
+  "sublabel": "Which recorder to use, audio, and where recordings go",
+  "keys": [
+   "recording"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Recorder",
+  "sublabel": "",
+  "keys": [
+   "recording.backend"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Record desktop audio",
+  "sublabel": "",
+  "keys": [
+   "recording.audio"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Folder",
+  "sublabel": "Empty: ~/Videos",
+  "keys": [
+   "recording.dir"
+  ]
+ },
+ {
+  "page": 8,
   "card": "AI Chat",
   "label": "AI Chat",
   "sublabel": "Model configuration, API keys, system prompt, and temperature",

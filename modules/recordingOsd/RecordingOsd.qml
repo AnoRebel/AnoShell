@@ -39,7 +39,7 @@ Scope {
     }
 
     function stopRecording(): void {
-        Quickshell.execDetached(["/usr/bin/pkill", "-SIGINT", "wf-recorder"])
+        RecorderStatus.stop()
     }
 
     Connections {

@@ -1113,6 +1113,15 @@ Singleton {
             }
 
             // AnoSpot floating media/status pill
+            // Screen recording: which installed recorder to use ("auto" picks the
+            // first of gpu-screen-recorder, wl-screenrec, wf-recorder), where
+            // files go (empty: ~/Videos), and whether to record desktop audio.
+            property JsonObject recording: JsonObject {
+                property string backend: "auto"
+                property string dir: ""
+                property bool audio: false
+            }
+
             property JsonObject anoSpot: JsonObject {
                 property bool enable: false
                 property string position: "top"
