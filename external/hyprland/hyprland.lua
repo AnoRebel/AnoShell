@@ -595,7 +595,7 @@ hl.layer_rule({ match = { namespace = "^quickshell:anospot$" }, ignore_alpha = 0
 -- (3 passes). Measured on an iGPU: control panel open/close went from p90
 -- 33 ms per frame (half rate) to 17 ms with its layer unblurred. Translucent
 -- surfaces (bar, sidebars, dock, pill) keep their blur.
-hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|recordingOsd|familyTransition|frameExclusion|anospot:(edgePicker|peek|wspreview|stash))$" }, blur = false })
+hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|networkOrbit|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|recordingOsd|familyTransition|frameExclusion|anospot:(edgePicker|peek|wspreview|stash))$" }, blur = false })
 -- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
 -- the rectangular rule blur would show as a square halo around them.
 hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })

@@ -115,6 +115,49 @@ Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`,
 `keyboard` (also `keyboardLayout`), `notifications`, `idle`, `privacy`,
 `gamemode`.
 
+## Network panel
+
+`network.panelStyle` picks what the network and Bluetooth entry points open:
+
+| Value | Opens |
+|---|---|
+| `"classic"` (default) | The inline pickers: the bar popouts pin open with the Wi-Fi / Bluetooth list, and the sidebar chevrons expand them. |
+| `"orbit"` | **Network Orbit**, an animated panel adapted from ilyamiro's network popup. |
+
+Set it on **Settings → Services → Network panel**. With `"orbit"`:
+
+- Clicking the bar's `network` module opens Orbit on Wi-Fi (Ethernet when
+  wired), and clicking `bluetooth` opens it on Bluetooth. Click again to close.
+- The right sidebar's Wi-Fi and Bluetooth chevrons open it on that tab.
+- Right-clicking the control panel's Wi-Fi or Bluetooth toggle opens it.
+
+Network Orbit has a tab per available connection type: Ethernet, Wi-Fi,
+Bluetooth, and VPN (when a provider is set under `vpn.providers`).
+
+- **Cores:** connected devices glow in the middle. Several Bluetooth devices
+  orbit each other.
+- **Cards:** networks and devices you can connect to orbit around the cores.
+  Once you're connected, the cards show the connection's details instead.
+  **Scan** / **Current device** switches between the two.
+- **Press and hold** a card to run it: connect, pair, copy the IP, sign in to a
+  portal, forget the network, or unpair the device. Press and hold a core to
+  disconnect it.
+- **Password:** a secured Wi-Fi network that needs a password asks for it in
+  the core. Enter connects, and Escape cancels.
+- **Power:** the power button turns the tab's radio on or off. On the VPN tab
+  it connects or disconnects, or opens the sign-in link when the provider asks
+  for one.
+- **Keys:** Tab cycles the tabs, and Escape closes the panel.
+
+The panel is the `anoNetworkOrbit` module (Overlays, in the ano and hefty
+families). Its IPC target is `networkOrbit`:
+
+```sh
+ano ipc call networkOrbit open wifi     # wifi | bt | vpn | eth
+ano ipc call networkOrbit toggle bt     # "" toggles whatever tab is open
+ano ipc call networkOrbit close
+```
+
 ## anod hooks
 
 Event hooks for anod live under `hooks` in the same file. See

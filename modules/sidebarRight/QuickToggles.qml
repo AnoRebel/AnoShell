@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell.Bluetooth
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -44,7 +45,10 @@ Rectangle {
             onClicked: Network.toggleWifi()
             showChevron: true
             chevronRotation: root.networkExpanded ? 180 : 0
-            onChevronClicked: root.networkExpanded = !root.networkExpanded
+            onChevronClicked: {
+                if (GlobalStates.networkOrbitStyle) GlobalStates.openNetworkOrbit("wifi")
+                else root.networkExpanded = !root.networkExpanded
+            }
             Layout.fillWidth: true
         }
 
@@ -77,7 +81,10 @@ Rectangle {
             }
             showChevron: true
             chevronRotation: root.bluetoothExpanded ? 180 : 0
-            onChevronClicked: root.bluetoothExpanded = !root.bluetoothExpanded
+            onChevronClicked: {
+                if (GlobalStates.networkOrbitStyle) GlobalStates.openNetworkOrbit("bt")
+                else root.bluetoothExpanded = !root.bluetoothExpanded
+            }
             Layout.fillWidth: true
         }
 

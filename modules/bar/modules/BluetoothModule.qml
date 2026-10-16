@@ -1,3 +1,4 @@
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -14,7 +15,8 @@ Item {
     implicitWidth: icon.implicitWidth + 8
     implicitHeight: vertical ? icon.implicitHeight + 8 : Appearance.sizes.barHeight
     property bool hovered: btMA.containsMouse
-    // Left-click pins the popout so the device picker is usable.
+    // Left-click pins the popout so the device picker is usable (or, with
+    // network.panelStyle "orbit", opens the Network Orbit panel on Bluetooth).
     property bool pinned: false
 
     MaterialSymbol {
@@ -28,7 +30,10 @@ Item {
         id: btMA; anchors.fill: parent; hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.pinned = !root.pinned
+        onClicked: {
+            if (GlobalStates.networkOrbitStyle) GlobalStates.toggleNetworkOrbit("bt")
+            else root.pinned = !root.pinned
+        }
     }
 
     BarModulePopout {

@@ -582,7 +582,7 @@ Scripts include automatic backup — restore with: switchwall.sh --restore
 Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanvas backgrounds that morph between states. The `BarModulePopout` wrapper auto-detects morph mode — 8 bar modules have rich morph-capable popouts.
 
 ## Credits
-Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system)
+Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system)
 
 ## Architecture
 

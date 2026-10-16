@@ -2274,11 +2274,29 @@
  },
  {
   "page": 8,
+  "card": "Network panel",
+  "label": "Network panel",
+  "sublabel": "What the bar's network and Bluetooth icons (and the sidebar's Wi-Fi / Bluetooth chevrons) open",
+  "keys": [
+   "network.panelStyle"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Network panel style",
+  "sublabel": "classic",
+  "keys": [
+   "network.panelStyle"
+  ]
+ },
+ {
+  "page": 8,
   "card": "Network usage tracking",
   "label": "Network usage tracking",
   "sublabel": "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface.",
   "keys": [
-   "network"
+   "network.usage"
   ]
  },
  {

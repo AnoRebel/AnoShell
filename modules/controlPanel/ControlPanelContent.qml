@@ -39,8 +39,11 @@ ColumnLayout {
         Layout.fillWidth: true
         columns: 3; columnSpacing: 6; rowSpacing: 6
 
-        CPToggle { iconName: Network.materialSymbol; label: Network.wifi ? Network.networkName : "WiFi"; active: Network.wifi; onClicked: Network.toggleWifi() }
-        CPToggle { iconName: BluetoothStatus.connected ? "bluetooth_connected" : "bluetooth"; label: "Bluetooth"; active: BluetoothStatus.connected; visible: BluetoothStatus.available }
+        // Right-click opens the Network Orbit panel when network.panelStyle is "orbit".
+        CPToggle { iconName: Network.materialSymbol; label: Network.wifi ? Network.networkName : "WiFi"; active: Network.wifi; onClicked: Network.toggleWifi()
+            onSecondaryClicked: if (GlobalStates.networkOrbitStyle) { root.closeRequested(); GlobalStates.openNetworkOrbit("wifi") } }
+        CPToggle { iconName: BluetoothStatus.connected ? "bluetooth_connected" : "bluetooth"; label: "Bluetooth"; active: BluetoothStatus.connected; visible: BluetoothStatus.available
+            onSecondaryClicked: if (GlobalStates.networkOrbitStyle) { root.closeRequested(); GlobalStates.openNetworkOrbit("bt") } }
         CPToggle { iconName: Notifications.silent ? "notifications_paused" : "notifications_active"; label: Notifications.silent ? "Silent" : "Alerts"; active: Notifications.silent; onClicked: Notifications.silent = !Notifications.silent }
         CPToggle { iconName: Idle.inhibit ? "coffee" : "coffee_maker"; label: Idle.inhibit ? "Awake" : "Idle"; active: Idle.inhibit; onClicked: Idle.toggleInhibit() }
         CPToggle { iconName: "dark_mode"; label: "Night"; active: false }
@@ -134,6 +137,7 @@ ColumnLayout {
     component CPToggle: Rectangle {
         property string iconName: ""; property string label: ""; property bool active: false
         signal clicked()
+        signal secondaryClicked()
         Layout.fillWidth: true; implicitHeight: 44
         radius: Appearance?.rounding.small ?? 8
         color: active ? Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.2) : Appearance?.colors.colLayer1 ?? "#E5E1EC"
@@ -143,6 +147,7 @@ ColumnLayout {
             MaterialSymbol { text: iconName; iconSize: 18; fill: active ? 1 : 0; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; Layout.alignment: Qt.AlignHCenter }
             StyledText { text: label; font.pixelSize: Appearance.font.pixelSize.smallest; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.maximumWidth: 80; Layout.alignment: Qt.AlignHCenter; color: active ? Appearance?.colors.colPrimary ?? "#65558F" : Appearance?.colors.colOnLayer1 ?? "#E6E1E5" }
         }
-        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: parent.clicked() }
+        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: mouse => mouse.button === Qt.RightButton ? parent.secondaryClicked() : parent.clicked() }
     }
 }

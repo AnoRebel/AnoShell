@@ -248,6 +248,7 @@
     "preferredProfile": ""
   },
   "network": {
+    "panelStyle": "classic",
     "usage": {
       "enable": false,
       "intervalMs": 1000,
