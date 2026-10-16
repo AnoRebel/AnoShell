@@ -631,12 +631,22 @@
   "page": 2,
   "card": "Position & Style",
   "label": "Position & Style",
-  "sublabel": "Bar edge, auto-hide, background, and margin",
+  "sublabel": "Bar style, edge, auto-hide, background, and margin",
   "keys": [
+   "bar.style",
    "bar.cornerStyle",
    "bar.autoHide",
    "bar.showBackground",
    "bars"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Bar style",
+  "sublabel": "ano",
+  "keys": [
+   "bar.style"
   ]
  },
  {
@@ -1005,6 +1015,15 @@
   "card": "Position",
   "label": "Position",
   "sublabel": "Which screen edge the dock appears on",
+  "keys": [
+   "dock.position"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Automatic edge",
+  "sublabel": "Opposite the pill when the pill is the bar; bottom otherwise. Picking an edge below turns this off.",
   "keys": [
    "dock.position"
   ]

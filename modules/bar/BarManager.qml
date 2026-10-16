@@ -30,6 +30,14 @@ Scope {
         "showBackground": true
     }]
 
+    // Keeps a retiring bar mapped while it slides out on a switch to pill style.
+    property bool _handoff: false
+    Connections {
+        target: BarStyle
+        function onPillBarChanged() { root._handoff = true; handoffTimer.restart() }
+    }
+    Timer { id: handoffTimer; interval: 700; onTriggered: root._handoff = false }
+
     readonly property var barDefinitions: Config.options?.bars ?? defaultBars
 
     // Per-screen bar instances.
@@ -62,13 +70,17 @@ Scope {
                     required property int modelData
                     // Skip bars that use morphingPanel — those are rendered by TopLayerPanel.
                     readonly property bool _shouldShow: GlobalStates.barOpen
+                        && GlobalStates.shellSettled
                         && !GlobalStates.screenLocked
                         && !(barConfig?.morphingPanel ?? false)
 
                     screen: screenScope.modelData
                     barConfig: root.barDefinitions[modelData] ?? null
                     barIndex: modelData
-                    visible: _shouldShow
+                    // Pill-bar style: the classic bar slides out (retired), then
+                    // unmaps; switching back slides it in again.
+                    retired: BarStyle.pillBar
+                    visible: _shouldShow && (!BarStyle.pillBar || root._handoff)
                 }
             }
         }

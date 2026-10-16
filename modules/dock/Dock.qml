@@ -21,7 +21,7 @@ import qs.services
 Scope {
     id: root
     property bool pinned: Config.options?.dock?.pinnedOnStartup ?? false
-    readonly property string position: Config.options?.dock?.position ?? "bottom"
+    readonly property string position: BarStyle.dockEdge   // dock.position, "auto" resolved (opposite the pill-bar)
     readonly property bool isVertical: position === "left" || position === "right"
     readonly property bool isTop: position === "top"
     readonly property bool isLeft: position === "left"

@@ -87,6 +87,7 @@
     }
   ],
   "bar": {
+    "style": "pill",
     "cornerStyle": 0,
     "morphingPanels": false,
     "autoHide": {
@@ -336,7 +337,7 @@
   },
   "anoSpot": {
     "enable": false,
-    "position": "top",
+    "position": "bottom",
     "widthPx": 420,
     "heightPx": 36,
     "showMpris": true,
@@ -428,7 +429,7 @@
   "dock": {
     "enable": true,
     "style": "pill",
-    "position": "bottom",
+    "position": "auto",
     "height": 56,
     "iconSize": 40,
     "pinnedOnStartup": false,

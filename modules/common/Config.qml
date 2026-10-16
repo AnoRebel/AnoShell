@@ -612,6 +612,9 @@ Singleton {
             // Bar System
             // ═══════════════════════════════════════════════════════════════
             property JsonObject bar: JsonObject {
+                // Ano family: "pill" makes the pill (AnoSpot) the bar; "classic" the
+                // full bar. Other families always use the classic bar.
+                property string style: "pill"
                 property int cornerStyle: 0 // 0: Normal | 1: Floating (adds gaps)
                 property bool verbose: false // verbose mode shows more info in bar modules
                 property bool morphingPanels: false
@@ -929,7 +932,9 @@ Singleton {
             property JsonObject dock: JsonObject {
                 property bool enable: true
                 property string style: "pill"
-                property string position: "bottom"
+                // top/bottom/left/right, or "auto": opposite the pill-bar
+                // (bar.style pill), bottom otherwise.
+                property string position: "auto"
                 property int height: 56
                 property int iconSize: 40
                 property bool pinnedOnStartup: false
@@ -1124,7 +1129,7 @@ Singleton {
 
             property JsonObject anoSpot: JsonObject {
                 property bool enable: false
-                property string position: "top"
+                property string position: "bottom"
                 property int widthPx: 420
                 property int heightPx: 36
                 // Slide into the edge while a window is fullscreen on that
@@ -1233,6 +1238,25 @@ Singleton {
                 root._migrateLegacyKeys();
                 root.ready = true;
             }
+        }
+    }
+
+    // Read and change settings from scripts (and the ano CLI) in-process, as
+    // Settings does. Values are JSON:
+    //   qs -c ano ipc call config get dock.position        -> "auto"
+    //   qs -c ano ipc call config set dock.position '"top"'
+    IpcHandler {
+        target: "config"
+        function get(key: string): string {
+            let v = root.options
+            for (const k of key.split(".")) { if (v === undefined || v === null) break; v = v[k] }
+            try { return JSON.stringify(v ?? null) } catch (e) { return "null" }
+        }
+        function set(key: string, json: string): string {
+            let v
+            try { v = JSON.parse(json) } catch (e) { return `error: value is not JSON (${e})` }
+            root.setNestedValue(key, v)
+            return "ok"
         }
     }
 }

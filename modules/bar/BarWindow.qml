@@ -71,7 +71,9 @@ PanelWindow {
         return hideOnFullscreen && CompositorService.hasFullscreenOnScreen(_screenName)
     }
     // Treated exactly like auto-hide: revealed on hover, hidden otherwise.
-    readonly property bool effectiveHidden: (autoHide || screenFullscreen) && !mustShow
+    // Retired: pill-bar style took over (slides out like auto-hide).
+    property bool retired: false
+    readonly property bool effectiveHidden: retired || ((autoHide || screenFullscreen) && !mustShow)
 
     // In connected mode the AnoScreen frame shader paints this bar's fill, its
     // concave junction arcs into the screen frame, and the whole silhouette's M3

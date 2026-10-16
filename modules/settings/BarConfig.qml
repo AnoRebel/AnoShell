@@ -41,8 +41,23 @@ ColumnLayout {
     SettingsCard {
         icon: "dock_to_bottom"
         title: "Position & Style"
-        subtitle: "Bar edge, auto-hide, background, and margin"
-        configKeys: ["bar.cornerStyle", "bar.autoHide", "bar.showBackground", "bars"]
+        subtitle: "Bar style, edge, auto-hide, background, and margin"
+        configKeys: ["bar.style", "bar.cornerStyle", "bar.autoHide", "bar.showBackground", "bars"]
+
+        ConfigRow {
+            label: "Bar style"
+            configKey: "bar.style"
+            sublabel: BarStyle.family !== "ano"
+                ? `Not applicable: the ${BarStyle.family} layout always uses the classic bar`
+                : (BarStyle.pillBar ? "The pill is the bar: workspaces, clock, status and tray, resting at the bottom" : "The full classic bar")
+            ChoiceRow {
+                enabled: BarStyle.family === "ano"
+                opacity: enabled ? 1 : 0.5
+                model: [{ value: "pill", label: "Pill", icon: "capsule" }, { value: "classic", label: "Classic", icon: "toolbar" }]
+                current: Config.options?.bar?.style ?? "pill"
+                onChose: value => Config.setNestedValue("bar.style", value)
+            }
+        }
 
         // Visual edge selector
         Item {

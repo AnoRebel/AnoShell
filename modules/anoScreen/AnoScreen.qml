@@ -116,6 +116,7 @@ Scope {
     property bool reservesArmed: false
     Timer { running: GlobalStates.shellSettled; interval: 600; onTriggered: root.reservesArmed = true }
     function _barDeclared(screenName, edge) {
+        if (BarStyle.pillBar) return edge === BarStyle.pillEdge
         const list = Config.options?.bar?.screenList ?? []
         if (list.length > 0 && !list.includes(screenName)) return false
         const bars = Config.options?.bars ?? [{ edge: "top" }]

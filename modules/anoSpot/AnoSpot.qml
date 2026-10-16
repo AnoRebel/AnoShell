@@ -24,8 +24,10 @@ import "."
 Scope {
     id: root
 
-    readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
-    readonly property string rawPosition: Config.options?.anoSpot?.position ?? "top"
+    // Pill-bar style (bar.style pill, Ano family): the pill is the bar.
+    readonly property bool barMode: BarStyle.pillBar
+    readonly property bool enabled: (Config.options?.anoSpot?.enable ?? false) || barMode
+    readonly property string rawPosition: BarStyle.pillEdge
     readonly property string configPosition: ["top", "bottom", "left", "right"].indexOf(rawPosition) >= 0
                                         ? rawPosition : "top"
     // The edge the pill is drawn on. An edge change tucks the pill into the
@@ -56,7 +58,7 @@ Scope {
         if ((faceCfg.lyrics ?? false) && hasPlayer && (Config.options?.lyrics?.enable ?? false)) f.push("lyrics")
         return f
     }
-    readonly property int widthPx: Config.options?.anoSpot?.widthPx ?? 420
+    readonly property int widthPx: barMode ? Math.max(Config.options?.anoSpot?.widthPx ?? 420, 820) : (Config.options?.anoSpot?.widthPx ?? 420)
     readonly property int heightPx: Config.options?.anoSpot?.heightPx ?? 36
     readonly property bool isVertical: position === "left" || position === "right"
 
@@ -244,7 +246,9 @@ Scope {
 
             // Normal: placed past the bar on the same edge instead of over it.
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: 0
+            // As the bar it reserves its edge (not while tucked in fullscreen).
+            readonly property int barReserve: root.barMode && !screenFullscreen ? root.heightPx + gap : 0
+            exclusiveZone: barReserve
             WlrLayershell.namespace: "quickshell:anospot"
             WlrLayershell.layer: WlrLayer.Overlay
 
@@ -312,6 +316,7 @@ Scope {
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
                 kind: "pill"; edge: root.position; priority: 15
                 immediate: true
+                reserve: spotWindow.barReserve
                 screenName: spotWindow.modelData?.name ?? ""
                 active: spotWindow.visible && spotWindow._revealed && spotWindow.connected && spotWindow.tuck < 0.99
                 progress: 1 - Math.max(0, Math.min(1, spotWindow.tuck))
@@ -522,6 +527,7 @@ Scope {
                     vertical: root.isVertical
                     thickness: root.heightPx
                     faces: root.faces
+                    barMode: root.barMode
                     // Clicks on the faces: a tap, distinct from the swipe drag
                     // (the drag handler here would otherwise swallow a left
                     // click before the pill's click area below sees it).

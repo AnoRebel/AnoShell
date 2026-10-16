@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.widgets.spectrum
 import qs.services
+import qs.modules.bar.modules
 import "."
 
 /**
@@ -22,6 +23,8 @@ Item {
     id: root
 
     property bool vertical: false
+    // Pill-bar style: the status face carries the bar's workspaces and tray.
+    property bool barMode: false
     property real thickness: 36
     // Face ids in cycle order; the caller drops disabled/unavailable ones.
     property var faces: ["status"]
@@ -143,12 +146,14 @@ Item {
         id: statusH
         RowLayout {
             spacing: 10
-            AnoSpotWorkspace  { visible: Config.options?.anoSpot?.showWorkspace ?? true }
+            AnoSpotWorkspace  { visible: !root.barMode && (Config.options?.anoSpot?.showWorkspace ?? true) }
+            WorkspacesModule  { visible: root.barMode }
             AnoSpotMpris      { Layout.minimumWidth: 60; visible: (Config.options?.anoSpot?.showMpris ?? true) && AnoSpotState.mpris !== null }
             AnoSpotRecording  { visible: (Config.options?.anoSpot?.showRecording ?? true) && AnoSpotState.recording.active }
             AnoSpotNotification { visible: (Config.options?.anoSpot?.showNotification ?? true) && AnoSpotState.latestNotification !== null }
             AnoSpotClockWeather { visible: Config.options?.anoSpot?.showClockWeather ?? true }
             AnoSpotBattery    { }
+            TrayModule        { visible: root.barMode }
         }
     }
     Component {

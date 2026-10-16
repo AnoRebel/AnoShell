@@ -22,7 +22,9 @@ ColumnLayout {
         configRoots: ["dock"]
     }
 
-    readonly property string currentPosition: Config.options?.dock?.position ?? "bottom"
+    // The edge it resolves to ("auto" follows the pill-bar), for the preview.
+    readonly property string currentPosition: BarStyle.dockEdge
+    readonly property bool positionAuto: (Config.options?.dock?.position ?? "auto") === "auto"
     readonly property string currentStyle: Config.options?.dock?.style ?? "pill"
     readonly property bool dockEnabled: Config.options?.dock?.enable ?? true
 
@@ -72,6 +74,14 @@ ColumnLayout {
         subtitle: "Which screen edge the dock appears on"
         configKeys: ["dock.position"]
         visible: root.dockEnabled
+
+        ConfigSwitch {
+            label: "Automatic edge"
+            configKey: "dock.position"
+            sublabel: "Opposite the pill when the pill is the bar; bottom otherwise. Picking an edge below turns this off."
+            checked: root.positionAuto
+            onCheckedChanged: if (checked !== root.positionAuto) Config.setNestedValue("dock.position", checked ? "auto" : root.currentPosition)
+        }
 
         // Visual position preview — screen diagram with dock indicator
         Item {
@@ -145,7 +155,7 @@ ColumnLayout {
 
             StyledText {
                 anchors { bottom: dockScreenPreview.top; horizontalCenter: dockScreenPreview.horizontalCenter; bottomMargin: 4 }
-                text: `Position: ${root.currentPosition}`
+                text: root.positionAuto ? `Position: auto (${root.currentPosition})` : `Position: ${root.currentPosition}`
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                 font.weight: Font.DemiBold
                 color: Appearance?.colors.colPrimary ?? "#65558F"
