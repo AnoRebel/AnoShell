@@ -48,7 +48,7 @@ Item {
     property int _lenRevision: 0
 
     // Keep the index valid when faces come and go.
-    onCountChanged: if (progress > count - 1) progress = Math.max(0, count - 1)
+    onCountChanged: if (progress > count - 1) { settle.stop(); progress = Math.max(0, count - 1) }
 
     // ── Gesture ──────────────────────────────────────────────────────────
     property real _start: 0
@@ -272,9 +272,11 @@ Item {
             readonly property bool live: parent?.faceActive ?? false
             implicitWidth: root.vertical ? root.thickness - 12 : 180
             implicitHeight: root.vertical ? 120 : root.thickness - 12
-            onLiveChanged: live ? SpectrumService.registerComponent("anoSpotFace") : SpectrumService.unregisterComponent("anoSpotFace")
-            Component.onCompleted: if (live) SpectrumService.registerComponent("anoSpotFace")
-            Component.onDestruction: SpectrumService.unregisterComponent("anoSpotFace")
+            // Per instance: one pill per screen, each with its own claim.
+            readonly property string sid: "anoSpotFace:" + Math.random().toString(36).slice(2)
+            onLiveChanged: live ? SpectrumService.registerComponent(sid) : SpectrumService.unregisterComponent(sid)
+            Component.onCompleted: if (live) SpectrumService.registerComponent(sid)
+            Component.onDestruction: SpectrumService.unregisterComponent(sid)
             LinearSpectrum {
                 anchors.fill: parent
                 vertical: root.vertical

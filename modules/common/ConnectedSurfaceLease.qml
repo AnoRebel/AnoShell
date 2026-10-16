@@ -75,7 +75,9 @@ QtObject {
     // Coalesce writes to one per event-loop turn. A Timer owned by the lease
     // (not Qt.callLater) so a pending write dies with a destroyed lease.
     readonly property Timer _pending: Timer { interval: 0; onTriggered: root._publish() }
-    function _schedule() { if (root.immediate) root._publish(); else root._pending.restart() }
+    // Immediate: at the end of this turn (x, y, w and h changing together
+    // publish once), still before the frame is drawn.
+    function _schedule() { if (root.immediate) Qt.callLater(root._publish); else root._pending.restart() }
 
     onActiveChanged: _schedule()
     onXChanged: _schedule()

@@ -18,6 +18,9 @@ Singleton {
     // here, then get serialized to userOverridePath. The bundled config
     // is never written to.
     property var _userDelta: ({})
+    // Set by BarStyle (services can't be imported here): applies the pill/dock
+    // edge swap rule for edges set over IPC.
+    property var edgeMover: null
     // Bumped whenever the user delta changes, so origin bindings re-evaluate.
     property int deltaRevision: 0
     // Keys whose user value came from a legacy-key migration.
@@ -1260,7 +1263,9 @@ Singleton {
         function set(key: string, json: string): string {
             let v
             try { v = JSON.parse(json) } catch (e) { return `error: value is not JSON (${e})` }
-            root.setNestedValue(key, v)
+            // Edges go through the swap rule (pill and dock never share one).
+            if ((key === "anoSpot.position" || key === "dock.position") && root.edgeMover) root.edgeMover(key === "dock.position" ? "dock" : "pill", v)
+            else root.setNestedValue(key, v)
             return "ok"
         }
     }

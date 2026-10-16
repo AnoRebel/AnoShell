@@ -114,7 +114,9 @@ Scope {
     // follows the config (is a reserving bar declared on that edge?) so the
     // bands are right from the first frame; after that, the live registry.
     property bool reservesArmed: false
-    Timer { running: GlobalStates.shellSettled; interval: 600; onTriggered: root.reservesArmed = true }
+    // After the pill has revealed and published its reserve (600 ms + its
+    // own settle), so the band on its edge never maps and unmaps at start.
+    Timer { running: GlobalStates.shellSettled; interval: 2000; onTriggered: root.reservesArmed = true }
     function _barDeclared(screenName, edge) {
         if (BarStyle.pillBar) return edge === BarStyle.pillEdge
         const list = Config.options?.bar?.screenList ?? []

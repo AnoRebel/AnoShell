@@ -767,7 +767,8 @@ hl.bind(MAIN_MOD .. " + SHIFT + X", hl.dsp.global("quickshell:regionOcr"))
 hl.bind(MAIN_MOD .. " + SHIFT + G", hl.dsp.global("quickshell:regionSearch"))
 
 -- Screen recording — locked = work while screen is locked
-hl.bind(MAIN_MOD .. " + SHIFT + R", hl.dsp.global("quickshell:regionRecord"), { locked = true })
+-- record.sh goes through the shell when it runs (one bind: a second, global
+-- bind on the same keys toggled the recording on and straight off again).
 hl.bind(
 	MAIN_MOD .. " + SHIFT + R",
 	hl.dsp.exec_cmd(qs_or("TEST_ALIVE", "", "~/.config/quickshell/" .. QS_CONFIG .. "/scripts/videos/record.sh")),
@@ -857,6 +858,9 @@ hl.bind(MAIN_MOD .. " + G", hl.dsp.layout("togglegroup"))
 -- the shell running it falls back to cycling workspaces.
 hl.bind("ALT + Tab", hl.dsp.exec_cmd(qs_or("altSwitcher", "next", [[hyprctl dispatch 'hl.dsp.focus({ workspace = "e+1" })']])))
 hl.bind("ALT + SHIFT + Tab", hl.dsp.exec_cmd(qs_or("altSwitcher", "prev", [[hyprctl dispatch 'hl.dsp.focus({ workspace = "e-1" })']])))
+-- Letting go of Alt picks the window. Seen by the compositor, so it works even
+-- when Alt is released before the switcher has keyboard focus (a quick tap).
+hl.bind("ALT + Alt_L", hl.dsp.global("quickshell:altSwitcherRelease"), { release = true, non_consuming = true })
 hl.bind("ALT + F4", hl.dsp.window.close())
 hl.bind(MAIN_MOD .. " + Q", hl.dsp.window.close())
 hl.bind(MAIN_MOD .. " + SHIFT + ALT + Q", hl.dsp.exec_cmd("hyprctl kill"))

@@ -147,7 +147,7 @@ ColumnLayout {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Config.setNestedValue("dock.position", modelData.edge)
+                            onClicked: BarStyle.moveEdge("dock", modelData.edge)
                         }
                     }
                 }
@@ -177,7 +177,7 @@ ColumnLayout {
                     label: modelData.label
                     iconName: modelData.icon
                     toggled: root.currentPosition === modelData.id
-                    onClicked: Config.setNestedValue("dock.position", modelData.id)
+                    onClicked: BarStyle.moveEdge("dock", modelData.id)
                     Layout.fillWidth: true
                 }
             }

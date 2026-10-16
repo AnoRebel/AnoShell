@@ -7,7 +7,8 @@
 mode=region; sound=false
 for a in "$@"; do case "$a" in --fullscreen) mode=screen ;; --sound) sound=true ;; esac; done
 if qs -c ano ipc call recorder status >/dev/null 2>&1; then
-    exec qs -c ano ipc call recorder "$([ "$mode" = region ] && echo toggle || echo screen)"
+    if [ "$mode" = region ]; then exec qs -c ano ipc call recorder toggle; fi
+    exec qs -c ano ipc call recorder toggleScreen "$($sound && echo audio || echo none)"
 fi
 for r in gpu-screen-recorder wl-screenrec wf-recorder; do
     if pgrep -x "$r" >/dev/null; then pkill -INT -x "$r"; exit 0; fi

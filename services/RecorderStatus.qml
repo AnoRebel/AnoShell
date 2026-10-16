@@ -34,7 +34,8 @@ Singleton {
     readonly property string backend: installed.includes(configured) ? configured : (installed[0] ?? "")
     readonly property bool available: backend !== ""
     readonly property string dir: (Config.options?.recording?.dir ?? "") || `${Quickshell.env("HOME")}/Videos`
-    readonly property bool audio: Config.options?.recording?.audio ?? false
+    readonly property bool audio: (Config.options?.recording?.audio ?? false) || _audioOnce
+    property bool _audioOnce: false   // one recording with audio (record.sh --sound)
 
     property bool isRecording: recorder.running
     property string lastFile: ""
@@ -101,14 +102,14 @@ Singleton {
     }
     function _begin(geom) {
         root.lastFile = root._file()
-        mkdir.exec(["mkdir", "-p", root.dir])
-        recorder.command = root._command(geom, root.lastFile)
+        // mkdir first, then the recorder (a missing folder failed the first one).
+        recorder.command = ["sh", "-c", 'mkdir -p "$1" && shift && exec "$@"', "sh", root.dir, ...root._command(geom, root.lastFile)]
         recorder.running = true
+        root._audioOnce = false
     }
     function stop() { if (recorder.running) recorder.signal(2) }  // SIGINT: finalise the file
     function toggle(mode) { if (root.isRecording) root.stop(); else root.start(mode ?? "region") }
 
-    Process { id: mkdir }
     Process {
         id: slurp
         command: ["slurp"]
@@ -137,6 +138,8 @@ Singleton {
         function toggle(): void { root.toggle("region") }
         function region(): void { root.start("region") }
         function screen(): void { root.start("screen") }
+        // Screen recording on/off (the full-screen keybind); with audio: "audio".
+        function toggleScreen(opts: string): void { if (root.isRecording) root.stop(); else { root._audioOnce = opts === "audio"; root.start("screen") } }
         function stop(): void { root.stop() }
         function status(): string { return JSON.stringify({ recording: root.isRecording, backend: root.backend, installed: root.installed, file: root.lastFile }) }
     }

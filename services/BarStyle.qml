@@ -23,27 +23,20 @@ Singleton {
 
     function opposite(e) { return ({ top: "bottom", bottom: "top", left: "right", right: "left" })[e] ?? "bottom" }
 
-    // Same-edge swap (iRiS rule): moving the dock onto the pill-bar's edge
-    // moves the pill to the dock's old edge, and the other way round.
-    // Plain values (not bindings): a binding would already hold the new edge
-    // when the change handler reads it.
-    property string _lastDock: ""
-    property string _lastPill: ""
-    Component.onCompleted: { _lastDock = dockEdge; _lastPill = pillEdge }
-    onDockEdgeChanged: {
-        // Deferred a turn: during a config reload a write here is overwritten.
-        if (pillBar && dockEdge === pillEdge && (Config.options?.dock?.position ?? "auto") !== "auto") {
-            const to = _lastDock
-            Qt.callLater(() => Config.setNestedValue("anoSpot.position", to))
+    // Moving the pill or the dock to an edge. In pill-bar style, moving one
+    // onto the other's edge swaps them (iRiS rule). Called where you change an
+    // edge (edge picker, Settings, config IPC) — never from change handlers,
+    // which also fire while a config file loads and would rewrite it.
+    //   which: "pill" | "dock";  edge: top/bottom/left/right (dock also "auto")
+    Component.onCompleted: Config.edgeMover = root.moveEdge
+    function moveEdge(which, edge) {
+        const other = which === "pill" ? root.dockEdge : root.pillEdge
+        const mine = which === "pill" ? root.pillEdge : root.dockEdge
+        if (root.pillBar && edge === other && edge !== "auto") {
+            if (which === "pill") Config.setNestedValue("dock.position", mine)
+            else Config.setNestedValue("anoSpot.position", mine)
         }
-        _lastDock = dockEdge
-    }
-    onPillEdgeChanged: {
-        if (pillBar && pillEdge === dockEdge && (Config.options?.dock?.position ?? "auto") !== "auto") {
-            const to = _lastPill
-            Qt.callLater(() => Config.setNestedValue("dock.position", to))
-        }
-        _lastPill = pillEdge
+        Config.setNestedValue(which === "pill" ? "anoSpot.position" : "dock.position", edge)
     }
 
     // The dock's edge: "auto" takes the edge opposite the pill-bar (bottom

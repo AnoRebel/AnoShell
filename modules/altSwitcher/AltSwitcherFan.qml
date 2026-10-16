@@ -69,7 +69,7 @@ PanelWindow {
     property real flip: 0          // 0 flat … 1 edge-on
     Connections {
         target: root.switcher
-        function onWsModeChanged() { flipAnim.restart() }
+        function onWsModeChanged() { if (root.open) flipAnim.restart() }
     }
     SequentialAnimation {
         id: flipAnim
@@ -77,7 +77,15 @@ PanelWindow {
         ScriptAction { script: root.showingWs = root.switcher.wsMode }
         NumberAnimation { target: root; property: "flip"; to: 0; duration: AnimationConfig.scaledDuration(190); easing.type: Easing.OutCubic }
     }
-    onOpenChanged: if (!open) { flipAnim.stop(); flip = 0; showingWs = false }
+
+
+    // Set once the pointer moves over the fan after it opened.
+    property bool pointerMoved: false
+    property point _firstPoint: Qt.point(-1, -1)
+    onOpenChanged: {
+        if (open) { pointerMoved = false; _firstPoint = Qt.point(-1, -1) }
+        else { flipAnim.stop(); flip = 0; showingWs = false }
+    }
 
     // The deck slides out of the edge as it opens.
     Item {
@@ -97,7 +105,14 @@ PanelWindow {
             }
         ]
 
-        WheelHandler {
+        HoverHandler {
+            onPointChanged: {
+                const p = point.position
+                if (root._firstPoint.x < 0) { root._firstPoint = p; return }
+                if (Math.abs(p.x - root._firstPoint.x) + Math.abs(p.y - root._firstPoint.y) > 6) root.pointerMoved = true
+            }
+        }
+                WheelHandler {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
             onWheel: event => { (event.angleDelta.y || event.angleDelta.x) < 0 ? root.switcher.cycleNext() : root.switcher.cyclePrev() }
         }
@@ -234,7 +249,10 @@ PanelWindow {
                     }
                 }
 
-                HoverHandler { onHoveredChanged: if (hovered) { if (root.showingWs) root.switcher.wsIndex = card.index; else root.switcher.selectedIndex = card.index } }
+                // Only after the pointer really moves, and not while the cards
+                // glide: otherwise a resting pointer keeps re-selecting whatever
+                // card slides under it (and overrides Alt+Tab's pick on open).
+                HoverHandler { onHoveredChanged: if (hovered && root.pointerMoved && !fan.moving) { if (root.showingWs) root.switcher.wsIndex = card.index; else root.switcher.selectedIndex = card.index } }
                 TapHandler { onTapped: { if (root.showingWs) root.switcher.wsIndex = card.index; else root.switcher.selectedIndex = card.index; root.switcher.activateSelected() } }
             }
         }

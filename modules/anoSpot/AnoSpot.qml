@@ -168,7 +168,7 @@ Scope {
             screen: spotScope.modelData
             open: spotWindow.picking
             current: root.position
-            onChose: edge => { spotWindow.picking = false; if (edge !== root.position) Config.setNestedValue("anoSpot.position", edge) }
+            onChose: edge => { spotWindow.picking = false; if (edge !== root.position) BarStyle.moveEdge("pill", edge) }
             onCancelled: spotWindow.picking = false
         }
 
@@ -189,6 +189,9 @@ Scope {
             readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
             // Springs between resting and grown geometry.
             // Transient (volume, notification, …): on the focused screen only.
+            readonly property bool canHostTransient: visible && _revealed && !grown && !tucked && !picking
+            onCanHostTransientChanged: PillTransient.setHost(modelData?.name ?? "", canHostTransient)
+            Component.onDestruction: PillTransient.setHost(modelData?.name ?? "", false)
             readonly property bool transientShown: !grown && PillTransient.active
                 && (CompositorService.focusedMonitorName === "" || CompositorService.focusedMonitorName === (modelData?.name ?? ""))
             readonly property real transientLen: Math.max(root.heightPx * 4, (transientView.implicitWidth ?? 0) + 28)
@@ -214,7 +217,9 @@ Scope {
             readonly property real _maxAlong: Math.min(Math.max(root.widthPx, 460), _screenAlong - 40)
             readonly property real _envW: !root.isVertical ? _maxAlong : (_big ? _maxAlong : root.heightPx)
             readonly property real _envH: !root.isVertical ? (_big ? _maxH : root.heightPx) : (_big ? _maxH : _maxAlong)
-            WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            // Exclusive while grown, so Escape works right after the click that
+            // grew it (OnDemand only focuses on a later click).
+            WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             Shortcut { sequence: "Escape"; enabled: spotWindow.grown; onActivated: spotWindow.grownTarget = "" }
 
             // The pill fits its content (a fixed length clipped it), springing
@@ -414,10 +419,13 @@ Scope {
                 // Click dispatcher — catches left/right/middle on the pill background.
                 // Widget MouseAreas (e.g. AnoSpotMpris wheel handler) sit above this
                 // and intercept their own events; unclaimed clicks fall through here.
-                MouseArea {
-                    anchors.fill: parent
+                // One click handler for the whole pill. A handler (not a
+                // MouseArea): it doesn't take the press, so the faces' swipe
+                // drag still works, and nothing else also dispatches the click.
+                TapHandler {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                    onClicked: mouse => root._dispatchClick(mouse.button, spotWindow)
+                    enabled: !handleArea.containsMouse && !spotWindow.grown
+                    onTapped: (point, button) => root._dispatchClick(button, spotWindow)
                 }
 
                 // Drop target — files/URIs dragged from any Wayland source
@@ -499,7 +507,8 @@ Scope {
                         // Press the grip: the edge picker opens over the screen
                         // (the pill's own window can't follow a drag across it);
                         // release over an edge to move there, or click one.
-                        onPressed: spotWindow.picking = true
+                        // Grown: the grip shrinks it back (clicks inside belong to the panel).
+                        onPressed: { if (spotWindow.grown) spotWindow.grownTarget = ""; else spotWindow.picking = true }
                         // Released, or the grab cancelled when the overlay mapped
                         // over the pointer: the overlay may already know the
                         // edge under the pointer; otherwise its first pointer
@@ -529,13 +538,6 @@ Scope {
                     thickness: root.heightPx
                     faces: root.faces
                     barMode: root.barMode
-                    // Clicks on the faces: a tap, distinct from the swipe drag
-                    // (the drag handler here would otherwise swallow a left
-                    // click before the pill's click area below sees it).
-                    TapHandler {
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                        onTapped: (point, button) => root._dispatchClick(button, spotWindow)
-                    }
                 }
 
                 // Grown: the target surface's own content component.
@@ -554,13 +556,16 @@ Scope {
                     sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
                 }
                 // Transient: icon + level bar (volume/brightness/mic) or label.
-                RowLayout {
+                GridLayout {
                     id: transientView
+                    // Stacked on side edges (the capsule is narrow there).
+                    columns: root.isVertical ? 1 : -1
+                    rowSpacing: 6
                     visible: opacity > 0.01
                     opacity: spotWindow.transientShown ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
                     anchors.centerIn: parent
-                    spacing: 10
+                    columnSpacing: 10
                     readonly property bool level: ["volume", "brightness", "mic"].includes(PillTransient.kind)
                     MaterialSymbol {
                         iconSize: 18; fill: 1
@@ -576,7 +581,7 @@ Scope {
                         })[PillTransient.kind] ?? "info"
                     }
                     Rectangle {
-                        visible: transientView.level
+                        visible: transientView.level && !root.isVertical
                         implicitWidth: 120; implicitHeight: 6; radius: 3
                         color: Appearance.colors.colLayer2
                         Rectangle {
@@ -594,7 +599,7 @@ Scope {
                         horizontalAlignment: Text.AlignRight
                     }
                     StyledText {
-                        visible: !transientView.level
+                        visible: !transientView.level && !root.isVertical
                         text: PillTransient.kind === "charging" ? `${PillTransient.label} · ${Math.round(PillTransient.value * 100)}%` : PillTransient.label
                         font.pixelSize: Appearance.font.pixelSize.small
                         elide: Text.ElideRight

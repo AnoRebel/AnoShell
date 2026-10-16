@@ -151,7 +151,7 @@ ColumnLayout {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Config.setNestedValue("anoSpot.position", modelData.pos)
+                            onClicked: BarStyle.moveEdge("pill", modelData.pos)
                         }
                     }
                 }

@@ -26,9 +26,18 @@ Singleton {
     readonly property bool active: kind !== ""
 
     readonly property var kinds: ["volume", "brightness", "mic", "keyboard", "notification", "charging", "recording"]
+    // Screens whose pill can show a transient right now (visible, revealed,
+    // not tucked, not grown); set by AnoSpot. If the focused screen's can't,
+    // the standalone OSD shows it instead of nothing.
+    property var _hosts: ({})
+    function setHost(screen, ok) { const h = Object.assign({}, root._hosts); h[screen] = ok; root._hosts = h }
+    readonly property bool canShow: {
+        const f = CompositorService.focusedMonitorName
+        return f ? (root._hosts[f] ?? false) : Object.values(root._hosts).some(v => v)
+    }
     function wants(k) {
-        return kinds.includes(k)
-            && (Config.options?.anoSpot?.enable ?? false)
+        return kinds.includes(k) && root.canShow
+            && ((Config.options?.anoSpot?.enable ?? false) || BarStyle.pillBar)
             && (Config.options?.anoSpot?.transients?.[k] ?? true)
     }
 

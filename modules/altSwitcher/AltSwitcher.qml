@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
@@ -85,6 +86,13 @@ Scope {
         panelVisible = true
     }
 
+    function _openViaAlt() {
+        show()
+        viaAlt = panelVisible
+        // Alt already let go (quick tap): switch straight to the previous window.
+        if (viaAlt && Date.now() - _altReleasedAt < 700) activateSelected()
+    }
+
     function hide() {
         panelVisible = false
         viaAlt = false
@@ -135,9 +143,24 @@ Scope {
         function toggle(): void { if (root.panelVisible) root.hide(); else root.show() }
         function hide(): void { root.hide() }
         // Alt+Tab / Alt+Shift+Tab: open on the previous window, then cycle.
-        function next(): void { if (!root.panelVisible) { root.show(); root.viaAlt = root.panelVisible } else root.cycleNext() }
-        function prev(): void { if (!root.panelVisible) { root.show(); root.viaAlt = root.panelVisible } else root.cyclePrev() }
+        function next(): void { if (!root.panelVisible) root._openViaAlt(); else root.cycleNext() }
+        function prev(): void { if (!root.panelVisible) root._openViaAlt(); else root.cyclePrev() }
         function activate(): void { root.activateSelected() }
+    }
+
+    // Alt released (bundled hyprland.lua binds Alt_L release): pick the window
+    // the Alt+Tab session selected. A quick tap can release Alt before the
+    // opening IPC (a spawned process) arrives; that release is remembered.
+    property real _altReleasedAt: 0
+    function altReleased() {
+        _altReleasedAt = Date.now()
+        if (viaAlt && panelVisible) activateSelected()
+    }
+    Loader {
+        active: CompositorService.compositor === "hyprland"
+        sourceComponent: Item {
+            GlobalShortcut { name: "altSwitcherRelease"; description: "Alt released: switch to the selected window"; onPressed: root.altReleased(); onReleased: root.altReleased() }
+        }
     }
 
     // Fan style.
@@ -285,7 +308,7 @@ Scope {
                                         // Live thumbnail
                                         Loader {
                                             anchors.fill: parent
-                                            active: !!modelData.toplevel
+                                            active: !!modelData.toplevel && (CompositorService.supports.windowCapture ?? false)
                                             sourceComponent: ScreencopyView {
                                                 anchors.fill: parent
                                                 captureSource: modelData.toplevel
@@ -299,7 +322,7 @@ Scope {
                                             implicitWidth: root.itemSize * 0.6
                                             implicitHeight: root.itemSize * 0.6
                                             source: { void DesktopEntries.applications.values.length; return `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}` }
-                                            visible: !modelData.toplevel
+                                            visible: !(CompositorService.supports.windowCapture && modelData.toplevel)
                                         }
                                     }
 
