@@ -230,6 +230,119 @@ ColumnLayout {
         }
     }
 
+    // ═══ Faces ═══
+    SettingsCard {
+        icon: "swipe"
+        title: "Faces"
+        subtitle: "Resting faces you swipe between (horizontal scroll, or drag along the pill). Status is always first."
+        configKeys: ["anoSpot.faces"]
+        ConfigSwitch {
+            label: "Media"
+            configKey: "anoSpot.faces.media"
+            sublabel: "Title, artist and transport; while a player is running"
+            checked: Config.options?.anoSpot?.faces?.media ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.faces.media", checked)
+        }
+        ConfigSwitch {
+            label: "Spectrum"
+            configKey: "anoSpot.faces.spectrum"
+            sublabel: "Audio visualiser; cava runs only while this face is in view"
+            checked: Config.options?.anoSpot?.faces?.spectrum ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.faces.spectrum", checked)
+        }
+        ConfigSwitch {
+            label: "Lyrics"
+            configKey: "anoSpot.faces.lyrics"
+            sublabel: "Time-synced lyrics; needs Lyrics turned on in Services"
+            checked: Config.options?.anoSpot?.faces?.lyrics ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.faces.lyrics", checked)
+        }
+    }
+
+    // ═══ Grow into ═══
+    SettingsCard {
+        icon: "open_in_full"
+        title: "Grow into"
+        subtitle: "Clicking grows the pill into the panel (the same panel content, inline) instead of opening it separately"
+        configKeys: ["anoSpot.growInto"]
+        ConfigSwitch {
+            label: "Media controls"
+            configKey: "anoSpot.growInto.mediaControls"
+            sublabel: "Left click by default"
+            checked: Config.options?.anoSpot?.growInto?.mediaControls ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.growInto.mediaControls", checked)
+        }
+        ConfigSwitch {
+            label: "Control panel"
+            configKey: "anoSpot.growInto.controlPanel"
+            sublabel: "Right click by default"
+            checked: Config.options?.anoSpot?.growInto?.controlPanel ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.growInto.controlPanel", checked)
+        }
+        ConfigSwitch {
+            label: "Calendar"
+            configKey: "anoSpot.growInto.calendar"
+            sublabel: "When an action opens the calendar"
+            checked: Config.options?.anoSpot?.growInto?.calendar ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.growInto.calendar", checked)
+        }
+    }
+
+    // ═══ Transient states ═══
+    SettingsCard {
+        icon: "notifications_active"
+        title: "Transient states"
+        subtitle: "The pill briefly morphs to show these; the ones it shows, the separate on-screen display doesn't"
+        configKeys: ["anoSpot.transients"]
+        ConfigSwitch {
+            label: "Volume"
+            configKey: "anoSpot.transients.volume"
+            sublabel: "Level capsule"
+            checked: Config.options?.anoSpot?.transients?.volume ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.volume", checked)
+        }
+        ConfigSwitch {
+            label: "Brightness"
+            configKey: "anoSpot.transients.brightness"
+            sublabel: "Level capsule"
+            checked: Config.options?.anoSpot?.transients?.brightness ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.brightness", checked)
+        }
+        ConfigSwitch {
+            label: "Microphone mute"
+            configKey: "anoSpot.transients.mic"
+            checked: Config.options?.anoSpot?.transients?.mic ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.mic", checked)
+        }
+        ConfigSwitch {
+            label: "Keyboard layout"
+            configKey: "anoSpot.transients.keyboard"
+            checked: Config.options?.anoSpot?.transients?.keyboard ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.keyboard", checked)
+        }
+        ConfigSwitch {
+            label: "Notifications"
+            configKey: "anoSpot.transients.notification"
+            sublabel: "Summary of incoming notifications"
+            checked: Config.options?.anoSpot?.transients?.notification ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.notification", checked)
+        }
+        ConfigSwitch {
+            label: "Charging"
+            configKey: "anoSpot.transients.charging"
+            sublabel: "Plugged in / on battery"
+            checked: Config.options?.anoSpot?.transients?.charging ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.charging", checked)
+        }
+        ConfigSwitch {
+            label: "Recording"
+            configKey: "anoSpot.transients.recording"
+            sublabel: "Started / saved"
+            checked: Config.options?.anoSpot?.transients?.recording ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.recording", checked)
+        }
+    }
+
     // ═══ Drag and drop ═══
     SettingsCard {
         icon: "place_item"

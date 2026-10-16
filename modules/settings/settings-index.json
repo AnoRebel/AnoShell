@@ -1359,6 +1359,150 @@
  },
  {
   "page": 5,
+  "card": "Faces",
+  "label": "Faces",
+  "sublabel": "Resting faces you swipe between (horizontal scroll, or drag along the pill). Status is always first.",
+  "keys": [
+   "anoSpot.faces"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Media",
+  "sublabel": "Title, artist and transport; while a player is running",
+  "keys": [
+   "anoSpot.faces.media"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Spectrum",
+  "sublabel": "Audio visualiser; cava runs only while this face is in view",
+  "keys": [
+   "anoSpot.faces.spectrum"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Lyrics",
+  "sublabel": "Time-synced lyrics; needs Lyrics turned on in Services",
+  "keys": [
+   "anoSpot.faces.lyrics"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Grow into",
+  "label": "Grow into",
+  "sublabel": "Clicking grows the pill into the panel (the same panel content, inline) instead of opening it separately",
+  "keys": [
+   "anoSpot.growInto"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Media controls",
+  "sublabel": "Left click by default",
+  "keys": [
+   "anoSpot.growInto.mediaControls"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Control panel",
+  "sublabel": "Right click by default",
+  "keys": [
+   "anoSpot.growInto.controlPanel"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Calendar",
+  "sublabel": "When an action opens the calendar",
+  "keys": [
+   "anoSpot.growInto.calendar"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "Transient states",
+  "label": "Transient states",
+  "sublabel": "The pill briefly morphs to show these; the ones it shows, the separate on-screen display doesn't",
+  "keys": [
+   "anoSpot.transients"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Volume",
+  "sublabel": "Level capsule",
+  "keys": [
+   "anoSpot.transients.volume"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Brightness",
+  "sublabel": "Level capsule",
+  "keys": [
+   "anoSpot.transients.brightness"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Microphone mute",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.transients.mic"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Keyboard layout",
+  "sublabel": "",
+  "keys": [
+   "anoSpot.transients.keyboard"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Notifications",
+  "sublabel": "Summary of incoming notifications",
+  "keys": [
+   "anoSpot.transients.notification"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Charging",
+  "sublabel": "Plugged in / on battery",
+  "keys": [
+   "anoSpot.transients.charging"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Recording",
+  "sublabel": "Started / saved",
+  "keys": [
+   "anoSpot.transients.recording"
+  ]
+ },
+ {
+  "page": 5,
   "card": "Drag and drop",
   "label": "Drag and drop",
   "sublabel": "Stage files dropped on AnoSpot for triage and actions",
