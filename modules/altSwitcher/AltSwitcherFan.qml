@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
@@ -87,35 +88,6 @@ PanelWindow {
         else { flipAnim.stop(); flip = 0; showingWs = false }
     }
 
-    // The fan's panel: grows out of the edge with the cards on it. In
-    // connected mode the frame paints it (one silhouette with the pill and
-    // bar); otherwise it is drawn here.
-    readonly property bool connected: PanelRegistry.enabled
-    readonly property real plateDepth: root.depth * Math.max(0, Math.min(1, root.shown))
-    ConnectedSurfaceLease {
-        key: "fan:" + (root.screen?.name ?? "")
-        kind: "fan"; edge: root.edge; priority: 12
-        screenName: root.screen?.name ?? ""
-        active: root.visible && root.connected && root.shown > 0.01
-        immediate: true
-        progress: Math.max(0, Math.min(1, root.shown))
-        readonly property point _o: PanelRegistry.windowOrigin(root)
-        x: _o.x + (root.edge === "right" ? root.width - root.plateDepth : 0)
-        y: _o.y + (root.edge === "bottom" ? root.height - root.plateDepth : 0)
-        w: root.vertical ? root.plateDepth : root.width
-        h: root.vertical ? root.height : root.plateDepth
-    }
-    SurfaceMaterial {
-        visible: !root.connected
-        surface: "altSwitcher"
-        color: Appearance.colors.colLayer0
-        radius: Appearance.rounding.windowRounding
-        x: root.edge === "right" ? root.width - root.plateDepth : 0
-        y: root.edge === "bottom" ? root.height - root.plateDepth : 0
-        width: root.vertical ? root.plateDepth : root.width
-        height: root.vertical ? root.height : root.plateDepth
-    }
-
     // The deck slides out of the edge as it opens.
     Item {
         id: deck
@@ -146,6 +118,62 @@ PanelWindow {
             onWheel: event => { (event.angleDelta.y || event.angleDelta.x) < 0 ? root.switcher.cycleNext() : root.switcher.cyclePrev() }
         }
 
+        // The fan's body: a ribbon along the cards' arc and a stem down to the
+        // pill, in the frame's colour, so the cards sit on one surface grown
+        // out of the pill (not a rectangle). Drawn opaque in a layer and faded
+        // as a whole, so the overlapping parts don't darken.
+        Item {
+            id: body
+            anchors.fill: parent
+            readonly property bool connected: PanelRegistry.enabled
+            opacity: connected ? Math.max(0.001, Config.options?.appearance?.connectedCorners?.opacity ?? 1) : 0.92
+            layer.enabled: true
+            readonly property color tone: Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g, Appearance.colors.colLayer0.b, 1)
+            readonly property real band: (root.vertical ? root.cardW : root.cardH) + 26
+            Shape {
+                anchors.fill: parent
+                preferredRendererType: Shape.CurveRenderer
+                // Ribbon: the cards' path, stroked wide with round ends.
+                ShapePath {
+                    strokeColor: body.tone
+                    strokeWidth: body.band
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.RoundJoin
+                    startX: fan.px(fan.e0, fan.near).x; startY: fan.px(fan.e0, fan.near).y
+                    PathCubic {
+                        x: fan.px(0.5, fan.far).x; y: fan.px(0.5, fan.far).y
+                        control1X: fan.px(fan.e0 + 0.1, fan.far).x; control1Y: fan.px(fan.e0 + 0.1, fan.far).y
+                        control2X: fan.px(0.32, fan.far).x; control2Y: fan.px(0.32, fan.far).y
+                    }
+                    PathCubic {
+                        x: fan.px(1 - fan.e0, fan.near).x; y: fan.px(1 - fan.e0, fan.near).y
+                        control1X: fan.px(0.68, fan.far).x; control1Y: fan.px(0.68, fan.far).y
+                        control2X: fan.px(0.9 - fan.e0, fan.far).x; control2Y: fan.px(0.9 - fan.e0, fan.far).y
+                    }
+                }
+                // Stem: from the pill's edge, flaring into the ribbon's middle,
+                // with concave (meniscus) sides.
+                ShapePath {
+                    id: stem
+                    strokeColor: "transparent"
+                    fillColor: body.tone
+                    readonly property real w0: Math.min(fan.stemBase, (root.vertical ? fan.height : fan.width) * 0.5) / 2
+                    readonly property real w1: (root.vertical ? root.cardH : root.cardW) * 0.45
+                    startX: fan.px(0.5, 0).x - (root.vertical ? 0 : w0); startY: fan.px(0.5, 0).y - (root.vertical ? w0 : 0)
+                    PathQuad {
+                        x: fan.px(0.5, fan.far).x - (root.vertical ? 0 : stem.w1); y: fan.px(0.5, fan.far).y - (root.vertical ? stem.w1 : 0)
+                        controlX: fan.px(0.5, fan.far * 0.55).x - (root.vertical ? 0 : stem.w1 * 0.55); controlY: fan.px(0.5, fan.far * 0.55).y - (root.vertical ? stem.w1 * 0.55 : 0)
+                    }
+                    PathLine { x: fan.px(0.5, fan.far).x + (root.vertical ? 0 : stem.w1); y: fan.px(0.5, fan.far).y + (root.vertical ? stem.w1 : 0) }
+                    PathQuad {
+                        x: fan.px(0.5, 0).x + (root.vertical ? 0 : stem.w0); y: fan.px(0.5, 0).y + (root.vertical ? stem.w0 : 0)
+                        controlX: fan.px(0.5, fan.far * 0.55).x + (root.vertical ? 0 : stem.w1 * 0.55); controlY: fan.px(0.5, fan.far * 0.55).y + (root.vertical ? stem.w1 * 0.55 : 0)
+                    }
+                }
+            }
+        }
+
         PathView {
             id: fan
             anchors.fill: parent
@@ -169,6 +197,11 @@ PanelWindow {
                 const a = t * (root.vertical ? fan.height : fan.width)
                 const o = root.edge === "bottom" || root.edge === "right" ? (root.vertical ? fan.width : fan.height) - d : d
                 return root.vertical ? Qt.point(o, a) : Qt.point(a, o)
+            }
+            // Stem width where it meets the pill: the pill's length.
+            readonly property real stemBase: {
+                const r = PanelRegistry.panels.find(p => p.kind === "pill" && p.screenName === (root.screen?.name ?? ""))
+                return r ? (root.vertical ? r.h : r.w) : 220
             }
             readonly property real e0: (root.vertical ? root.cardH : root.cardW) * 0.6 / (root.vertical ? fan.height : fan.width)
             path: Path {
