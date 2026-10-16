@@ -32,6 +32,12 @@
       "opacity": 1.0,
       "blur": false
     },
+    "glass": {
+      "enable": false,
+      "tint": 0.55,
+      "edgeLight": 0.6,
+      "refraction": 0.5
+    },
     "shadows": {
       "enable": false,
       "intensity": 1.0,

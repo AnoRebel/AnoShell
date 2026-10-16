@@ -169,6 +169,15 @@ func main() {
 		}
 		return pal.Scan(ctx, expandHome(req.Dir))
 	})
+	srv.Handle("palette.get", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Path string `json:"path"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Path == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {path}")
+		}
+		return pal.Get(ctx, expandHome(req.Path))
+	})
 
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)

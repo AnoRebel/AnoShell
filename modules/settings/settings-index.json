@@ -1592,7 +1592,44 @@
   "keys": [
    "appearance.look",
    "appearance.familyLooks",
-   "appearance.lookTextures"
+   "appearance.lookTextures",
+   "appearance.glass"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Glass",
+  "sublabel": "Panels become tinted glass over the blur, with refraction and an edge light (any look). The tint thickens over bright wallpaper so text stays readable.",
+  "keys": [
+   "appearance.glass.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Glass tint",
+  "sublabel": "",
+  "keys": [
+   "appearance.glass.tint"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Edge light",
+  "sublabel": "",
+  "keys": [
+   "appearance.glass.edgeLight"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Refraction",
+  "sublabel": "",
+  "keys": [
+   "appearance.glass.refraction"
   ]
  },
  {

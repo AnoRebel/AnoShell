@@ -41,6 +41,11 @@ func TestScanCachesAndWarmScanRunsNothing(t *testing.T) {
 	if _, err := c2.Scan(context.Background(), pics); err != nil || c2.Spawned != 0 {
 		t.Fatalf("warm scan spawned %d (%v)", c2.Spawned, err)
 	}
+	// Get on a cached file runs nothing.
+	before := c2.Spawned
+	if e, err := c2.Get(context.Background(), filepath.Join(pics, "a.png")); err != nil || e.Source != "#ff0000" || c2.Spawned != before {
+		t.Fatalf("get: %+v %v spawned %d", e, err, c2.Spawned-before)
+	}
 	// A changed file is recomputed, a removed one dropped.
 	os.WriteFile(filepath.Join(pics, "a.png"), []byte("changed"), 0o644)
 	os.Remove(filepath.Join(pics, "b.jpg"))

@@ -76,7 +76,7 @@ ColumnLayout {
         icon: "palette"
         title: "Look"
         subtitle: "The shell's visual identity: shape, material, texture, type and motion"
-        configKeys: ["appearance.look", "appearance.familyLooks", "appearance.lookTextures"]
+        configKeys: ["appearance.look", "appearance.familyLooks", "appearance.lookTextures", "appearance.glass"]
 
         readonly property string chosen: Config.options?.appearance?.look ?? ""
         readonly property string familyDefault: Looks.familyDefaults[Looks.family] ?? "liquid"
@@ -168,6 +168,42 @@ ColumnLayout {
                     }
                 }
             }
+        }
+
+        ConfigSwitch {
+            label: "Glass"
+            configKey: "appearance.glass.enable"
+            sublabel: "Panels become tinted glass over the blur, with refraction and an edge light (any look). The tint thickens over bright wallpaper so text stays readable."
+            checked: Config.options?.appearance?.glass?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("appearance.glass.enable", checked)
+        }
+        ConfigSlider {
+            label: "Glass tint"
+            configKey: "appearance.glass.tint"
+            enabled: Glass.enabled
+            from: 0.2; to: 0.95; stepSize: 0.05
+            value: Config.options?.appearance?.glass?.tint ?? 0.55
+            onValueChanged: Config.setNestedValue("appearance.glass.tint", Math.round(value * 100) / 100)
+            valueText: `${Math.round(value * 100)}%`
+        }
+        ConfigSlider {
+            label: "Edge light"
+            configKey: "appearance.glass.edgeLight"
+            enabled: Glass.enabled
+            from: 0; to: 1; stepSize: 0.05
+            value: Config.options?.appearance?.glass?.edgeLight ?? 0.6
+            onValueChanged: Config.setNestedValue("appearance.glass.edgeLight", Math.round(value * 100) / 100)
+            valueText: `${Math.round(value * 100)}%`
+        }
+        ConfigSlider {
+            label: "Refraction"
+            configKey: "appearance.glass.refraction"
+            sublabel: Glass.refractionReason
+            enabled: Glass.enabled && !Glass.refractionReason
+            from: 0; to: 1; stepSize: 0.05
+            value: Config.options?.appearance?.glass?.refraction ?? 0.5
+            onValueChanged: Config.setNestedValue("appearance.glass.refraction", Math.round(value * 100) / 100)
+            valueText: Glass.refractionReason ? "off" : `${Math.round(value * 100)}%`
         }
 
         ConfigSwitch {

@@ -144,6 +144,27 @@ func (c *Cache) Scan(ctx context.Context, dir string) ([]Entry, error) {
 	return out, err
 }
 
+// Get returns the entry for one file, computing it if new or changed.
+func (c *Cache) Get(ctx context.Context, path string) (Entry, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return Entry{}, err
+	}
+	c.mu.Lock()
+	c.load()
+	if e, ok := c.entries[path]; ok && e.Size == fi.Size() && e.ModTime.Equal(fi.ModTime()) {
+		c.mu.Unlock()
+		return e, nil
+	}
+	c.mu.Unlock()
+	e := c.one(ctx, Entry{Path: path, Size: fi.Size(), ModTime: fi.ModTime(), Video: videoExt.MatchString(path), Hue: -1})
+	c.mu.Lock()
+	c.entries[path] = e
+	err = c.save()
+	c.mu.Unlock()
+	return e, err
+}
+
 func (c *Cache) workers() int {
 	if c.Workers > 0 {
 		return c.Workers

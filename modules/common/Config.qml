@@ -512,6 +512,15 @@ Singleton {
                 property var familyLooks: ({})
                 // The look's surface texture (caustics, grain, grid, clay light).
                 property bool lookTextures: true
+                // Glass material on panels and cards, with any look: a tint over
+                // the compositor's blur, wallpaper refraction at the edges and an
+                // edge light. The tint thickens over bright wallpaper for contrast.
+                property JsonObject glass: JsonObject {
+                    property bool enable: false
+                    property real tint: 0.55
+                    property real edgeLight: 0.6
+                    property real refraction: 0.5
+                }
                 property int bezel: 0 // Global gap from screen edges (px) for ALL elements
                 property bool extraBackgroundTint: true
 
