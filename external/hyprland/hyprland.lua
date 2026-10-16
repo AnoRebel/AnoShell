@@ -587,6 +587,12 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.1 })
 -- (the same rule the shell applies at runtime; a `hyprctl reload` drops that).
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell:anoScreen$" }, ignore_alpha = 0 })
+-- No compositor blur on shell layers that are opaque cards or draw their own
+-- shapes: the blur can't be seen there, yet every animated frame paid for it
+-- (3 passes). Measured on an iGPU: control panel open/close went from p90
+-- 33 ms per frame (half rate) to 17 ms with its layer unblurred. Translucent
+-- surfaces (bar, sidebars, dock, pill) keep their blur.
+hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|recordingOsd|familyTransition|frameExclusion|anospot:(edgePicker|peek|wspreview|stash))$" }, blur = false })
 -- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
 -- the rectangular rule blur would show as a square halo around them.
 hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })
