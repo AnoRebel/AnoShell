@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -32,6 +33,8 @@ const usage = `usage: ano <command> [args]
   setup status|install|update|refresh [flags]   manage the checkout and binaries (ano setup help)
   backup categories|create|list|restore [flags]  back up and restore your setup (ano backup)
   looks list|validate [FILE…] [--json]          list looks, or check look files (exit 1 on errors)
+  wallpaper set IMAGE [--output O] [--mode dark|light]   apply (awww, colours, hooks) via anod
+  wallpaper next|status [--json]                 next rotation image now / current wallpaper
   version
 `
 
@@ -61,6 +64,8 @@ func main() {
 		os.Exit(setupCmd(args))
 	case "backup":
 		os.Exit(backupCmd(args))
+	case "wallpaper":
+		os.Exit(wallpaperCmd(args))
 	case "looks":
 		os.Exit(looksCmd(args))
 	case "help", "-h", "--help":
@@ -321,4 +326,56 @@ func looksCmd(args []string) int {
 		return 1
 	}
 	return 0
+}
+
+// wallpaperCmd drives anod's wallpaper pipeline.
+func wallpaperCmd(args []string) int {
+	usage := "usage: ano wallpaper set IMAGE [--output O] [--mode dark|light] | next | status [--json]"
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, usage)
+		return 2
+	}
+	sock := ipc.DefaultSocketPath()
+	show := func(res any, err error) int {
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "ano wallpaper:", err)
+			return 1
+		}
+		b, _ := json.MarshalIndent(res, "", "  ")
+		fmt.Println(string(b))
+		return 0
+	}
+	switch args[0] {
+	case "set":
+		fs := flag.NewFlagSet("wallpaper set", flag.ExitOnError)
+		output := fs.String("output", "", "only this output")
+		mode := fs.String("mode", "", "dark or light colours (default: your setting)")
+		var img string
+		rest := args[1:]
+		for len(rest) > 0 { // flags may follow the image
+			fs.Parse(rest)
+			rest = fs.Args()
+			if len(rest) > 0 {
+				img, rest = rest[0], rest[1:]
+			}
+		}
+		if img == "" {
+			fmt.Fprintln(os.Stderr, usage)
+			return 2
+		}
+		if abs, err := filepath.Abs(img); err == nil {
+			img = abs
+		}
+		req := map[string]any{"image": img, "mode": *mode}
+		if *output != "" {
+			req["outputs"] = []string{*output}
+		}
+		return show(ipc.CallTimeout(sock, "wallpaper.set", req, 3*time.Minute))
+	case "next":
+		return show(ipc.Call(sock, "wallpaper.next", nil))
+	case "status":
+		return show(ipc.Call(sock, "wallpaper.status", nil))
+	}
+	fmt.Fprintln(os.Stderr, usage)
+	return 2
 }

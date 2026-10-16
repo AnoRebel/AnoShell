@@ -197,23 +197,15 @@ Singleton {
         function onProfileChanged() { root._report("profile", root._profile(), "power_profile_changed", { powerProfile: root._profile() }) }
     }
 
-    // Wallpaper/colours: fires once the new colours are applied (so the hook
-    // sees them and the final theme mode). A wallpaper change that produces no
-    // colour update (static theme, matugen missing) still fires after 6 s.
-    function _emitWallpaper() {
-        wallpaperFallback.stop()
-        if (root._armed)
-            root.emit("wallpaper_changed", { wallpaper: Config.options?.background?.wallpaperPath ?? "", themeMode: root._mode() })
-    }
-    Timer { id: colorsSettled; interval: 500; onTriggered: root._emitWallpaper() }
-    Timer { id: wallpaperFallback; interval: 6000; onTriggered: root._emitWallpaper() }
+    // Wallpaper changes are announced by anod itself (it applies them). One
+    // it applied on its own (rotation) becomes the shell's current wallpaper.
     Connections {
-        target: MaterialThemeLoader
-        function onColorsApplied() { colorsSettled.restart() }
-    }
-    Connections {
-        target: Config.options?.background ?? null
-        function onWallpaperPathChanged() { wallpaperFallback.restart() }
+        target: root
+        function onEvent(name, data) {
+            if (name !== "wallpaper_changed" || !data?.wallpaper) return
+            if ((Config.options?.background?.wallpaperPath ?? "") !== data.wallpaper)
+                Config.setNestedValue("background.wallpaperPath", data.wallpaper)
+        }
     }
 
     // Battery: fires on charge-state changes and when crossing hooks.batteryThreshold.

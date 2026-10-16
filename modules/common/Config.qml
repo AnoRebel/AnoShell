@@ -699,6 +699,7 @@ Singleton {
                 property var hooks: [
                     { "name": "pywal", "enable": true, "command": ["wal", "-i", "{image}", "-n", "-q"], "timeoutSeconds": 30 },
                     { "name": "swaync", "enable": true, "command": ["swaync-client", "--reload-css"] },
+                    { "name": "apps", "enable": true, "command": ["~/.config/quickshell/ano/scripts/colors/applycolor.sh", "--mode", "{mode}"], "timeoutSeconds": 30 },
                     { "name": "cava", "enable": true, "builtin": "cava" },
                     { "name": "themes", "enable": true, "command": ["~/.config/awww/scripts/awww_generate_themes.sh"], "timeoutSeconds": 30 }
                 ]

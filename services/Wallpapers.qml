@@ -12,7 +12,8 @@ import Quickshell.Io
 /**
  * Wallpaper service with directory browsing, random rotation,
  * thumbnail generation, and per-monitor wallpaper application.
- * Compositor-agnostic — uses swww/swaybg/hyprpaper via switchwall script.
+ * Compositor-agnostic — wallpapers are applied by anod (wallpaper.set): awww,
+ * matugen colours and the background.hooks.
  */
 Singleton {
     id: root
@@ -98,11 +99,16 @@ Singleton {
 
     function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "") {
         if (!path || path.length === 0) return
-        // The shell owns its config file; the script only applies and colours.
+        // The shell owns its config file; anod applies (awww), colours
+        // (matugen) and runs the hooks (pywal, apps, cava …).
         Config.setNestedValue("background.wallpaperPath", path)
-        const args = [Directories.wallpaperSwitchScriptPath, "--image", path, "--mode", darkMode ? "dark" : "light", "--skip-config"]
-        if (monitorName !== "") args.push("--monitor", monitorName)
-        applyProc.exec(args)
+        const req = { image: path, mode: darkMode ? "dark" : "light" }
+        if (monitorName !== "") req.outputs = [monitorName]
+        const sent = Anod.call("wallpaper.set", req, (res, err) => {
+            if (err) Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Wallpaper", `Couldn't apply: ${err.message}`])
+        })
+        // Without anod: just show it (no colours or hooks).
+        if (!sent) applyProc.exec(["awww", "img", "--resize", Config.options?.background?.resize ?? "fit", "--", path])
         root.changed()
     }
 

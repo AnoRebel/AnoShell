@@ -68,7 +68,6 @@ Singleton {
     property string cliphistDecode: FileUtils.trimFileProtocol("/tmp/quickshell-anoshell/media/cliphist")
 
     // Script paths
-    property string wallpaperSwitchScriptPath: FileUtils.trimFileProtocol(`${root.scriptPath}/colors/switchwall.sh`)
 
     // Wallpaper directory (user's wallpaper collection, configurable in settings)
     property string wallpaperDir: FileUtils.trimFileProtocol(`${root.pictures}/hyprwallpapers`)

@@ -205,8 +205,9 @@ spawn-at-startup "nm-applet" "--indicator"
 spawn-sh-at-startup "wl-paste --type text --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update'"
 spawn-sh-at-startup "wl-paste --type image --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update'"
 
-// Wallpaper — awww with randomize (also triggers matugen via switchwall.sh)
-spawn-sh-at-startup "~/.config/awww/scripts/awww_randomize_multi.sh ~/Pictures/hyprwallpapers"
+// Wallpaper: awww draws it; rotation, colours and hooks are anod's
+// (background.randomize / background.hooks; `ano wallpaper next`).
+spawn-at-startup "awww-daemon"
 
 // Additional services
 spawn-at-startup "kdeconnectd"

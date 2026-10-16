@@ -136,7 +136,8 @@ hl.on("hyprland.start", function()
 
 	-- Wallpaper engine (awww — swww successor)
 	hl.exec_cmd("awww-daemon")
-	hl.exec_cmd("~/.config/awww/scripts/awww_randomize_multi.sh ~/Pictures/hyprwallpapers")
+	-- Rotation, colours and hooks: anod (background.randomize / background.hooks;
+	-- `ano wallpaper next`). A separate randomize script would fight it.
 
 	-- System tray apps
 	hl.exec_cmd("nm-applet --indicator")

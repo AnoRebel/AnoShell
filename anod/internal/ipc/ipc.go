@@ -290,12 +290,17 @@ func (s *Server) Broadcast(name string, data any) {
 
 // Call is the client side: one request on a fresh connection, events skipped.
 func Call(path, method string, params any) (json.RawMessage, error) {
+	return CallTimeout(path, method, params, 10*time.Second)
+}
+
+// CallTimeout is Call with a longer wait for slow methods (wallpaper.set runs hooks).
+func CallTimeout(path, method string, params any, d time.Duration) (json.RawMessage, error) {
 	c, err := net.DialTimeout("unix", path, time.Second)
 	if err != nil {
 		return nil, err
 	}
 	defer c.Close()
-	c.SetDeadline(time.Now().Add(10 * time.Second))
+	c.SetDeadline(time.Now().Add(d))
 	return roundTrip(c, method, params)
 }
 

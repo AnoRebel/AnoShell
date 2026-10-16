@@ -234,6 +234,16 @@
         ]
       },
       {
+        "name": "apps",
+        "enable": true,
+        "command": [
+          "~/.config/quickshell/ano/scripts/colors/applycolor.sh",
+          "--mode",
+          "{mode}"
+        ],
+        "timeoutSeconds": 30
+      },
+      {
         "name": "cava",
         "enable": true,
         "builtin": "cava"

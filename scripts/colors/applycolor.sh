@@ -2,7 +2,7 @@
 # ══════════════════════════════════════════════════════════════════════════
 # Ano Shell — applycolor.sh
 # Applies generated Material You colors to external applications.
-# Called by switchwall.sh after color generation.
+# Run by anod as the "apps" wallpaper hook (background.hooks) after matugen.
 #
 # Currently supports: kitty, ghostty, foot, cava, GTK dark/light
 # Extend by adding functions below.

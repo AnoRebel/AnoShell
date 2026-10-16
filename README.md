@@ -567,7 +567,7 @@ If any dependency is missing, the corresponding action shows a `notify-send` fai
 Wallpaper → awww (apply) → matugen (Material You → colors.json) → MaterialThemeLoader
                          → pywal (terminal colors + cava gradients)
                          → applycolor.sh (kitty/ghostty/foot/GTK)
-Scripts include automatic backup — restore with: switchwall.sh --restore
+Wallpapers are applied by anod: `ano wallpaper set IMAGE` (awww, matugen colours, then `background.hooks`).
 ```
 
 ## Widget Library (50+ components)
@@ -648,7 +648,7 @@ ano/
 ├── layouts/                        # 11 overview layout algorithms
 │
 ├── scripts/
-│   ├── colors/{switchwall,applycolor}.sh    # awww + matugen + pywal pipeline
+│   ├── colors/applycolor.sh                # app colours (an anod wallpaper hook)
 │   ├── hyprland/get_keybinds.py
 │   ├── anoSpot/                    # LocalSend send/discover scripts
 │   └── focustime/{focus_daemon,get_stats}.py
