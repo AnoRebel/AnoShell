@@ -132,17 +132,31 @@ func (c *Cache) Scan(ctx context.Context, dir string) ([]Entry, error) {
 	}
 	c.mu.Unlock()
 
-	done := c.compute(ctx, todo)
-	c.mu.Lock()
-	for _, e := range done {
-		c.entries[e.Path] = e
-		out = append(out, e)
+	// In chunks, saved as they finish: a cold scan of a big folder takes
+	// minutes, and a restart meanwhile shouldn't lose what's done.
+	if len(todo) == 0 { // still persist removed files
+		c.mu.Lock()
+		err = c.save()
+		c.mu.Unlock()
 	}
-	err = c.save()
-	c.mu.Unlock()
+	for len(todo) > 0 && ctx.Err() == nil {
+		n := min(64, len(todo))
+		done := c.compute(ctx, todo[:n])
+		todo = todo[n:]
+		c.mu.Lock()
+		for _, e := range done {
+			c.entries[e.Path] = e
+			out = append(out, e)
+		}
+		err = c.save()
+		c.mu.Unlock()
+	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Path < out[j].Path })
 	return out, err
 }
+
+// IsVideo reports whether path is a video wallpaper (by extension).
+func IsVideo(path string) bool { return videoExt.MatchString(path) }
 
 // Get returns the entry for one file, computing it if new or changed.
 func (c *Cache) Get(ctx context.Context, path string) (Entry, error) {

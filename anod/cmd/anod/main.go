@@ -134,14 +134,14 @@ func main() {
 		Settings: wallpaperSettings,
 		OnApply:  func(r wallpaper.Result, first bool) { _, s := wallpaperSettings(); announce(r, s, first) },
 	}
-	srv.Handle("wallpaper.set", func(p json.RawMessage) (any, error) {
+	srv.HandleSlow("wallpaper.set", func(p json.RawMessage) (any, error) {
 		var req struct {
 			wallpaper.Request
 			Mode       string `json:"mode"`
 			Transition string `json:"transition"` // "none": the caller animates (the picker's card grows into it)
 		}
 		if err := json.Unmarshal(p, &req); err != nil || req.Image == "" {
-			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?, transition?}")
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?, transition?, colorsOnly?}")
 		}
 		_, s := wallpaperSettings()
 		if req.Mode == "dark" || req.Mode == "light" {
@@ -151,7 +151,7 @@ func main() {
 			s.Transition = "none"
 		}
 		res, err := wp.Apply(ctx, req.Request, s)
-		if err != nil {
+		if err != nil || req.ColorsOnly { // colours only: nothing new on screen to announce
 			return res, err
 		}
 		announce(res, s, true)
@@ -168,6 +168,10 @@ func main() {
 	// Palette cache for the wallpaper picker (hue sort) and glass (luminance).
 	cacheDir := filepath.Join(xdgCache(), "anoshell")
 	pal := &palette.Cache{Path: filepath.Join(cacheDir, "palette.json"), StillDir: filepath.Join(cacheDir, "stills"), Logf: log.Printf}
+	wp.Still = func(ctx context.Context, path string) (string, error) {
+		e, err := pal.Get(ctx, path)
+		return e.Still, err
+	}
 	// Slow: a cold scan runs matugen per file; the shell's other calls go on meanwhile.
 	srv.HandleSlow("palette.scan", func(p json.RawMessage) (any, error) {
 		var req struct {
@@ -178,7 +182,7 @@ func main() {
 		}
 		return pal.Scan(ctx, expandHome(req.Dir))
 	})
-	srv.Handle("palette.get", func(p json.RawMessage) (any, error) {
+	srv.HandleSlow("palette.get", func(p json.RawMessage) (any, error) {
 		var req struct {
 			Path string `json:"path"`
 		}
@@ -265,6 +269,29 @@ func xdgState() string {
 	return filepath.Join(home, ".local", "state")
 }
 
+// awwwTransition maps Settings' transition names to awww's --transition-type
+// (anything unknown fades, so a bad value never fails the apply). A slide runs
+// in `dir` (the arrow in Settings): "right" sweeps from the left edge.
+func awwwTransition(typ, dir string) string {
+	switch typ {
+	case "none", "fade", "simple", "wipe", "wave", "grow", "center", "outer", "any", "random", "left", "right", "top", "bottom":
+		return typ
+	case "zoom":
+		return "grow"
+	case "slideRight", "slide":
+		switch dir {
+		case "left":
+			return "right"
+		case "down":
+			return "top"
+		case "up":
+			return "bottom"
+		}
+		return "left"
+	}
+	return "fade"
+}
+
 // wallpaperSettings reads background.* and the colour settings on every use.
 func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 	m, err := config.Effective()
@@ -272,11 +299,8 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 		log.Printf("wallpaper: %v", err)
 		m = map[string]any{}
 	}
-	trans := config.String(m, "background.transition.type", "fade")
-	switch trans {
-	case "crossfade", "":
-		trans = "fade"
-	}
+	trans := awwwTransition(config.String(m, "background.transition.type", "fade"),
+		config.String(m, "background.transition.direction", "right"))
 	if !config.Bool(m, "background.transition.enable", true) {
 		trans = "none"
 	}

@@ -41,11 +41,12 @@ Scope {
             root.images = m
         }
     }
-    // Set without anod (or before its first announcement).
+    // Set without anod. With anod its per-screen announcements decide (a
+    // pick for one screen must not switch the others).
     Connections {
         target: Config.options?.background ?? null
         function onWallpaperPathChanged() {
-            if (!Object.values(root.images).includes(root.bg.wallpaperPath))
+            if (!Anod.available && !Object.values(root.images).includes(root.bg.wallpaperPath))
                 root.images = Object.assign({}, root.images, { "*": root.bg.wallpaperPath })
         }
     }
@@ -71,53 +72,65 @@ Scope {
             readonly property bool covered: CompositorService.isCovered(modelData.name)
             readonly property bool decodes: root.allScreens || CompositorService.focusedMonitorName === "" || CompositorService.focusedMonitorName === modelData.name
 
-            // Two slots: `current` is shown; a new path loads into `next`,
-            // which is masked in by the transition, then swaps.
-            property string currentPath: ""
-            property string nextPath: ""
+            // Two slots, A and B. The front one is shown; a new path loads
+            // into the back one, which the transition masks in, and then the
+            // two swap roles (nothing reloads, so no black frame or video
+            // restart).
+            property bool aFront: true
+            property string aPath: ""
+            property string bPath: ""
+            readonly property string frontPath: aFront ? aPath : bPath
+            readonly property string backPath: aFront ? bPath : aPath
+            readonly property Item back: aFront ? slotB : slotA
             property real progress: 1
             onPathChanged: {
-                if (!path || path === currentPath) return
-                nextPath = path
+                if (!path || path === frontPath) return
+                if (aFront) bPath = path; else aPath = path
             }
-            Component.onCompleted: currentPath = path
+            Component.onCompleted: aPath = path
+            function backReady() { if (win.backPath && win.back.ready) trans.restart() }
 
             NumberAnimation {
                 id: trans
                 target: win; property: "progress"; from: 0; to: 1
                 duration: root.transitionType === "none" ? 1 : root.transitionMs
                 easing.type: Easing.InOutCubic
-                onFinished: { win.currentPath = win.nextPath; win.nextPath = ""; win.progress = 1 }
+                onFinished: {
+                    win.aFront = !win.aFront
+                    if (win.aFront) win.bPath = ""; else win.aPath = "" // the old front unloads
+                    win.progress = 1
+                }
             }
 
             Media {
-                id: current
+                id: slotA
                 anchors.fill: parent
-                path: win.currentPath
+                path: win.aPath
                 playing: !win.covered && win.decodes
+                onReadyChanged: if (!win.aFront) win.backReady()
             }
             Media {
-                id: next
+                id: slotB
                 anchors.fill: parent
-                path: win.nextPath
+                path: win.bPath
                 playing: !win.covered && win.decodes
-                onReadyChanged: if (ready && win.nextPath) trans.restart()
+                onReadyChanged: if (win.aFront) win.backReady()
             }
-            // `next` is drawn only through the transition shader.
+            // The back slot is drawn only through the transition shader.
             ShaderEffectSource {
                 id: nextTex
-                sourceItem: next
+                sourceItem: win.back
                 hideSource: true
                 live: true
                 visible: false
             }
             ShaderEffect {
                 anchors.fill: parent
-                visible: win.nextPath !== "" && next.ready
+                visible: win.backPath !== "" && win.back.ready
                 fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/bg_transition.frag.qsb"))
                 property var source: nextTex
                 property real progress: win.progress
-                property real mode: ({ wipe: 1, right: 1, left: 1, grow: 2, center: 2, outer: 2 })[root.transitionType] ?? 0
+                property real mode: ({ wipe: 1, right: 1, left: 1, top: 1, bottom: 1, slideRight: 1, grow: 2, center: 2, outer: 2, zoom: 2 })[root.transitionType] ?? 0
                 property real aspect: width / Math.max(1, height)
             }
         }
@@ -147,19 +160,31 @@ Scope {
                 property string _still: ""
                 property bool _noStill: false
                 readonly property bool settled: status === Image.Ready || status === Image.Error || _noStill
-                source: media.video ? (_still ? "file://" + _still : "") : "file://" + media.path
+                source: media.video ? Wallpapers.fileUrl(_still) : Wallpapers.fileUrl(media.path)
                 fillMode: root.fillMode
                 asynchronous: true
                 cache: false
                 sourceSize: Qt.size(media.width, media.height)
-                Component.onCompleted: if (media.video) Anod.call("palette.get", { path: media.path }, (res) => { if (res?.still) _still = res.still; else _noStill = true })
+                // Refetched when the slot's video changes (the item is reused).
+                readonly property string _for: media.video ? media.path : ""
+                on_ForChanged: _fetch()
+                Component.onCompleted: _fetch()
+                function _fetch() {
+                    _still = ""; _noStill = false
+                    if (!_for) return
+                    const want = _for
+                    Anod.call("palette.get", { path: want }, (res) => {
+                        if (want !== _for) return
+                        if (res?.still) _still = res.still; else _noStill = true
+                    })
+                }
             }
         }
         Component {
             id: gif
             AnimatedImage {
                 readonly property bool settled: status === Image.Ready || status === Image.Error
-                source: "file://" + media.path
+                source: Wallpapers.fileUrl(media.path)
                 fillMode: root.fillMode
                 playing: media.playing
                 asynchronous: true
@@ -174,7 +199,7 @@ Scope {
                 property bool ready: player.mediaStatus === MediaPlayer.BufferedMedia || player.mediaStatus === MediaPlayer.LoadedMedia
                 MediaPlayer {
                     id: player
-                    source: "file://" + media.path
+                    source: Wallpapers.fileUrl(media.path)
                     loops: MediaPlayer.Infinite
                     videoOutput: vout
                     Component.onCompleted: play()

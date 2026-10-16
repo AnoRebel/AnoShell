@@ -184,13 +184,7 @@ func runChecks() []check {
 	if found := runningMatching(rotators); len(found) > 0 {
 		// anod applies and rotates wallpapers now: another rotator changes the
 		// wallpaper behind its back (and can run twice).
-		copies := 0
-		dirs, _ := filepath.Glob("/proc/[0-9]*/cmdline")
-		for _, p := range dirs {
-			if b, err := os.ReadFile(p); err == nil && strings.Contains(string(b), "awww_randomize") {
-				copies++
-			}
-		}
+		copies := len(rotatorPIDs())
 		add("warn", "wallpaper rotator", "also running: %s (%d process(es)) — run `ano wallpaper migrate` to hand rotation to anod", strings.Join(found, ", "), copies)
 	}
 	return out

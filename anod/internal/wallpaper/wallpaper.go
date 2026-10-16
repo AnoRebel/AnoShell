@@ -23,6 +23,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"ano/anod/internal/palette"
 )
 
 // Hook is one step after the colours are generated.
@@ -52,6 +54,9 @@ type Settings struct {
 type Request struct {
 	Image   string   `json:"image"`
 	Outputs []string `json:"outputs"` // empty: every output
+	// ColorsOnly redoes colours and hooks for an image already shown (the
+	// light/dark switch): awww and the recorded state are left alone.
+	ColorsOnly bool `json:"colorsOnly"`
 }
 
 // Result reports what happened, step by step.
@@ -76,7 +81,10 @@ type Pipeline struct {
 	ColorsPath string // $XDG_STATE_HOME/anoshell/generated/colors.json
 	StatePath  string // $XDG_STATE_HOME/anoshell/wallpaper.json
 	Logf       func(string, ...any)
-	mu         sync.Mutex
+	// Still returns a frame of a video (the palette cache's); colours and
+	// hooks use it, since matugen and most hooks can't read a video.
+	Still func(ctx context.Context, path string) (string, error)
+	mu    sync.Mutex
 }
 
 // State is what was applied last (read by the shell for glass alignment).
@@ -113,22 +121,39 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		s.Resize = "crop"
 	}
 	res := Result{Image: img, Outputs: req.Outputs, Resize: s.Resize, Colors: p.ColorsPath}
+	src := img // what colours and hooks read
+	if palette.IsVideo(img) {
+		if s.Engine != "shell" && !req.ColorsOnly {
+			return res, fmt.Errorf("video wallpapers need the shell-drawn background (background.engine: shell): %s", filepath.Base(img))
+		}
+		if p.Still == nil {
+			return res, fmt.Errorf("no still frame for %s", filepath.Base(img))
+		}
+		if src, err = p.Still(ctx, img); err != nil || src == "" {
+			return res, fmt.Errorf("no still frame for %s: %v", filepath.Base(img), err)
+		}
+	}
 
 	// 1. awww (unless the shell draws the wallpaper itself)
-	if s.Engine == "shell" {
+	switch {
+	case req.ColorsOnly:
+		res.Steps = append(res.Steps, StepResult{Name: "awww", Skipped: "colours only"})
+	case s.Engine == "shell":
 		res.Steps = append(res.Steps, StepResult{Name: "awww", Skipped: "shell-drawn background"})
-	} else {
+	default:
 		step := p.run(ctx, "awww", 20*time.Second, awwwArgs(img, req.Outputs, s), nil)
 		res.Steps = append(res.Steps, step)
 		if !step.OK {
 			return res, fmt.Errorf("awww: %s", step.Error)
 		}
 	}
-	p.saveState(img, req.Outputs, s.Resize)
+	if !req.ColorsOnly {
+		p.saveState(img, req.Outputs, s.Resize)
+	}
 
 	// 2. colours (also in fixed mode: switching back then has them ready)
 	if !s.SkipColors {
-		res.Steps = append(res.Steps, p.matugen(ctx, img, s))
+		res.Steps = append(res.Steps, p.matugen(ctx, src, s))
 	}
 
 	// 3. hooks, in order
@@ -160,7 +185,7 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		}
 		argv := make([]string, len(h.Command))
 		for i, a := range h.Command {
-			a = strings.ReplaceAll(a, "{image}", img)
+			a = strings.ReplaceAll(a, "{image}", src)
 			a = strings.ReplaceAll(a, "{mode}", s.Mode)
 			a = strings.ReplaceAll(a, "{colors}", p.ColorsPath)
 			argv[i] = a
@@ -342,6 +367,9 @@ func (p *Pipeline) run(ctx context.Context, name string, timeout time.Duration, 
 	cmd.Env = append(os.Environ(), env...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error { return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) }
+	// A hook that leaves a background child holding stderr must not block
+	// Wait (and the pipeline lock) after the hook itself exits.
+	cmd.WaitDelay = 2 * time.Second
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -389,7 +417,17 @@ func (p *Pipeline) LoadState() State {
 	return s
 }
 
+// writeAtomic replaces path's contents via a temp file and rename. A symlink
+// is written through (a dotfiles link stays a link) and an existing file's
+// mode is kept (new files get 0644).
 func writeAtomic(path string, data []byte) error {
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		path = real
+	}
+	mode := os.FileMode(0o644)
+	if fi, err := os.Stat(path); err == nil {
+		mode = fi.Mode().Perm()
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -403,6 +441,10 @@ func writeAtomic(path string, data []byte) error {
 		return err
 	}
 	tmp.Close()
+	if err := os.Chmod(tmp.Name(), mode); err != nil {
+		os.Remove(tmp.Name())
+		return err
+	}
 	return os.Rename(tmp.Name(), path)
 }
 

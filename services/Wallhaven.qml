@@ -130,6 +130,7 @@ Singleton {
 
     // Back to a blank search (the picker calls this when it closes).
     function reset() {
+        root.cancelDownload()
         if (root._xhr) root._xhr.abort()
         root._xhr = null
         root._generation++
@@ -155,13 +156,25 @@ Singleton {
         if (dest === "") { root.downloadError = "Unexpected image URL"; return false }
         root._dest = dest
         root._part = dest + ".part" // the folder lists only image extensions, so a half file never shows
+        root._monitor = GlobalStates.wallpaperSelectorTargetMonitor // the picker may close meanwhile
+        root._cancelled = false
         root.downloadingId = w.id
         root.downloadProgress = 0
         root.downloadError = ""
         // argv, no shell: the URL was checked by savePathFor (https://w.wallhaven.cc/…).
         downloader.exec(["curl", "-L", "--fail", "--progress-bar", "--create-dirs",
+            "--connect-timeout", "15", "--speed-limit", "1024", "--speed-time", "30",
             "--proto", "=https", "--proto-redir", "=https", "-o", root._part, w.fullUrl])
         return true
+    }
+
+    // Esc on the waiting card, or the picker closing: stop, and don't apply.
+    property bool _cancelled: false
+    property string _monitor: ""
+    function cancelDownload() {
+        if (root.downloadingId === "") return
+        root._cancelled = true
+        if (downloader.running) downloader.running = false // its onExited cleans up
     }
 
     Process {
@@ -175,8 +188,8 @@ Singleton {
             }
         }
         onExited: exitCode => {
-            if (exitCode !== 0) {
-                root.downloadError = `Download failed (curl exit ${exitCode})`
+            if (exitCode !== 0 || root._cancelled) {
+                root.downloadError = root._cancelled ? "" : `Download failed (curl exit ${exitCode})`
                 Quickshell.execDetached(["rm", "-f", "--", root._part])
                 root.downloadingId = ""
                 return
@@ -189,7 +202,8 @@ Singleton {
         onExited: exitCode => {
             if (exitCode === 0) {
                 root.downloadProgress = 1
-                Wallpapers.apply(root._dest, Appearance.m3colors.darkmode, GlobalStates.wallpaperSelectorTargetMonitor, true)
+                // Saved either way; applied only if nobody cancelled meanwhile.
+                if (!root._cancelled) Wallpapers.apply(root._dest, Appearance.m3colors.darkmode, root._monitor, true)
             } else {
                 root.downloadError = "Couldn't save the download"
             }
@@ -200,11 +214,11 @@ Singleton {
     // ── The key ─────────────────────────────────────────────────────────────
     // cb(errorMessage or "") once anod has written it.
     function setApiKey(value, cb) {
-        const sent = Anod.call("secret.set", { name: "wallhaven", value: value.trim() }, (res, err) => {
+        // Without anod, Anod.call answers at once with an "unavailable" error.
+        Anod.call("secret.set", { name: "wallhaven", value: value.trim() }, (res, err) => {
             keyFile.reload()
-            if (cb) cb(err ? err.message : "")
+            if (cb) cb(err ? (err.code === "unavailable" ? "anod isn't running: start it to save the key" : err.message) : "")
         })
-        if (!sent && cb) cb("anod isn't running: start it to save the key")
     }
 
     FileView {

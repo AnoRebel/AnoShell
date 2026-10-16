@@ -318,7 +318,7 @@ ColumnLayout {
                 onChose: value => {
                     Config.setNestedValue("appearance.colors.darkMode", value)
                     const wp = Config.options?.background?.wallpaperPath ?? ""
-                    if (appearanceRoot.committedSource === "materialYou" && wp.length > 0) Wallpapers.apply(wp, value)
+                    if (appearanceRoot.committedSource === "materialYou" && wp.length > 0) Wallpapers.recolor(wp, value)
                 }
             }
         }

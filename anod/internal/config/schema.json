@@ -113,7 +113,6 @@
   "background.randomize.enable": "bool",
   "background.randomize.interval": "int",
   "background.resize": "string",
-  "background.thumbnailPath": "string",
   "background.transition.direction": "string",
   "background.transition.duration": "int",
   "background.transition.enable": "bool",

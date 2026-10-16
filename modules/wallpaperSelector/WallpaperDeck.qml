@@ -305,6 +305,7 @@ Item {
         riseAnim.stop()
         bloomAnim.stop()
         awaiting = false
+        Wallhaven.cancelDownload()
         place(currentIndex)
         const to = frontPlace()
         backAnim.toX = to.x

@@ -18,6 +18,12 @@ Singleton {
         return "file://" + path;
     }
 
+    // A file:// URL for a path (names may hold '#', '?' or spaces).
+    function fileUrl(path) {
+        if (typeof path !== "string" || path.length === 0) return "";
+        return "file://" + path.split("/").map(encodeURIComponent).join("/");
+    }
+
     // Image source for an icon given as a theme name, a path or a URL
     // (notification appIcon/image can be any of these).
     function iconSource(icon) {

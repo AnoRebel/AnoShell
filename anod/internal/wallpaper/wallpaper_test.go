@@ -171,3 +171,26 @@ func TestDocsHookExampleRuns(t *testing.T) {
 		t.Fatalf("argv: %q", log)
 	}
 }
+
+func TestWriteAtomicKeepsLinkAndMode(t *testing.T) {
+	d := t.TempDir()
+	real := filepath.Join(d, "real")
+	link := filepath.Join(d, "link")
+	if err := os.WriteFile(real, []byte("old"), 0o640); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(real, link); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeAtomic(link, []byte("new")); err != nil {
+		t.Fatal(err)
+	}
+	if fi, _ := os.Lstat(link); fi.Mode()&os.ModeSymlink == 0 {
+		t.Fatal("link replaced by a file")
+	}
+	b, _ := os.ReadFile(real)
+	fi, _ := os.Stat(real)
+	if string(b) != "new" || fi.Mode().Perm() != 0o640 {
+		t.Fatalf("got %q mode %o", b, fi.Mode().Perm())
+	}
+}

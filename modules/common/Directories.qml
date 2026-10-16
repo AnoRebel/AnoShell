@@ -12,7 +12,9 @@ Singleton {
     // XDG standard directories (with "file://" prefix)
     readonly property string home: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
     readonly property string config: StandardPaths.standardLocations(StandardPaths.ConfigLocation)[0]
-    readonly property string state: StandardPaths.standardLocations(StandardPaths.StateLocation)[0]
+    // $XDG_STATE_HOME itself (not the per-app ~/.local/state/quickshell): anod
+    // and applycolor.sh write generated/colors.json there.
+    readonly property string state: StandardPaths.standardLocations(StandardPaths.GenericStateLocation)[0]
     readonly property string cache: StandardPaths.standardLocations(StandardPaths.CacheLocation)[0]
     readonly property string genericCache: StandardPaths.standardLocations(StandardPaths.GenericCacheLocation)[0]
     readonly property string genericData: StandardPaths.standardLocations(StandardPaths.GenericDataLocation)[0]

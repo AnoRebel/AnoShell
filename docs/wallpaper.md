@@ -57,7 +57,7 @@ shell string) with:
 |---|---|
 | `name` | shown in logs and in `ano wallpaper set`'s report |
 | `enable` | `false` skips it |
-| `command` | the program and its arguments; `{image}`, `{mode}` (`dark`/`light`) and `{colors}` (the colours file) are filled in |
+| `command` | the program and its arguments; `{image}` (for a video wallpaper, a still frame of it), `{mode}` (`dark`/`light`) and `{colors}` (the colours file) are filled in |
 | `timeoutSeconds` | killed after this long (default 20) |
 | `builtin` | `"cava"` instead of a command: recolours cava from pywal and asks it to reload |
 
@@ -90,7 +90,8 @@ why it was skipped.
 
 ## Video wallpapers
 
-awww shows stills and GIFs. For video, switch to the shell-drawn background
+awww shows stills and GIFs, so with it the picker lists no videos and anod
+refuses them. For video, switch to the shell-drawn background
 (experimental): Settings → Appearance → Wallpaper engine, or
 
 ```json
@@ -98,7 +99,8 @@ awww shows stills and GIFs. For video, switch to the shell-drawn background
 ```
 
 The shell then draws the wallpaper itself, with fade, wipe or grow transitions
-(`background.transition`). One video decodes on one screen at a time — the
+(`background.transition`). Colours and hooks use a still frame of a video.
+One video decodes on one screen at a time — the
 focused one (`background.video.allScreens: true` decodes on every screen, at
 that many times the cost); the other screens show a still of it. Decoding
 pauses while a maximised or fullscreen window covers the screen. Glass doesn't

@@ -38,7 +38,15 @@ Singleton {
         id: wallColorQuant
         property string wallpaperPath: Config.options.background.wallpaperPath
         property bool wallpaperIsVideo: FileUtils.isVideo(wallpaperPath)
-        source: Qt.resolvedUrl(wallpaperIsVideo ? Config.options.background.thumbnailPath : wallpaperPath)
+        // A video is measured by its still (anod's palette cache).
+        property string videoStill: ""
+        onWallpaperPathChanged: {
+            videoStill = ""
+            if (!wallpaperIsVideo) return
+            const want = wallpaperPath
+            Anod.call("palette.get", { path: want }, (res) => { if (want === wallpaperPath && res?.still) videoStill = res.still })
+        }
+        source: FileUtils.fileUrl(wallpaperIsVideo ? videoStill : wallpaperPath)
         depth: 0
         rescaleSize: 10
     }

@@ -31,10 +31,14 @@ type rotatorEdit struct {
 // findRotatorAutostarts scans the user's Hyprland and niri configs.
 func findRotatorAutostarts(home string) []rotatorEdit {
 	files := []string{}
-	for _, g := range []string{".config/hypr/*.lua", ".config/hypr/*.conf", ".config/hypr/**/*.lua", ".config/niri/*.kdl"} {
-		m, _ := filepath.Glob(filepath.Join(home, g))
-		files = append(files, m...)
-	}
+	_ = filepath.WalkDir(filepath.Join(home, ".config/hypr"), func(p string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && (strings.HasSuffix(p, ".lua") || strings.HasSuffix(p, ".conf")) {
+			files = append(files, p)
+		}
+		return nil
+	})
+	m, _ := filepath.Glob(filepath.Join(home, ".config/niri/*.kdl"))
+	files = append(files, m...)
 	var out []rotatorEdit
 	seen := map[string]bool{}
 	for _, f := range files {
@@ -131,19 +135,40 @@ func applyRotatorMigration(edits []rotatorEdit, userConfig string, now time.Time
 	return backups, os.WriteFile(userConfig, append(b, '\n'), 0o644)
 }
 
-// stopRotators ends running copies of the old scripts (by PID; never ours).
-func stopRotators() int {
-	n := 0
+// rotatorScript is the old scripts' file name.
+var rotatorScript = regexp.MustCompile(`^awww_randomize(?:_multi)?\.sh$`)
+
+// rotatorPIDs lists running copies of the old scripts: the script itself is
+// the program or the interpreter's first argument (an editor or pager with
+// the file open doesn't count).
+func rotatorPIDs() []int {
+	var pids []int
 	dirs, _ := filepath.Glob("/proc/[0-9]*/cmdline")
 	for _, p := range dirs {
 		b, err := os.ReadFile(p)
-		if err != nil || !strings.Contains(string(b), "awww_randomize") {
+		if err != nil {
 			continue
+		}
+		args := strings.Split(strings.TrimRight(string(b), "\x00"), "\x00")
+		hit := rotatorScript.MatchString(filepath.Base(args[0]))
+		if !hit && len(args) > 1 {
+			switch filepath.Base(args[0]) {
+			case "bash", "sh", "zsh", "dash":
+				hit = rotatorScript.MatchString(filepath.Base(args[1]))
+			}
 		}
 		pid, err := strconv.Atoi(filepath.Base(filepath.Dir(p)))
-		if err != nil || pid == os.Getpid() {
-			continue
+		if hit && err == nil && pid != os.Getpid() {
+			pids = append(pids, pid)
 		}
+	}
+	return pids
+}
+
+// stopRotators ends running copies of the old scripts (by PID).
+func stopRotators() int {
+	n := 0
+	for _, pid := range rotatorPIDs() {
 		if syscall.Kill(pid, syscall.SIGTERM) == nil {
 			n++
 		}

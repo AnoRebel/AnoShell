@@ -697,7 +697,6 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject background: JsonObject {
                 property string wallpaperPath: ""
-                property string thumbnailPath: "" // for video wallpapers
                 property string wallpaperDir: "~/Pictures/hyprwallpapers" // the picker's folder; Wallhaven downloads land here
                 // Favourite wallpapers (absolute paths), hearted in the picker.
                 property var favourites: []

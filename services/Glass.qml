@@ -25,6 +25,8 @@ Singleton {
     readonly property real edgeLight: cfg.edgeLight ?? 0.6
     readonly property real refractionSetting: cfg.refraction ?? 0.5
 
+    // ponytail: one wallpaper for every screen; per-screen rotation makes the
+    // other screens refract/contrast-check this one (needs a per-screen map).
     readonly property string wallpaper: Config.options?.background?.wallpaperPath ?? ""
     readonly property bool isVideo: /\.(mp4|mkv|webm|mov|avi|m4v|ogv)$/i.test(root.wallpaper)
     readonly property string refractionReason: root.isVideo ? "Not with a video wallpaper (awww draws it; the shell can't sample it)" : ""
@@ -50,6 +52,8 @@ Singleton {
         if (iw <= 0 || ih <= 0 || sw <= 0 || sh <= 0) return Qt.vector4d(0, 0, 1, 1)
         let s, dw, dh
         if (root.resize === "stretch") { dw = sw; dh = sh }
+        // ponytail: iw/ih come from a 1280-wide decode (SurfaceMaterial), so "no"
+        // places it at that size, not the file's; pass the real size if "no" matters.
         else if (root.resize === "no") { dw = iw; dh = ih }
         else {
             s = root.resize === "crop" ? Math.max(sw / iw, sh / ih) : Math.min(sw / iw, sh / ih)

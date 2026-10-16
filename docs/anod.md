@@ -141,12 +141,16 @@ notification and checks again the next time anod restarts.
 Methods also include `shutdown`, which a new session's anod uses to retire a
 stale one.
 
-Wallpaper methods: `wallpaper.set` (`{"image", "outputs"?, "mode"?, "transition"?}`;
-`"transition": "none"` skips awww's transition, for the picker whose card grows into the wallpaper),
-`wallpaper.next`, `wallpaper.status` and `palette.scan` (`{"dir"}`: per file
-its source colour, hue, luminance and a video still, cached by path, size and
-mtime). `palette.scan` is a slow method: it runs beside the connection's other
-requests, so its reply can arrive after later ones (match replies by `id`).
+Wallpaper methods: `wallpaper.set` (`{"image", "outputs"?, "mode"?, "transition"?, "colorsOnly"?}`;
+`"transition": "none"` skips awww's transition, for the picker whose card grows into the wallpaper;
+`"colorsOnly": true` redoes colours and hooks for what's already shown, for the light/dark switch;
+a video needs `background.engine: "shell"`), `wallpaper.next`, `wallpaper.status`,
+`palette.scan` (`{"dir"}`: per file its source colour, hue, luminance and a
+video still, cached by path, size and mtime; saved as it goes) and
+`palette.get` (`{"path"}`: the same for one file). `wallpaper.set`,
+`palette.scan` and `palette.get` are slow methods: they run beside the
+connection's other requests, so their replies can arrive after later ones
+(match replies by `id`).
 
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),

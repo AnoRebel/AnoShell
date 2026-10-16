@@ -36,24 +36,14 @@ Singleton {
     // The picker's order, kept for the session: "name" | "hue" | "date".
     property string deckSort: "name"
 
-    signal changed()
-
     function load() {} // Force initialization
 
     property list<string> videoExtensions: ["mp4", "mkv", "webm", "avi", "mov", "m4v", "ogv"]
     // A file:// URL for a path (names may hold '#', '?' or spaces).
-    function fileUrl(path) { return path ? "file://" + path.split("/").map(encodeURIComponent).join("/") : "" }
+    function fileUrl(path) { return FileUtils.fileUrl(path) }
     function isVideoFile(name) { return videoExtensions.some(ext => name.endsWith("." + ext)) }
 
     Process { id: applyProc }
-
-    Connections {
-        target: Config
-        function onReadyChanged() {
-            if (!Config.ready || !root.isVideoFile(Config.options.background.wallpaperPath.toLowerCase())) return
-            root.apply(Config.options.background.wallpaperPath, Appearance.m3colors.darkmode)
-        }
-    }
 
     // Random wallpaper rotation without anod (anod rotates when it runs, so
     // this would fight it otherwise).
@@ -63,8 +53,7 @@ Singleton {
         id: randomWallpaperTimer
         interval: Config.options.background.randomize.interval * 1000
         running: !Anod.available && Config.options.background.randomize.enable && Config.options.background.randomize.directory.length > 0
-        repeat: true
-        triggeredOnStart: true
+        repeat: true // not on start: anod may still be connecting
         onTriggered: {
             if (root.randomWallpaperList.length === 0) {
                 getRandomWallpapersProc.running = true
@@ -78,7 +67,7 @@ Singleton {
     Process {
         id: getRandomWallpapersProc
         property string expandedDir: Config.options.background.randomize.directory.replace(/^~/, FileUtils.trimFileProtocol(Directories.home))
-        command: ["find", expandedDir, "-type", "f", "-regex", ".*\\.\\(jpg\\|jpeg\\|png\\|webp\\|avif\\|bmp\\|svg\\|mp4\\|mkv\\|webm\\|avi\\|mov\\|m4v\\|ogv\\)"]
+        command: ["find", expandedDir, "-type", "f", "-regex", ".*\\.\\(jpg\\|jpeg\\|png\\|webp\\|avif\\|bmp\\|svg\\|gif\\)"]
         stdout: StdioCollector {
             id: randomWallpapersCollector
             onStreamFinished: {
@@ -105,9 +94,9 @@ Singleton {
     // instant: no awww transition (the picker's card grows into the wallpaper itself).
     function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "", instant = false) {
         if (!path || path.length === 0) return
-        // The shell owns its config file; anod applies (awww), colours
-        // (matugen) and runs the hooks (pywal, apps, cava …).
-        Config.setNestedValue("background.wallpaperPath", path)
+        // anod applies (awww), colours (matugen) and runs the hooks (pywal,
+        // apps, cava …); its announcement records the path (Anod.qml), so a
+        // failed apply doesn't leave config pointing at something not shown.
         const req = { image: path, mode: darkMode ? "dark" : "light" }
         if (monitorName !== "") req.outputs = [monitorName]
         if (instant) req.transition = "none"
@@ -115,9 +104,18 @@ Singleton {
             if (err) Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Wallpaper", `Couldn't apply: ${err.message}`])
         })
         // Without anod: just show it (no colours or hooks).
+        if (!sent) Config.setNestedValue("background.wallpaperPath", path)
         if (!sent) applyProc.exec(["awww", "img", "--resize", Config.options?.background?.resize ?? "fit"]
             .concat(instant ? ["--transition-type", "none"] : []).concat(monitorName !== "" ? ["--outputs", monitorName] : []).concat(["--", path]))
-        root.changed()
+    }
+
+    // Light/dark switch: colours and hooks again for what's on screen (no
+    // re-apply, so per-screen wallpapers stay). Needs anod.
+    function recolor(path, darkMode) {
+        if (!path) return
+        Anod.call("wallpaper.set", { image: path, mode: darkMode ? "dark" : "light", colorsOnly: true }, (res, err) => {
+            if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Colours", `Couldn't regenerate: ${err.message}`])
+        })
     }
 
     // ── Favourites (background.favourites: absolute paths) ──────────────────
@@ -159,9 +157,10 @@ Singleton {
 
     FolderListModel {
         id: folderModel
-        folder: "file://" + root.effectiveDirectory
+        folder: root.fileUrl(root.effectiveDirectory)
         caseSensitive: false
-        nameFilters: root.extensions.map(ext => `*.${ext}`)
+        // Videos only when the shell draws the wallpaper (awww can't play them).
+        nameFilters: root.extensions.filter(ext => Config.options?.background?.engine === "shell" || !root.videoExtensions.includes(ext)).map(ext => `*.${ext}`)
         showDirs: false
         showOnlyReadable: true
         sortField: FolderListModel.Name

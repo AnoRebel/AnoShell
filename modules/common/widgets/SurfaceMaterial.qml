@@ -56,7 +56,7 @@ Item {
     Image {
         id: wallImg
         visible: false
-        source: root.glass && Glass.refraction > 0 && Glass.wallpaper ? "file://" + Glass.wallpaper : ""
+        source: root.glass && Glass.refraction > 0 && Glass.wallpaper ? Wallpapers.fileUrl(Glass.wallpaper) : ""
         sourceSize.width: 1280
         asynchronous: true
         cache: true
