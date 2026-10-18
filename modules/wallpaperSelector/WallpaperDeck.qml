@@ -506,7 +506,14 @@ Item {
     Timer {
         id: hiresTimer
         interval: 550
-        onTriggered: if (!root.choosing && root.currentEntry?.fullUrl) preview.show(root.currentEntry.fullUrl, true)
+        onTriggered: {
+            const e = root.currentEntry
+            if (root.choosing || !e?.fullUrl) return
+            // The thumbnail first: replacing it before it's up would leave the
+            // previous picture on screen for the whole download.
+            if (!preview.failed && String(preview.front.source) !== e.url) { hiresTimer.restart(); return }
+            preview.show(e.fullUrl, true)
+        }
     }
     // The live preview changes only once the deck has been still for a
     // moment (a player loading stalls the shell briefly: not mid-motion).
@@ -600,7 +607,8 @@ Item {
             // While a card is chosen: Esc sends a waiting one back, or skips to the end.
             if (root.choosing) {
                 if (k === Qt.Key_Escape && !event.isAutoRepeat) {
-                    if (root.awaiting) root.returnCard()
+                    // Waiting, or still rising with its download running: back to the deck.
+                    if (root.awaiting || (Wallhaven.downloadingId !== "" && !root.chosenSet)) root.returnCard()
                     else if (!backAnim.running) root.close()
                 }
                 event.accepted = true

@@ -190,6 +190,7 @@ Singleton {
         onExited: exitCode => {
             if (exitCode !== 0 || root._cancelled) {
                 root.downloadError = root._cancelled ? "" : `Download failed (curl exit ${exitCode})`
+                if (!root._cancelled) console.warn(`[Wallhaven] ${root.downloadError}: ${root._dest}`)
                 Quickshell.execDetached(["rm", "-f", "--", root._part])
                 root.downloadingId = ""
                 return

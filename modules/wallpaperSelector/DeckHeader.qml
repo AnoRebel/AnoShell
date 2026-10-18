@@ -14,6 +14,7 @@ Item {
     height: 44 * deck.u
 
     Row {
+        id: leftRow
         anchors.verticalCenter: parent.verticalCenter
         spacing: 12 * head.deck.u
 
@@ -40,25 +41,6 @@ Item {
                 color: Qt.rgba(1, 1, 1, 0.72)
             }
         }
-    }
-
-    DeckSegments {
-        deck: head.deck
-        anchors.centerIn: parent
-        options: [
-            { key: "local", label: "Local", icon: "photo_library" },
-            { key: "favourites", label: "Favourites", icon: "favorite", badge: Wallpapers.favourites.length },
-            { key: "wallhaven", label: "Wallhaven", icon: "travel_explore" }
-        ]
-        value: head.deck.mode
-        onPicked: key => head.deck.setMode(key)
-    }
-
-    Row {
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 8 * head.deck.u
-
         // Reading colours (anod's first scan of new files).
         DeckGlass {
             deck: head.deck
@@ -79,6 +61,27 @@ Item {
                 }
             }
         }
+    }
+
+    // Centred, but never under the groups beside it (narrow screens).
+    DeckSegments {
+        deck: head.deck
+        anchors.verticalCenter: parent.verticalCenter
+        x: Math.max(leftRow.x + leftRow.width + 16 * head.deck.u, Math.min((head.width - width) / 2, rightRow.x - width - 16 * head.deck.u))
+        options: [
+            { key: "local", label: "Local", icon: "photo_library" },
+            { key: "favourites", label: "Favourites", icon: "favorite", badge: Wallpapers.favourites.length },
+            { key: "wallhaven", label: "Wallhaven", icon: "travel_explore" }
+        ]
+        value: head.deck.mode
+        onPicked: key => head.deck.setMode(key)
+    }
+
+    Row {
+        id: rightRow
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8 * head.deck.u
 
         DeckSegments {
             deck: head.deck
