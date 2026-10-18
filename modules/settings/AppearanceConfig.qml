@@ -864,14 +864,14 @@ ColumnLayout {
         }
 
         ConfigRow {
-            label: "Wallpaper directory"
+            label: "Rotation folder"
             configKey: "background.randomize.directory"
-            sublabel: "Path to folder containing wallpapers (supports ~)"
-            StyledTextInput {
-                text: Config.options?.background?.randomize?.directory ?? "~/Pictures/Wallpapers"
-                onEditingFinished: Config.setNestedValue("background.randomize.directory", text)
+            sublabel: "Empty: the wallpaper folder (Wallpaper Picker card). Supports ~"
+            ConfigTextInput {
+                placeholderText: "Same as the wallpaper folder"
+                text: Config.options?.background?.randomize?.directory ?? ""
+                onEditingFinished: Config.setNestedValue("background.randomize.directory", text.trim())
                 Layout.fillWidth: true
-                font.family: Appearance?.font.family.mono ?? "monospace"
             }
         }
 
@@ -904,12 +904,12 @@ ColumnLayout {
         ConfigRow {
             label: "Wallpaper folder"
             configKey: "background.wallpaperDir"
-            sublabel: "What the picker deals from; Wallhaven downloads are saved here (supports ~)"
+            sublabel: "The picker deals from it, Wallhaven saves into it, rotation uses it. Empty: your Pictures folder's Wallpapers. Supports ~"
             ConfigTextInput {
                 Layout.preferredWidth: 260
-                placeholderText: "~/Pictures/hyprwallpapers"
+                placeholderText: Directories.wallpaperDir.replace(FileUtils.trimFileProtocol(Directories.home), "~")
                 text: Config.options?.background?.wallpaperDir ?? ""
-                onEditingFinished: if (text.trim() !== "") Config.setNestedValue("background.wallpaperDir", text.trim())
+                onEditingFinished: Config.setNestedValue("background.wallpaperDir", text.trim())
             }
         }
 

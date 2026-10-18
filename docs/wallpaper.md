@@ -31,11 +31,24 @@ ano wallpaper status    # what's shown, and the rotation settings
 
 ## Rotation
 
-`background.randomize` changes the wallpaper on a timer:
+## The wallpaper folder
+
+`background.wallpaperDir` (Settings → Appearance → Wallpaper Picker, or the
+picker's gear) is the one folder everything uses: the picker deals from it,
+Wallhaven downloads land in it, rotation picks from it and `ano backup
+create --add wallpapers` archives it. Empty (the default) means `Wallpapers` in your
+Pictures folder (`XDG_PICTURES_DIR`, usually `~/Pictures/Wallpapers`).
+
+```json
+"background": { "wallpaperDir": "~/Pictures/hyprwallpapers" }
+```
+
+`background.randomize` changes the wallpaper on a timer, from the wallpaper
+folder, or from `directory` if you give rotation its own:
 
 ```json
 "background": {
-  "randomize": { "enable": true, "directory": "~/Pictures/Wallpapers", "interval": 300 }
+  "randomize": { "enable": true, "interval": 300 }
 }
 ```
 

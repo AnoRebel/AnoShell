@@ -1,5 +1,6 @@
 import QtQuick
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -14,15 +15,16 @@ DeckGlass {
     property string keyStatus: ""   // message under the key field
 
     function reset() {
-        folderField.text = Config.options?.background?.wallpaperDir ?? ""
+        folderField.text = Wallpapers.effectiveDirectory.replace(FileUtils.trimFileProtocol(Directories.home), "~")
         keyField.text = ""
         card.keyStatus = ""
         folderField.forceActiveFocus()
         folderField.selectAll()
     }
     function applyFolder() {
+        // Shown resolved (the default included); cleared = back to the default.
         const typed = folderField.text.trim().replace(/\/+$/, "")
-        if (typed !== "" && typed !== (Config.options?.background?.wallpaperDir ?? ""))
+        if (typed !== Wallpapers.effectiveDirectory.replace(FileUtils.trimFileProtocol(Directories.home), "~"))
             Config.setNestedValue("background.wallpaperDir", typed)
     }
     function saveKey(value) {

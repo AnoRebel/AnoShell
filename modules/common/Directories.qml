@@ -72,7 +72,8 @@ Singleton {
     // Script paths
 
     // Wallpaper directory (user's wallpaper collection, configurable in settings)
-    property string wallpaperDir: FileUtils.trimFileProtocol(`${root.pictures}/hyprwallpapers`)
+    // Default wallpaper folder (background.wallpaperDir unset).
+    property string wallpaperDir: FileUtils.trimFileProtocol(`${root.pictures}/Wallpapers`)
 
     // Shell root
     // Quickshell 0.3 renamed shellRoot → shellDir. shellRoot still works but

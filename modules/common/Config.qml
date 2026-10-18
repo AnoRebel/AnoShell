@@ -697,7 +697,10 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject background: JsonObject {
                 property string wallpaperPath: ""
-                property string wallpaperDir: "~/Pictures/hyprwallpapers" // the picker's folder; Wallhaven downloads land here
+                // The wallpaper folder: the picker deals from it, Wallhaven saves
+                // into it, rotation uses it unless randomize.directory is set.
+                // "" = <XDG Pictures folder>/Wallpapers.
+                property string wallpaperDir: ""
                 // Favourite wallpapers (absolute paths), hearted in the picker.
                 property var favourites: []
                 // The card-deck picker (modules/wallpaperSelector).
@@ -741,7 +744,7 @@ Singleton {
                 // existing AppearanceConfig slider and bundled defaults.
                 property JsonObject randomize: JsonObject {
                     property bool enable: false
-                    property string directory: "~/Pictures/Wallpapers"
+                    property string directory: "" // "" = background.wallpaperDir
                     property int interval: 300
                 }
                 // Wallpaper transition (cross-fade / slide). Read by the

@@ -1990,8 +1990,8 @@
  {
   "page": 6,
   "card": "",
-  "label": "Wallpaper directory",
-  "sublabel": "Path to folder containing wallpapers (supports ~)",
+  "label": "Rotation folder",
+  "sublabel": "Empty: the wallpaper folder (Wallpaper Picker card). Supports ~",
   "keys": [
    "background.randomize.directory"
   ]
@@ -2021,7 +2021,7 @@
   "page": 6,
   "card": "",
   "label": "Wallpaper folder",
-  "sublabel": "What the picker deals from; Wallhaven downloads are saved here (supports ~)",
+  "sublabel": "The picker deals from it, Wallhaven saves into it, rotation uses it. Empty: your Pictures folder's Wallpapers. Supports ~",
   "keys": [
    "background.wallpaperDir"
   ]

@@ -325,7 +325,7 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 	}
 	rs := wallpaper.RotationSettings{
 		Enable:   config.Bool(m, "background.randomize.enable", false),
-		Dir:      config.String(m, "background.randomize.directory", "~/Pictures/Wallpapers"),
+		Dir:      config.RotationDir(m),
 		Interval: time.Duration(config.Int(m, "background.randomize.interval", 300)) * time.Second,
 	}
 	return rs, s

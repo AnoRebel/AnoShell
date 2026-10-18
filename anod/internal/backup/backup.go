@@ -20,6 +20,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"ano/anod/internal/config"
 )
 
 // Category is one selectable part of the setup. Paths are relative to $HOME.
@@ -41,7 +43,7 @@ var Categories = []Category{
 	}, []string{".local/share/anoshell/secrets", ".local/share/anoshell/backups"}, true},
 	{"secrets", "API keys (sensitive; opt-in)", []string{".local/share/anoshell/secrets"}, nil, false},
 	{"compositor", "Hyprland and niri configs (opt-in)", []string{".config/hypr", ".config/niri"}, nil, false},
-	{"wallpapers", "the wallpaper folder (large; opt-in)", []string{"Pictures/hyprwallpapers"}, nil, false},
+	{"wallpapers", "the wallpaper folder (background.wallpaperDir; large; opt-in)", nil, nil, false}, // paths: wallpaperPaths()
 	{"avatar", "your avatar (~/.face)", []string{".face", ".face.icon"}, nil, false},
 }
 
@@ -62,9 +64,25 @@ func Lookup(names []string) ([]Category, error) {
 		if i < 0 {
 			return nil, fmt.Errorf("unknown category %q", n)
 		}
-		out = append(out, Categories[i])
+		c := Categories[i]
+		if c.Name == "wallpapers" {
+			c.Paths = wallpaperPaths()
+		}
+		out = append(out, c)
 	}
 	return out, nil
+}
+
+// wallpaperPaths is the configured wallpaper folder, relative to home.
+// ponytail: a folder outside home isn't backed up (archives hold home-relative paths).
+func wallpaperPaths() []string {
+	m, _ := config.Effective()
+	home, _ := os.UserHomeDir()
+	rel, err := filepath.Rel(home, config.WallpaperDir(m))
+	if err != nil || rel == "." || strings.HasPrefix(rel, "..") {
+		return nil
+	}
+	return []string{filepath.ToSlash(rel)}
 }
 
 // Manifest describes an archive.

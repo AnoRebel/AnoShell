@@ -20,7 +20,14 @@ Singleton {
     id: root
 
     readonly property string effectiveDirectory: {
-        const d = (Config.options?.background?.wallpaperDir ?? "~/Pictures/hyprwallpapers").trim().replace(/\/+$/, "")
+        const d = (Config.options?.background?.wallpaperDir ?? "").trim().replace(/\/+$/, "")
+        if (d === "") return Directories.wallpaperDir
+        return d === "~" || d.startsWith("~/") ? FileUtils.trimFileProtocol(Directories.home) + d.substring(1) : d
+    }
+    // Rotation's folder: its own, or the wallpaper folder.
+    readonly property string rotationDirectory: {
+        const d = (Config.options?.background?.randomize?.directory ?? "").trim()
+        if (d === "") return root.effectiveDirectory
         return d === "~" || d.startsWith("~/") ? FileUtils.trimFileProtocol(Directories.home) + d.substring(1) : d
     }
     readonly property list<string> extensions: [
@@ -52,7 +59,7 @@ Singleton {
     Timer {
         id: randomWallpaperTimer
         interval: Config.options.background.randomize.interval * 1000
-        running: !Anod.available && Config.options.background.randomize.enable && Config.options.background.randomize.directory.length > 0
+        running: !Anod.available && Config.options.background.randomize.enable && root.rotationDirectory.length > 0
         repeat: true // not on start: anod may still be connecting
         onTriggered: {
             if (root.randomWallpaperList.length === 0) {
@@ -66,7 +73,7 @@ Singleton {
 
     Process {
         id: getRandomWallpapersProc
-        property string expandedDir: Config.options.background.randomize.directory.replace(/^~/, FileUtils.trimFileProtocol(Directories.home))
+        property string expandedDir: root.rotationDirectory
         command: ["find", expandedDir, "-type", "f", "-regex", ".*\\.\\(jpg\\|jpeg\\|png\\|webp\\|avif\\|bmp\\|svg\\|gif\\)"]
         stdout: StdioCollector {
             id: randomWallpapersCollector
@@ -83,12 +90,9 @@ Singleton {
         }
     }
 
-    Connections {
-        target: Config.options.background.randomize
-        function onDirectoryChanged() {
-            root.randomWallpaperList = []
-            if (randomWallpaperTimer.running) getRandomWallpapersProc.running = true
-        }
+    onRotationDirectoryChanged: {
+        root.randomWallpaperList = []
+        if (randomWallpaperTimer.running) getRandomWallpapersProc.running = true
     }
 
     // instant: no awww transition (the picker's card grows into the wallpaper itself).

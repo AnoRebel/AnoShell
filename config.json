@@ -215,7 +215,7 @@
   },
   "background": {
     "wallpaperPath": "",
-    "wallpaperDir": "~/Pictures/hyprwallpapers",
+    "wallpaperDir": "",
     "favourites": [],
     "picker": {
       "livePreview": true
@@ -279,7 +279,7 @@
     ],
     "randomize": {
       "enable": false,
-      "directory": "~/Pictures/Wallpapers",
+      "directory": "",
       "interval": 300
     },
     "transition": {
