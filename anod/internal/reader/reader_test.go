@@ -339,7 +339,7 @@ HTTPServer(("127.0.0.1", int(os.environ["ANO_READER_PORT"])), H).serve_forever()
 	if code != 200 || !strings.Contains(body, `"from": "python"`) || !strings.Contains(body, `"path": "/hot?x=1"`) || !strings.Contains(body, st.URL+"manga") {
 		t.Fatalf("manga via python: %d %s", code, body)
 	}
-	if code, body := get(t, st.URL+"novel/provider/active"); code != 200 || !strings.Contains(body, "freewebnovel") {
+	if code, body := get(t, st.URL+"novel/search"); code != 400 || !strings.Contains(body, "missing q") { // Go's answer
 		t.Fatalf("novel via go: %d %s", code, body)
 	}
 	pid := s.py["manga"].cmd.Process.Pid

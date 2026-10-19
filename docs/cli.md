@@ -44,6 +44,12 @@ bundled `config.json` (see [Configuration](configuration.md)).
 | `ano looks list [--json]` | every look the shell can load (built-in and yours), with what's wrong with any invalid one |
 | `ano looks validate [FILE…] [--json]` | checks look files (all of them when none is given) against the rules in [Looks](looks.md#reference). Exits 1 on errors |
 
+## Default apps
+
+| Command | What it does |
+|---|---|
+| `ano run terminal\|browser\|files [args…]` | opens your default app (`apps.terminal`, `apps.browser`, `apps.fileManager`). If that program isn't installed, the first installed one of the usual ones is used (terminals: kitty, ghostty, alacritty, …). The bundled keybinds use it, so changing an app in Settings → Modules → Default Applications needs no bind change. `--print` shows the command instead of running it |
+
 ## Reader
 
 | Command | What it does |

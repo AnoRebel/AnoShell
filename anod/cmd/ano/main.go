@@ -38,6 +38,7 @@ const usage = `usage: ano <command> [args]
   wallpaper migrate [--yes] [--dry-run]          replace an awww randomize autostart with anod's rotation
   reader anime|manga|novel [open|close|toggle]   show a reader panel (default: toggle)
   reader status [--json]                         the reader backend (anod)
+  run [--print] terminal|browser|files [args…]   open your default app (apps.*; falls back to an installed one)
   version
 `
 
@@ -73,6 +74,8 @@ func main() {
 		os.Exit(looksCmd(args))
 	case "reader":
 		os.Exit(readerCmd(args))
+	case "run":
+		os.Exit(runCmd(args))
 	case "help", "-h", "--help":
 		fmt.Printf(usage, eventList())
 	default:

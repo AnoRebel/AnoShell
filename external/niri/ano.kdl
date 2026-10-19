@@ -291,7 +291,8 @@ binds {
     // TERMINAL & APPS
     // ══════════════════════════════════════════════════════════════════════
 
-    Mod+Return { spawn "kitty"; }
+    // Default apps go through `ano run` (apps.* in Settings): changing one needs no bind edit.
+    Mod+Return { spawn "ano" "run" "terminal"; }
     Ctrl+Alt+T { spawn "ghostty"; }
 
     // Window management
@@ -304,9 +305,9 @@ binds {
     Mod+Space { toggle-window-floating; }
 
     // Applications
-    Mod+E { spawn "nemo" "/home/ano/Downloads"; }
+    Mod+E { spawn-sh "ano run files ~/Downloads"; }
     Ctrl+Alt+B { spawn "neovide" "--neovim-bin" "avim"; }
-    Mod+Z { spawn "zen-browser"; }
+    Mod+Z { spawn "ano" "run" "browser"; }
 
     // Vicinae launcher
     Mod+D { spawn "vicinae" "toggle"; }

@@ -64,14 +64,6 @@ func (c *lru) put(key string, val any, cost int64, ttl time.Duration) {
 	}
 }
 
-func (c *lru) drop(key string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if el, ok := c.items[key]; ok {
-		c.remove(el)
-	}
-}
-
 func (c *lru) setMax(max int64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

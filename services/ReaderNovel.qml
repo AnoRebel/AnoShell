@@ -138,7 +138,7 @@ Singleton {
                         if (e.id !== id) return e
                         return Object.assign({}, e, {
                             title:    info.title || e.title,
-                            coverUrl: info.image || e.coverUrl
+                            coverUrl: Reader.rawUrl(info.image) || e.coverUrl
                         })
                     })
                     _saveLibrary()

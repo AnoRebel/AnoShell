@@ -44,6 +44,7 @@ const MaxStartAttempts = 3
 type Settings struct {
 	IdleTimeout time.Duration
 	CacheMB     int
+	MetaEntries int               // metadata (lists, details, chapters) kept; 0: 512
 	Backends    map[string]string // kind → "go" | "python"
 	Python      string            // interpreter for the python fallback
 	ScriptsDir  string            // ano/scripts/reader
@@ -127,6 +128,7 @@ func (s *Service) Open(kind string) (Status, error) {
 	}
 	if err != nil {
 		s.lastErr = fmt.Sprintf("the reader backend failed to start %d times: %v. Run `ano doctor`.", MaxStartAttempts, err)
+		s.armIdle() // the server may be up for other panels, or for none
 		return s.status(), errors.New(s.lastErr)
 	}
 	s.lastErr = ""
@@ -193,10 +195,14 @@ func (s *Service) armIdle() {
 	}
 	s.idle = time.AfterFunc(d, func() {
 		s.mu.Lock()
-		defer s.mu.Unlock()
+		var finish func()
 		if len(s.open) == 0 && s.mpv == nil {
 			s.logf("idle for %s, stopping", d)
-			s.stop()
+			finish = s.stop()
+		}
+		s.mu.Unlock()
+		if finish != nil {
+			finish()
 		}
 	})
 }
@@ -239,6 +245,9 @@ func (s *Service) start() error {
 		mb = 64
 	}
 	s.images.setMax(int64(mb) << 20)
+	if n := s.settings.MetaEntries; n > 0 {
+		s.meta.setMax(int64(n))
+	}
 	proxy := func(raw string) string { return s.base + "image?url=" + url.QueryEscape(raw) }
 	s.manga = &manga{f: newFetcher(0), cache: s.meta, proxy: proxy}
 	s.novel = &novel{f: newFetcher(fwnInterval), cache: s.meta, proxy: proxy, listDir: filepath.Join(s.CacheDir, "novel-chapters")}
@@ -253,34 +262,40 @@ func (s *Service) start() error {
 	return nil
 }
 
-// stop (mu held) closes the listener, the python backends and the caches.
-func (s *Service) stop() {
-	if s.srv != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		s.srv.Shutdown(ctx)
-		cancel()
-		s.srv = nil
-	}
-	for k, p := range s.py {
-		p.stop()
-		delete(s.py, k)
-	}
+// stop (mu held) detaches the listener, the python backends and the caches,
+// and returns what finishes the job; call that after unlocking, since
+// in-flight requests take mu while the server waits for them.
+func (s *Service) stop() func() {
+	srv := s.srv
+	py := s.py
+	s.srv, s.py = nil, map[string]*pyBackend{}
 	s.token, s.base = "", ""
 	s.images.setMax(0) // drop the image bytes, then allow them again
 	s.images.setMax(64 << 20)
 	s.meta.setMax(0)
 	s.meta.setMax(512)
+	return func() {
+		if srv != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			srv.Shutdown(ctx)
+			cancel()
+		}
+		for _, p := range py {
+			p.stop()
+		}
+	}
 }
 
 // Shutdown stops everything except a playing mpv (it outlives anod too).
 func (s *Service) Shutdown() {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.init()
 	if s.idle != nil {
 		s.idle.Stop()
 	}
-	s.stop()
+	finish := s.stop()
+	s.mu.Unlock()
+	finish()
 }
 
 // ── HTTP ───────────────────────────────────────────────────────────────
@@ -313,8 +328,16 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		usePy := s.backendOf(kind) == "python"
 		s.mu.Unlock()
 		if usePy {
-			if py == nil {
-				writeJSON(w, http.StatusServiceUnavailable, map[string]any{"error": "the python backend is not running", "unavailable": true})
+			dead := py == nil
+			if py != nil {
+				select {
+				case <-py.done:
+					dead = true
+				default:
+				}
+			}
+			if dead { // it exited; reopening the panel starts it again
+				writeJSON(w, http.StatusServiceUnavailable, map[string]any{"error": "the python backend is not running (reopen the panel; see anod.log)", "unavailable": true})
 				return
 			}
 			py.proxy.ServeHTTP(w, r)
@@ -404,10 +427,6 @@ func (s *Service) serveProvider(w http.ResponseWriter, r *http.Request, kind, en
 		if id, err = need("id"); err == nil {
 			v, err = nv.chapter(ctx, id)
 		}
-	case "novel/provider/list":
-		v = []map[string]string{{"name": fwnName, "label": "FreeWebNovel"}}
-	case "novel/provider/active":
-		v = map[string]string{"name": fwnName, "label": "FreeWebNovel"}
 	case "anime/search":
 		var qs string
 		if qs, err = need("q"); err == nil {

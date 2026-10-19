@@ -101,6 +101,7 @@ system-wide. Changes apply the next time the backend starts.
 | `reader.<kind>.edge` | novel `right`, others `left` | where it opens |
 | `reader.idleTimeout` | `120` | seconds before the backend stops |
 | `reader.cacheMB` | `64` | image cache size |
+| `reader.metaCacheEntries` | `512` | lists, details and chapters kept in memory |
 | `reader.providers.<freewebnovel\|weebcentral\|allanime>.backend` | `go` | `go` or `python` |
 | `reader.python` | `python3` | interpreter for the Python fallback |
 

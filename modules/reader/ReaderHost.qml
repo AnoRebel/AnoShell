@@ -61,9 +61,15 @@ Scope {
         root.minimized = root._with(root.minimized, kind, true)
     }
     function close(kind) {
+        const wasShown = root.shown[kind]
         root.shown = root._with(root.shown, kind, false)
         root.minimized = root._with(root.minimized, kind, false)
-        // The slot unloads once it has retracted (ReaderSlot.onRevealChanged).
+        // A showing slot unloads once it has retracted (ReaderSlot.onRevealChanged);
+        // a minimised one is already retracted, so it unloads now.
+        if (!wasShown && root.loaded[kind]) {
+            root.loaded = root._with(root.loaded, kind, false)
+            Reader.close(kind)
+        }
     }
     function toggle(kind) {
         if (root.shown[kind]) root.close(kind)
@@ -71,6 +77,8 @@ Scope {
     }
 
     Component.onCompleted: Reader.sweep()
+    // reader.enable turned off (PanelGate unloads this): nothing stays open in anod.
+    Component.onDestruction: root.kinds.forEach(k => Reader.close(k))
 
     IpcHandler {
         target: "reader"

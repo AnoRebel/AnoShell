@@ -217,6 +217,7 @@
     "enable": false,
     "idleTimeout": 120,
     "cacheMB": 64,
+    "metaCacheEntries": 512,
     "python": "python3",
     "novel": {
       "enable": true,

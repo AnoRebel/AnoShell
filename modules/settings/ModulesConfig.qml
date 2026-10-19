@@ -420,37 +420,66 @@ ColumnLayout {
     SettingsCard {
         icon: "apps"
         title: "Default Applications"
-        subtitle: "Preferred applications for various actions"
+        subtitle: "Used by keybinds (ano run …) and every shell action that opens one"
         configKeys: ["apps"]
 
-        ConfigRow {
-            label: "Terminal"
-            configKey: "apps.terminal"
-            StyledTextInput {
-                text: Config.options?.apps?.terminal ?? "kitty"
-                onEditingFinished: Config.setNestedValue("apps.terminal", text)
-                Layout.preferredWidth: 160
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
-        }
-        ConfigRow {
-            label: "File Manager"
-            configKey: "apps.fileManager"
-            StyledTextInput {
-                text: Config.options?.apps?.fileManager ?? "nemo"
-                onEditingFinished: Config.setNestedValue("apps.fileManager", text)
-                Layout.preferredWidth: 160
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
-        }
-        ConfigRow {
-            label: "Browser"
-            configKey: "apps.browser"
-            StyledTextInput {
-                text: Config.options?.apps?.browser ?? "zen-browser"
-                onEditingFinished: Config.setNestedValue("apps.browser", text)
-                Layout.preferredWidth: 160
-                font.family: Appearance?.font.family.mono ?? "monospace"
+        Repeater {
+            model: [
+                { key: "terminal", label: "Terminal", icon: "terminal" },
+                { key: "browser", label: "Browser", icon: "language" },
+                { key: "fileManager", label: "File manager", icon: "folder" }
+            ]
+            delegate: ColumnLayout {
+                id: appCol
+                required property var modelData
+                readonly property string key: modelData.key
+                readonly property var entries: DefaultApps.catalog[key] ?? []
+                readonly property string configured: (Config.options?.apps?.[key] ?? "").trim()
+                readonly property string program: configured.split(/\s+/)[0] ?? ""
+                readonly property string effective: DefaultApps.command(key).join(" ")
+                Layout.fillWidth: true
+                spacing: 6
+
+                ConfigRow {
+                    label: appCol.modelData.label
+                    configKey: `apps.${appCol.key}`
+                    sublabel: !DefaultApps.detected ? "Looking for installed apps…"
+                        : appCol.effective === "" ? "None installed"
+                        : appCol.configured !== "" && !DefaultApps.installed[appCol.program]
+                            ? `${appCol.program} is not installed — using ${appCol.effective}`
+                        : `Opens: ${appCol.effective}`
+                    StyledTextInput {
+                        // Any command line (e.g. "kitty -1"); the picks below fill it in.
+                        text: appCol.configured
+                        onEditingFinished: Config.setNestedValue(`apps.${appCol.key}`, text.trim())
+                        Layout.preferredWidth: 160
+                        font.family: Appearance?.font.family.mono ?? "monospace"
+                    }
+                }
+                ChoiceRow {
+                    Layout.fillWidth: true
+                    compact: false // names, not one repeated icon
+                    itemSpacing: 4
+                    visible: model.length > 0
+                    model: appCol.entries.filter(a => DefaultApps.installed[a.command])
+                        .map(a => ({ value: a.command, label: a.name, icon: appCol.modelData.icon }))
+                    current: appCol.program
+                    onChose: value => Config.setNestedValue(`apps.${appCol.key}`, value)
+                }
+                // Well-known apps that aren't installed: shown, not selectable.
+                StyledText {
+                    Layout.fillWidth: true
+                    readonly property var missing: appCol.entries.filter(a => DefaultApps.detected && !DefaultApps.installed[a.command])
+                    visible: missing.length > 0
+                    wrapMode: Text.Wrap
+                    textFormat: Text.PlainText
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colSubtext
+                    text: "Suggested — not installed:  " + missing.map(a => {
+                        const cmd = DefaultApps.installCommand(a)
+                        return cmd ? `${a.name} (${cmd})` : a.name
+                    }).join("  ·  ")
+                }
             }
         }
     }
@@ -760,6 +789,16 @@ ColumnLayout {
             valueText: `${Math.round(value)} MB`
         }
 
+        ConfigSlider {
+            label: "Page cache"
+            configKey: "reader.metaCacheEntries"
+            sublabel: "Lists, details and chapters kept by the backend (applies on its next start)"
+            from: 64; to: 4096; stepSize: 64
+            value: Config.options?.reader?.metaCacheEntries ?? 512
+            onValueChanged: Config.setNestedValue("reader.metaCacheEntries", Math.round(value))
+            valueText: `${Math.round(value)}`
+        }
+
         Repeater {
             model: [
                 { id: "freewebnovel", label: "FreeWebNovel (novels)" },
@@ -773,7 +812,7 @@ ColumnLayout {
                 configKey: `reader.providers.${provRow.modelData.id}.backend`
                 sublabel: "Go (anod) or the legacy Python server"
                 ChoiceRow {
-                    compact: true
+                    compact: false
                     itemSpacing: 4
                     model: [{ value: "go", label: "Go", icon: "bolt" }, { value: "python", label: "Python", icon: "code" }]
                     current: Config.options?.reader?.providers?.[provRow.modelData.id]?.backend ?? "go"

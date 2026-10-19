@@ -148,13 +148,16 @@ func (f *fetcher) once(ctx context.Context, u string, o reqOpts) ([]byte, string
 			time.Sleep(300 * time.Millisecond)
 			continue
 		}
-		b, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
+		b, err := io.ReadAll(io.LimitReader(resp.Body, maxBody+1))
 		resp.Body.Close()
 		if resp.StatusCode/100 != 2 {
 			return nil, "", &statusError{Code: resp.StatusCode, URL: u}
 		}
 		if err != nil {
 			return nil, "", err
+		}
+		if len(b) > maxBody { // never hand on (or cache) a cut-off body
+			return nil, "", fmt.Errorf("response from %s is over %d MB", hostOf(u), maxBody>>20)
 		}
 		return b, resp.Header.Get("Content-Type"), nil
 	}

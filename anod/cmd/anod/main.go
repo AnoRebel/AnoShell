@@ -321,6 +321,7 @@ func readerSettings() reader.Settings {
 	s := reader.Settings{
 		IdleTimeout: time.Duration(config.Int(m, "reader.idleTimeout", 120)) * time.Second,
 		CacheMB:     config.Int(m, "reader.cacheMB", 64),
+		MetaEntries: config.Int(m, "reader.metaCacheEntries", 512),
 		Python:      config.String(m, "reader.python", "python3"),
 		ScriptsDir:  filepath.Join(config.ShellDir(), "scripts", "reader"),
 		Backends:    map[string]string{},

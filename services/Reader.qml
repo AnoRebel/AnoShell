@@ -39,6 +39,11 @@ Singleton {
         }
         root._set(kind, "starting")
         Anod.call("reader.open", { kind: kind }, (res, err) => {
+            // Closed while it was starting: anod applied the close first, so undo the open.
+            if (root.state(kind) !== "starting") {
+                if (res?.url) Anod.call("reader.close", { kind: kind })
+                return
+            }
             if (err || !res?.url) {
                 root.error = err?.message ?? "The reader backend did not start. Run `ano doctor`."
                 root._set(kind, "error")
@@ -64,10 +69,13 @@ Singleton {
         target: Anod
         function onAvailableChanged() { root.sweep() }
     }
+    // Also: a reader showing across an anod restart reopens, getting the new base.
     function sweep() {
         if (!Anod.available) return
-        for (const k of ["anime", "manga", "novel"])
+        for (const k of ["anime", "manga", "novel"]) {
             if (root.state(k) === "idle") Anod.call("reader.close", { kind: k })
+            else if (root.state(k) === "ready") { root._set(k, "idle"); root.open(k) }
+        }
     }
 
     // A source URL through the backend's image cache. Accepts raw http(s)

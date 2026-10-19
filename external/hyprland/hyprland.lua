@@ -819,17 +819,18 @@ hl.bind(
 
 -- ─── App launchers / quick exec ──────────────────────────────────────────────
 
-hl.bind(MAIN_MOD .. " + RETURN", hl.dsp.exec_cmd("kitty"))
+-- Default apps go through `ano run` (apps.* in Settings): changing one needs no bind edit.
+hl.bind(MAIN_MOD .. " + RETURN", hl.dsp.exec_cmd("ano run terminal"))
 hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd("ghostty"))
 hl.bind(MAIN_MOD .. " + SHIFT + Q", hl.dsp.window.close())
 hl.bind("CTRL + ALT + K", hl.dsp.exec_cmd("hyprlock"))
 -- hyprshutdown for ordered shutdown; the bare `exit` dispatcher is discouraged by the wiki.
 hl.bind(MAIN_MOD .. " + CTRL + Q", hl.dsp.exec_cmd("hyprshutdown"))
-hl.bind(MAIN_MOD .. " + E", hl.dsp.exec_cmd("nemo ~/Downloads"))
+hl.bind(MAIN_MOD .. " + E", hl.dsp.exec_cmd("ano run files ~/Downloads"))
 hl.bind("CTRL + ALT + B", hl.dsp.exec_cmd("neovide --neovim-bin avim"))
 hl.bind("CTRL + ALT + G", hl.dsp.exec_cmd("brave"))
 hl.bind(MAIN_MOD .. " + W", hl.dsp.exec_cmd("exo-open --launch webbrowser"))
-hl.bind(MAIN_MOD .. " + Z", hl.dsp.exec_cmd("zen-browser"))
+hl.bind(MAIN_MOD .. " + Z", hl.dsp.exec_cmd("ano run browser"))
 hl.bind(MAIN_MOD .. " + P", hl.dsp.exec_cmd("celluloid"))
 hl.bind(MAIN_MOD .. " + SPACE", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(MAIN_MOD .. " + D", hl.dsp.exec_cmd("vicinae toggle"))

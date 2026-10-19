@@ -701,6 +701,8 @@ Singleton {
                 property int idleTimeout: 120
                 // Image cache (decoded pages and covers) in MB.
                 property int cacheMB: 64
+                // Lists, details and chapter texts kept in memory (entries).
+                property int metaCacheEntries: 512
                 // Interpreter for providers set to the python backend.
                 property string python: "python3"
                 property JsonObject novel: JsonObject {

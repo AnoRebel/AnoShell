@@ -95,10 +95,10 @@ func fwnPrefix(id string) string {
 func fwnStrip(id string) (string, error) {
 	p, raw, ok := strings.Cut(id, ":")
 	if !ok || p != fwnName {
-		return "", fmt.Errorf("id %q has no known provider prefix (want %s:…)", id, fwnName)
+		return "", badInput(fmt.Sprintf("id %q has no known provider prefix (want %s:…)", id, fwnName))
 	}
 	if strings.Contains(raw, "..") || strings.HasPrefix(raw, "/") {
-		return "", fmt.Errorf("bad id %q", id)
+		return "", badInput(fmt.Sprintf("bad id %q", id))
 	}
 	return raw, nil
 }

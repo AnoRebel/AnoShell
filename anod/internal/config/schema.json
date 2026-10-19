@@ -274,6 +274,7 @@
   "reader.idleTimeout": "int",
   "reader.manga.edge": "string",
   "reader.manga.enable": "bool",
+  "reader.metaCacheEntries": "int",
   "reader.novel.edge": "string",
   "reader.novel.enable": "bool",
   "reader.providers.allanime.backend": "string",

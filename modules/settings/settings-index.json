@@ -455,36 +455,9 @@
   "page": 1,
   "card": "Default Applications",
   "label": "Default Applications",
-  "sublabel": "Preferred applications for various actions",
+  "sublabel": "Used by keybinds (ano run …) and every shell action that opens one",
   "keys": [
    "apps"
-  ]
- },
- {
-  "page": 1,
-  "card": "",
-  "label": "Terminal",
-  "sublabel": "",
-  "keys": [
-   "apps.terminal"
-  ]
- },
- {
-  "page": 1,
-  "card": "",
-  "label": "File Manager",
-  "sublabel": "",
-  "keys": [
-   "apps.fileManager"
-  ]
- },
- {
-  "page": 1,
-  "card": "",
-  "label": "Browser",
-  "sublabel": "",
-  "keys": [
-   "apps.browser"
   ]
  },
  {
@@ -613,6 +586,15 @@
   "sublabel": "Covers and pages kept by the backend (applies on its next start)",
   "keys": [
    "reader.cacheMB"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Page cache",
+  "sublabel": "Lists, details and chapters kept by the backend (applies on its next start)",
+  "keys": [
+   "reader.metaCacheEntries"
   ]
  },
  {
