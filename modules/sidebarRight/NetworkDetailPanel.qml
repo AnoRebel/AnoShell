@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -197,6 +198,61 @@ Rectangle {
                         cursorShape: VPN.connecting ? Qt.ArrowCursor : Qt.PointingHandCursor
                         enabled: !VPN.connecting
                         onClicked: VPN.toggle()
+                    }
+                }
+            }
+        }
+
+        // ── NetBird details: management/signal health, IP, FQDN, peers ──
+        Loader {
+            Layout.fillWidth: true
+            active: root.showVpn && VPN.providerName === "netbird" && !!VPN.status?.netbird
+            visible: active
+            onVisibleChanged: VPN.watch(visible)
+            Component.onDestruction: if (visible) VPN.watch(false)
+            sourceComponent: GridLayout {
+                readonly property var nb: VPN.status.netbird
+                columns: 2
+                columnSpacing: 10
+                rowSpacing: 2
+                Repeater {
+                    model: [
+                        { label: "Management", value: nb.management.host || nb.management.url, ok: nb.management.connected, err: nb.management.error },
+                        { label: "Signal", value: nb.signal.host || nb.signal.url, ok: nb.signal.connected, err: nb.signal.error },
+                        { label: "IP", value: nb.ip, copy: true },
+                        { label: "FQDN", value: nb.fqdn, copy: true },
+                        { label: "Peers", value: `${nb.peersConnected} of ${nb.peersTotal} connected` }
+                    ]
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.columnSpan: 2
+                        Layout.fillWidth: true
+                        spacing: 6
+                        StyledText {
+                            Layout.preferredWidth: 86
+                            text: modelData.label
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: Appearance.colors.colSubtext
+                        }
+                        MaterialSymbol {
+                            visible: modelData.ok !== undefined
+                            text: modelData.ok ? "check_circle" : "error"
+                            iconSize: 14
+                            color: modelData.ok ? Appearance.colors.colPrimary : Appearance.m3colors.m3error
+                        }
+                        StyledText {
+                            Layout.fillWidth: true
+                            elide: Text.ElideMiddle
+                            text: modelData.ok === false && modelData.err ? modelData.err : (modelData.value || "—")
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            font.family: modelData.copy ? Appearance.font.family.mono : Appearance.font.family.main
+                        }
+                        ToolbarButton {
+                            visible: !!modelData.copy && !!modelData.value
+                            iconName: "content_copy"; iconSize: 14
+                            toolTipText: `Copy ${modelData.label}`
+                            onClicked: Quickshell.clipboardText = modelData.value
+                        }
                     }
                 }
             }

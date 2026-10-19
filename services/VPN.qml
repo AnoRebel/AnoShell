@@ -199,6 +199,18 @@ Singleton {
         const status = { connected: false, state: "disconnected", reason: "", authUrl: "" };
         try {
             const data = JSON.parse(output);
+            const host = u => { try { return String(u ?? "").replace(/^[a-z]+:\/\//, "").replace(/[:/].*$/, "") } catch (e) { return "" } };
+            status.netbird = {
+                daemon: data.daemonStatus ?? "",
+                management: { url: data.management?.url ?? "", host: host(data.management?.url), connected: !!data.management?.connected, error: data.management?.error ?? "" },
+                signal: { url: data.signal?.url ?? "", host: host(data.signal?.url), connected: !!data.signal?.connected, error: data.signal?.error ?? "" },
+                ip: String(data.netbirdIp ?? "").replace(/\/\d+$/, ""),
+                fqdn: data.fqdn ?? "",
+                profile: data.profileName ?? "",
+                peersConnected: data.peers?.connected ?? 0,
+                peersTotal: data.peers?.total ?? 0,
+                peers: data.peers?.details ?? []
+            };
             const mgmtConnected = data.management?.connected;
             const signalConnected = data.signal?.connected;
             if (mgmtConnected && signalConnected) {
@@ -410,6 +422,34 @@ Singleton {
                 warpRegisterProc.exec(["warp-cli", "registration", "new"]);
             }
         }
+    }
+
+    // ── NetBird polling: 30 s, 2 s while a panel shows it, backing off to
+    // 5 min while the daemon is down; a health change is announced once.
+    property int watchers: 0
+    function watch(on) { root.watchers = Math.max(0, root.watchers + (on ? 1 : -1)); if (on) root.checkStatus() }
+    property int _backoff: 0
+    property var _health: null
+    Timer {
+        running: root.enabled && root.providerName === "netbird"
+        repeat: true
+        interval: root._backoff > 0 ? root._backoff : (root.watchers > 0 ? 2000 : 30000)
+        onTriggered: root.checkStatus()
+    }
+    onStatusChanged: {
+        if (root.providerName !== "netbird") return
+        const nb = root.status.netbird
+        root._backoff = nb ? 0 : Math.min(300000, Math.max(60000, root._backoff * 2))
+        if (!nb) return
+        const h = { management: nb.management.connected, signal: nb.signal.connected }
+        if (root._health && (h.management !== root._health.management || h.signal !== root._health.signal)
+                && (Config.options?.vpn?.notifyOnChange ?? true)) {
+            const what = h.management !== root._health.management ? "Management" : "Signal"
+            const now = what === "Management" ? nb.management : nb.signal
+            Quickshell.execDetached(["notify-send", "-a", "NetBird", `${what} ${now.connected ? "connected" : "unreachable"}`,
+                now.connected ? (now.host || now.url) : (now.error || now.url)])
+        }
+        root._health = h
     }
 
     Timer {
