@@ -46,7 +46,7 @@ Singleton {
     // typed key to its page.
     readonly property var pages: [
         { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"] },
-        { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "cursor"] },
+        { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader"] },
         { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
         { name: "Dock",       icon: "space_dashboard", configRoots: ["dock"] },
         { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar"] },
@@ -54,6 +54,7 @@ Singleton {
         { name: "Appearance", icon: "palette",         configRoots: ["appearance", "background", "animations"] },
         { name: "Overview",   icon: "overview",        configRoots: ["overview"] },
         { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "powerProfiles", "network", "vpn", "nightLight", "lyrics", "calendar", "resources", "light", "shell", "weather"] },
+        { name: "Displays",   icon: "desktop_windows", configRoots: ["cursor"] },
         { name: "Keybinds",   icon: "keyboard",        configRoots: [] },
         { name: "About",      icon: "info",            configRoots: ["user"] },
     ]

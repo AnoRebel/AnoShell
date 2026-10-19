@@ -554,15 +554,6 @@
  },
  {
   "page": 1,
-  "card": "Cursor",
-  "label": "Cursor",
-  "sublabel": "Pointer theme and size · live, and for apps started later",
-  "keys": [
-   "cursor"
-  ]
- },
- {
-  "page": 1,
   "card": "Reader",
   "label": "Reader",
   "sublabel": "Novel, manga and anime panels · keybinds Ctrl+Super+N / M / A",

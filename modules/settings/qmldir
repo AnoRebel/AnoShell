@@ -4,6 +4,8 @@ AnoSpotConfig 1.0 AnoSpotConfig.qml
 AppearanceConfig 1.0 AppearanceConfig.qml
 BarConfig 1.0 BarConfig.qml
 DockConfig 1.0 DockConfig.qml
+CursorCard 1.0 CursorCard.qml
+DisplaysPage 1.0 DisplaysPage.qml
 GeneralConfig 1.0 GeneralConfig.qml
 KeybindsPage 1.0 KeybindsPage.qml
 ModulesConfig 1.0 ModulesConfig.qml

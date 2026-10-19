@@ -34,6 +34,8 @@ type Output struct {
 	Transform int     `json:"transform"` // 0–7, Hyprland's numbering
 	VRR       bool    `json:"vrr"`
 	Enabled   bool    `json:"enabled"`
+	// Modes the monitor offers ("1920x1200@60.026"), for Settings; not applied.
+	Modes []string `json:"modes,omitempty"`
 }
 
 // ID identifies the physical monitor (survives a port change).
@@ -87,8 +89,9 @@ func (h Hyprland) Current() ([]Output, error) {
 		Width, Height, X, Y       int
 		RefreshRate, Scale        float64
 		Transform                 int
-		VRR                       bool `json:"vrr"`
-		Disabled                  bool `json:"disabled"`
+		VRR                       bool     `json:"vrr"`
+		Disabled                  bool     `json:"disabled"`
+		AvailableModes            []string `json:"availableModes"`
 	}
 	if err := json.Unmarshal(b, &ms); err != nil {
 		return nil, err
@@ -97,6 +100,9 @@ func (h Hyprland) Current() ([]Output, error) {
 	for i, m := range ms {
 		out[i] = Output{Name: m.Name, Make: m.Make, Model: m.Model, Serial: m.Serial, Width: m.Width, Height: m.Height,
 			Refresh: m.RefreshRate, Scale: m.Scale, X: m.X, Y: m.Y, Transform: m.Transform, VRR: m.VRR, Enabled: !m.Disabled}
+		for _, md := range m.AvailableModes {
+			out[i].Modes = append(out[i].Modes, strings.TrimSuffix(md, "Hz"))
+		}
 	}
 	return out, nil
 }
@@ -168,6 +174,9 @@ func (n Niri) Current() ([]Output, error) {
 		o := Output{Name: name, Make: m.Make, Model: m.Model, VRR: m.VRREnabled}
 		if m.Serial != nil {
 			o.Serial = *m.Serial
+		}
+		for _, md := range m.Modes {
+			o.Modes = append(o.Modes, fmt.Sprintf("%dx%d@%.3f", md.Width, md.Height, float64(md.RefreshRate)/1000))
 		}
 		if m.CurrentMode != nil && *m.CurrentMode < len(m.Modes) {
 			md := m.Modes[*m.CurrentMode]
