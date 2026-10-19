@@ -446,9 +446,27 @@
   "page": 1,
   "card": "App Launcher",
   "label": "App Launcher",
-  "sublabel": "Application search and recent apps",
+  "sublabel": "Extra results above your apps · each off until you turn it on",
   "keys": [
-   "apps"
+   "search"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Allow dangerous actions",
+  "sublabel": "Reboot and power off run from the launcher (otherwise they are refused)",
+  "keys": [
+   "search.plugins.actions.enableDangerous"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Package helper",
+  "sublabel": "Empty: paru if installed, else yay",
+  "keys": [
+   "search.plugins.packages.helper"
   ]
  },
  {

@@ -29,7 +29,8 @@ var features = []feature{
 	{"network panel", "", []string{"nmcli"}},
 	{"clipboard history", "", []string{"cliphist", "wl-copy"}},
 	{"wallpaper + dynamic colours", "", []string{"awww", "matugen"}},
-	{"calculator in search", "", []string{"qalc"}},
+	{"launcher calculator", "search.plugins.calculator.enable", []string{"qalc"}},
+	{"launcher package search", "search.plugins.packages.enable", []string{"paru|yay"}},
 	{"translator (else AI fallback)", "", []string{"trans"}},
 	{"screen recording", "", []string{"wf-recorder"}},
 	{"brightness", "", []string{"brightnessctl"}},
@@ -78,7 +79,15 @@ func doctor(args []string) int {
 	return 0
 }
 
-func have(bin string) bool { _, err := exec.LookPath(bin); return err == nil }
+// have reports whether bin is on PATH ("a|b": either).
+func have(bin string) bool {
+	for _, b := range strings.Split(bin, "|") {
+		if _, err := exec.LookPath(b); err == nil {
+			return true
+		}
+	}
+	return false
+}
 
 func runChecks() []check {
 	var out []check

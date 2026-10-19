@@ -9,6 +9,8 @@ import "services"
 // Loader-only modules (PanelGate sources) whose subfolders hold qs.* modules:
 // Quickshell's scanner follows import lines only, so they are imported here.
 import "modules/reader"
+import "modules/search"
+import "modules/onboarding"
 
 import QtQuick
 import Quickshell

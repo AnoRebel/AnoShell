@@ -21,7 +21,8 @@
       "reading": "Readex Pro"
     },
     "colors": {
-      "darkMode": true
+      "darkMode": true,
+      "schemeType": "tonal-spot"
     },
     "connectedCorners": {
       "enable": false,
@@ -555,5 +556,67 @@
       "brave-browser"
     ]
   },
-  "disabledPanels": []
+  "disabledPanels": [],
+  "search": {
+    "plugins": {
+      "calculator": {
+        "enable": false
+      },
+      "emoji": {
+        "enable": false
+      },
+      "packages": {
+        "enable": false,
+        "helper": ""
+      },
+      "actions": {
+        "enable": false,
+        "enableDangerous": false,
+        "items": [
+          {
+            "name": "Lock screen",
+            "icon": "lock",
+            "command": [
+              "loginctl",
+              "lock-session"
+            ],
+            "dangerous": false
+          },
+          {
+            "name": "Suspend",
+            "icon": "bedtime",
+            "command": [
+              "systemctl",
+              "suspend"
+            ],
+            "dangerous": false
+          },
+          {
+            "name": "Reboot",
+            "icon": "restart_alt",
+            "command": [
+              "systemctl",
+              "reboot"
+            ],
+            "dangerous": true
+          },
+          {
+            "name": "Power off",
+            "icon": "power_settings_new",
+            "command": [
+              "systemctl",
+              "poweroff"
+            ],
+            "dangerous": true
+          }
+        ]
+      },
+      "schemes": {
+        "enable": false
+      },
+      "looks": {
+        "enable": false
+      }
+    }
+  }
 }

@@ -29,7 +29,7 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search"
         ]
     }
 
@@ -406,13 +406,45 @@ ColumnLayout {
     SettingsCard {
         icon: "search"
         title: "App Launcher"
-        subtitle: "Application search and recent apps"
-        configKeys: ["apps"]
-        expanded: false
+        subtitle: "Extra results above your apps · each off until you turn it on"
+        configKeys: ["search"]
 
-        NoticeBox {
-            text: "Recent apps are tracked automatically. Clear history by removing entries from config.json search.recentApps array."
-            iconName: "info"
+        Repeater {
+            model: [
+                { id: "calculator", label: "Calculator", sub: "Type a sum or a conversion; Enter copies the answer (needs qalc)" },
+                { id: "emoji", label: "Emoji", sub: "Emoji whose names match; \":\" alone lists only emoji; Enter copies" },
+                { id: "packages", label: "Packages", sub: "\"pkg <name>\" searches with paru or yay; Enter installs in your terminal" },
+                { id: "actions", label: "Actions", sub: "Lock, suspend, reboot, power off… (search.plugins.actions.items)" },
+                { id: "schemes", label: "Colour schemes", sub: "\"scheme …\" switches the Material variant or a fixed theme, live" },
+                { id: "looks", label: "Looks", sub: "\"look …\" switches the look, live" }
+            ]
+            delegate: ConfigSwitch {
+                required property var modelData
+                label: modelData.label
+                sublabel: modelData.sub
+                configKey: `search.plugins.${modelData.id}.enable`
+                checked: Config.options?.search?.plugins?.[modelData.id]?.enable ?? false
+                onCheckedChanged: Config.setNestedValue(`search.plugins.${modelData.id}.enable`, checked)
+            }
+        }
+        ConfigSwitch {
+            label: "Allow dangerous actions"
+            sublabel: "Reboot and power off run from the launcher (otherwise they are refused)"
+            configKey: "search.plugins.actions.enableDangerous"
+            visible: Config.options?.search?.plugins?.actions?.enable ?? false
+            checked: Config.options?.search?.plugins?.actions?.enableDangerous ?? false
+            onCheckedChanged: Config.setNestedValue("search.plugins.actions.enableDangerous", checked)
+        }
+        ConfigRow {
+            label: "Package helper"
+            configKey: "search.plugins.packages.helper"
+            sublabel: "Empty: paru if installed, else yay"
+            visible: Config.options?.search?.plugins?.packages?.enable ?? false
+            StyledTextInput {
+                text: Config.options?.search?.plugins?.packages?.helper ?? ""
+                onEditingFinished: Config.setNestedValue("search.plugins.packages.helper", text.trim())
+                Layout.preferredWidth: 120
+            }
         }
     }
 

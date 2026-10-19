@@ -680,6 +680,9 @@ Singleton {
 
                 property JsonObject colors: JsonObject {
                     property bool darkMode: true
+                    // Material You variant matugen generates (anod): tonal-spot, content,
+                    // expressive, fidelity, fruit-salad, monochrome, neutral, rainbow.
+                    property string schemeType: "tonal-spot"
                 }
 
                 // Theme source selector. When source === "materialYou", the
@@ -973,6 +976,28 @@ Singleton {
             // Launcher state
             property JsonObject search: JsonObject {
                 property var recentApps: [] // app ids, most recent first
+                // Launcher result providers (modules/search/Providers.qml); off = nothing runs.
+                property JsonObject plugins: JsonObject {
+                    property JsonObject calculator: JsonObject { property bool enable: false }
+                    property JsonObject emoji: JsonObject { property bool enable: false }
+                    property JsonObject packages: JsonObject {
+                        property bool enable: false
+                        property string helper: "" // "" = paru, else yay
+                    }
+                    property JsonObject actions: JsonObject {
+                        property bool enable: false
+                        property bool enableDangerous: false
+                        // { name, icon, command: [argv], dangerous }
+                        property var items: [
+                            { "name": "Lock screen", "icon": "lock", "command": ["loginctl", "lock-session"], "dangerous": false },
+                            { "name": "Suspend", "icon": "bedtime", "command": ["systemctl", "suspend"], "dangerous": false },
+                            { "name": "Reboot", "icon": "restart_alt", "command": ["systemctl", "reboot"], "dangerous": true },
+                            { "name": "Power off", "icon": "power_settings_new", "command": ["systemctl", "poweroff"], "dangerous": true }
+                        ]
+                    }
+                    property JsonObject schemes: JsonObject { property bool enable: false }
+                    property JsonObject looks: JsonObject { property bool enable: false }
+                }
             }
 
             // Translator (left sidebar) language pair

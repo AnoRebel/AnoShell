@@ -46,7 +46,7 @@ Singleton {
     // typed key to its page.
     readonly property var pages: [
         { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"] },
-        { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader"] },
+        { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search"] },
         { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
         { name: "Dock",       icon: "space_dashboard", configRoots: ["dock"] },
         { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar"] },

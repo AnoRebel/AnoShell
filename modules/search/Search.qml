@@ -12,8 +12,9 @@ import qs.services
 
 /**
  * App launcher & search overlay. Searches .desktop applications
- * via DesktopEntries, supports keyboard navigation, fuzzy matching,
- * recent apps tracking, and calculator (via qalc if installed).
+ * via DesktopEntries, supports keyboard navigation, fuzzy matching and
+ * recent apps; optional result providers (calculator, emoji, packages,
+ * actions, schemes, looks) come first (Providers.qml).
  *
  * Opens centered, focuses search input immediately. Escape to close.
  */
@@ -52,9 +53,19 @@ Scope {
         }).slice(0, 30)
     }
 
-    // Calculator
-    property string calcResult: ""
-    readonly property bool isCalcQuery: /^[\d+\-*/().% ^sqrtpi,e]+$/.test(query) && query.length > 1
+    Providers { id: providers; query: root.query }
+    // One list for keyboard navigation: provider results, then apps.
+    readonly property int providerCount: providers.results.length
+    readonly property int totalCount: providerCount + filteredApps.length
+    function activate(i) {
+        if (i < root.providerCount) {
+            if (providers.results[i].run() === false) return // e.g. a guarded action: stay and say why
+            GlobalStates.searchOpen = false
+            root.query = ""
+            return
+        }
+        root.launch(root.filteredApps[i - root.providerCount])
+    }
 
     function launch(app) {
         if (app) {
@@ -73,7 +84,7 @@ Scope {
     Connections {
         target: GlobalStates
         function onSearchOpenChanged() {
-            if (GlobalStates.searchOpen) { root.query = ""; root.selectedIndex = 0; root.calcResult = "" }
+            if (GlobalStates.searchOpen) { root.query = ""; root.selectedIndex = 0 }
         }
     }
 
@@ -102,12 +113,11 @@ Scope {
         function handleKey(event) {
             if (event.key === Qt.Key_Escape) { GlobalStates.searchOpen = false; event.accepted = true; return }
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                if (root.filteredApps.length > 0 && root.selectedIndex < root.filteredApps.length)
-                    root.launch(root.filteredApps[root.selectedIndex])
+                if (root.selectedIndex < root.totalCount) root.activate(root.selectedIndex)
                 event.accepted = true; return
             }
             if (event.key === Qt.Key_Down || (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier))) {
-                root.selectedIndex = Math.min(root.selectedIndex + 1, root.filteredApps.length - 1)
+                root.selectedIndex = Math.min(root.selectedIndex + 1, root.totalCount - 1)
                 event.accepted = true
             }
             if (event.key === Qt.Key_Up || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))) {
@@ -175,49 +185,13 @@ Scope {
                     }
                 }
 
-                // Calculator result
-                Loader {
+                StyledText {
                     Layout.fillWidth: true
-                    active: root.isCalcQuery && root.calcResult.length > 0
-                    visible: active
-                    sourceComponent: Rectangle {
-                        implicitHeight: calcRow.implicitHeight + 12; radius: Appearance?.rounding.small ?? 8
-                        color: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
-                        RowLayout {
-                            id: calcRow; anchors { fill: parent; margins: 6 }
-                            spacing: 8
-                            MaterialSymbol { text: "calculate"; iconSize: 20; color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20" }
-                            StyledText {
-                                text: `= ${root.calcResult}`
-                                font.pixelSize: Appearance.font.pixelSize.larger; font.weight: Font.Bold; font.family: Appearance?.font.family.mono ?? "monospace"
-                                color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20"
-                                Layout.fillWidth: true
-                            }
-                        }
-                        MouseArea {
-                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor; hoverEnabled: true
-                            onClicked: { Quickshell.clipboardText = root.calcResult }
-                            StyledToolTip { text: "Click to copy" }
-                        }
-                    }
-                }
-
-                // Calculator process
-                Process {
-                    id: calcProcess
-                    running: false
-                    command: ["qalc", "-t", root.query]
-                    stdout: StdioCollector {
-                        id: calcCollector
-                        onStreamFinished: root.calcResult = calcCollector.text.trim()
-                    }
-                }
-                Connections {
-                    target: root
-                    function onIsCalcQueryChanged() {
-                        if (root.isCalcQuery) calcProcess.running = true
-                        else root.calcResult = ""
-                    }
+                    visible: providers.message !== ""
+                    text: providers.message
+                    wrapMode: Text.Wrap
+                    color: Appearance.m3colors.m3error
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
 
                 // App list
@@ -240,6 +214,43 @@ Scope {
                             Layout.fillWidth: true; Layout.topMargin: 4
                         }
 
+                        // Provider results (calculator, emoji, actions, …)
+                        Repeater {
+                            model: providers.results
+                            Rectangle {
+                                required property var modelData
+                                required property int index
+                                readonly property bool isSelected: root.selectedIndex === index
+                                Layout.fillWidth: true
+                                implicitHeight: 44
+                                radius: Appearance?.rounding.small ?? 8
+                                color: isSelected ? Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.15)
+                                    : provMA.containsMouse ? Appearance.colors.colLayer1Hover : "transparent"
+                                border.width: isSelected ? 1 : 0
+                                border.color: Appearance.colors.colPrimary
+                                RowLayout {
+                                    anchors { fill: parent; margins: 6 }
+                                    spacing: 10
+                                    Item {
+                                        implicitWidth: 32; implicitHeight: 32
+                                        MaterialSymbol { anchors.centerIn: parent; visible: !modelData.text; text: modelData.icon ?? "bolt"; iconSize: 24; color: Appearance.colors.colPrimary }
+                                        Text { anchors.centerIn: parent; visible: !!modelData.text; text: modelData.text ?? ""; font.pixelSize: 24 }
+                                    }
+                                    ColumnLayout {
+                                        Layout.fillWidth: true; spacing: 0
+                                        StyledText { text: modelData.title ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: isSelected ? Font.DemiBold : Font.Normal; elide: Text.ElideRight; Layout.fillWidth: true }
+                                        StyledText { text: modelData.subtitle ?? ""; visible: text !== ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.45; elide: Text.ElideRight; Layout.fillWidth: true }
+                                    }
+                                }
+                                MouseArea {
+                                    id: provMA
+                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.activate(index)
+                                    onEntered: root.selectedIndex = index
+                                }
+                            }
+                        }
+
                         Repeater {
                             model: root.filteredApps
 
@@ -250,7 +261,7 @@ Scope {
                                 implicitHeight: 44
                                 radius: Appearance?.rounding.small ?? 8
 
-                                property bool isSelected: root.selectedIndex === index
+                                property bool isSelected: root.selectedIndex === index + root.providerCount
                                 color: isSelected
                                     ? Qt.rgba((Appearance?.colors.colPrimary ?? "#65558F").r, (Appearance?.colors.colPrimary ?? "#65558F").g, (Appearance?.colors.colPrimary ?? "#65558F").b, 0.15)
                                     : appItemMA.containsMouse ? Appearance?.colors.colLayer1Hover ?? "#E5DFED" : "transparent"
@@ -286,13 +297,13 @@ Scope {
                                     anchors.fill: parent; hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.launch(modelData)
-                                    onEntered: root.selectedIndex = index
+                                    onEntered: root.selectedIndex = index + root.providerCount
                                 }
                             }
                         }
 
                         StyledText {
-                            visible: root.filteredApps.length === 0
+                            visible: root.totalCount === 0
                             text: root.query.length > 0 ? "No apps found" : "No applications"
                             font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
                             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 20
