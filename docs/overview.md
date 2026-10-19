@@ -68,3 +68,4 @@ chrome: no bar and no dock.
 - [Keybinds](keybinds.md): one keybind set for Hyprland and niri.
 - [Displays and cursor](displays.md): arrangement, modes, profiles, cursor.
 - [Welcome and presets](onboarding.md): the first-start wizard and whole-shell presets.
+- [Launcher providers and productivity](extras.md): calculator, emoji, packages, actions; notepad, to-do, pomodoro, sticky note.
