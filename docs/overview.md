@@ -66,3 +66,4 @@ chrome: no bar and no dock.
 - [The `ano` CLI](cli.md): status, doctor, setup and backups.
 - [Reader](reader.md): the novel, manga and anime panels.
 - [Keybinds](keybinds.md): one keybind set for Hyprland and niri.
+- [Displays and cursor](displays.md): arrangement, modes, profiles, cursor.
