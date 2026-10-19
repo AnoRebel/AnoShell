@@ -44,6 +44,13 @@ bundled `config.json` (see [Configuration](configuration.md)).
 | `ano looks list [--json]` | every look the shell can load (built-in and yours), with what's wrong with any invalid one |
 | `ano looks validate [FILE…] [--json]` | checks look files (all of them when none is given) against the rules in [Looks](looks.md#reference). Exits 1 on errors |
 
+## Reader
+
+| Command | What it does |
+|---|---|
+| `ano reader anime\|manga\|novel [open\|close\|toggle]` | shows or hides a reader panel (toggle by default). See [Reader](reader.md) |
+| `ano reader status [--json]` | whether anod's reader backend is running, the open panels and playback |
+
 ## Setup: install, update, refresh
 
 | Command | What it does |

@@ -36,6 +36,8 @@ const usage = `usage: ano <command> [args]
   wallpaper set IMAGE [--output O] [--mode dark|light]   apply (awww, colours, hooks) via anod
   wallpaper next|status [--json]                 next rotation image now / current wallpaper
   wallpaper migrate [--yes] [--dry-run]          replace an awww randomize autostart with anod's rotation
+  reader anime|manga|novel [open|close|toggle]   show a reader panel (default: toggle)
+  reader status [--json]                         the reader backend (anod)
   version
 `
 
@@ -69,6 +71,8 @@ func main() {
 		os.Exit(wallpaperCmd(args))
 	case "looks":
 		os.Exit(looksCmd(args))
+	case "reader":
+		os.Exit(readerCmd(args))
 	case "help", "-h", "--help":
 		fmt.Printf(usage, eventList())
 	default:

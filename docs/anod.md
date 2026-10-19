@@ -158,6 +158,11 @@ written atomically; an empty value removes it. The shell reads the file
 directly, so there is no `secret.get`. The Wallhaven key lives there as
 `wallhaven`, never in `config.json`.
 
+Reader methods (see [reader.md](reader.md)): `reader.open` (`{"kind"}`:
+`anime`, `manga` or `novel`; starts the backend if needed and answers its
+`url`, token included; slow), `reader.close` (`{"kind"}`), `reader.status`
+and `reader.stop` (ends playback).
+
 From the shell: `qs -c ano ipc call anod status` shows whether the shell is connected.
 
 ## Files

@@ -22,6 +22,7 @@ import (
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/palette"
+	"ano/anod/internal/reader"
 	"ano/anod/internal/secrets"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
@@ -211,6 +212,44 @@ func main() {
 		return true, nil
 	})
 
+	// Reader backend (novel/manga/anime panels): a lazy local HTTP server,
+	// started by the first panel and stopped after reader.idleTimeout.
+	home, _ := os.UserHomeDir()
+	rd := &reader.Service{
+		Settings:  readerSettings,
+		DataDir:   filepath.Join(xdgData(), "anoshell", "reader"),
+		CacheDir:  filepath.Join(cacheDir, "reader"),
+		LegacyDir: filepath.Join(home, ".local", "share", "quickshell"),
+		Logf:      log.Printf,
+	}
+	defer rd.Shutdown()
+	readerKind := func(p json.RawMessage) (string, error) {
+		var req struct {
+			Kind string `json:"kind"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Kind == "" {
+			return "", ipc.Errorf(ipc.CodeBadInput, "want {kind: anime|manga|novel}")
+		}
+		return req.Kind, nil
+	}
+	// Slow: a start can wait on a Python fallback booting.
+	srv.HandleSlow("reader.open", func(p json.RawMessage) (any, error) {
+		kind, err := readerKind(p)
+		if err != nil {
+			return nil, err
+		}
+		return rd.Open(kind)
+	})
+	srv.Handle("reader.close", func(p json.RawMessage) (any, error) {
+		kind, err := readerKind(p)
+		if err != nil {
+			return nil, err
+		}
+		return rd.Close(kind), nil
+	})
+	srv.Handle("reader.status", func(json.RawMessage) (any, error) { return rd.Status(), nil })
+	srv.Handle("reader.stop", func(json.RawMessage) (any, error) { rd.StopPlayback(); return true, nil })
+
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)
 	}
@@ -259,6 +298,37 @@ func expandHome(p string) string {
 		return filepath.Join(home, strings.TrimPrefix(p, "~"))
 	}
 	return p
+}
+
+func xdgData() string {
+	if d := os.Getenv("XDG_DATA_HOME"); d != "" {
+		return d
+	}
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share")
+}
+
+// readerProviders maps each reader to its source's config id.
+var readerProviders = map[string]string{"anime": "allanime", "manga": "weebcentral", "novel": "freewebnovel"}
+
+// readerSettings reads reader.* when the backend starts.
+func readerSettings() reader.Settings {
+	m, err := config.Effective()
+	if err != nil {
+		log.Printf("reader: %v", err)
+		m = map[string]any{}
+	}
+	s := reader.Settings{
+		IdleTimeout: time.Duration(config.Int(m, "reader.idleTimeout", 120)) * time.Second,
+		CacheMB:     config.Int(m, "reader.cacheMB", 64),
+		Python:      config.String(m, "reader.python", "python3"),
+		ScriptsDir:  filepath.Join(config.ShellDir(), "scripts", "reader"),
+		Backends:    map[string]string{},
+	}
+	for kind, id := range readerProviders {
+		s.Backends[kind] = config.String(m, "reader.providers."+id+".backend", "go")
+	}
+	return s
 }
 
 func xdgState() string {

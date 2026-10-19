@@ -693,6 +693,37 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
+            // Reader — novel, manga and anime panels (backend: anod's reader)
+            // ═══════════════════════════════════════════════════════════════
+            property JsonObject reader: JsonObject {
+                property bool enable: false
+                // Seconds the backend stays up after the last panel closes.
+                property int idleTimeout: 120
+                // Image cache (decoded pages and covers) in MB.
+                property int cacheMB: 64
+                // Interpreter for providers set to the python backend.
+                property string python: "python3"
+                property JsonObject novel: JsonObject {
+                    property bool enable: true
+                    property string edge: "right" // left | right
+                }
+                property JsonObject manga: JsonObject {
+                    property bool enable: true
+                    property string edge: "left"
+                }
+                property JsonObject anime: JsonObject {
+                    property bool enable: true
+                    property string edge: "left"
+                }
+                // Per source: "go" (anod) or "python" (the legacy servers in scripts/reader).
+                property JsonObject providers: JsonObject {
+                    property JsonObject freewebnovel: JsonObject { property string backend: "go" }
+                    property JsonObject weebcentral: JsonObject { property string backend: "go" }
+                    property JsonObject allanime: JsonObject { property string backend: "go" }
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
             // Wallpaper & Background
             // ═══════════════════════════════════════════════════════════════
             property JsonObject background: JsonObject {

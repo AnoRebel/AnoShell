@@ -261,6 +261,11 @@ binds {
     // Wallpaper selector (grid browser with directory navigation)
     Ctrl+Mod+T { spawn-sh "qs -c ano ipc call wallpaperSelector toggle"; }
 
+    // Readers (reader.enable): novel, manga, anime panels
+    Ctrl+Mod+N { spawn-sh "qs -c ano ipc call reader toggle novel"; }
+    Ctrl+Mod+M { spawn-sh "qs -c ano ipc call reader toggle manga"; }
+    Ctrl+Mod+A { spawn-sh "qs -c ano ipc call reader toggle anime"; }
+
     // Weather panel (detailed weather overlay)
     Mod+Shift+W { spawn-sh "qs -c ano ipc call weatherPanel toggle"; }
 

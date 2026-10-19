@@ -581,6 +581,51 @@
  },
  {
   "page": 1,
+  "card": "Reader",
+  "label": "Reader",
+  "sublabel": "Novel, manga and anime panels · keybinds Ctrl+Super+N / M / A",
+  "keys": [
+   "reader"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Enable the readers",
+  "sublabel": "Needs anod; its backend runs only while a panel is open",
+  "keys": [
+   "reader.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Stop the backend after",
+  "sublabel": "Seconds with every reader closed (and nothing playing)",
+  "keys": [
+   "reader.idleTimeout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Image cache",
+  "sublabel": "Covers and pages kept by the backend (applies on its next start)",
+  "keys": [
+   "reader.cacheMB"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Python",
+  "sublabel": "Interpreter for sources set to Python (a venv with flask, requests, curl_cffi)",
+  "keys": [
+   "reader.python"
+  ]
+ },
+ {
+  "page": 1,
   "card": "Advanced",
   "label": "Advanced",
   "sublabel": "Debug settings and workarounds",

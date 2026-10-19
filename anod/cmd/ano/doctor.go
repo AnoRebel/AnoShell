@@ -42,6 +42,7 @@ var features = []feature{
 	{"game mode", "gameMode.enable", []string{"gamemoded"}},
 	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
+	{"anime reader playback", "reader.enable", []string{"mpv"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.
@@ -164,6 +165,31 @@ func runChecks() []check {
 		}
 		if len(missing) > 0 {
 			add("warn", "optional: "+f.Name, "missing %s", strings.Join(missing, ", "))
+		}
+	}
+
+	// Reader: its backend lives in anod; a source on the Python fallback needs the interpreter.
+	if config.Bool(eff, "reader.enable", false) {
+		if res, err := ipc.Call(sock, "reader.status", nil); err == nil {
+			var st struct {
+				Error string `json:"error"`
+			}
+			json.Unmarshal(res, &st)
+			if st.Error != "" {
+				add("warn", "reader", "%s", st.Error)
+			} else {
+				add("ok", "reader", "backend available (starts when a panel opens)")
+			}
+		} else {
+			add("warn", "reader", "needs anod, which is not running")
+		}
+		for _, id := range []string{"freewebnovel", "weebcentral", "allanime"} {
+			if config.String(eff, "reader.providers."+id+".backend", "go") != "python" {
+				continue
+			}
+			if py := config.String(eff, "reader.python", "python3"); !have(py) {
+				add("warn", "reader: "+id, "set to the Python backend, but %s is not found", py)
+			}
 		}
 	}
 

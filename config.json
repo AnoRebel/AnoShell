@@ -213,6 +213,35 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "reader": {
+    "enable": false,
+    "idleTimeout": 120,
+    "cacheMB": 64,
+    "python": "python3",
+    "novel": {
+      "enable": true,
+      "edge": "right"
+    },
+    "manga": {
+      "enable": true,
+      "edge": "left"
+    },
+    "anime": {
+      "enable": true,
+      "edge": "left"
+    },
+    "providers": {
+      "freewebnovel": {
+        "backend": "go"
+      },
+      "weebcentral": {
+        "backend": "go"
+      },
+      "allanime": {
+        "backend": "go"
+      }
+    }
+  },
   "background": {
     "wallpaperPath": "",
     "wallpaperDir": "",

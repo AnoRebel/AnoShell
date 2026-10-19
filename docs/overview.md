@@ -64,3 +64,4 @@ chrome: no bar and no dock.
 - [Installation](installation.md): clone the shell and install anod and the CLI.
 - [Configuration](configuration.md): your config file, Settings, bar forms and groups.
 - [The `ano` CLI](cli.md): status, doctor, setup and backups.
+- [Reader](reader.md): the novel, manga and anime panels.

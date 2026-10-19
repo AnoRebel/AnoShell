@@ -29,7 +29,7 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader"
         ]
     }
 
@@ -694,6 +694,103 @@ ColumnLayout {
         NoticeBox {
             text: "Display Manager uses hyprctl and is only available on Hyprland. Keybind: Ctrl+Super+D"
             iconName: "info"
+        }
+    }
+
+    // ═══ Reader ═══
+    SettingsCard {
+        icon: "auto_stories"
+        title: "Reader"
+        subtitle: "Novel, manga and anime panels · keybinds Ctrl+Super+N / M / A"
+        configKeys: ["reader"]
+
+        ConfigSwitch {
+            label: "Enable the readers"
+            configKey: "reader.enable"
+            sublabel: "Needs anod; its backend runs only while a panel is open"
+            checked: Config.options?.reader?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("reader.enable", checked)
+        }
+
+        Repeater {
+            model: [
+                { kind: "novel", label: "Novels", icon: "menu_book" },
+                { kind: "manga", label: "Manga", icon: "photo_library" },
+                { kind: "anime", label: "Anime", icon: "movie" }
+            ]
+            delegate: RowLayout {
+                id: kindRow
+                required property var modelData
+                Layout.fillWidth: true
+                spacing: 6
+                ConfigSwitch {
+                    Layout.fillWidth: true
+                    label: kindRow.modelData.label
+                    configKey: `reader.${kindRow.modelData.kind}.enable`
+                    checked: Config.options?.reader?.[kindRow.modelData.kind]?.enable ?? true
+                    onCheckedChanged: Config.setNestedValue(`reader.${kindRow.modelData.kind}.enable`, checked)
+                }
+                ChoiceRow {
+                    compact: true
+                    itemSpacing: 4
+                    model: [{ value: "left", label: "Left", icon: "align_horizontal_left" }, { value: "right", label: "Right", icon: "align_horizontal_right" }]
+                    current: Config.options?.reader?.[kindRow.modelData.kind]?.edge ?? "left"
+                    onChose: value => Config.setNestedValue(`reader.${kindRow.modelData.kind}.edge`, value)
+                }
+            }
+        }
+
+        ConfigSlider {
+            label: "Stop the backend after"
+            configKey: "reader.idleTimeout"
+            sublabel: "Seconds with every reader closed (and nothing playing)"
+            from: 15; to: 900; stepSize: 15
+            value: Config.options?.reader?.idleTimeout ?? 120
+            onValueChanged: Config.setNestedValue("reader.idleTimeout", Math.round(value))
+            valueText: `${Math.round(value)} s`
+        }
+
+        ConfigSlider {
+            label: "Image cache"
+            configKey: "reader.cacheMB"
+            sublabel: "Covers and pages kept by the backend (applies on its next start)"
+            from: 16; to: 512; stepSize: 16
+            value: Config.options?.reader?.cacheMB ?? 64
+            onValueChanged: Config.setNestedValue("reader.cacheMB", Math.round(value))
+            valueText: `${Math.round(value)} MB`
+        }
+
+        Repeater {
+            model: [
+                { id: "freewebnovel", label: "FreeWebNovel (novels)" },
+                { id: "weebcentral", label: "WeebCentral (manga)" },
+                { id: "allanime", label: "AllAnime (anime)" }
+            ]
+            delegate: ConfigRow {
+                id: provRow
+                required property var modelData
+                label: provRow.modelData.label
+                configKey: `reader.providers.${provRow.modelData.id}.backend`
+                sublabel: "Go (anod) or the legacy Python server"
+                ChoiceRow {
+                    compact: true
+                    itemSpacing: 4
+                    model: [{ value: "go", label: "Go", icon: "bolt" }, { value: "python", label: "Python", icon: "code" }]
+                    current: Config.options?.reader?.providers?.[provRow.modelData.id]?.backend ?? "go"
+                    onChose: value => Config.setNestedValue(`reader.providers.${provRow.modelData.id}.backend`, value)
+                }
+            }
+        }
+
+        ConfigRow {
+            label: "Python"
+            configKey: "reader.python"
+            sublabel: "Interpreter for sources set to Python (a venv with flask, requests, curl_cffi)"
+            StyledTextInput {
+                text: Config.options?.reader?.python ?? "python3"
+                onEditingFinished: Config.setNestedValue("reader.python", text.trim() || "python3")
+                Layout.fillWidth: true
+            }
         }
     }
 

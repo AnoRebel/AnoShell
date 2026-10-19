@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1E1F22">
+
+    
+    <meta name="description" content="Explore Weeb Central for top manga titles, hidden gems, and the latest releases. Join our community of manga enthusiasts!">
+    <link rel="canonical" href="https://weebcentral.com/hot-updates">
+    
+
+    
+    <title>Hot Updates</title>
+    
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Weeb Central">
+    
+    <meta property="og:title" content="Hot Updates">
+    <meta property="og:description" content="Explore Weeb Central for top manga titles, hidden gems, and the latest releases. Join our community of manga enthusiasts!">
+    <meta property="og:url" content="https://weebcentral.com/hot-updates">
+    <meta property="og:image" content="/static/images/og_image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Weeb Central">
+    
+
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hot Updates">
+    <meta name="twitter:description" content="Explore Weeb Central for top manga titles, hidden gems, and the latest releases. Join our community of manga enthusiasts!">
+    <meta name="twitter:site" content="@nepweebcentral">
+    <meta name="twitter:image" content="/static/images/og_image.png">
+    
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+
+    <!-- Tailwinds 4.0.9 -->
+    <link rel="stylesheet" href="/static/css/tailwind.26.10.13.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+
+    
+
+    
+    <!-- Google tag (gtag.js) -->
+    <script src="https://www.googletagmanager.com/gtag/js?id=G-3Q79Y9D8ZY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-3Q79Y9D8ZY');
+    </script>
+    
+</head>
+
+<body class="flex flex-col min-h-screen" x-data="{ simple_top_nav: $persist(false), sticky_top_nav: $persist(false) }" @need_account_verification="unverified_modal.showModal()">
+
+    <input type="hidden" id="visitor-id" name="visitor_id" value="" />
+
+    
+
+    
+
+<header class="bg-brand" x-data="{ authModal: false }">
+
+    
+    <section class="bg-brand max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4 py-4 px-4 xl:px-0">
+    
+        <div class="flex-1">
+            <a href="/">
+                <img src="/static/images/brand.png" class="hidden md:block" alt="Weeb Central Logo" width="250" height="80">
+                <img src="/static/images/brand.png" class="block md:hidden" alt="Weeb Central Logo" width="125" height="40">
+            </a>
+        </div>
+        <div class="w-full md:w-96 relative">
+            <label class="input w-full flex items-center gap-2 relative z-10">
+                <input type="search" id="quick-search-input" name="text" placeholder="Quick Search..." autocomplete="off" hx-post="/search/simple?location=main" hx-trigger="input changed delay:500ms" hx-target="#quick-search-result" hx-swap="outerHTML">
+                <svg class="h-4 w-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+                </svg>
+            </label>
+            <section id="quick-search-result"></section>
+        </div>
+    </section>
+
+    <section class="bg-base-300 text-lg">
+        <nav class="max-w-7xl mx-auto flex">
+            <div class="flex-1 flex items-center">
+                <a class="hover:bg-base-100 p-4 flex items-center gap-2 opacity-50" href="/" aria-label="Visit Homepage">
+                    <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                        <path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-69.7-32 0c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z" />
+                    </svg>
+                    <span class="hidden md:inline">Home</span>
+                </a>
+                <a class="hover:bg-base-100 p-4 flex items-center gap-2 opacity-50" href="/search" aria-label="Visit Advanced Search">
+                    <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+                    </svg>
+                    <span class="hidden md:inline">Search</span>
+                </a>
+                <a class="hover:bg-base-100 p-4 flex items-center gap-2 opacity-50" href="/general-chat" aria-label="Visit General Chat">
+                    <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                        <path d="M284 224.8a34.1 34.1 0 1 0 34.3 34.1A34.2 34.2 0 0 0 284 224.8zm-110.5 0a34.1 34.1 0 1 0 34.3 34.1A34.2 34.2 0 0 0 173.6 224.8zm220.9 0a34.1 34.1 0 1 0 34.3 34.1A34.2 34.2 0 0 0 394.5 224.8zm153.8-55.3c-15.5-24.2-37.3-45.6-64.7-63.6-52.9-34.8-122.4-54-195.7-54a406 406 0 0 0 -72 6.4 238.5 238.5 0 0 0 -49.5-36.6C99.7-11.7 40.9 .7 11.1 11.4A14.3 14.3 0 0 0 5.6 34.8C26.5 56.5 61.2 99.3 52.7 138.3c-33.1 33.9-51.1 74.8-51.1 117.3 0 43.4 18 84.2 51.1 118.1 8.5 39-26.2 81.8-47.1 103.5a14.3 14.3 0 0 0 5.6 23.3c29.7 10.7 88.5 23.1 155.3-10.2a238.7 238.7 0 0 0 49.5-36.6A406 406 0 0 0 288 460.1c73.3 0 142.8-19.2 195.7-54 27.4-18 49.1-39.4 64.7-63.6 17.3-26.9 26.1-55.9 26.1-86.1C574.4 225.4 565.6 196.4 548.3 169.5zM285 409.9a345.7 345.7 0 0 1 -89.4-11.5l-20.1 19.4a184.4 184.4 0 0 1 -37.1 27.6 145.8 145.8 0 0 1 -52.5 14.9c1-1.8 1.9-3.6 2.8-5.4q30.3-55.7 16.3-100.1c-33-26-52.8-59.2-52.8-95.4 0-83.1 104.3-150.5 232.8-150.5s232.9 67.4 232.9 150.5C517.9 342.5 413.6 409.9 285 409.9z">
+                    </svg>
+                    <span class="hidden md:inline">General Chat</span>
+                </a>
+                <a class="hover:bg-base-100 p-4 flex items-center gap-2 opacity-50" href="/series/random" aria-label="Visit random series">
+                    <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M142.9 142.9c-17.5 17.5-30.1 38-37.8 59.8c-5.9 16.7-24.2 25.4-40.8 19.5s-25.4-24.2-19.5-40.8C55.6 150.7 73.2 122 97.6 97.6c87.2-87.2 228.3-87.5 315.8-1L455 55c6.9-6.9 17.2-8.9 26.2-5.2s14.8 12.5 14.8 22.2l0 128c0 13.3-10.7 24-24 24l-8.4 0c0 0 0 0 0 0L344 224c-9.7 0-18.5-5.8-22.2-14.8s-1.7-19.3 5.2-26.2l41.1-41.1c-62.6-61.5-163.1-61.2-225.3 1zM16 312c0-13.3 10.7-24 24-24l7.6 0 .7 0L168 288c9.7 0 18.5 5.8 22.2 14.8s1.7 19.3-5.2 26.2l-41.1 41.1c62.6 61.5 163.1 61.2 225.3-1c17.5-17.5 30.1-38 37.8-59.8c5.9-16.7 24.2-25.4 40.8-19.5s25.4 24.2 19.5 40.8c-10.8 30.6-28.4 59.3-52.9 83.8c-87.2 87.2-228.3 87.5-315.8 1L57 457c-6.9 6.9-17.2 8.9-26.2 5.2S16 449.7 16 440l0-119.6 0-.7 0-7.6z" />
+                    </svg>
+                    <span class="hidden md:inline">Random</span>
+                </a>
+            </div>
+            
+            <button class="hover:bg-base-100 p-4 flex items-center gap-2 " aria-label="Login" onclick="auth_modal.showModal()">
+                <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <path d="M217.9 105.9L340.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L217.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1L32 320c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM352 416l64 0c17.7 0 32-14.3 32-32l0-256c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64 0c53 0 96 43 96 96l0 256c0 53-43 96-96 96l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32z" />
+                </svg>
+                <span class="hidden md:inline">Login</span>
+            </button>
+            
+        </nav>
+    </section>
+
+    
+    <dialog class="modal shadow-l" id="auth_modal" x-data="{ register: false, login: true, forget_password: false }">
+        <div class="modal-box">
+            <ul class="w-full menu menu-horizontal bg-base-200  gap-2">
+                <li>
+                    <button :class="{ 'opacity-50' : !login, 'bg-[#393A3F]! text-white!' : login }" @click="register = false; login = true; forget_password = false" aria-label="Login">
+                        <svg class="h-4 w-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path d="M217.9 105.9L340.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L217.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1L32 320c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM352 416l64 0c17.7 0 32-14.3 32-32l0-256c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64 0c53 0 96 43 96 96l0 256c0 53-43 96-96 96l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32z" />
+                        </svg>
+                        <span class="hidden md:inline">Login</span>
+                    </button>
+                </li>
+                <li>
+                    <button :class="{ 'opacity-50' : !register, 'bg-[#393A3F]! text-white!' : register }" @click="register = true; login = false; forget_password = false" aria-label="Register">
+                        <svg class="h-4 w-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+                            <path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm80 256l64 0c44.2 0 80 35.8 80 80c0 8.8-7.2 16-16 16L80 384c-8.8 0-16-7.2-16-16c0-44.2 35.8-80 80-80zm-32-96a64 64 0 1 1 128 0 64 64 0 1 1 -128 0zm256-32l128 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l128 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64l128 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-128 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z" />
+                        </svg>
+                        <span class="hidden md:inline">Register</span>
+                    </button>
+                </li>
+                <li>
+                    <button :class="{ 'opacity-50' : !forget_password, 'bg-[#393A3F]! text-white!' : forget_password }" @click="register = false; login = false; forget_password = true" aria-label="Forgot Password">
+                        <svg class="h-4 w-4" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                            <path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" />
+                        </svg>
+                        <span class="hidden md:inline">Forgot Password</span>
+                    </button>
+                </li>
+            </ul>
+            <div class="mt-4" hx-ext="response-targets">
+                <div class="flex flex-col gap-6" x-show="login">
+                    <form id="login-form" class="flex flex-col gap-6" hx-post="/auth/login" hx-target="#login-message" hx-include="#visitor-id" hx-target-400="#login-message" hx-swap="outerHTML" hx-on:htmx:after-request="if(event.detail.xhr.status === 200) clearCacheLogInOut()">
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Email</legend>
+                            <input type="email" class="input validator w-full" id="login-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                            <div class="validator-hint hidden">Enter valid email address</div>
+                        </fieldset>
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Password</legend>
+                            <div class="input validator w-full">
+                                <input type="password" class="password-input" id="login-password" autocomplete="current-password" name="password" minlength="8" maxlength="128" placeholder="********" required />
+                                <label class="cursor-pointer">
+                                    <input class="password-toggle sr-only" type="checkbox" />
+                                    <svg class="w-4 h-4 cursor-pointer shrink-0 size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path class="icon-eye-off" d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                        <path class="icon-eye-off" d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                        <path class="icon-eye-off" d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                        <line class="icon-eye-off" x1="2" x2="22" y1="2" y2="22"></line>
+                                        <path class="icon-eye hidden" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                        <circle class="icon-eye hidden" cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </label>
+                            </div>
+                            <div class="validator-hint hidden">Must be 8 to 128 characters</div>
+                        </fieldset>
+                    </form>
+                    <div id="login-message" class="hidden"></div>
+                    <div class="flex gap-6">
+                        <button type="button" class="flex-1 btn btn-primary" hx-post="/auth/quick-login" hx-target="#login-message" hx-target-401="#login-message" hx-swap="outerHTML" hx-on:htmx:after-request="if(event.detail.xhr.status === 200) clearCacheLogInOut()">Quick Login</button>
+                        <button type="submit" form="login-form" class="flex-1 btn btn-primary">Login</button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-6" x-show="register">
+                    <form id="register-form" class="flex flex-col gap-6" hx-post="/auth/register" hx-target="#register-message" hx-include="#visitor-id" hx-target-400="#register-message" hx-swap="outerHTML" hx-on:htmx:after-request="if(event.detail.xhr.status === 200) clearCacheLogInOut()">
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Email</legend>
+                            <input type="email" class="input validator w-full" id="register-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                            <div class="validator-hint hidden">Enter valid email address</div>
+                        </fieldset>
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Username</legend>
+                            <input type="input" class="input validator w-full" id="register-username" name="username" pattern="[A-Za-z][A-Za-z0-9_\-]*" minlength="3" maxlength="25" placeholder="Username" title="Only letters, numbers, dash, and underscore" required>
+                            <div class="validator-hint hidden">
+                                Must be 3 to 25 characters
+                                <br />containing only letters, numbers, dash, and underscore
+                            </div>
+                        </fieldset>
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Password</legend>
+                            <div class="input validator w-full">
+                                <input type="password" class="password-input" id="register-password" autocomplete="current-password" name="password" minlength="8" maxlength="128" placeholder="********" required />
+                                <label class="cursor-pointer">
+                                    <input class="password-toggle sr-only" type="checkbox" />
+                                    <svg class="w-4 h-4 cursor-pointer shrink-0 size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path class="icon-eye-off" d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                        <path class="icon-eye-off" d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                        <path class="icon-eye-off" d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                        <line class="icon-eye-off" x1="2" x2="22" y1="2" y2="22"></line>
+                                        <path class="icon-eye hidden" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                        <circle class="icon-eye hidden" cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </label>
+                            </div>
+                            <div class="validator-hint hidden">Must be 8 to 128 characters</div>
+                        </fieldset>
+                    </form>
+                    <div id="register-message" class="hidden"></div>
+                    <button type="submit" form="register-form" class="btn btn-primary">Register</button>
+                </div>
+                <div class="flex flex-col gap-6" x-show="forget_password">
+                    <form id="forget-password-form" class="flex flex-col gap-6" hx-post="/auth/forgot-password" hx-target="#forget-password-message" hx-target-400="#forget-password-message" hx-swap="outerHTML">
+                        <fieldset class="fieldset text-base">
+                            <legend class="fieldset-legend">Email</legend>
+                            <input type="email" class="input validator w-full" id="forget-password-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                            <div class="validator-hint hidden">Enter valid email address</div>
+                        </fieldset>
+                    </form>
+                    <div id="forget-password-message" class="hidden"></div>
+                    <button type="submit" form="forget-password-form" class="btn btn-primary">Reset Password</button>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+    
+</header>
+
+
+    
+<main class="bg-base-100 flex-1 flex flex-col items-center py-4 px-0 md:px-4" hx-ext="preload">
+
+    <section class="bg-base-200 max-w-7xl w-full mb-4">
+        <h2 class="bg-base-300 text-xl font-semibold flex items-center gap-2 p-4">
+            <svg class="h-5 w-5" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                <path d="M159.3 5.4c7.8-7.3 19.9-7.2 27.7 .1c27.6 25.9 53.5 53.8 77.7 84c11-14.4 23.5-30.1 37-42.9c7.9-7.4 20.1-7.4 28 .1c34.6 33 63.9 76.6 84.5 118c20.3 40.8 33.8 82.5 33.8 111.9C448 404.2 348.2 512 224 512C98.4 512 0 404.1 0 276.5c0-38.4 17.8-85.3 45.4-131.7C73.3 97.7 112.7 48.6 159.3 5.4zM225.7 416c25.3 0 47.7-7 68.8-21c42.1-29.4 53.4-88.2 28.1-134.4c-4.5-9-16-9.6-22.5-2l-25.2 29.3c-6.6 7.6-18.5 7.4-24.7-.5c-16.5-21-46-58.5-62.8-79.8c-6.3-8-18.3-8.1-24.7-.1c-33.8 42.5-50.8 69.3-50.8 99.4C112 375.4 162.6 416 225.7 416z" />
+            </svg>
+            <span>Hot Updates</span>
+        </h2>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4">
+            
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Mortifying Ordeal of Being Seen">
+    <a href="/chapters/01M58S2B7HJ68SJ1XRPXM63782" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JF2QH2SXZ5H6NXMATF67QBHF.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JF2QH2SXZ5H6NXMATF67QBHF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JF2QH2SXZ5H6NXMATF67QBHF.jpg" alt="The Mortifying Ordeal of Being Seen cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Mortifying Ordeal of Being Seen</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 117</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Mortifying Ordeal of Being Seen">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JF2QH2SXZ5H6NXMATF67QBHF/tonari-no-seki-no-yatsu-ga-souiu-me-de-mitekuru" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JF2QH2SXZ5H6NXMATF67QBHF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JF2QH2SXZ5H6NXMATF67QBHF.jpg" alt="The Mortifying Ordeal of Being Seen cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M58S2B7HJ68SJ1XRPXM63782" preload>
+            <div class="truncate font-semibold text-lg">The Mortifying Ordeal of Being Seen</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 117</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-19T00:30:31.153Z">2026-10-19T00:30:31.153227Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Revenge of the Baskerville Bloodhound">
+    <a href="/chapters/01M58P624Y1Q0CV8V0S63QJ4CT" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYG95PJHF8P3PGVKJT5NQ.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG95PJHF8P3PGVKJT5NQ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG95PJHF8P3PGVKJT5NQ.jpg" alt="Revenge of the Baskerville Bloodhound cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Revenge of the Baskerville Bloodhound</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 185</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Revenge of the Baskerville Bloodhound">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYG95PJHF8P3PGVKJT5NQ/Return-of-the-Iron-Blooded-Hound" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG95PJHF8P3PGVKJT5NQ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG95PJHF8P3PGVKJT5NQ.jpg" alt="Revenge of the Baskerville Bloodhound cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M58P624Y1Q0CV8V0S63QJ4CT" preload>
+            <div class="truncate font-semibold text-lg">Revenge of the Baskerville Bloodhound</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 185</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T23:40:07.198Z">2026-10-18T23:40:07.198988Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Academy&#39;s Genius Swordsman">
+    <a href="/chapters/01M58FF00SYAXQCSN37N91H4SQ" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYH4MDDX3ZT2NA0HJN20Y.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH4MDDX3ZT2NA0HJN20Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH4MDDX3ZT2NA0HJN20Y.jpg" alt="The Academy&#39;s Genius Swordsman cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Academy&#39;s Genius Swordsman</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 159</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Academy&#39;s Genius Swordsman">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYH4MDDX3ZT2NA0HJN20Y/The-Academys-Genius-Swordsman" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH4MDDX3ZT2NA0HJN20Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH4MDDX3ZT2NA0HJN20Y.jpg" alt="The Academy&#39;s Genius Swordsman cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M58FF00SYAXQCSN37N91H4SQ" preload>
+            <div class="truncate font-semibold text-lg">The Academy&#39;s Genius Swordsman</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 159</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T21:42:39.897Z">2026-10-18T21:42:39.897192Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="One-Punch Man">
+    <a href="/chapters/01M57YNSGCXXRK2CA0H2FJC1XW" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XY7KT7J224EBK6J816Y1Q.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7KT7J224EBK6J816Y1Q.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7KT7J224EBK6J816Y1Q.jpg" alt="One-Punch Man cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">One-Punch Man</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Official Scans 239</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="One-Punch Man">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XY7KT7J224EBK6J816Y1Q/Onepunch-Man" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7KT7J224EBK6J816Y1Q.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7KT7J224EBK6J816Y1Q.jpg" alt="One-Punch Man cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M57YNSGCXXRK2CA0H2FJC1XW" preload>
+            <div class="truncate font-semibold text-lg">One-Punch Man</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Official Scans 239</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T16:49:16.816Z">2026-10-18T16:49:16.816625Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Centuria">
+    <a href="/chapters/01M57RSBCP1H2CDMN1B583QNNG" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYH789EJ16X8EC7NB0EVK.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH789EJ16X8EC7NB0EVK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH789EJ16X8EC7NB0EVK.jpg" alt="Centuria cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Centuria</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 106</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Centuria">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYH789EJ16X8EC7NB0EVK/Centuria" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH789EJ16X8EC7NB0EVK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH789EJ16X8EC7NB0EVK.jpg" alt="Centuria cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M57RSBCP1H2CDMN1B583QNNG" preload>
+            <div class="truncate font-semibold text-lg">Centuria</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 106</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T15:06:21.975Z">2026-10-18T15:06:21.975077Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Kagurabachi">
+    <a href="/chapters/01M57RRV54GD4MNM4D2V8WPWR4" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYGGM22WZP7T4TKA4ZFAF.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGGM22WZP7T4TKA4ZFAF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGGM22WZP7T4TKA4ZFAF.jpg" alt="Kagurabachi cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Kagurabachi</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 135</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Kagurabachi">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYGGM22WZP7T4TKA4ZFAF/Kagurabachi" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGGM22WZP7T4TKA4ZFAF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGGM22WZP7T4TKA4ZFAF.jpg" alt="Kagurabachi cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M57RRV54GD4MNM4D2V8WPWR4" preload>
+            <div class="truncate font-semibold text-lg">Kagurabachi</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 135</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T15:06:05.348Z">2026-10-18T15:06:05.348804Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Sakamoto Days">
+    <a href="/chapters/01M57RRBKG1AR25ZSXZZSGK1KG" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYE3130E1W5HKTJ7VD912.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYE3130E1W5HKTJ7VD912.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYE3130E1W5HKTJ7VD912.jpg" alt="Sakamoto Days cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Sakamoto Days</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Days 279</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Sakamoto Days">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYE3130E1W5HKTJ7VD912/Sakamoto-Days" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYE3130E1W5HKTJ7VD912.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYE3130E1W5HKTJ7VD912.jpg" alt="Sakamoto Days cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M57RRBKG1AR25ZSXZZSGK1KG" preload>
+            <div class="truncate font-semibold text-lg">Sakamoto Days</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Days 279</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T15:05:49.424Z">2026-10-18T15:05:49.424728Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Ichi the Witch">
+    <a href="/chapters/01M57RR8ER4NK58PAAPZW72NS3" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JBQ6PW20207W4RPSM5X4192B.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JBQ6PW20207W4RPSM5X4192B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JBQ6PW20207W4RPSM5X4192B.jpg" alt="Ichi the Witch cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Ichi the Witch</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Hunt 102</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Ichi the Witch">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JBQ6PW20207W4RPSM5X4192B/ichi-the-witch" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JBQ6PW20207W4RPSM5X4192B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JBQ6PW20207W4RPSM5X4192B.jpg" alt="Ichi the Witch cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M57RR8ER4NK58PAAPZW72NS3" preload>
+            <div class="truncate font-semibold text-lg">Ichi the Witch</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Hunt 102</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T15:05:46.200Z">2026-10-18T15:05:46.200440Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="In the Heavenly Prison, the Devil Enchants Me">
+    <a href="/chapters/01M56C2VZT75A57E8YVC7WVTMW" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYG7YPAZH7GNJK8DGM3DH.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG7YPAZH7GNJK8DGM3DH.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG7YPAZH7GNJK8DGM3DH.jpg" alt="In the Heavenly Prison, the Devil Enchants Me cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">In the Heavenly Prison, the Devil Enchants Me</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 32</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="In the Heavenly Prison, the Devil Enchants Me">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYG7YPAZH7GNJK8DGM3DH/Tengoku-de-Akuma-ga-Boku-wo-Miwaku-Suru" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG7YPAZH7GNJK8DGM3DH.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG7YPAZH7GNJK8DGM3DH.jpg" alt="In the Heavenly Prison, the Devil Enchants Me cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M56C2VZT75A57E8YVC7WVTMW" preload>
+            <div class="truncate font-semibold text-lg">In the Heavenly Prison, the Devil Enchants Me</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 32</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-18T02:05:07.962Z">2026-10-18T02:05:07.962649Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Lazy Lord Masters the Sword">
+    <a href="/chapters/01M561HHCSF9EFP8A4TSNVEQM1" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEZWRB4MRT7EHVVPEDXV.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEZWRB4MRT7EHVVPEDXV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEZWRB4MRT7EHVVPEDXV.jpg" alt="The Lazy Lord Masters the Sword cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Lazy Lord Masters the Sword</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 164</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Lazy Lord Masters the Sword">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYEZWRB4MRT7EHVVPEDXV/Reformation-of-the-Deadbeat-Noble" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEZWRB4MRT7EHVVPEDXV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEZWRB4MRT7EHVVPEDXV.jpg" alt="The Lazy Lord Masters the Sword cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M561HHCSF9EFP8A4TSNVEQM1" preload>
+            <div class="truncate font-semibold text-lg">The Lazy Lord Masters the Sword</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 164</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-17T23:00:54.297Z">2026-10-17T23:00:54.297626Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Swordmaster&#39;s Son">
+    <a href="/chapters/01M56152SXZH4STF6CEYHZXKAK" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYG8FNWRR3PHEFKN2NB87.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG8FNWRR3PHEFKN2NB87.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG8FNWRR3PHEFKN2NB87.jpg" alt="The Swordmaster&#39;s Son cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Swordmaster&#39;s Son</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 217</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Swordmaster&#39;s Son">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYG8FNWRR3PHEFKN2NB87/The-Swordmasters-Son" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG8FNWRR3PHEFKN2NB87.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG8FNWRR3PHEFKN2NB87.jpg" alt="The Swordmaster&#39;s Son cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M56152SXZH4STF6CEYHZXKAK" preload>
+            <div class="truncate font-semibold text-lg">The Swordmaster&#39;s Son</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 217</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-17T22:54:06.141Z">2026-10-17T22:54:06.141857Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Dungeon Odyssey">
+    <a href="/chapters/01M53VKY0RMMFM4603SHNY61MX" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JNKGRKJ61H73S8M5CKZ5FKWD.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JNKGRKJ61H73S8M5CKZ5FKWD.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JNKGRKJ61H73S8M5CKZ5FKWD.jpg" alt="Dungeon Odyssey cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Dungeon Odyssey</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 173</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Dungeon Odyssey">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JNKGRKJ61H73S8M5CKZ5FKWD/dungeon-odyssey" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JNKGRKJ61H73S8M5CKZ5FKWD.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JNKGRKJ61H73S8M5CKZ5FKWD.jpg" alt="Dungeon Odyssey cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M53VKY0RMMFM4603SHNY61MX" preload>
+            <div class="truncate font-semibold text-lg">Dungeon Odyssey</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 173</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-17T02:38:52.440Z">2026-10-17T02:38:52.440464Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Overgeared">
+    <a href="/chapters/01M53VJSJZ27A2DYQ6WT372NZM" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDMR2777KEM5BKTBBK83.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDMR2777KEM5BKTBBK83.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDMR2777KEM5BKTBBK83.jpg" alt="Overgeared cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Overgeared</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 344</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Overgeared">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYDMR2777KEM5BKTBBK83/Overgeared" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDMR2777KEM5BKTBBK83.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDMR2777KEM5BKTBBK83.jpg" alt="Overgeared cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M53VJSJZ27A2DYQ6WT372NZM" preload>
+            <div class="truncate font-semibold text-lg">Overgeared</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 344</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-17T02:38:15.135Z">2026-10-17T02:38:15.135429Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You">
+    <a href="/chapters/01M52F6M11F7W1E3J2JVWTT9JV" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYD8VCP2FN1Q8E31RQ9GJ.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD8VCP2FN1Q8E31RQ9GJ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD8VCP2FN1Q8E31RQ9GJ.jpg" alt="The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 258</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYD8VCP2FN1Q8E31RQ9GJ/The-100-Girlfriends-Who-Really-Really-Really-Really-Really-Love-You" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD8VCP2FN1Q8E31RQ9GJ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD8VCP2FN1Q8E31RQ9GJ.jpg" alt="The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M52F6M11F7W1E3J2JVWTT9JV" preload>
+            <div class="truncate font-semibold text-lg">The 100 Girlfriends Who Really, Really, Really, Really, REALLY Love You</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 258</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T13:42:38.881Z">2026-10-16T13:42:38.881912Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Log into the Future">
+    <a href="/chapters/01M52AHYRTARBQTJ7GMPZ8E06D" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYHESV0S029GSEE21WD06.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYHESV0S029GSEE21WD06.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYHESV0S029GSEE21WD06.jpg" alt="Log into the Future cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Log into the Future</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 360</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Log into the Future">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYHESV0S029GSEE21WD06/Log-Into-The-Future" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYHESV0S029GSEE21WD06.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYHESV0S029GSEE21WD06.jpg" alt="Log into the Future cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M52AHYRTARBQTJ7GMPZ8E06D" preload>
+            <div class="truncate font-semibold text-lg">Log into the Future</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 360</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T12:21:27.450Z">2026-10-16T12:21:27.450444Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Kingdom">
+    <a href="/chapters/01M529VF6F9RRWTHMWAB06T6BA" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XY7VSG3R5ANYPDWTXDVP6.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7VSG3R5ANYPDWTXDVP6.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7VSG3R5ANYPDWTXDVP6.jpg" alt="Kingdom cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Kingdom</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 890</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Kingdom">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XY7VSG3R5ANYPDWTXDVP6/Kingdom" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7VSG3R5ANYPDWTXDVP6.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7VSG3R5ANYPDWTXDVP6.jpg" alt="Kingdom cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M529VF6F9RRWTHMWAB06T6BA" preload>
+            <div class="truncate font-semibold text-lg">Kingdom</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 890</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T12:09:10.607Z">2026-10-16T12:09:10.607708Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Servant Is the Demon King?!">
+    <a href="/chapters/01M51EYZ6M0TT6P0NJM2RD5NXJ" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDT3Z0ZJ7NNG4Q74QFFG.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDT3Z0ZJ7NNG4Q74QFFG.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDT3Z0ZJ7NNG4Q74QFFG.jpg" alt="The Servant Is the Demon King?! cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Servant Is the Demon King?!</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 891</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Servant Is the Demon King?!">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYDT3Z0ZJ7NNG4Q74QFFG/Magic-Emperor" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDT3Z0ZJ7NNG4Q74QFFG.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDT3Z0ZJ7NNG4Q74QFFG.jpg" alt="The Servant Is the Demon King?! cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M51EYZ6M0TT6P0NJM2RD5NXJ" preload>
+            <div class="truncate font-semibold text-lg">The Servant Is the Demon King?!</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 891</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T04:19:13.749Z">2026-10-16T04:19:13.749852Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="I&#39;m the Max-Level Newbie">
+    <a href="/chapters/01M51CNSN63ZB7MX06E88156JD" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEZYBE7Y3MEY7AEQ8MQN.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEZYBE7Y3MEY7AEQ8MQN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEZYBE7Y3MEY7AEQ8MQN.jpg" alt="I&#39;m the Max-Level Newbie cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">I&#39;m the Max-Level Newbie</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 281</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="I&#39;m the Max-Level Newbie">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Solo-Max-Level-Newbie" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEZYBE7Y3MEY7AEQ8MQN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEZYBE7Y3MEY7AEQ8MQN.jpg" alt="I&#39;m the Max-Level Newbie cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M51CNSN63ZB7MX06E88156JD" preload>
+            <div class="truncate font-semibold text-lg">I&#39;m the Max-Level Newbie</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 281</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T03:39:16.006Z">2026-10-16T03:39:16.006757Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Extra&#39;s Academy Survival Guide">
+    <a href="/chapters/01M51CJ9P6YKC1DGJQ7BX47YY0" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JNKH97S0APRHFW53V9DSFCGH.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JNKH97S0APRHFW53V9DSFCGH.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JNKH97S0APRHFW53V9DSFCGH.jpg" alt="The Extra&#39;s Academy Survival Guide cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Extra&#39;s Academy Survival Guide</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 128</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Extra&#39;s Academy Survival Guide">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JNKH97S0APRHFW53V9DSFCGH/the-extras-academy-survival-guide" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JNKH97S0APRHFW53V9DSFCGH.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JNKH97S0APRHFW53V9DSFCGH.jpg" alt="The Extra&#39;s Academy Survival Guide cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M51CJ9P6YKC1DGJQ7BX47YY0" preload>
+            <div class="truncate font-semibold text-lg">The Extra&#39;s Academy Survival Guide</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 128</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-16T03:37:21.351Z">2026-10-16T03:37:21.351021Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="SSS-Class Revival Hunter">
+    <a href="/chapters/01M50WHAKNF8XQ0JBVWRGAT38G" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEADS8EDBWFPVSF8J3VG.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEADS8EDBWFPVSF8J3VG.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEADS8EDBWFPVSF8J3VG.jpg" alt="SSS-Class Revival Hunter cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">SSS-Class Revival Hunter</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 156</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="SSS-Class Revival Hunter">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYEADS8EDBWFPVSF8J3VG/SSS-Class-Suicide-Hunter" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEADS8EDBWFPVSF8J3VG.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEADS8EDBWFPVSF8J3VG.jpg" alt="SSS-Class Revival Hunter cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M50WHAKNF8XQ0JBVWRGAT38G" preload>
+            <div class="truncate font-semibold text-lg">SSS-Class Revival Hunter</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 156</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T22:57:12.309Z">2026-10-15T22:57:12.309460Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Sawaranaide Kotesashi-kun">
+    <a href="/chapters/01M508Q7QSNQT5TFK6N4TGNFBH" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYGJ92G1Y5D9M43KQ1V1D.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGJ92G1Y5D9M43KQ1V1D.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGJ92G1Y5D9M43KQ1V1D.jpg" alt="Sawaranaide Kotesashi-kun cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Sawaranaide Kotesashi-kun</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 142</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Sawaranaide Kotesashi-kun">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYGJ92G1Y5D9M43KQ1V1D/Sawaranaide-Kotesashi-kun" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGJ92G1Y5D9M43KQ1V1D.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGJ92G1Y5D9M43KQ1V1D.jpg" alt="Sawaranaide Kotesashi-kun cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M508Q7QSNQT5TFK6N4TGNFBH" preload>
+            <div class="truncate font-semibold text-lg">Sawaranaide Kotesashi-kun</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 142</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T17:10:54.457Z">2026-10-15T17:10:54.457727Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Beginning After the End">
+    <a href="/chapters/01M504VS2G71N22Z1N5X35BF5Z" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYE23859ZWDP7BJ520AKY.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYE23859ZWDP7BJ520AKY.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYE23859ZWDP7BJ520AKY.jpg" alt="The Beginning After the End cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Beginning After the End</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 257</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Beginning After the End">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYE23859ZWDP7BJ520AKY/The-Beginning-After-The-End" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYE23859ZWDP7BJ520AKY.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYE23859ZWDP7BJ520AKY.jpg" alt="The Beginning After the End cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M504VS2G71N22Z1N5X35BF5Z" preload>
+            <div class="truncate font-semibold text-lg">The Beginning After the End</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 257</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T16:03:28.976Z">2026-10-15T16:03:28.976531Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Welcome to Demon School! Iruma-kun">
+    <a href="/chapters/01M4YZ95DFGR8ECVPQWN8H8G48" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYC5SVSG0YGGA1EN740VW.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC5SVSG0YGGA1EN740VW.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC5SVSG0YGGA1EN740VW.jpg" alt="Welcome to Demon School! Iruma-kun cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Welcome to Demon School! Iruma-kun</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 462</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Welcome to Demon School! Iruma-kun">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYC5SVSG0YGGA1EN740VW/Mairimashita-Iruma-kun" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC5SVSG0YGGA1EN740VW.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC5SVSG0YGGA1EN740VW.jpg" alt="Welcome to Demon School! Iruma-kun cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4YZ95DFGR8ECVPQWN8H8G48" preload>
+            <div class="truncate font-semibold text-lg">Welcome to Demon School! Iruma-kun</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 462</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T05:06:41.711Z">2026-10-15T05:06:41.711448Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Pick Me Up, Infinite Gacha">
+    <a href="/chapters/01M4YKTM77091MXDWY0ANDT6TW" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYGY7FDV857J4HJAZ131K.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGY7FDV857J4HJAZ131K.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGY7FDV857J4HJAZ131K.jpg" alt="Pick Me Up, Infinite Gacha cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Pick Me Up, Infinite Gacha</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 223</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Pick Me Up, Infinite Gacha">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYGY7FDV857J4HJAZ131K/Pick-Me-Up-Infinite-Gacha" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGY7FDV857J4HJAZ131K.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGY7FDV857J4HJAZ131K.jpg" alt="Pick Me Up, Infinite Gacha cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4YKTM77091MXDWY0ANDT6TW" preload>
+            <div class="truncate font-semibold text-lg">Pick Me Up, Infinite Gacha</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 223</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T01:46:31.015Z">2026-10-15T01:46:31.015401Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Nano Machine">
+    <a href="/chapters/01M4YKT905SW4B36J6ANS20XSY" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDT7H7ANER8KJG5R9SJV.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDT7H7ANER8KJG5R9SJV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDT7H7ANER8KJG5R9SJV.jpg" alt="Nano Machine cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Nano Machine</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 334</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Nano Machine">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYDT7H7ANER8KJG5R9SJV/Nano-Machine" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDT7H7ANER8KJG5R9SJV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDT7H7ANER8KJG5R9SJV.jpg" alt="Nano Machine cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4YKT905SW4B36J6ANS20XSY" preload>
+            <div class="truncate font-semibold text-lg">Nano Machine</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 334</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-15T01:46:19.525Z">2026-10-15T01:46:19.525545Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Smoking Behind the Supermarket with You">
+    <a href="/chapters/01M4XG1DWF9134M5E0M849TGSV" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYFP55025PVETS8GD9B6B.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFP55025PVETS8GD9B6B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFP55025PVETS8GD9B6B.jpg" alt="Smoking Behind the Supermarket with You cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Smoking Behind the Supermarket with You</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Smoke 65</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Smoking Behind the Supermarket with You">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYFP55025PVETS8GD9B6B/Super-no-Ura-de-Yani-Suu-Hanashi" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFP55025PVETS8GD9B6B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFP55025PVETS8GD9B6B.jpg" alt="Smoking Behind the Supermarket with You cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4XG1DWF9134M5E0M849TGSV" preload>
+            <div class="truncate font-semibold text-lg">Smoking Behind the Supermarket with You</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Smoke 65</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T15:21:05.168Z">2026-10-14T15:21:05.168040Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Kengan Omega">
+    <a href="/chapters/01M4XF4PZ3M5PQR4AJACYM241J" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCSGWJ2FD9C4A1VPJS7R.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCSGWJ2FD9C4A1VPJS7R.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCSGWJ2FD9C4A1VPJS7R.jpg" alt="Kengan Omega cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Kengan Omega</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 374</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Kengan Omega">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYCSGWJ2FD9C4A1VPJS7R/Kengan-Omega" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCSGWJ2FD9C4A1VPJS7R.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCSGWJ2FD9C4A1VPJS7R.jpg" alt="Kengan Omega cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4XF4PZ3M5PQR4AJACYM241J" preload>
+            <div class="truncate font-semibold text-lg">Kengan Omega</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 374</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T15:05:24.195Z">2026-10-14T15:05:24.195630Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Knight King Who Returned With a God">
+    <a href="/chapters/01M4XETCCW25Z6GK36FQ040C02" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JW12PFTHE457AAPMT04P5KEA.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JW12PFTHE457AAPMT04P5KEA.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JW12PFTHE457AAPMT04P5KEA.jpg" alt="The Knight King Who Returned With a God cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Knight King Who Returned With a God</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 186</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Knight King Who Returned With a God">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JW12PFTHE457AAPMT04P5KEA/the-knight-king-who-returned-with-a-god" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JW12PFTHE457AAPMT04P5KEA.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JW12PFTHE457AAPMT04P5KEA.jpg" alt="The Knight King Who Returned With a God cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4XETCCW25Z6GK36FQ040C02" preload>
+            <div class="truncate font-semibold text-lg">The Knight King Who Returned With a God</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 186</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T14:59:45.692Z">2026-10-14T14:59:45.692291Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Rakujitsu no Pathos">
+    <a href="/chapters/01M4X6Z946ACNC4M19HY98N8SB" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCD8NR3XZJHGGKYRVEA7.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCD8NR3XZJHGGKYRVEA7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCD8NR3XZJHGGKYRVEA7.jpg" alt="Rakujitsu no Pathos cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Rakujitsu no Pathos</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 135</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Rakujitsu no Pathos">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYCD8NR3XZJHGGKYRVEA7/Rakujitsu-No-Pathos" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCD8NR3XZJHGGKYRVEA7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCD8NR3XZJHGGKYRVEA7.jpg" alt="Rakujitsu no Pathos cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4X6Z946ACNC4M19HY98N8SB" preload>
+            <div class="truncate font-semibold text-lg">Rakujitsu no Pathos</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 135</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T12:42:37.574Z">2026-10-14T12:42:37.574966Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Choujin X">
+    <a href="/chapters/01M4W9ETD0R7H93S0ESJZ1RV62" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYERPHPGCM3C3HEME1YAK.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYERPHPGCM3C3HEME1YAK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYERPHPGCM3C3HEME1YAK.jpg" alt="Choujin X cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Choujin X</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 78.1</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Choujin X">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYERPHPGCM3C3HEME1YAK/Choujin-X" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYERPHPGCM3C3HEME1YAK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYERPHPGCM3C3HEME1YAK.jpg" alt="Choujin X cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4W9ETD0R7H93S0ESJZ1RV62" preload>
+            <div class="truncate font-semibold text-lg">Choujin X</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 78.1</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T04:06:49.506Z">2026-10-14T04:06:49.506414Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Return of the Blossoming Blade">
+    <a href="/chapters/01M4W965ZSAB5BGMR6FBRB20TA" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEVCSS5ANBCJZ4ZF9P65.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEVCSS5ANBCJZ4ZF9P65.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEVCSS5ANBCJZ4ZF9P65.jpg" alt="Return of the Blossoming Blade cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Return of the Blossoming Blade</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 184</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Return of the Blossoming Blade">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYEVCSS5ANBCJZ4ZF9P65/Return-of-the-Blossoming-Blade" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEVCSS5ANBCJZ4ZF9P65.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEVCSS5ANBCJZ4ZF9P65.jpg" alt="Return of the Blossoming Blade cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4W965ZSAB5BGMR6FBRB20TA" preload>
+            <div class="truncate font-semibold text-lg">Return of the Blossoming Blade</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 184</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-14T04:02:06.457Z">2026-10-14T04:02:06.457423Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Eleceed">
+    <a href="/chapters/01M4VS59ZS2MJ28N5ARR5A9T0S" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYD3Q2Q7HYYMB3FSDPSKC.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD3Q2Q7HYYMB3FSDPSKC.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD3Q2Q7HYYMB3FSDPSKC.jpg" alt="Eleceed cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Eleceed</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 422</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Eleceed">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYD3Q2Q7HYYMB3FSDPSKC/Eleceed" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD3Q2Q7HYYMB3FSDPSKC.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD3Q2Q7HYYMB3FSDPSKC.jpg" alt="Eleceed cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VS59ZS2MJ28N5ARR5A9T0S" preload>
+            <div class="truncate font-semibold text-lg">Eleceed</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 422</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T23:22:00.569Z">2026-10-13T23:22:00.569284Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Dealing with Mikadono Sisters Is a Breeze">
+    <a href="/chapters/01M4VRH7K4H58MV3K5SPSYJEA5" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYFHNT92KX51TRCDBM12R.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHNT92KX51TRCDBM12R.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHNT92KX51TRCDBM12R.jpg" alt="Dealing with Mikadono Sisters Is a Breeze cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Dealing with Mikadono Sisters Is a Breeze</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">home. 222</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Dealing with Mikadono Sisters Is a Breeze">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYFHNT92KX51TRCDBM12R/Mikadono-Sanshimai-wa-Angai-Choroi" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHNT92KX51TRCDBM12R.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHNT92KX51TRCDBM12R.jpg" alt="Dealing with Mikadono Sisters Is a Breeze cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VRH7K4H58MV3K5SPSYJEA5" preload>
+            <div class="truncate font-semibold text-lg">Dealing with Mikadono Sisters Is a Breeze</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>home. 222</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T23:11:02.756Z">2026-10-13T23:11:02.756645Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Tune In to the Midnight Heart">
+    <a href="/chapters/01M4VQGYPNXAX1SWEDF61CFRDW" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYGRASXCSBDH445TKVE1Y.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGRASXCSBDH445TKVE1Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGRASXCSBDH445TKVE1Y.jpg" alt="Tune In to the Midnight Heart cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Tune In to the Midnight Heart</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 133</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Tune In to the Midnight Heart">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYGRASXCSBDH445TKVE1Y/Tune-In-to-the-Midnight-Heart" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYGRASXCSBDH445TKVE1Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYGRASXCSBDH445TKVE1Y.jpg" alt="Tune In to the Midnight Heart cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VQGYPNXAX1SWEDF61CFRDW" preload>
+            <div class="truncate font-semibold text-lg">Tune In to the Midnight Heart</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 133</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T22:53:25.077Z">2026-10-13T22:53:25.077387Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Exiled Heavy Knight Knows How to Game the System">
+    <a href="/chapters/01M4VQG4DMG2WNZ4JVJ7MZF81W" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYFHVMSQVDJPQ42TN2XYN.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHVMSQVDJPQ42TN2XYN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHVMSQVDJPQ42TN2XYN.jpg" alt="The Exiled Heavy Knight Knows How to Game the System cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Exiled Heavy Knight Knows How to Game the System</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 182</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Exiled Heavy Knight Knows How to Game the System">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYFHVMSQVDJPQ42TN2XYN/The-Exiled-Reincarnated-Heavy-Knight-Is-Unrivaled-in-Game-Knowledge" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHVMSQVDJPQ42TN2XYN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHVMSQVDJPQ42TN2XYN.jpg" alt="The Exiled Heavy Knight Knows How to Game the System cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VQG4DMG2WNZ4JVJ7MZF81W" preload>
+            <div class="truncate font-semibold text-lg">The Exiled Heavy Knight Knows How to Game the System</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 182</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T22:52:58.164Z">2026-10-13T22:52:58.164697Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge">
+    <a href="/chapters/01M4VNVF25DN69PA8M17TZYVCE" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYF5PG8880XXPS1B80VVR.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYF5PG8880XXPS1B80VVR.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYF5PG8880XXPS1B80VVR.jpg" alt="Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 216</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYF5PG8880XXPS1B80VVR/Shinjiteita-Nakama-tachi-ni-Dungeon" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYF5PG8880XXPS1B80VVR.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYF5PG8880XXPS1B80VVR.jpg" alt="Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VNVF25DN69PA8M17TZYVCE" preload>
+            <div class="truncate font-semibold text-lg">Backstabbed in a Backwater Dungeon - My Party Tried to Kill Me, But Thanks to an Infinite Gacha I Got LVL 9999 Friends and Am Out For Revenge</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 216</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T22:24:12.357Z">2026-10-13T22:24:12.357946Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Infinite Mage">
+    <a href="/chapters/01M4VMQKN06KBS856N97CQHPVC" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01JRZATJ2P56YN7DNT6CXQBMEN.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01JRZATJ2P56YN7DNT6CXQBMEN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JRZATJ2P56YN7DNT6CXQBMEN.jpg" alt="The Infinite Mage cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Infinite Mage</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 190</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Infinite Mage">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01JRZATJ2P56YN7DNT6CXQBMEN/the-infinite-mage" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01JRZATJ2P56YN7DNT6CXQBMEN.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01JRZATJ2P56YN7DNT6CXQBMEN.jpg" alt="The Infinite Mage cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4VMQKN06KBS856N97CQHPVC" preload>
+            <div class="truncate font-semibold text-lg">The Infinite Mage</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 190</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T22:04:37.408Z">2026-10-13T22:04:37.408454Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Wind Breaker (NII Satoru)">
+    <a href="/chapters/01M4TY8RDJG68V86YR7S7KTEM0" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYF5ZDZX41X5S64WQHFXZ.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYF5ZDZX41X5S64WQHFXZ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYF5ZDZX41X5S64WQHFXZ.jpg" alt="Wind Breaker (NII Satoru) cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Wind Breaker (NII Satoru)</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 232</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Wind Breaker (NII Satoru)">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYF5ZDZX41X5S64WQHFXZ/Wind-Breaker-NII-Satoru" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYF5ZDZX41X5S64WQHFXZ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYF5ZDZX41X5S64WQHFXZ.jpg" alt="Wind Breaker (NII Satoru) cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4TY8RDJG68V86YR7S7KTEM0" preload>
+            <div class="truncate font-semibold text-lg">Wind Breaker (NII Satoru)</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 232</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T15:32:02.099Z">2026-10-13T15:32:02.099079Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Seven Deadly Sins - Four Knights of the Apocalypse">
+    <a href="/chapters/01M4TY7JEGKG2ERB468SDYYGRA" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYECFN6RWJ8PJQHSB67SK.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYECFN6RWJ8PJQHSB67SK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYECFN6RWJ8PJQHSB67SK.jpg" alt="The Seven Deadly Sins - Four Knights of the Apocalypse cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Seven Deadly Sins - Four Knights of the Apocalypse</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 257</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Seven Deadly Sins - Four Knights of the Apocalypse">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYECFN6RWJ8PJQHSB67SK/Four-Knights-of-the-Apocalypse" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYECFN6RWJ8PJQHSB67SK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYECFN6RWJ8PJQHSB67SK.jpg" alt="The Seven Deadly Sins - Four Knights of the Apocalypse cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4TY7JEGKG2ERB468SDYYGRA" preload>
+            <div class="truncate font-semibold text-lg">The Seven Deadly Sins - Four Knights of the Apocalypse</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 257</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T15:31:23.216Z">2026-10-13T15:31:23.216571Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Shangri-La Frontier">
+    <a href="/chapters/01M4TY6QFAXGP7VY3J8608W2CQ" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDXH7KT6AABVG3JAT3ZP.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDXH7KT6AABVG3JAT3ZP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDXH7KT6AABVG3JAT3ZP.jpg" alt="Shangri-La Frontier cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Shangri-La Frontier</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 283</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Shangri-La Frontier">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYDXH7KT6AABVG3JAT3ZP/Shangri-La-Frontier" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDXH7KT6AABVG3JAT3ZP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDXH7KT6AABVG3JAT3ZP.jpg" alt="Shangri-La Frontier cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4TY6QFAXGP7VY3J8608W2CQ" preload>
+            <div class="truncate font-semibold text-lg">Shangri-La Frontier</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 283</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T15:30:55.594Z">2026-10-13T15:30:55.594763Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Blue Lock">
+    <a href="/chapters/01M4TXYVB9CZ9N2MF65JQ2CY3M" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYD7E91K8QP6CY0Y53900.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD7E91K8QP6CY0Y53900.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD7E91K8QP6CY0Y53900.jpg" alt="Blue Lock cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Blue Lock</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 364.2</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Blue Lock">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYD7E91K8QP6CY0Y53900/Blue-Lock" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYD7E91K8QP6CY0Y53900.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYD7E91K8QP6CY0Y53900.jpg" alt="Blue Lock cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4TXYVB9CZ9N2MF65JQ2CY3M" preload>
+            <div class="truncate font-semibold text-lg">Blue Lock</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 364.2</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T15:26:37.417Z">2026-10-13T15:26:37.417764Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Rent-A-Girlfriend">
+    <a href="/chapters/01M4TXTCB4C7KC8AV546K674F5" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYC7KP5M48JAY8S4ZNDX5.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC7KP5M48JAY8S4ZNDX5.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC7KP5M48JAY8S4ZNDX5.jpg" alt="Rent-A-Girlfriend cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Rent-A-Girlfriend</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Rating 444</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Rent-A-Girlfriend">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYC7KP5M48JAY8S4ZNDX5/Kanojo-Okarishimasu" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC7KP5M48JAY8S4ZNDX5.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC7KP5M48JAY8S4ZNDX5.jpg" alt="Rent-A-Girlfriend cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4TXTCB4C7KC8AV546K674F5" preload>
+            <div class="truncate font-semibold text-lg">Rent-A-Girlfriend</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Rating 444</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T15:24:10.980Z">2026-10-13T15:24:10.980189Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Mushoku Tensei - Jobless Reincarnation">
+    <a href="/chapters/01M4SB2F3B0Z3XES0MBD31E6AB" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYAFV191F37BTH3JGATKP.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYAFV191F37BTH3JGATKP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYAFV191F37BTH3JGATKP.jpg" alt="Mushoku Tensei - Jobless Reincarnation cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Mushoku Tensei - Jobless Reincarnation</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 123</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Mushoku Tensei - Jobless Reincarnation">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYAFV191F37BTH3JGATKP/Mushoku-Tensei-Isekai-Ittara-Honki-Dasu" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYAFV191F37BTH3JGATKP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYAFV191F37BTH3JGATKP.jpg" alt="Mushoku Tensei - Jobless Reincarnation cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4SB2F3B0Z3XES0MBD31E6AB" preload>
+            <div class="truncate font-semibold text-lg">Mushoku Tensei - Jobless Reincarnation</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 123</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T00:37:18.571Z">2026-10-13T00:37:18.571707Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Novel&#39;s Extra (2022)">
+    <a href="/chapters/01M4SAVR8C3CNE6M0AV0YCM0WH" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYG8EFP7X07BC3KCDCS37.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG8EFP7X07BC3KCDCS37.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG8EFP7X07BC3KCDCS37.jpg" alt="The Novel&#39;s Extra (2022) cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Novel&#39;s Extra (2022)</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 175</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Novel&#39;s Extra (2022)">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYG8EFP7X07BC3KCDCS37/The-Novels-Extra" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG8EFP7X07BC3KCDCS37.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG8EFP7X07BC3KCDCS37.jpg" alt="The Novel&#39;s Extra (2022) cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4SAVR8C3CNE6M0AV0YCM0WH" preload>
+            <div class="truncate font-semibold text-lg">The Novel&#39;s Extra (2022)</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 175</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T00:33:38.572Z">2026-10-13T00:33:38.572795Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Archmage Returns After 4000 Years">
+    <a href="/chapters/01M4SATX6Z8GMDKNTY9FXCWXFT" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDMTRNJZJH9G1ADMPJQC.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDMTRNJZJH9G1ADMPJQC.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDMTRNJZJH9G1ADMPJQC.jpg" alt="The Archmage Returns After 4000 Years cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Archmage Returns After 4000 Years</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Episode 278</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Archmage Returns After 4000 Years">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYDMTRNJZJH9G1ADMPJQC/The-Great-Mage-Returns-After-4000-Years" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYDMTRNJZJH9G1ADMPJQC.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYDMTRNJZJH9G1ADMPJQC.jpg" alt="The Archmage Returns After 4000 Years cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4SATX6Z8GMDKNTY9FXCWXFT" preload>
+            <div class="truncate font-semibold text-lg">The Archmage Returns After 4000 Years</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Episode 278</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-13T00:33:10.879Z">2026-10-13T00:33:10.879216Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Dandadan">
+    <a href="/chapters/01M4RABBRFM5PEWQJ0B7XQ1DC8" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEMWA55C7XTZHP1HNARM.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEMWA55C7XTZHP1HNARM.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEMWA55C7XTZHP1HNARM.jpg" alt="Dandadan cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Dandadan</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 248</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Dandadan">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYEMWA55C7XTZHP1HNARM/Dandadan" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYEMWA55C7XTZHP1HNARM.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYEMWA55C7XTZHP1HNARM.jpg" alt="Dandadan cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4RABBRFM5PEWQJ0B7XQ1DC8" preload>
+            <div class="truncate font-semibold text-lg">Dandadan</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 248</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-12T15:05:27.055Z">2026-10-12T15:05:27.055964Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Spy x Family">
+    <a href="/chapters/01M4NR08BJK7DER79Q82CXDCSH" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCYJ0P680SKX3QZ0NQD7.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCYJ0P680SKX3QZ0NQD7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCYJ0P680SKX3QZ0NQD7.jpg" alt="Spy x Family cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Spy x Family</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Mission 141</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Spy x Family">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYCYJ0P680SKX3QZ0NQD7/Spy-X-Family" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCYJ0P680SKX3QZ0NQD7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCYJ0P680SKX3QZ0NQD7.jpg" alt="Spy x Family cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4NR08BJK7DER79Q82CXDCSH" preload>
+            <div class="truncate font-semibold text-lg">Spy x Family</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Mission 141</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-11T15:06:19.890Z">2026-10-11T15:06:19.890208Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Black Clover">
+    <a href="/chapters/01M4DVEM1PZ7N0CAS0BNR7D472" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYB8HNWARAQ67A4GAWG5Y.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYB8HNWARAQ67A4GAWG5Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYB8HNWARAQ67A4GAWG5Y.jpg" alt="Black Clover cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Black Clover</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Page 392.5</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Black Clover">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYB8HNWARAQ67A4GAWG5Y/Black-Clover" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYB8HNWARAQ67A4GAWG5Y.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYB8HNWARAQ67A4GAWG5Y.jpg" alt="Black Clover cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4DVEM1PZ7N0CAS0BNR7D472" preload>
+            <div class="truncate font-semibold text-lg">Black Clover</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Page 392.5</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-08T13:32:40.886Z">2026-10-08T13:32:40.886808Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Haimiya Is Scary Cute">
+    <a href="/chapters/01M4C6K5VT9RSRMXCCDEZHVSCN" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01KB7YRNH4N0TQG3M75SB3ZP0T.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01KB7YRNH4N0TQG3M75SB3ZP0T.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01KB7YRNH4N0TQG3M75SB3ZP0T.jpg" alt="Haimiya Is Scary Cute cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Haimiya Is Scary Cute</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 44</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Haimiya Is Scary Cute">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01KB7YRNH4N0TQG3M75SB3ZP0T/haimiyasenpai-wa-kowakute-kawaii" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01KB7YRNH4N0TQG3M75SB3ZP0T.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01KB7YRNH4N0TQG3M75SB3ZP0T.jpg" alt="Haimiya Is Scary Cute cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4C6K5VT9RSRMXCCDEZHVSCN" preload>
+            <div class="truncate font-semibold text-lg">Haimiya Is Scary Cute</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 44</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-07T22:08:55.674Z">2026-10-07T22:08:55.674453Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Fragrant Flower Blooms With Dignity">
+    <a href="/chapters/01M4BEFE4KQPZMBZGK1BAY645K" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYFHFZ88R32BW3RXHN1WP.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHFZ88R32BW3RXHN1WP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHFZ88R32BW3RXHN1WP.jpg" alt="The Fragrant Flower Blooms With Dignity cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Fragrant Flower Blooms With Dignity</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 204</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Fragrant Flower Blooms With Dignity">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYFHFZ88R32BW3RXHN1WP/Kaoru-Hana-wa-Rin-to-Saku" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFHFZ88R32BW3RXHN1WP.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFHFZ88R32BW3RXHN1WP.jpg" alt="The Fragrant Flower Blooms With Dignity cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M4BEFE4KQPZMBZGK1BAY645K" preload>
+            <div class="truncate font-semibold text-lg">The Fragrant Flower Blooms With Dignity</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 204</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-07T15:07:27.251Z">2026-10-07T15:07:27.251881Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Marriage Toxin">
+    <a href="/chapters/01M48VZ00HV64JS5AM3T21ZP16" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYFEW6JJF1B715ATEVYJQ.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFEW6JJF1B715ATEVYJQ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFEW6JJF1B715ATEVYJQ.jpg" alt="Marriage Toxin cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Marriage Toxin</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 182</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Marriage Toxin">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYFEW6JJF1B715ATEVYJQ/MARRIAGETOXIN" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYFEW6JJF1B715ATEVYJQ.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYFEW6JJF1B715ATEVYJQ.jpg" alt="Marriage Toxin cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M48VZ00HV64JS5AM3T21ZP16" preload>
+            <div class="truncate font-semibold text-lg">Marriage Toxin</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 182</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-06T15:05:25.265Z">2026-10-06T15:05:25.265820Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="The Witch and the Mercenary">
+    <a href="/chapters/01M415NE4QQQDMEYTQ3Y5HT6Z1" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYH3DBZ29KFB60P2GFPA7.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH3DBZ29KFB60P2GFPA7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH3DBZ29KFB60P2GFPA7.jpg" alt="The Witch and the Mercenary cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Witch and the Mercenary</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 77.5</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="The Witch and the Mercenary">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYH3DBZ29KFB60P2GFPA7/The-Witch-and-the-Mercenary" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYH3DBZ29KFB60P2GFPA7.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYH3DBZ29KFB60P2GFPA7.jpg" alt="The Witch and the Mercenary cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M415NE4QQQDMEYTQ3Y5HT6Z1" preload>
+            <div class="truncate font-semibold text-lg">The Witch and the Mercenary</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 77.5</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-03T15:21:02.359Z">2026-10-03T15:21:02.359502Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Chained Soldier">
+    <a href="/chapters/01M3ZTQ0JKJP5WQ99SXTN3BG6X" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCVRSNNY2C2QH721967B.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCVRSNNY2C2QH721967B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCVRSNNY2C2QH721967B.jpg" alt="Chained Soldier cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chained Soldier</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 188</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Chained Soldier">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYCVRSNNY2C2QH721967B/Mato-Seihei-No-Slave" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYCVRSNNY2C2QH721967B.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYCVRSNNY2C2QH721967B.jpg" alt="Chained Soldier cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M3ZTQ0JKJP5WQ99SXTN3BG6X" preload>
+            <div class="truncate font-semibold text-lg">Chained Soldier</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 188</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-10-03T02:50:25.235Z">2026-10-03T02:50:25.235885Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="One Piece">
+    <a href="/chapters/01M3DVDYA933SQQ6703XQYMMGQ" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XY7E9FNDZ1DBBM6PBJPFK.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7E9FNDZ1DBBM6PBJPFK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7E9FNDZ1DBBM6PBJPFK.jpg" alt="One Piece cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">One Piece</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 1194</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="One Piece">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XY7E9FNDZ1DBBM6PBJPFK/One-Piece" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7E9FNDZ1DBBM6PBJPFK.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7E9FNDZ1DBBM6PBJPFK.jpg" alt="One Piece cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M3DVDYA933SQQ6703XQYMMGQ" preload>
+            <div class="truncate font-semibold text-lg">One Piece</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 1194</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-26T03:16:36.809Z">2026-09-26T03:16:36.809782Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Tales of Demons and Gods">
+    <a href="/chapters/01M3D0WMK5NB21VJACG4YQQ33N" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYBBSN5EJ5GTKCBB253NT.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBBSN5EJ5GTKCBB253NT.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBBSN5EJ5GTKCBB253NT.jpg" alt="Tales of Demons and Gods cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Tales of Demons and Gods</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 531.5</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Tales of Demons and Gods">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYBBSN5EJ5GTKCBB253NT/Tales-Of-Demons-And-Gods" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBBSN5EJ5GTKCBB253NT.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBBSN5EJ5GTKCBB253NT.jpg" alt="Tales of Demons and Gods cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M3D0WMK5NB21VJACG4YQQ33N" preload>
+            <div class="truncate font-semibold text-lg">Tales of Demons and Gods</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 531.5</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-25T19:32:46.822Z">2026-09-25T19:32:46.822022Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="That Time I Got Reincarnated as a Slime">
+    <a href="/chapters/01M3AD4SZWGDP4JETPBRVGZH17" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYBF8PQ831AW2N7B7BJVV.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBF8PQ831AW2N7B7BJVV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBF8PQ831AW2N7B7BJVV.jpg" alt="That Time I Got Reincarnated as a Slime cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">That Time I Got Reincarnated as a Slime</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 146</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="That Time I Got Reincarnated as a Slime">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYBF8PQ831AW2N7B7BJVV/Tensei-Shitara-Slime-Datta-Ken" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBF8PQ831AW2N7B7BJVV.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBF8PQ831AW2N7B7BJVV.jpg" alt="That Time I Got Reincarnated as a Slime cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M3AD4SZWGDP4JETPBRVGZH17" preload>
+            <div class="truncate font-semibold text-lg">That Time I Got Reincarnated as a Slime</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 146</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-24T19:09:14.108Z">2026-09-24T19:09:14.108699Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Witch Hat Atelier">
+    <a href="/chapters/01M21PSW752Z96CNXYED4JBJZ4" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYC2K8QWFZZRYYCZMN6EF.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC2K8QWFZZRYYCZMN6EF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC2K8QWFZZRYYCZMN6EF.jpg" alt="Witch Hat Atelier cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Witch Hat Atelier</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 99</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Witch Hat Atelier">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYC2K8QWFZZRYYCZMN6EF/Tongari-Booshi-No-Atorie" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYC2K8QWFZZRYYCZMN6EF.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYC2K8QWFZZRYYCZMN6EF.jpg" alt="Witch Hat Atelier cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M21PSW752Z96CNXYED4JBJZ4" preload>
+            <div class="truncate font-semibold text-lg">Witch Hat Atelier</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 99</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-08T23:49:09.989Z">2026-09-08T23:49:09.989868Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Grand Blue Dreaming">
+    <a href="/chapters/01M1VVE62C1SVK2C2AB7SBR52V" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYBWA1TEW2EBDYC9E3C9G.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBWA1TEW2EBDYC9E3C9G.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBWA1TEW2EBDYC9E3C9G.jpg" alt="Grand Blue Dreaming cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Grand Blue Dreaming</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 112</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Grand Blue Dreaming">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYBWA1TEW2EBDYC9E3C9G/Grand-Blue" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYBWA1TEW2EBDYC9E3C9G.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYBWA1TEW2EBDYC9E3C9G.jpg" alt="Grand Blue Dreaming cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M1VVE62C1SVK2C2AB7SBR52V" preload>
+            <div class="truncate font-semibold text-lg">Grand Blue Dreaming</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 112</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-06T17:14:43.148Z">2026-09-06T17:14:43.148241Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Hunter x Hunter">
+    <a href="/chapters/01M1VM14Y62MR6M9QD9TRGS7AQ" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XY7EXQV9RE9KQ3JYE0WZ9.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7EXQV9RE9KQ3JYE0WZ9.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7EXQV9RE9KQ3JYE0WZ9.jpg" alt="Hunter x Hunter cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Hunter x Hunter</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 420</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Hunter x Hunter">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XY7EXQV9RE9KQ3JYE0WZ9/Hunter-X-Hunter" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XY7EXQV9RE9KQ3JYE0WZ9.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XY7EXQV9RE9KQ3JYE0WZ9.jpg" alt="Hunter x Hunter cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M1VM14Y62MR6M9QD9TRGS7AQ" preload>
+            <div class="truncate font-semibold text-lg">Hunter x Hunter</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 420</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-09-06T15:05:15.974Z">2026-09-06T15:05:15.974710Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+<article class="bg-base-100 hover:bg-base-300 md:relative hidden md:block gap-4 tooltip tooltip-bottom" data-tip="Surviving the Game as a Barbarian">
+    <a href="/chapters/01M11JHB2DVB9G3ZSGN8CWWCT7" preload>
+        <div class="w-full aspect-4/6 overflow-hidden">
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/normal/01J76XYG976314R2DM2DKQRBGS.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG976314R2DM2DKQRBGS.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG976314R2DM2DKQRBGS.jpg" alt="Surviving the Game as a Barbarian cover" width="400" height="600" decoding="async">
+            </picture>
+        </div>
+        <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Surviving the Game as a Barbarian</div>
+            <div class="truncate text-white text-center text-lg z-20 w-[90%]">Chapter 154</div>
+        </div>
+    </a>
+</article>
+<article class="bg-base-100 hover:bg-base-300 flex gap-4 md:hidden tooltip tooltip-bottom" data-tip="Surviving the Game as a Barbarian">
+    <div class="w-[30%] aspect-square overflow-hidden">
+        <a href="/series/01J76XYG976314R2DM2DKQRBGS/Surviving-The-Game-as-a-Barbarian" preload>
+            <picture>
+                <source srcset="https://temp.compsci88.com/cover/small/01J76XYG976314R2DM2DKQRBGS.webp" width="200" height="300" type="image/webp">
+                <img src="https://temp.compsci88.com/cover/fallback/01J76XYG976314R2DM2DKQRBGS.jpg" alt="Surviving the Game as a Barbarian cover" width="200" height="300" decoding="async">
+            </picture>
+        </a>
+    </div>
+    <div class="w-[70%] min-w-0 flex flex-col justify-center pe-4">
+        <a href="/chapters/01M11JHB2DVB9G3ZSGN8CWWCT7" preload>
+            <div class="truncate font-semibold text-lg">Surviving the Game as a Barbarian</div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-ongoing.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <span>Chapter 154</span>
+            </div>
+            <div class="flex items-center gap-2 opacity-70">
+                <img src="/static/images/icon-clock.svg" alt="" width="16" height="16" class="h-4 w-4" decoding="async">
+                <time class="text-datetime" datetime="2026-08-27T12:18:54.158Z">2026-08-27T12:18:54.158154Z</time>
+            </div>
+        </a>
+    </div>
+</article>
+
+        </section>
+
+    </section>
+</main>
+
+
+    <dialog id="unverified_modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Verification Required</h3>
+            <p class="py-4">Only verified users can comment, post, or reply.</p>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <dialog id="emoji_picker_modal" class="modal">
+    <div class="modal-box max-w-md w-full p-3">
+        <emoji-picker
+            class="dark"
+            data-source="/static/js/emoji-picker-element/data.json"
+            style="width: 100%; height: 360px;"
+        ></emoji-picker>
+        <p id="emoji-picker-error" class="text-sm text-error mt-2 hidden">Can't add this emoji (field too full).</p>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="submit">close</button>
+    </form>
+</dialog>
+
+    
+
+    
+<footer class="bg-base-300 footer footer-center footer-horizontal text-base-content p-10">
+    <nav class="grid grid-flow-col gap-4">
+        <a class="link link-hover" href="/">Home</a>
+        <a class="link link-hover" href="https://weebcentral.com/contact">Contact</a>
+        <a class="link link-hover" href="https://weebcentral.com/privacy">Privacy</a>
+        <a class="link link-hover" href="https://weebcentral.com/faq">FAQ</a>
+    </nav>
+    <aside>
+        <p>v26.10.13</p>
+    </aside>
+    <aside>
+        <p>Copyright © Weeb Central</p>
+    </aside>
+</footer>
+
+
+    <!-- 3rd Party Libaries -->
+    <script type="module" src="/static/js/emoji-picker-element/index.js"></script>
+    <script defer src="/static/js/library.min.js"></script>
+
+    <!-- My Script -->
+    <script defer src="/static/js/script.min.js"></script>
+
+    
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cbd5fc8ba7142f',t:'MTc5MjM3MTUyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>

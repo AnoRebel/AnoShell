@@ -52,6 +52,7 @@ Singleton {
         { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers", category: "Utilities", source: "modules/wallpaperSelector/WallpaperSelector.qml" },
         { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities", source: "modules/screenCorners/ScreenCorners.qml", key: "screenCorners.enable" },
         { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities", source: "modules/focusTime/FocusTimePanel.qml", key: "focusTime.enable" },
+        { id: "anoReader", name: "Reader", icon: "auto_stories", desc: "Novel, manga and anime panels (anod's reader backend)", category: "Utilities", source: "modules/reader/ReaderHost.qml", key: "reader.enable" },
         { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor arrangement, mode and scale", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", capability: "outputConfig" },
         { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
         // Features with their own Settings pages (not listed on the Modules page)
@@ -70,7 +71,7 @@ Singleton {
         "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
-        "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer"]
+        "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader"]
     readonly property var familyModules: ({
         "ano": _core.concat(_sidebars, _rich, ["anoFocusTime", "anoDisplayManager"]),
         "hefty": _core.concat(_sidebars, _rich),
