@@ -96,6 +96,8 @@ Singleton {
             const arr = Array.from(JSON.parse(JSON.stringify(root.options[keys[0]])));
             const [p, leaf] = root._walkArrayPath(arr, keys.slice(1));
             if (JSON.stringify(p[leaf]) === JSON.stringify(convertedValue)) return;
+            if (root.recordUndo)
+                root.undoStack = root.undoStack.concat([{ key: nestedKey, mine: keys[0] in root._userDelta, old: p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf])) }]);
             p[leaf] = convertedValue;
             root.options[keys[0]] = arr;
             root._userDelta[keys[0]] = JSON.parse(JSON.stringify(arr));
@@ -105,6 +107,8 @@ Singleton {
 
         // 1. Live in-memory mutation — UI sees the change this tick
         const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
+        if (root.recordUndo && JSON.stringify(liveParent[liveLeaf]) !== JSON.stringify(convertedValue))
+            root.undoStack = root.undoStack.concat([{ key: nestedKey, mine: root.originOf(nestedKey) === "user", old: liveParent[liveLeaf] === undefined ? null : JSON.parse(JSON.stringify(liveParent[liveLeaf])) }]);
         // No-op when nothing changes. Controls echo their initial value
         // through onValueChanged/onCheckedChanged at creation; without this
         // every such echo was persisted into the user delta (defaults written
@@ -117,6 +121,25 @@ Singleton {
         deltaParent[deltaLeaf] = convertedValue;
 
         userDeltaWriteTimer.restart();
+    }
+
+    // ── Undo (in-place Customize) ─────────────────────────────────────────
+    // While recordUndo is on, every change pushes { key, old }; undo() puts
+    // the last one back (written like any change).
+    property bool recordUndo: false
+    property var undoStack: []
+    function undo() {
+        if (root.undoStack.length === 0) return
+        const last = root.undoStack[root.undoStack.length - 1]
+        root.undoStack = root.undoStack.slice(0, -1)
+        const was = root.recordUndo
+        root.recordUndo = false
+        // A key that was at its default goes back to the default (out of
+        // your config file), not to a written copy of it.
+        const top = last.key.split(".")[0]
+        if (last.mine) root.setNestedValue(last.key, last.old)
+        else root.resetToDefault(root._isArrayLike(root.options[top]) ? top : last.key)
+        root.recordUndo = was
     }
 
     // ── Preview (presets) ─────────────────────────────────────────────────

@@ -425,7 +425,9 @@ Scope {
                 TapHandler {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     enabled: !handleArea.containsMouse && !spotWindow.grown
-                    onTapped: (point, button) => root._dispatchClick(button, spotWindow)
+                    // Ctrl+right-click: Customize the pill (CustomizeSheet).
+                    onTapped: (point, button) => (button === Qt.RightButton && (point.modifiers & Qt.ControlModifier))
+                        ? GlobalStates.customizeSurface = "pill" : root._dispatchClick(button, spotWindow)
                 }
 
                 // Drop target — files/URIs dragged from any Wayland source

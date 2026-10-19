@@ -61,6 +61,7 @@ Singleton {
         { id: "anoSpot", source: "modules/anoSpot/AnoSpot.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
         { id: "anoSpotStash", source: "modules/anoSpot/AnoSpotStashPopout.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
         { id: "anoSpotWorkspacePreview", source: "modules/anoSpot/AnoSpotWorkspacePreview.qml", key: "anoSpot.enable", orPillBar: true, listed: false },
+        { id: "anoCustomize", source: "modules/settings/CustomizeSheet.qml", listed: false },
         { id: "anoWelcome", source: "modules/onboarding/Welcome.qml", listed: false },
         { id: "anoDisplayConfirm", source: "modules/displayManager/DisplayConfirm.qml", listed: false },
         { id: "anoMorphLayer", source: "modules/common/widgets/TopLayerPanel.qml", listed: false, effective: "morphingPanels" },
@@ -70,7 +71,7 @@ Singleton {
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen",
-        "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground", "anoDisplayConfirm", "anoWelcome"]
+        "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader"]

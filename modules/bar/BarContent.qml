@@ -136,7 +136,7 @@ Item {
         const cur = g.find(x => x.id === id)
         if (cur) root._setGroups(BarEdit.patch(g, id, { attached: cur.attached === false }))
     }
-    function openCustomize() { GlobalStates.settingsPage = 2; GlobalStates.settingsOpen = true }
+    function openCustomize() { GlobalStates.customizeSurface = "bar" } // CustomizeSheet
 
     BarGroupMenu { id: groupMenu; barEdge: root.edge }
     // Gap a detached group opens on each side; inset of floating forms.
