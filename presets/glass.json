@@ -1,0 +1,11 @@
+{
+  "name": "Glass",
+  "description": "The pill bar, with panels and cards in glass over your wallpaper",
+  "icon": "blur_on",
+  "values": {
+    "panelFamily": "ano",
+    "bar.style": "pill",
+    "appearance.look": "liquid",
+    "appearance.glass.enable": true
+  }
+}

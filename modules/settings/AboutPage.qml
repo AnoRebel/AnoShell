@@ -25,6 +25,8 @@ ColumnLayout {
         configRoots: ["user"]
     }
 
+    PresetsCard {}
+
     // ═══ Reset everything ═══
     // Global "wipe the user delta" — only visible when at least one key
     // has been overridden. Two-step inline confirmation, no modal.

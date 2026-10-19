@@ -1,0 +1,11 @@
+{
+  "name": "Classic",
+  "description": "A full bar along the edge, in the Ink look",
+  "icon": "dock_to_bottom",
+  "values": {
+    "panelFamily": "ano",
+    "bar.style": "classic",
+    "appearance.look": "ink",
+    "appearance.glass.enable": false
+  }
+}

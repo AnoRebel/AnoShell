@@ -119,6 +119,56 @@ Singleton {
         userDeltaWriteTimer.restart();
     }
 
+    // ── Preview (presets) ─────────────────────────────────────────────────
+    // preview({ "bar.style": "classic", … }) shows values live without
+    // writing anything; cancelPreview() puts the previous ones back,
+    // commitPreview() keeps them (written like any Settings change).
+    property var _previewOld: null      // key → value before the preview
+    property var _previewNew: null
+    readonly property bool previewing: _previewOld !== null
+    function preview(values) {
+        if (root._previewOld !== null) root.cancelPreview()
+        const old = {}
+        for (const k of Object.keys(values)) {
+            const [p, leaf] = root._walkPath(root.options, k, true)
+            old[k] = p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf]))
+            p[leaf] = values[k]
+        }
+        root._previewOld = old
+        root._previewNew = values
+    }
+    function cancelPreview() {
+        if (root._previewOld === null) return
+        for (const k of Object.keys(root._previewOld)) {
+            const [p, leaf] = root._walkPath(root.options, k, true)
+            p[leaf] = root._previewOld[k]
+        }
+        root._previewOld = null
+        root._previewNew = null
+    }
+    function commitPreview() {
+        if (root._previewOld === null) return
+        const vals = root._previewNew
+        root.cancelPreview() // back to the stored values, so setNestedValue sees a change
+        for (const k of Object.keys(vals)) root.setNestedValue(k, vals[k])
+    }
+    // The user's settings as a preset: every key they changed (dotted), minus
+    // anything that looks like a credential (keys live in secrets/, but be sure).
+    function exportValues() {
+        const out = {}
+        const walk = (obj, prefix) => {
+            for (const k of Object.keys(obj)) {
+                const path = prefix ? `${prefix}.${k}` : k
+                const v = obj[k]
+                if (/key|token|secret|password|passwd|cookie/i.test(k)) continue
+                if (v && typeof v === "object" && !Array.isArray(v)) walk(v, path)
+                else out[path] = v
+            }
+        }
+        walk(root._userDelta, "")
+        return out
+    }
+
     // True when at least one key has been overridden by the user.
     readonly property bool hasUserOverrides: {
         // Re-evaluate when _userDelta changes

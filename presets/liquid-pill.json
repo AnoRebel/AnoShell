@@ -1,0 +1,11 @@
+{
+  "name": "Liquid Pill",
+  "description": "The pill is the bar, in the Liquid look",
+  "icon": "water_drop",
+  "values": {
+    "panelFamily": "ano",
+    "bar.style": "pill",
+    "appearance.look": "liquid",
+    "appearance.glass.enable": false
+  }
+}

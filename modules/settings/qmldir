@@ -10,6 +10,7 @@ GeneralConfig 1.0 GeneralConfig.qml
 KeybindsPage 1.0 KeybindsPage.qml
 ModulesConfig 1.0 ModulesConfig.qml
 OverviewConfig 1.0 OverviewConfig.qml
+PresetsCard 1.0 PresetsCard.qml
 ServicesConfig 1.0 ServicesConfig.qml
 SettingsCard 1.0 SettingsCard.qml
 SettingsCommandPalette 1.0 SettingsCommandPalette.qml

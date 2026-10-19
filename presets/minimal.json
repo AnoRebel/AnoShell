@@ -1,0 +1,10 @@
+{
+  "name": "Minimal",
+  "description": "Bar and essential overlays only: no dock, sidebars or HUD",
+  "icon": "crop_square",
+  "values": {
+    "panelFamily": "minimal",
+    "appearance.look": "",
+    "appearance.glass.enable": false
+  }
+}
