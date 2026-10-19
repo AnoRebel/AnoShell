@@ -1292,6 +1292,72 @@
   ]
  },
  {
+  "page": 4,
+  "card": "Productivity",
+  "label": "Productivity",
+  "sublabel": "Notepad, to-do and pomodoro in the right sidebar; a sticky note on the desktop · all off by default",
+  "keys": [
+   "notepad",
+   "todo",
+   "pomodoro",
+   "stickyNotes"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Notepad",
+  "sublabel": "Tabs of text, kept in ~/.local/share/anoshell/notepad.json",
+  "keys": [
+   "notepad.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "To-do",
+  "sublabel": "Synced both ways with a todo.txt you can edit anywhere",
+  "keys": [
+   "todo.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "todo.txt",
+  "sublabel": "Empty: ~/.local/share/anoshell/todo.txt",
+  "keys": [
+   "todo.file"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Pomodoro and stopwatch",
+  "sublabel": "Separate from Focus Time: no Do Not Disturb, no tracking",
+  "keys": [
+   "pomodoro.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Sticky note",
+  "sublabel": "On the desktop, kept in ~/.local/share/anoshell/sticky.md",
+  "keys": [
+   "stickyNotes.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Click-through",
+  "sublabel": "Clicks go to the windows below (its pin turns this off)",
+  "keys": [
+   "stickyNotes.clickThrough"
+  ]
+ },
+ {
   "page": 5,
   "card": "AnoSpot",
   "label": "AnoSpot",

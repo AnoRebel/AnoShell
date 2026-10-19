@@ -24,6 +24,9 @@ Singleton {
     readonly property string music: StandardPaths.standardLocations(StandardPaths.MusicLocation)[0]
     readonly property string videos: StandardPaths.standardLocations(StandardPaths.MoviesLocation)[0]
 
+    // AnoShell's own data ($XDG_DATA_HOME/anoshell, without "file://"): notes, todo.txt, …
+    readonly property string anoData: FileUtils.trimFileProtocol(`${root.genericData}/anoshell`)
+
     // Shell-specific paths (without "file://")
     property string assetsPath: Quickshell.shellPath("assets")
     property string scriptPath: Quickshell.shellPath("scripts")

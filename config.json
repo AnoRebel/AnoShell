@@ -214,6 +214,28 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "notepad": {
+    "enable": false
+  },
+  "todo": {
+    "enable": false,
+    "file": ""
+  },
+  "pomodoro": {
+    "enable": false,
+    "focusMinutes": 25,
+    "breakMinutes": 5,
+    "longBreakMinutes": 15,
+    "cyclesBeforeLongBreak": 4
+  },
+  "stickyNotes": {
+    "enable": false,
+    "clickThrough": false,
+    "x": 40,
+    "y": 80,
+    "width": 280,
+    "height": 220
+  },
   "settings": {
     "showAdvanced": false
   },

@@ -15,7 +15,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Sidebars"
         subtitle: "Behavior, widget toggles, sliders"
-        configRoots: ["sidebar"]
+        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes"]
     }
 
     // ═══ Sidebar Behavior ═══
@@ -174,6 +174,74 @@ ColumnLayout {
             sublabel: "Additional slider for microphone input volume"
             checked: Config.options?.sidebar?.quickSliders?.showMic ?? false
             onCheckedChanged: Config.setNestedValue("sidebar.quickSliders.showMic", checked)
+        }
+    }
+
+    // ═══ Productivity ═══
+    SettingsCard {
+        icon: "task_alt"
+        title: "Productivity"
+        subtitle: "Notepad, to-do and pomodoro in the right sidebar; a sticky note on the desktop · all off by default"
+        configKeys: ["notepad", "todo", "pomodoro", "stickyNotes"]
+
+        ConfigSwitch {
+            label: "Notepad"; configKey: "notepad.enable"
+            sublabel: "Tabs of text, kept in ~/.local/share/anoshell/notepad.json"
+            checked: Config.options?.notepad?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("notepad.enable", checked)
+        }
+        ConfigSwitch {
+            label: "To-do"; configKey: "todo.enable"
+            sublabel: "Synced both ways with a todo.txt you can edit anywhere"
+            checked: Config.options?.todo?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("todo.enable", checked)
+        }
+        ConfigRow {
+            visible: Config.options?.todo?.enable ?? false
+            label: "todo.txt"; configKey: "todo.file"
+            sublabel: "Empty: ~/.local/share/anoshell/todo.txt"
+            StyledTextInput {
+                text: Config.options?.todo?.file ?? ""
+                onEditingFinished: Config.setNestedValue("todo.file", text.trim())
+                Layout.fillWidth: true
+            }
+        }
+        ConfigSwitch {
+            label: "Pomodoro and stopwatch"; configKey: "pomodoro.enable"
+            sublabel: "Separate from Focus Time: no Do Not Disturb, no tracking"
+            checked: Config.options?.pomodoro?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("pomodoro.enable", checked)
+        }
+        Repeater {
+            model: [
+                { key: "focusMinutes", label: "Focus", from: 5, to: 90 },
+                { key: "breakMinutes", label: "Short break", from: 1, to: 30 },
+                { key: "longBreakMinutes", label: "Long break", from: 5, to: 60 },
+                { key: "cyclesBeforeLongBreak", label: "Focus sessions before a long break", from: 2, to: 8 }
+            ]
+            delegate: ConfigSlider {
+                required property var modelData
+                visible: Config.options?.pomodoro?.enable ?? false
+                label: modelData.label
+                configKey: `pomodoro.${modelData.key}`
+                from: modelData.from; to: modelData.to; stepSize: 1
+                value: Config.options?.pomodoro?.[modelData.key] ?? modelData.from
+                onValueChanged: Config.setNestedValue(`pomodoro.${modelData.key}`, Math.round(value))
+                valueText: modelData.key.endsWith("Minutes") ? `${Math.round(value)} min` : `${Math.round(value)}`
+            }
+        }
+        ConfigSwitch {
+            label: "Sticky note"; configKey: "stickyNotes.enable"
+            sublabel: "On the desktop, kept in ~/.local/share/anoshell/sticky.md"
+            checked: Config.options?.stickyNotes?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("stickyNotes.enable", checked)
+        }
+        ConfigSwitch {
+            visible: Config.options?.stickyNotes?.enable ?? false
+            label: "Click-through"; configKey: "stickyNotes.clickThrough"
+            sublabel: "Clicks go to the windows below (its pin turns this off)"
+            checked: Config.options?.stickyNotes?.clickThrough ?? false
+            onCheckedChanged: Config.setNestedValue("stickyNotes.clickThrough", checked)
         }
     }
 }

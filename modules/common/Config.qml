@@ -780,6 +780,30 @@ Singleton {
                 }
             }
 
+            // Productivity (right sidebar cards + a desktop note); all off by default.
+            property JsonObject notepad: JsonObject {
+                property bool enable: false // tabs kept in ~/.local/share/anoshell/notepad.json
+            }
+            property JsonObject todo: JsonObject {
+                property bool enable: false
+                property string file: "" // todo.txt to keep in sync; "" = ~/.local/share/anoshell/todo.txt
+            }
+            property JsonObject pomodoro: JsonObject {
+                property bool enable: false
+                property int focusMinutes: 25
+                property int breakMinutes: 5
+                property int longBreakMinutes: 15
+                property int cyclesBeforeLongBreak: 4
+            }
+            property JsonObject stickyNotes: JsonObject {
+                property bool enable: false
+                property bool clickThrough: false // clicks pass through to the windows below
+                property int x: 40
+                property int y: 80
+                property int width: 280
+                property int height: 220
+            }
+
             // Settings itself: show the advanced options (search always finds them).
             property JsonObject settings: JsonObject {
                 property bool showAdvanced: false

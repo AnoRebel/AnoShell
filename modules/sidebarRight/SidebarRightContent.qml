@@ -175,6 +175,28 @@ Rectangle {
             }
 
             // ═══════════════════════════════════════
+            // Productivity (each off until its own enable)
+            // ═══════════════════════════════════════
+            Loader {
+                Layout.fillWidth: true
+                active: Config.options?.pomodoro?.enable ?? false
+                visible: active
+                sourceComponent: PomodoroCard {}
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: Config.options?.todo?.enable ?? false
+                visible: active
+                sourceComponent: TodoCard {}
+            }
+            Loader {
+                Layout.fillWidth: true
+                active: Config.options?.notepad?.enable ?? false
+                visible: active
+                sourceComponent: NotepadCard {}
+            }
+
+            // ═══════════════════════════════════════
             // System info (CPU/RAM/Battery)
             // ═══════════════════════════════════════
             Loader {
