@@ -22,10 +22,59 @@ Scope {
     function open() { cheatsheetOpen = true }
     function close() { cheatsheetOpen = false; searchQuery = "" }
 
+    // What the running compositor binds, from anod (keybinds.active: ano's set
+    // once migrated, else the compositor's own config), plus the ano actions
+    // nothing binds. Without anod: the old per-compositor parsers.
+    property var anodData: null
+    property var catalogue: ({})
     readonly property var keybindData: {
+        if (root.anodData) return root.anodData
         if (CompositorService.compositor === "hyprland") return HyprlandKeybinds.keybinds
         if (CompositorService.compositor === "niri") return NiriKeybinds.keybinds
         return { children: [] }
+    }
+    onCheatsheetOpenChanged: if (cheatsheetOpen) root.fetch()
+
+    function fetch() {
+        if (!Anod.available) return
+        Anod.call("keybinds.catalogue", {}, (r) => { if (r) root.catalogue = r })
+        Anod.call("keybinds.active", { compositor: CompositorService.compositor }, (r, e) => {
+            if (e || !r) { console.warn(`[Cheatsheet] keybinds.active: ${e?.message}`); return }
+            root.anodData = root.sections(r.binds ?? [], r.unbound ?? [])
+        })
+    }
+
+    function describe(b) {
+        const a = b.args ?? []
+        if (b.action === "shell") return a.join(" ")
+        if (b.action === "exec") return a[0] ?? ""
+        if (b.action === "hyprland" || b.action === "niri") return a[0]?.startsWith("hl.bind(") ? "(Lua function)" : (a[0] ?? "")
+        const label = root.catalogue[b.action]?.label ?? b.action
+        return a.length ? `${label} ${a.join(" ")}` : label
+    }
+    function sectionOf(b) {
+        if (b.chord.startsWith("XF86")) return "Media & hardware"
+        if (b.action === "shell") return "Shell"
+        if (b.action === "exec") return "Apps & commands"
+        if (b.action.startsWith("focus.")) return "Focus"
+        if (b.action.startsWith("workspace.") || b.action.startsWith("window.toWorkspace")) return "Workspaces"
+        if (b.action.startsWith("window.")) return "Windows"
+        if (b.action === "hyprland") return "Hyprland"
+        if (b.action === "niri") return "niri"
+        return "Other"
+    }
+    function sections(binds, unbound) {
+        const order = ["Shell", "Apps & commands", "Windows", "Focus", "Workspaces", "Media & hardware", "Hyprland", "niri", "Other"]
+        const by = {}
+        for (const b of binds) {
+            if (b.submap) continue
+            const name = root.sectionOf(b)
+            ;(by[name] = by[name] ?? []).push({ keys: b.chord, action: root.describe(b), description: "" })
+        }
+        const children = order.filter(n => by[n]).map(n => ({ name: n, children: by[n] }))
+        if (unbound.length > 0)
+            children.push({ name: "AnoShell actions with no key", children: unbound.map(b => ({ keys: "", action: root.describe(b), description: "" })) })
+        return { children: children }
     }
 
     IpcHandler {
@@ -217,8 +266,9 @@ Scope {
                                                     Layout.preferredWidth: 200
                                                     Layout.alignment: Qt.AlignVCenter
 
+                                                    StyledText { visible: !modelData.keys; text: "not bound"; opacity: 0.45 }
                                                     Repeater {
-                                                        model: (modelData.keys ?? "").split("+")
+                                                        model: modelData.keys ? modelData.keys.split("+") : []
 
                                                         KeyboardKey {
                                                             required property string modelData

@@ -316,6 +316,25 @@ func main() {
 		}
 		return kbApply(o)
 	})
+	// The cheatsheet: what the running compositor binds, plus ano actions left unbound.
+	srv.HandleSlow("keybinds.active", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Compositor string `json:"compositor"`
+		}
+		json.Unmarshal(p, &req)
+		binds, unbound, err := keybinds.Active(keybinds.DefaultPaths(), req.Compositor)
+		if err != nil {
+			return nil, err
+		}
+		label := func(bs []keybinds.Bind) []map[string]any {
+			out := []map[string]any{}
+			for _, b := range bs {
+				out = append(out, map[string]any{"chord": b.Chord, "action": b.Action, "args": b.Args, "label": b.Describe(), "submap": b.Submap})
+			}
+			return out
+		}
+		return map[string]any{"binds": label(binds), "unbound": label(unbound), "migrated": keybinds.Migrated(keybinds.DefaultPaths())}, nil
+	})
 	srv.Handle("keybinds.catalogue", func(json.RawMessage) (any, error) {
 		out := map[string]any{}
 		for id, a := range keybinds.Catalogue {

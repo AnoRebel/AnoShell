@@ -52,6 +52,11 @@ anod's socket offers the same to Settings: `keybinds.list`, `keybinds.set`
 `conflict` error naming what is bound there, unless `replace` is set) and
 `keybinds.reset` (`{"chord"?}`; no chord resets everything).
 
+The cheatsheet (Super+/) asks anod for `keybinds.active`: what the running
+compositor binds right now (ano's set once migrated, else your own config,
+read the same way), grouped and searchable, plus the AnoShell actions that no
+key triggers.
+
 ## Migration
 
 Until you migrate, your compositor configs keep their own binds and the

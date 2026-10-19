@@ -36,7 +36,7 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property string niriConfigPath: `${Directories.config}/niri/ano.kdl`
+    property string niriConfigPath: `${FileUtils.trimFileProtocol(Directories.config)}/niri/config.kdl` // the live config (ano.kdl is the bundled copy)
     property var keybinds: ({ "children": [] })
     property bool ready: false
 
