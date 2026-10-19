@@ -316,6 +316,13 @@ func main() {
 		}
 		return kbApply(o)
 	})
+	srv.Handle("keybinds.catalogue", func(json.RawMessage) (any, error) {
+		out := map[string]any{}
+		for id, a := range keybinds.Catalogue {
+			out[id] = map[string]any{"label": a.Label, "arg": a.Arg, "hyprland": a.Hypr != nil, "niri": a.Niri != nil}
+		}
+		return out, nil
+	})
 	srv.Handle("keybinds.reset", func(p json.RawMessage) (any, error) {
 		var req struct {
 			Chord string `json:"chord"` // "" resets everything

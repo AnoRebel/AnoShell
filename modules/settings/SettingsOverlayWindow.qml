@@ -146,7 +146,8 @@ PanelWindow {
                                 case 6: return appearancePage
                                 case 7: return overviewPage
                                 case 8: return servicesPage
-                                case 9: return aboutPage
+                                case 9: return keybindsPage
+                                case 10: return aboutPage
                                 default: return generalPage
                             }
                         }
@@ -221,6 +222,10 @@ PanelWindow {
     Component {
         id: servicesPage
         ServicesConfig {}
+    }
+    Component {
+        id: keybindsPage
+        KeybindsPage {}
     }
     Component {
         id: aboutPage

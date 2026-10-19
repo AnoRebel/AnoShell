@@ -171,7 +171,8 @@ ShellRoot {
                             case 6: return comp_appearance
                             case 7: return comp_overview
                             case 8: return comp_services
-                            case 9: return comp_about
+                            case 9: return comp_keybinds
+                            case 10: return comp_about
                             default: return comp_general
                         }
                     }
@@ -199,5 +200,6 @@ ShellRoot {
     Component { id: comp_appearance; AppearanceConfig {} }
     Component { id: comp_overview; OverviewConfig {} }
     Component { id: comp_services; ServicesConfig {} }
+    Component { id: comp_keybinds; KeybindsPage {} }
     Component { id: comp_about; AboutPage {} }
 }

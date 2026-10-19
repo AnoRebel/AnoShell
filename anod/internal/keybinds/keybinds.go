@@ -156,6 +156,7 @@ func niriChord(c string) string {
 // Action renders one neutral action per backend; nil = not available there.
 type Action struct {
 	Label string
+	Arg   string                     // what the argument is ("" = none), for Settings
 	Hypr  func(args []string) string // Lua expression for hl.bind's second argument
 	Niri  func(args []string) string // KDL action (inside the bind's braces, no ';')
 }
@@ -180,10 +181,10 @@ var dirs = map[string][2]string{ // direction → niri focus / move action
 // Catalogue is every neutral action. Ids are stable: they are what the
 // user's keybinds.json refers to.
 var Catalogue = map[string]Action{
-	"exec": {Label: "Run a command",
+	"exec": {Label: "Run a command", Arg: "command line",
 		Hypr: func(a []string) string { return "hl.dsp.exec_cmd(" + luaStr(arg(a, 0)) + ")" },
 		Niri: func(a []string) string { return "spawn-sh " + kdlStr(arg(a, 0)) }},
-	"shell": {Label: "Shell action (qs ipc)",
+	"shell": {Label: "Shell action (qs ipc)", Arg: "target method [args]",
 		Hypr: func(a []string) string { return "hl.dsp.exec_cmd(" + luaStr(qsIPC(a)) + ")" },
 		Niri: func(a []string) string { return "spawn-sh " + kdlStr(qsIPC(a)) }},
 	"window.close":      {Label: "Close window", Hypr: lit("hl.dsp.window.close()"), Niri: lit("close-window")},
@@ -191,11 +192,11 @@ var Catalogue = map[string]Action{
 	"window.float":      {Label: "Toggle floating", Hypr: lit(`hl.dsp.window.float({ action = "toggle" })`), Niri: lit("toggle-window-floating")},
 	"window.center":     {Label: "Center window", Hypr: lit("hl.dsp.window.center()"), Niri: lit("center-column")},
 	"session.quit":      {Label: "Quit the compositor", Hypr: lit(`hl.dsp.exec_cmd("hyprshutdown")`), Niri: lit("quit")},
-	"workspace.focus": {Label: "Go to workspace",
+	"workspace.focus": {Label: "Go to workspace", Arg: "workspace number",
 		Hypr: func(a []string) string { return "hl.dsp.focus({ workspace = " + arg(a, 0) + " })" },
 		Niri: func(a []string) string { return "focus-workspace " + arg(a, 0) }},
 	// Relative workspace, in Hyprland's notation (e+1, r-1, +1 …): niri goes down for +, up for −.
-	"workspace.relative": {Label: "Next / previous workspace",
+	"workspace.relative": {Label: "Next / previous workspace", Arg: "e+1 or e-1",
 		Hypr: func(a []string) string { return "hl.dsp.focus({ workspace = " + luaStr(arg(a, 0)) + " })" },
 		Niri: func(a []string) string {
 			if strings.Contains(arg(a, 0), "-") {
@@ -203,10 +204,10 @@ var Catalogue = map[string]Action{
 			}
 			return "focus-workspace-down"
 		}},
-	"window.toWorkspace": {Label: "Move window to workspace",
+	"window.toWorkspace": {Label: "Move window to workspace", Arg: "workspace number",
 		Hypr: func(a []string) string { return "hl.dsp.window.move({ workspace = " + arg(a, 0) + " })" },
 		Niri: func(a []string) string { return "move-column-to-workspace " + arg(a, 0) }},
-	"window.toWorkspaceSilent": {Label: "Send window to workspace",
+	"window.toWorkspaceSilent": {Label: "Send window to workspace", Arg: "workspace number",
 		Hypr: func(a []string) string {
 			return "hl.dsp.window.move({ follow = false, workspace = " + arg(a, 0) + " })"
 		},

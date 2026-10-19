@@ -5,6 +5,7 @@ AppearanceConfig 1.0 AppearanceConfig.qml
 BarConfig 1.0 BarConfig.qml
 DockConfig 1.0 DockConfig.qml
 GeneralConfig 1.0 GeneralConfig.qml
+KeybindsPage 1.0 KeybindsPage.qml
 ModulesConfig 1.0 ModulesConfig.qml
 OverviewConfig 1.0 OverviewConfig.qml
 ServicesConfig 1.0 ServicesConfig.qml
