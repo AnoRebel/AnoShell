@@ -32,6 +32,20 @@ Scope {
             }
         }
     }
+    // Monitors plugged or unplugged: anod applies the profile saved for the
+    // new set (display.outputsChanged) and we name it briefly.
+    Connections {
+        target: Quickshell
+        function onScreensChanged() { profileDebounce.restart() }
+    }
+    Timer {
+        id: profileDebounce
+        interval: 1500 // let the compositor finish configuring the new output
+        onTriggered: Anod.call("display.outputsChanged", {}, (r, e) => {
+            if (r?.profile)
+                Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-u", "low", "-t", "2500", "Display profile", r.profile])
+        })
+    }
     Timer {
         running: root.pending !== null
         interval: 250
