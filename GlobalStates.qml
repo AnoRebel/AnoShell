@@ -45,6 +45,11 @@ Singleton {
     property int settingsPage: 0
     // In-place Customize: "bar", "pill" or "dock" while its sheet is open.
     property string customizeSurface: ""
+    // The palette jumped to an advanced option: show advanced cards until Settings closes.
+    property bool settingsRevealAdvanced: false
+    // What advanced Settings cards follow: your choice, or a palette jump.
+    readonly property bool settingsShowAdvanced: (Config.options.settings?.showAdvanced ?? false) || settingsRevealAdvanced
+    onSettingsOpenChanged: if (!settingsOpen) settingsRevealAdvanced = false
     property bool regionSelectorOpen: false
     property bool searchOpen: false
     property bool weatherPanelOpen: false

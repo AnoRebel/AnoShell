@@ -837,6 +837,7 @@ ColumnLayout {
     SettingsCard {
         icon: "code"
         title: "Advanced"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "Debug settings and workarounds"
         configKeys: ["hacks", "media", "sounds.theme", "bar.morphingPanels"]
         expanded: false

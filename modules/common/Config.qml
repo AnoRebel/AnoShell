@@ -777,6 +777,11 @@ Singleton {
                 }
             }
 
+            // Settings itself: show the advanced options (search always finds them).
+            property JsonObject settings: JsonObject {
+                property bool showAdvanced: false
+            }
+
             // First-run welcome: shown once on a fresh config (Settings → About runs it again).
             property JsonObject onboarding: JsonObject {
                 property bool seen: false

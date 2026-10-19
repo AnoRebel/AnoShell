@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import "."
@@ -23,6 +24,10 @@ Rectangle {
     // root ("audio") or a dotted path ("bar.layout.height"). The palette
     // scrolls to the first card whose configKeys list covers the query.
     property var configKeys: []
+    // Advanced: shown only with Settings' "Advanced" on, or when the palette
+    // jumps to one of its options.
+    property bool advanced: false
+    visible: !advanced || GlobalStates.settingsShowAdvanced
 
     Layout.fillWidth: true
     implicitHeight: cardColumn.implicitHeight + 2

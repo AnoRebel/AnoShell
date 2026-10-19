@@ -616,7 +616,8 @@
    "media",
    "sounds.theme",
    "bar.morphingPanels"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 1,
@@ -625,7 +626,8 @@
   "sublabel": "Delay (ms) for file reload operations to avoid race conditions",
   "keys": [
    "hacks.arbitraryRaceConditionDelay"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 1,
@@ -634,7 +636,8 @@
   "sublabel": "",
   "keys": [
    "sounds.theme"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 1,
@@ -643,7 +646,8 @@
   "sublabel": "ano",
   "keys": [
    "bar.morphingPanels"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 1,
@@ -652,7 +656,8 @@
   "sublabel": "Filter duplicate MPRIS players from browser integrations",
   "keys": [
    "media.filterDuplicatePlayers"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 1,
@@ -661,7 +666,8 @@
   "sublabel": "Name to track first when nothing is playing (e.g. spotify); empty = automatic",
   "keys": [
    "media.preferredPlayer"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -801,7 +807,8 @@
   "sublabel": "Bar height, corner radius, module spacing, padding, and decorations",
   "keys": [
    "bar.layout"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -810,7 +817,8 @@
   "sublabel": "Total thickness of the bar in pixels",
   "keys": [
    "bar.layout.height"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -819,7 +827,8 @@
   "sublabel": "Rounding of the bar background corners",
   "keys": [
    "bar.layout.radius"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -828,7 +837,8 @@
   "sublabel": "Gap between modules in the left section",
   "keys": [
    "bar.layout.leftSpacing"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -837,7 +847,8 @@
   "sublabel": "Gap between modules in the center group",
   "keys": [
    "bar.layout.centerSpacing"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -846,7 +857,8 @@
   "sublabel": "Gap between modules in the right section",
   "keys": [
    "bar.layout.rightSpacing"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -855,7 +867,8 @@
   "sublabel": "Distance from screen edge to first/last module",
   "keys": [
    "bar.layout.edgePadding"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -864,7 +877,8 @@
   "sublabel": "Inner padding of the center pill container",
   "keys": [
    "bar.layout.centerGroupPadding"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -873,7 +887,8 @@
   "sublabel": "Corner rounding of the center pill container",
   "keys": [
    "bar.layout.centerGroupRadius"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -882,7 +897,8 @@
   "sublabel": "Visible pill background behind center modules (workspaces)",
   "keys": [
    "bar.layout.showCenterBackground"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -891,7 +907,8 @@
   "sublabel": "Thin vertical lines between left, center, and right sections",
   "keys": [
    "bar.layout.showSeparators"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 2,
@@ -2258,7 +2275,8 @@
   "sublabel": "CPU, RAM, network polling frequency and history",
   "keys": [
    "resources"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2267,7 +2285,8 @@
   "sublabel": "How often /proc is polled for CPU/RAM/network data",
   "keys": [
    "resources.updateInterval"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2276,7 +2295,8 @@
   "sublabel": "Number of data points stored for graph display",
   "keys": [
    "resources.historyLength"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2285,7 +2305,8 @@
   "sublabel": "Backlight device override",
   "keys": [
    "light"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2294,7 +2315,8 @@
   "sublabel": "Leave empty for auto-detect. Use 'brightnessctl -l' to list devices.",
   "keys": [
    "light.device"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2429,7 +2451,8 @@
   "sublabel": "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface.",
   "keys": [
    "network.usage"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2438,7 +2461,8 @@
   "sublabel": "",
   "keys": [
    "network.usage.enable"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2447,7 +2471,8 @@
   "sublabel": "",
   "keys": [
    "network.usage.intervalMs"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2456,7 +2481,8 @@
   "sublabel": "Number of samples kept for sparkline display",
   "keys": [
    "network.usage.historyLength"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2564,7 +2590,8 @@
   "sublabel": "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter.",
   "keys": [
    "shell"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 8,
@@ -2573,10 +2600,48 @@
   "sublabel": "",
   "keys": [
    "shell.preferred"
-  ]
+  ],
+  "advanced": true
  },
  {
   "page": 9,
+  "card": "Arrangement",
+  "label": "Arrangement",
+  "sublabel": "Drag a monitor to move it; click one to change it",
+  "keys": []
+ },
+ {
+  "page": 9,
+  "card": "Profiles",
+  "label": "Profiles",
+  "sublabel": "Saved arrangements; the one saved for the monitors you plug in applies by itself",
+  "keys": []
+ },
+ {
+  "page": 9,
+  "card": "Cursor",
+  "label": "Cursor",
+  "sublabel": "Pointer theme and size · live, and for apps started later",
+  "keys": [
+   "cursor"
+  ]
+ },
+ {
+  "page": 10,
+  "card": "Keybinds",
+  "label": "Keybinds",
+  "sublabel": "",
+  "keys": []
+ },
+ {
+  "page": 10,
+  "card": "Reset",
+  "label": "Reset",
+  "sublabel": "Back to the shipped keybinds",
+  "keys": []
+ },
+ {
+  "page": 11,
   "card": "User Profile",
   "label": "User Profile",
   "sublabel": "Avatar, display name, and account settings",
@@ -2585,7 +2650,7 @@
   ]
  },
  {
-  "page": 9,
+  "page": 11,
   "card": "",
   "label": "Custom avatar path",
   "sublabel": "Override ~/.face with a custom path (leave empty for default)",
@@ -2594,31 +2659,38 @@
   ]
  },
  {
-  "page": 9,
+  "page": 11,
   "card": "Ano Shell",
   "label": "Ano Shell",
   "sublabel": "A comprehensive QuickShell desktop shell",
   "keys": []
  },
  {
-  "page": 9,
+  "page": 11,
   "card": "System Details",
   "label": "System Details",
   "sublabel": "Runtime environment and paths",
   "keys": []
  },
  {
-  "page": 9,
+  "page": 11,
   "card": "Features",
   "label": "Features",
   "sublabel": "What this shell can do",
   "keys": []
  },
  {
-  "page": 9,
+  "page": 11,
   "card": "Credits & Sources",
   "label": "Credits & Sources",
   "sublabel": "Built from patterns across the QuickShell community",
+  "keys": []
+ },
+ {
+  "page": 11,
+  "card": "Presets",
+  "label": "Presets",
+  "sublabel": "Try a whole setup live, then keep it or go back",
   "keys": []
  }
 ]

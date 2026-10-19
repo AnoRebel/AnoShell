@@ -255,6 +255,7 @@ ColumnLayout {
     SettingsCard {
         icon: "monitor_heart"
         title: "Resources Monitor"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "CPU, RAM, network polling frequency and history"
         configKeys: ["resources"]
 
@@ -303,6 +304,7 @@ ColumnLayout {
     SettingsCard {
         icon: "brightness_6"
         title: "Brightness"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "Backlight device override"
         configKeys: ["light"]
 
@@ -533,6 +535,7 @@ ColumnLayout {
     SettingsCard {
         icon: "monitoring"
         title: "Network usage tracking"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface."
         configKeys: ["network.usage"]
 
@@ -764,6 +767,7 @@ ColumnLayout {
     SettingsCard {
         icon: "terminal"
         title: "Shell"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter."
         configKeys: ["shell"]
 

@@ -564,6 +564,7 @@ ColumnLayout {
     SettingsCard {
         icon: "straighten"
         title: "Layout & Sizing"
+        advanced: true // hidden unless Settings shows advanced options (search still finds it)
         subtitle: "Bar height, corner radius, module spacing, padding, and decorations"
         configKeys: ["bar.layout"]
 

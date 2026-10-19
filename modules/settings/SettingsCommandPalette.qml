@@ -204,6 +204,7 @@ Loader {
                                     StyledText {
                                         text: (paletteDelegate.modelData.label ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
                                             + ({ "user": " · changed in your config", "migrated": " · migrated" }[Config.originOf(paletteDelegate.modelData.key)] ?? "")
+                                            + (paletteDelegate.modelData.advanced ? " · Advanced" : "")
                                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 11
                                         opacity: 0.55
                                     }
@@ -246,6 +247,7 @@ Loader {
         const idx = list ? list.currentIndex : -1;
         if (idx < 0 || idx >= SettingsRegistry.results.length) return;
         const entry = SettingsRegistry.results[idx];
+        if (entry.advanced) GlobalStates.settingsRevealAdvanced = true;
         root.pageRequested(entry.pageIndex);
         // Scroll-to-card after the page Loader swaps in the new page.
         // We use a one-shot Timer because activePageItem is bound through

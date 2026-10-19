@@ -213,6 +213,9 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "settings": {
+    "showAdvanced": false
+  },
   "onboarding": {
     "seen": false
   },

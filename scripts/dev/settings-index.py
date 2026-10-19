@@ -19,7 +19,11 @@ SETTINGS = ROOT / "modules/settings"
 OUT = SETTINGS / "settings-index.json"
 # Page order = SettingsRegistry.pages order.
 PAGES = ["GeneralConfig", "ModulesConfig", "BarConfig", "DockConfig", "SidebarsConfig",
-         "AnoSpotConfig", "AppearanceConfig", "OverviewConfig", "ServicesConfig", "AboutPage"]
+         "AnoSpotConfig", "AppearanceConfig", "OverviewConfig", "ServicesConfig", "DisplaysPage",
+         "KeybindsPage", "AboutPage"]
+# Cards kept in their own files, indexed with the page that shows them.
+EXTRA = {"DisplaysPage": ["CursorCard"], "AboutPage": ["PresetsCard"]}
+ADVANCED_RE = re.compile(r"^\s*advanced\s*:\s*true\b", re.M)
 
 STR = r'"((?:\\.|[^"\\])*)"'
 OBJ_RE = re.compile(r"\b([A-Z][A-Za-z0-9_]*)\s*\{")
@@ -66,6 +70,16 @@ def own_props(body):
     return out
 
 
+def own_body(body):
+    """The lines of a block outside its nested objects."""
+    flat, depth = [], 0
+    for line in body.split("\n"):
+        if depth == 0:
+            flat.append(line)
+        depth += line.count("{") - line.count("}")
+    return "\n".join(flat)
+
+
 def keys_written(body):
     return sorted({a or b.rstrip(".") for a, b in WRITE_RE.findall(body)} - {""})
 
@@ -73,20 +87,31 @@ def keys_written(body):
 def build():
     entries = []
     for idx, name in enumerate(PAGES):
-        src = strip_comments((SETTINGS / f"{name}.qml").read_text())
+        src = "\n".join(strip_comments((SETTINGS / f"{n}.qml").read_text()) for n in [name] + EXTRA.get(name, []))
+        adv_keys = set()
+        for typ, body in blocks(src):
+            if typ == "SettingsCard" and ADVANCED_RE.search(own_body(body)):
+                ck = KEYS_RE.search(body)
+                adv_keys |= set(re.findall(STR, ck.group(1)) if ck else keys_written(body)) | set(keys_written(body))
         for typ, body in blocks(src):
             props = own_props(body)
             if typ == "SettingsCard":
                 ck = KEYS_RE.search(body)
                 keys = re.findall(STR, ck.group(1)) if ck else keys_written(body)
                 if props.get("title"):
-                    entries.append({"page": idx, "card": props["title"], "label": props["title"],
-                                    "sublabel": props.get("subtitle", ""), "keys": keys})
+                    e = {"page": idx, "card": props["title"], "label": props["title"],
+                         "sublabel": props.get("subtitle", ""), "keys": keys}
+                    if ADVANCED_RE.search(own_body(body)):
+                        e["advanced"] = True
+                    entries.append(e)
             elif "label" in props:
                 keys = keys_written(body)
                 if keys:
-                    entries.append({"page": idx, "card": "", "label": props["label"],
-                                    "sublabel": props.get("sublabel", ""), "keys": keys})
+                    e = {"page": idx, "card": "", "label": props["label"],
+                         "sublabel": props.get("sublabel", ""), "keys": keys}
+                    if set(keys) <= adv_keys:
+                        e["advanced"] = True
+                    entries.append(e)
     return entries
 
 

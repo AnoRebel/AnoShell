@@ -55,6 +55,14 @@ ColumnLayout {
             }
         }
 
+        // Advanced options on every page (persists: settings.showAdvanced).
+        RippleButton {
+            Layout.alignment: Qt.AlignTop
+            toggled: Config.options.settings?.showAdvanced ?? false
+            buttonText: "Advanced"
+            onClicked: Config.setNestedValue("settings.showAdvanced", !(Config.options.settings?.showAdvanced ?? false))
+        }
+
         // Reset action — collapsed when nothing to reset, two-step
         // confirmation when there is.
         Loader {

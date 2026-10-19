@@ -134,6 +134,7 @@ Singleton {
                     out.push(entry);
                 }
                 entry.haystack += " " + words;
+                if (item.advanced) entry.advanced = true;
                 if (!entry.label && !item.card) entry.label = item.label; // shown in the palette row
             }
         }
