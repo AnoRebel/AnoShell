@@ -74,6 +74,16 @@ var keyNames = map[string]string{
 	"wheelscrollleft": "WheelScrollLeft", "wheelscrollright": "WheelScrollRight",
 }
 
+// xf86Keys are the common XF86 keysyms, for spellings like "xf86audiomute"
+// (Hyprland matches keys case-insensitively; niri wants the exact name).
+var xf86Keys = []string{"AudioRaiseVolume", "AudioLowerVolume", "AudioMute", "AudioMicMute", "AudioPlay", "AudioPause", "AudioNext", "AudioPrev", "AudioStop", "AudioMedia", "MonBrightnessUp", "MonBrightnessDown", "KbdBrightnessUp", "KbdBrightnessDown", "KbdLightOnOff", "TouchpadToggle", "Close", "WLAN", "Calculator", "Explorer", "Search", "Mail", "PowerOff", "Sleep", "Display", "Tools", "Favorites"}
+
+func init() {
+	for _, k := range xf86Keys {
+		keyNames["xf86"+strings.ToLower(k)] = "XF86" + k
+	}
+}
+
 // hyprKeys spells canonical keys the way Hyprland binds them, where it differs.
 var hyprKeys = map[string]string{
 	"WheelScrollDown": "mouse_down", "WheelScrollUp": "mouse_up",

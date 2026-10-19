@@ -1,11 +1,15 @@
 package keybinds
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 )
 
 const bundled = "../../../external"
@@ -124,5 +128,167 @@ func TestMergeAccountsForEveryBind(t *testing.T) {
 			}
 		}
 		t.Logf("%s: %d of %d bundled binds kept as is", comp, kept, len(set))
+	}
+}
+
+func copyTree(t *testing.T, src, dst string) {
+	t.Helper()
+	filepath.Walk(src, func(p string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(src, p)
+		if fi.IsDir() {
+			if fi.Name() == ".backups" {
+				return filepath.SkipDir
+			}
+			return os.MkdirAll(filepath.Join(dst, rel), 0o755)
+		}
+		b, _ := os.ReadFile(p)
+		return os.WriteFile(filepath.Join(dst, rel), b, fi.Mode().Perm())
+	})
+}
+
+func sum(t *testing.T, p string) string {
+	b, err := os.ReadFile(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fmt.Sprintf("%x", sha256.Sum256(b))
+}
+
+// Migration on copies of the bundled configs: afterwards the compositor sees
+// exactly the generated binds, the configs keep no bind of their own, and a
+// revert restores them byte for byte.
+func TestMigrateAndRevert(t *testing.T) {
+	needLua(t)
+	cfg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	copyTree(t, filepath.Join(bundled, "hyprland"), filepath.Join(cfg, "hypr"))
+	os.MkdirAll(filepath.Join(cfg, "niri"), 0o755)
+	kdl, _ := os.ReadFile(filepath.Join(bundled, "niri", "ano.kdl"))
+	os.WriteFile(filepath.Join(cfg, "niri", "config.kdl"), kdl, 0o644)
+	p := DefaultPaths()
+	before := map[string]string{p.HyprMain: sum(t, p.HyprMain), p.NiriMain: sum(t, p.NiriMain),
+		filepath.Join(cfg, "hypr", "custom", "keybinds.lua"): sum(t, filepath.Join(cfg, "hypr", "custom", "keybinds.lua"))}
+
+	d, err := LoadDefaults()
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := Migrate(p, d, time.Date(2026, 10, 19, 5, 0, 0, 0, time.UTC), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("moved %v; %d overrides\n%s", res.Moved, res.Overrides, strings.Join(res.Report, "\n"))
+
+	main, _ := os.ReadFile(p.HyprMain)
+	for _, l := range strings.Split(string(main), "\n") {
+		if strings.Contains(l, "hl.bind(") && !strings.HasPrefix(strings.TrimSpace(l), "--") {
+			t.Errorf("bind left in hyprland.lua: %s", l)
+		}
+	}
+	if !strings.Contains(string(main), IncludeHyprland) {
+		t.Error("no include line in hyprland.lua")
+	}
+	if out, err := exec.Command("luac", "-p", p.HyprMain).CombinedOutput(); err != nil {
+		t.Errorf("luac: %s", out)
+	}
+	// What Hyprland would now bind = the effective set for Hyprland.
+	got, err := ReadHyprland(p.HyprMain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	o, _ := LoadOverrides(p.Overrides)
+	var want []Bind
+	for _, b := range Effective(d, o) {
+		if b.On("hyprland") {
+			want = append(want, b)
+		}
+	}
+	if len(got) != len(want) {
+		t.Fatalf("hyprland binds after migration: %d, want %d", len(got), len(want))
+	}
+	nk, _ := os.ReadFile(p.NiriMain)
+	if strings.Contains(string(nk), "\nbinds {") || !strings.Contains(string(nk), IncludeNiri) {
+		t.Error("niri config still has its binds block, or no include")
+	}
+	if _, err := exec.LookPath("niri"); err == nil {
+		if out, err := exec.Command("niri", "validate", "-c", p.NiriMain).CombinedOutput(); err != nil {
+			t.Errorf("niri validate: %s", out)
+		}
+	}
+	// Nothing changes for the user: each compositor still has every bind it had.
+	origH, _ := ReadHyprland(filepath.Join(bundled, "hyprland", "hyprland.lua"))
+	origN, _ := ReadNiri(filepath.Join(bundled, "niri", "ano.kdl"))
+	genN, err := ReadNiri(p.NiriBinds)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for comp, pair := range map[string][2][]Bind{"hyprland": {origH, got}, "niri": {origN, genN}} {
+		for _, b := range pair[0] {
+			found := false
+			for _, g := range pair[1] {
+				if g.Key() == b.Key() && Same(g, b) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("%s lost %s → %s", comp, b.Chord, b.Describe())
+			}
+		}
+	}
+	if _, err := Migrate(p, d, time.Now(), false); err == nil {
+		t.Error("a second migration was allowed")
+	}
+
+	if _, err := Revert(p); err != nil {
+		t.Fatal(err)
+	}
+	for f, s := range before {
+		if sum(t, f) != s {
+			t.Errorf("%s differs after revert", f)
+		}
+	}
+}
+
+func TestSetConflictReset(t *testing.T) {
+	d := Defaults{Binds: []Bind{
+		{Chord: "Super+Space", Action: "shell", Args: []string{"search", "toggle"}},
+		{Chord: "Super+Q", Action: "window.close"},
+	}}
+	var o Overrides
+	launcher := &Bind{Action: "shell", Args: []string{"search", "toggle"}}
+	// Super+Q is taken: conflict, nothing changes.
+	if _, err := Set(d, o, "SUPER + Q", "", launcher, false); err == nil {
+		t.Fatal("no conflict reported")
+	} else if ce, ok := err.(*ConflictError); !ok || ce.Existing[0].Action != "window.close" {
+		t.Fatalf("conflict: %v", err)
+	}
+	// Rebind the launcher to Super+D, and drop it from Super+Space.
+	o, err := Set(d, o, "Super+D", "", launcher, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	o, _ = Set(d, o, "Super+Space", "", nil, false)
+	eff := Effective(d, o)
+	if len(ChordUsers(eff, "Super+D", "")) != 1 || len(ChordUsers(eff, "Super+Space", "")) != 0 {
+		t.Fatalf("effective: %+v", eff)
+	}
+	// Replace wins over a conflict.
+	if o, err = Set(d, o, "Super+Q", "", &Bind{Action: "exec", Args: []string{"kitty"}}, true); err != nil {
+		t.Fatal(err)
+	}
+	if u := ChordUsers(Effective(d, o), "Super+Q", ""); len(u) != 1 || u[0].Action != "exec" {
+		t.Fatalf("replace: %+v", u)
+	}
+	// Reset one, then all: back to the defaults.
+	o = Reset(o, "Super+Q")
+	if u := ChordUsers(Effective(d, o), "Super+Q", ""); len(u) != 1 || u[0].Action != "window.close" {
+		t.Fatal("reset one")
+	}
+	if eff := Effective(d, Reset(o, "")); len(eff) != len(d.Binds) {
+		t.Fatal("reset all")
 	}
 }

@@ -29,18 +29,19 @@ type hyprRecord struct {
 // ReadHyprland runs a Hyprland Lua config (and what it requires) against a
 // recording hl and returns its binds, in order. Needs `lua` (dev tool).
 func ReadHyprland(path string) ([]Bind, error) {
-	cmd := exec.Command("lua", "-", path)
-	cmd.Stdin = bytes.NewReader(stubLua)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
+	out, err := runStub(path)
 	if err != nil {
-		return nil, fmt.Errorf("lua %s: %v: %s", path, err, stderr.String())
+		return nil, err
 	}
 	var recs []hyprRecord
 	if err := json.Unmarshal(out, &recs); err != nil {
 		return nil, err
 	}
+	return recordsToBinds(recs), nil
+}
+
+// recordsToBinds converts stub records, reading raw binds' source text.
+func recordsToBinds(recs []hyprRecord) []Bind {
 	src := map[string][]string{}
 	binds := make([]Bind, 0, len(recs))
 	for _, r := range recs {
@@ -56,7 +57,20 @@ func ReadHyprland(path string) ([]Bind, error) {
 		}
 		binds = append(binds, b)
 	}
-	return binds, nil
+	return binds
+}
+
+// runStub runs path under stub.lua and returns its JSON.
+func runStub(path string) ([]byte, error) {
+	cmd := exec.Command("lua", "-", path)
+	cmd.Stdin = bytes.NewReader(stubLua)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("lua %s: %v: %s", path, err, stderr.String())
+	}
+	return out, nil
 }
 
 // statementAt returns the source of the call that ends on line (1-based):

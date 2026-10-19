@@ -21,6 +21,7 @@ import (
 	"ano/anod/internal/config"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
+	"ano/anod/internal/keybinds"
 	"ano/anod/internal/palette"
 	"ano/anod/internal/reader"
 	"ano/anod/internal/secrets"
@@ -249,6 +250,83 @@ func main() {
 	})
 	srv.Handle("reader.status", func(json.RawMessage) (any, error) { return rd.Status(), nil })
 	srv.Handle("reader.stop", func(json.RawMessage) (any, error) { rd.StopPlayback(); return true, nil })
+
+	// Keybinds (Settings → Keybinds): one set, rendered for Hyprland and niri.
+	kbApply := func(o keybinds.Overrides) (any, error) {
+		d, err := keybinds.LoadDefaults()
+		if err != nil {
+			return nil, err
+		}
+		p := keybinds.DefaultPaths()
+		if err := keybinds.SaveOverrides(p.Overrides, o); err != nil {
+			return nil, err
+		}
+		h, _, err := keybinds.Generate(p, keybinds.Effective(d, o), d.Helpers)
+		if err == nil && h {
+			err = keybinds.Reload()
+		}
+		return true, err
+	}
+	srv.Handle("keybinds.list", func(json.RawMessage) (any, error) {
+		d, err := keybinds.LoadDefaults()
+		if err != nil {
+			return nil, err
+		}
+		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
+		if err != nil {
+			return nil, err
+		}
+		type row struct {
+			keybinds.Bind
+			Hyprland bool   `json:"onHyprland"`
+			Niri     bool   `json:"onNiri"`
+			Label    string `json:"label"`
+		}
+		var rows []row
+		for _, b := range keybinds.Effective(d, o) {
+			rows = append(rows, row{b, b.On("hyprland"), b.On("niri"), b.Describe()})
+		}
+		return map[string]any{"binds": rows, "overrides": o, "migrated": keybinds.Migrated(keybinds.DefaultPaths())}, nil
+	})
+	srv.Handle("keybinds.set", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Chord   string         `json:"chord"`
+			Submap  string         `json:"submap"`
+			Bind    *keybinds.Bind `json:"bind"` // null removes the chord
+			Replace bool           `json:"replace"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Chord == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {chord, bind|null, replace?, submap?}")
+		}
+		d, err := keybinds.LoadDefaults()
+		if err != nil {
+			return nil, err
+		}
+		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
+		if err != nil {
+			return nil, err
+		}
+		o, err = keybinds.Set(d, o, req.Chord, req.Submap, req.Bind, req.Replace)
+		var ce *keybinds.ConflictError
+		if errors.As(err, &ce) {
+			return nil, ipc.Errorf("conflict", "%v", ce)
+		}
+		if err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
+		}
+		return kbApply(o)
+	})
+	srv.Handle("keybinds.reset", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Chord string `json:"chord"` // "" resets everything
+		}
+		json.Unmarshal(p, &req)
+		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
+		if err != nil {
+			return nil, err
+		}
+		return kbApply(keybinds.Reset(o, req.Chord))
+	})
 
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)

@@ -65,3 +65,4 @@ chrome: no bar and no dock.
 - [Configuration](configuration.md): your config file, Settings, bar forms and groups.
 - [The `ano` CLI](cli.md): status, doctor, setup and backups.
 - [Reader](reader.md): the novel, manga and anime panels.
+- [Keybinds](keybinds.md): one keybind set for Hyprland and niri.

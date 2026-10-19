@@ -17,7 +17,7 @@ hl.dsp = rec("dsp")
 hl.bind = function(chord, action, opts)
 	local at = debug.getinfo(2, "Sl")
 	binds[#binds + 1] = { chord = chord, action = action, opts = opts, submap = submap,
-		line = at.currentline, file = at.short_src }
+		line = at.currentline, file = at.source:sub(2) }
 end
 hl.define_submap = function(name, fn)
 	local prev = submap

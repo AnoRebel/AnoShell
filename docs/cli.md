@@ -50,6 +50,14 @@ bundled `config.json` (see [Configuration](configuration.md)).
 |---|---|
 | `ano run terminal\|browser\|files [args…]` | opens your default app (`apps.terminal`, `apps.browser`, `apps.fileManager`). If that program isn't installed, the first installed one of the usual ones is used (terminals: kitty, ghostty, alacritty, …). The bundled keybinds use it, so changing an app in Settings → Modules → Default Applications needs no bind change. `--print` shows the command instead of running it |
 
+## Keybinds
+
+| Command | What it does |
+|---|---|
+| `ano keybinds list [--json]` | the keybind set (defaults plus your changes) and which compositor each bind is for |
+| `ano keybinds apply` | regenerates the managed bind files |
+| `ano keybinds migrate [--dry-run]` / `--revert` | moves the binds out of your compositor configs into ano, or undoes that. See [Keybinds](keybinds.md) |
+
 ## Reader
 
 | Command | What it does |
