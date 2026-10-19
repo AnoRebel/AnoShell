@@ -73,29 +73,18 @@ func runStub(path string) ([]byte, error) {
 	return out, nil
 }
 
-// statementAt returns the source of the call that ends on line (1-based):
-// walking back to where its parentheses open.
+// statementAt returns the source of the hl.bind(…) call the stub reported
+// at line (1-based), found with strings and comments masked out.
 func statementAt(lines []string, line int) string {
-	if line < 1 || line > len(lines) {
+	code := strings.Split(maskLua(strings.Join(lines, "\n")), "\n")
+	start, end, err := statementRange(code, line)
+	if err != nil {
+		if line >= 1 && line <= len(lines) {
+			return strings.TrimSpace(lines[line-1])
+		}
 		return ""
 	}
-	end := line - 1
-	depth := 0
-	for i := end; i >= 0; i-- {
-		depth += strings.Count(lines[i], ")") - strings.Count(lines[i], "(")
-		if depth <= 0 && strings.Contains(lines[i], "hl.bind(") {
-			// Then forward to where the statement closes.
-			d, j := 0, i
-			for ; j < len(lines); j++ {
-				d += strings.Count(lines[j], "(") - strings.Count(lines[j], ")")
-				if d <= 0 {
-					break
-				}
-			}
-			return strings.TrimSpace(strings.Join(lines[i:min(j+1, len(lines))], "\n"))
-		}
-	}
-	return strings.TrimSpace(lines[end])
+	return strings.TrimSpace(strings.Join(lines[start:end+1], "\n"))
 }
 
 func num(v any) (string, bool) {

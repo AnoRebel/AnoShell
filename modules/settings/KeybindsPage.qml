@@ -65,13 +65,17 @@ ColumnLayout {
         root.editing = {
             origChord: b?.chord ?? "", chord: b?.chord ?? "", action: b?.action ?? "exec",
             argText: b && !native ? (b.action === "exec" ? (b.args?.[0] ?? "") : (b.args ?? []).join(" ")) : "",
-            native: native, args: b?.args ?? [], only: b?.only ?? "", raw: b?.raw ?? false
+            native: native, args: b?.args ?? [], only: b?.only ?? "", raw: b?.raw ?? false,
+            // Kept as they are: Hyprland options (mouse, repeating…), niri properties, lock-screen use.
+            hyprland: b?.hyprland ?? null, niri: b?.niri ?? null, locked: b?.locked ?? false
         }
     }
 
     function save(replace) {
         const e = root.editing
         if (!e || e.chord === "") return
+        // A Lua-function bind carries its chord in its own text: it can't move.
+        if (e.raw && e.origChord !== "" && e.chord !== e.origChord) { root.conflict = ""; root.message = "A Lua-function bind can't change its chord here; edit it in keybinds.json"; return }
         let bind
         if (e.native) {
             bind = { action: e.action, args: e.args, only: e.only, raw: e.raw }
@@ -80,6 +84,9 @@ ColumnLayout {
             const args = spec === "" ? [] : e.action === "exec" ? [e.argText.trim()] : e.argText.trim().split(/\s+/).filter(x => x)
             bind = { action: e.action, args: args }
         }
+        if (e.hyprland) bind.hyprland = e.hyprland
+        if (e.niri) bind.niri = e.niri
+        if (e.locked) bind.locked = true
         const moving = e.origChord !== "" && e.origChord !== e.chord
         Anod.call("keybinds.set", { chord: e.chord, bind: bind, replace: replace || (e.origChord === e.chord) }, (r, err) => {
             if (err?.code === "conflict") { root.conflict = err.message; return }

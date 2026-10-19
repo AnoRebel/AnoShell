@@ -262,7 +262,7 @@ func main() {
 		if err := keybinds.SaveOverrides(p.Overrides, o); err != nil {
 			return nil, err
 		}
-		h, _, err := keybinds.Generate(p, keybinds.Effective(d, o), d.Helpers)
+		h, _, err := keybinds.Generate(p, keybinds.Effective(d, o), keybinds.AllHelpers(d, o))
 		if err == nil && h {
 			err = keybinds.Reload()
 		}
@@ -424,7 +424,8 @@ func main() {
 				return nil, err
 			}
 			ps, _ := disp.ListProfiles()
-			return map[string]any{"outputs": outs, "pending": disp.PendingChange(), "profiles": ps, "compositor": dispBackend.Name()}, nil
+			return map[string]any{"outputs": outs, "pending": disp.PendingChange(), "profiles": ps, "compositor": dispBackend.Name(),
+				"included": keybinds.Migrated(keybinds.DefaultPaths())}, nil
 		})
 		srv.Handle("display.apply", func(p json.RawMessage) (any, error) {
 			var req struct {

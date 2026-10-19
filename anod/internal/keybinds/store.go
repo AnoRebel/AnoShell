@@ -29,6 +29,17 @@ func LoadDefaults() (Defaults, error) {
 type Overrides struct {
 	Binds  []Bind   `json:"binds,omitempty"`
 	Remove []string `json:"remove,omitempty"`
+	// Locals from your hyprland.lua that your migrated Lua-function binds use
+	// (e.g. mainMod, a helper function), written before them.
+	HyprHelpers string `json:"hyprlandHelpers,omitempty"`
+}
+
+// AllHelpers is the Lua placed before the binds: the shipped helpers, then yours.
+func AllHelpers(d Defaults, o Overrides) string {
+	if o.HyprHelpers == "" {
+		return d.Helpers
+	}
+	return d.Helpers + "\n\n-- From your hyprland.lua (kept by ano keybinds migrate):\n" + o.HyprHelpers
 }
 
 func configHome() string {

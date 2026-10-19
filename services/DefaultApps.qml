@@ -24,6 +24,15 @@ Singleton {
     property string packageManager: ""  // pacman | apt | dnf | zypper
     property string aurHelper: ""       // yay | paru
     property bool detected: false
+    // A changed apps.* (e.g. a terminal not in the catalogue) is looked up again.
+    readonly property string _configuredKey: root.keys.map(k => root._configured(k)[0] ?? "").join("|")
+    on_ConfiguredKeyChanged: if (root.detected) root.detect()
+    // Installed = on PATH, or an app with a desktop entry of that name.
+    function isInstalled(cmd) {
+        if (!cmd) return false
+        if (root.installed[cmd]) return true
+        return DesktopEntries.applications.values.some(e => e.id === cmd || e.id === cmd + ".desktop")
+    }
 
     FileView {
         path: Quickshell.shellPath("assets/default-apps.json")
@@ -67,7 +76,7 @@ Singleton {
     // The command line that runs for `kind` (see the header).
     function command(kind: string): list<string> {
         const mine = root._configured(kind)
-        if (!root.detected || (mine.length > 0 && root.installed[mine[0]])) return mine
+        if (!root.detected || (mine.length > 0 && root.isInstalled(mine[0]))) return mine
         const first = (root.catalog[kind] ?? []).find(a => root.installed[a.command])
         return first ? [first.command] : mine
     }

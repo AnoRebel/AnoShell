@@ -14,7 +14,7 @@ import (
 // keybindsCmd: ano keybinds list|apply|migrate [--dry-run|--revert].
 func keybindsCmd(args []string) int {
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: ano keybinds list [--json] | apply | migrate [--dry-run] | migrate --revert")
+		fmt.Fprintln(os.Stderr, "usage: ano keybinds list [--json] | apply | migrate [--dry-run] | migrate --revert [--force]")
 		return 2
 	}
 	p := keybinds.DefaultPaths()
@@ -56,7 +56,7 @@ func keybindsCmd(args []string) int {
 		if err != nil {
 			return fail(err)
 		}
-		h, n, err := keybinds.Generate(p, keybinds.Effective(d, o), d.Helpers)
+		h, n, err := keybinds.Generate(p, keybinds.Effective(d, o), keybinds.AllHelpers(d, o))
 		if err != nil {
 			return fail(err)
 		}
@@ -69,7 +69,7 @@ func keybindsCmd(args []string) int {
 		return 0
 	case "migrate":
 		if slices.Contains(args[1:], "--revert") {
-			files, err := keybinds.Revert(p)
+			files, err := keybinds.Revert(p, slices.Contains(args[1:], "--force"))
 			if err != nil {
 				return fail(err)
 			}

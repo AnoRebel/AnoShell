@@ -177,8 +177,8 @@ func (s *Service) SetCursor(c Cursor) error {
 		return err
 	}
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.cursor = &c
-	s.mu.Unlock()
 	run := s.Exec
 	if run == nil {
 		run = func(name string, args ...string) error { return exec.Command(name, args...).Run() }
@@ -195,9 +195,13 @@ func (s *Service) SetCursor(c Cursor) error {
 			s.logf("%s: %v", f, err)
 		}
 	}
-	cur, err := s.Backend.Current()
-	if err != nil {
-		return err
+	// While a display change waits for Keep, persist the settings before it.
+	cur := s.previous
+	if s.timer == nil {
+		var err error
+		if cur, err = s.Backend.Current(); err != nil {
+			return err
+		}
 	}
 	return s.writeManaged(cur)
 }

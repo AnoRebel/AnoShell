@@ -3,6 +3,10 @@
 -- Every hl.* call is accepted; hl.bind calls are recorded with the action as
 -- {__dsp = "dsp.window.move", __args = {...}}; functions as {__function = line}.
 local cfg = arg[1]
+-- The config only describes Hyprland; nothing it does may touch the system.
+os.execute, os.remove, os.rename, os.exit, io.popen, io.open, io.write, io.output =
+	nil, nil, nil, nil, nil, nil, nil, nil
+local write = io.stdout
 local root = cfg:match("^(.*)/[^/]*$") or "."
 local binds, submap = {}, nil
 
@@ -73,4 +77,4 @@ local function enc(v)
 	end
 	return "null"
 end
-io.write(enc(binds))
+write:write(enc(binds))

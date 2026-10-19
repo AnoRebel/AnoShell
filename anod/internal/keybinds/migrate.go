@@ -1,6 +1,7 @@
 package keybinds
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +17,11 @@ import (
 type Manifest struct {
 	At      time.Time         `json:"at"`
 	Backups map[string]string `json:"backups"` // config file → its backup
+	// sha256 of each file as migration left it: revert won't overwrite later edits.
+	Written map[string]string `json:"written"`
 }
+
+func sha(b []byte) string { return fmt.Sprintf("%x", sha256.Sum256(b)) }
 
 func manifestPath(p Paths) string {
 	return filepath.Join(filepath.Dir(p.Overrides), "keybinds-migration.json")
@@ -66,7 +71,10 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 			if err != nil {
 				return res, err
 			}
-			text, n := stripHyprBinds(string(data), lines)
+			text, n, err := stripHyprBinds(string(data), lines)
+			if err != nil {
+				return res, fmt.Errorf("%s: %w", file, err)
+			}
 			if file == p.HyprMain {
 				text = strings.TrimRight(text, "\n") + "\n\n" + IncludeHyprlandManaged + "\n" + IncludeHyprland + "\n"
 			}
@@ -93,8 +101,11 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 		res.Moved[p.NiriMain] = n
 	}
 
-	// Live binds the defaults don't already give that compositor become overrides.
+	// Live binds the defaults don't already give that compositor become
+	// overrides. An override replaces every default on its chord, so once one
+	// bind on a chord is kept, all of your binds on that chord are.
 	var ov Overrides
+	chordKept := map[string]bool{} // compositor + key
 	for _, b := range live {
 		matched := false
 		for _, x := range d.Binds {
@@ -104,17 +115,25 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 			}
 		}
 		if !matched {
+			chordKept[b.Only+"\x00"+b.Key()] = true
+		}
+	}
+	for _, b := range live {
+		if chordKept[b.Only+"\x00"+b.Key()] {
 			ov.Binds = append(ov.Binds, b)
 			res.Report = append(res.Report, fmt.Sprintf("kept your %s bind %s → %s", b.Only, b.Chord, b.Describe()))
 		}
 	}
 	res.Overrides = len(ov.Binds)
+	if src, err := os.ReadFile(p.HyprMain); err == nil {
+		ov.HyprHelpers = Helpers(string(src), ov.Binds)
+	}
 	sort.Strings(res.Report)
 	if dryRun {
 		return res, nil
 	}
 
-	man := Manifest{At: now, Backups: map[string]string{}}
+	man := Manifest{At: now, Backups: map[string]string{}, Written: map[string]string{}}
 	for file := range edits {
 		bak := file + ".ano-backup-" + stamp
 		data, err := os.ReadFile(file)
@@ -125,6 +144,7 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 			return res, err
 		}
 		man.Backups[file], res.Backups[file] = bak, bak
+		man.Written[file] = sha([]byte(edits[file]))
 	}
 	mb, _ := json.MarshalIndent(man, "", "  ")
 	if err := os.MkdirAll(filepath.Dir(manifestPath(p)), 0o755); err != nil {
@@ -136,7 +156,7 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 	if err := SaveOverrides(p.Overrides, ov); err != nil {
 		return res, err
 	}
-	if _, _, err := Generate(p, Effective(d, ov), d.Helpers); err != nil {
+	if _, _, err := Generate(p, Effective(d, ov), AllHelpers(d, ov)); err != nil {
 		return res, err
 	}
 	for file, text := range edits {
@@ -149,8 +169,10 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 }
 
 // Revert puts the backed-up configs back exactly and forgets the migration
-// (keybinds.json and the generated files stay, unused).
-func Revert(p Paths) ([]string, error) {
+// (keybinds.json and the generated files stay, unused). A config edited since
+// the migration is not overwritten unless force; then the edited copy is
+// saved next to it first.
+func Revert(p Paths, force bool) ([]string, error) {
 	b, err := os.ReadFile(manifestPath(p))
 	if err != nil {
 		return nil, errors.New("no migration to revert")
@@ -158,6 +180,18 @@ func Revert(p Paths) ([]string, error) {
 	var m Manifest
 	if err := json.Unmarshal(b, &m); err != nil {
 		return nil, err
+	}
+	for file := range m.Backups {
+		cur, err := os.ReadFile(file)
+		if err != nil || m.Written[file] == "" || sha(cur) == m.Written[file] {
+			continue
+		}
+		if !force {
+			return nil, fmt.Errorf("%s changed since the migration; revert with --force to replace it (your edited copy is saved next to it)", file)
+		}
+		if err := os.WriteFile(file+".edited-"+time.Now().Format("20060102-150405"), cur, 0o600); err != nil {
+			return nil, err
+		}
 	}
 	var done []string
 	for file, bak := range m.Backups {
@@ -188,8 +222,12 @@ func readHyprRecords(path string) ([]hyprRecord, error) {
 
 // stripHyprBinds removes the hl.bind statements whose calls are on the given
 // lines (as the stub reports them); a statement inside a loop is removed once.
-func stripHyprBinds(src string, lines []int) (string, int) {
+// Strings and comments are skipped when matching parentheses. A bind that
+// can't be cut out cleanly (other code on its lines) stops the migration:
+// guessing could delete config that isn't a bind.
+func stripHyprBinds(src string, lines []int) (string, int, error) {
 	ls := strings.Split(src, "\n")
+	code := strings.Split(maskLua(src), "\n") // same lines, strings and comments blanked
 	drop := make([]bool, len(ls))
 	n := 0
 	seen := map[int]bool{}
@@ -198,9 +236,9 @@ func stripHyprBinds(src string, lines []int) (string, int) {
 			continue
 		}
 		seen[line] = true
-		start, end := statementRange(ls, line)
-		if start < 0 {
-			continue
+		start, end, err := statementRange(code, line)
+		if err != nil {
+			return "", 0, err
 		}
 		for i := start; i <= end; i++ {
 			drop[i] = true
@@ -213,28 +251,121 @@ func stripHyprBinds(src string, lines []int) (string, int) {
 			out = append(out, l)
 		}
 	}
-	return strings.Join(out, "\n"), n
+	return strings.Join(out, "\n"), n, nil
 }
 
 // statementRange is the 0-based line range of the hl.bind(…) call that the
-// stub reported at line (Lua reports a multi-line call at its last line).
-func statementRange(ls []string, line int) (int, int) {
-	for i := min(line-1, len(ls)-1); i >= 0; i-- {
-		if !strings.Contains(ls[i], "hl.bind(") {
+// stub reported at line (1-based; Lua may report a multi-line call at a later
+// line), found in code with strings and comments masked out.
+func statementRange(code []string, line int) (int, int, error) {
+	at := line - 1
+	for i := min(at, len(code)-1); i >= 0; i-- {
+		col := strings.Index(code[i], "hl.bind(")
+		if col < 0 {
 			continue
 		}
-		d := 0
-		for j := i; j < len(ls); j++ {
-			d += strings.Count(ls[j], "(") - strings.Count(ls[j], ")")
-			if d <= 0 {
-				if j >= line-1 {
-					return i, j
+		// Find where this call's parenthesis closes.
+		depth, j, endCol := 0, i, -1
+		for ; j < len(code) && endCol < 0; j++ {
+			from := 0
+			if j == i {
+				from = col + len("hl.bind")
+			}
+			for k := from; k < len(code[j]); k++ {
+				switch code[j][k] {
+				case '(':
+					depth++
+				case ')':
+					depth--
+					if depth == 0 {
+						endCol = k
+					}
 				}
-				break
+				if endCol >= 0 {
+					break
+				}
+			}
+		}
+		j--
+		if endCol < 0 || j < at {
+			continue // not the call that covers the reported line
+		}
+		if strings.TrimSpace(code[i][:col]) != "" || strings.Trim(code[j][endCol+1:], " \t;") != "" {
+			return -1, -1, fmt.Errorf("line %d: the bind shares its line with other code; move it to its own line(s) and run the migration again", i+1)
+		}
+		return i, j, nil
+	}
+	return -1, -1, fmt.Errorf("line %d: could not find the hl.bind statement to move", line)
+}
+
+// maskLua blanks Lua strings and comments (keeping newlines), so parentheses
+// and keywords inside them don't count.
+func maskLua(src string) string {
+	b := []byte(src)
+	blank := func(from, to int) {
+		for k := from; k < to && k < len(b); k++ {
+			if b[k] != '\n' {
+				b[k] = ' '
 			}
 		}
 	}
-	return -1, -1
+	// longBracket returns the length of "[==[" at i (0 if none) and its level.
+	longBracket := func(i int) (int, int) {
+		if i >= len(b) || b[i] != '[' {
+			return 0, 0
+		}
+		j := i + 1
+		for j < len(b) && b[j] == '=' {
+			j++
+		}
+		if j < len(b) && b[j] == '[' {
+			return j - i + 1, j - i - 1
+		}
+		return 0, 0
+	}
+	closeLong := func(i, level int) int {
+		end := "]" + strings.Repeat("=", level) + "]"
+		if k := strings.Index(string(b[i:]), end); k >= 0 {
+			return i + k + len(end)
+		}
+		return len(b)
+	}
+	for i := 0; i < len(b); {
+		switch {
+		case b[i] == '-' && i+1 < len(b) && b[i+1] == '-':
+			if n, lvl := longBracket(i + 2); n > 0 {
+				e := closeLong(i+2+n, lvl)
+				blank(i, e)
+				i = e
+			} else {
+				e := i
+				for e < len(b) && b[e] != '\n' {
+					e++
+				}
+				blank(i, e)
+				i = e
+			}
+		case b[i] == '"' || b[i] == '\'':
+			q, e := b[i], i+1
+			for e < len(b) && b[e] != q && b[e] != '\n' {
+				if b[e] == '\\' {
+					e++
+				}
+				e++
+			}
+			blank(i, e+1)
+			i = e + 1
+		default:
+			if n, lvl := longBracket(i); n > 0 {
+				e := closeLong(i+n, lvl)
+				blank(i, e)
+				i = e
+			} else {
+				i++
+			}
+		}
+	}
+	return string(b)
 }
 
 var niriBindsStart = regexp.MustCompile(`^binds\s*\{`)

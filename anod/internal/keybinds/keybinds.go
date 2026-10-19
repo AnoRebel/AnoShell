@@ -341,8 +341,8 @@ func HyprlandLua(binds []Bind, helpers string) string {
 }
 
 func hyprLine(x Bind) string {
-	if x.Raw {
-		return arg(x.Args, 0)
+	if x.Raw { // as written, in its own pcall: one that fails can't stop the rest
+		return "pcall(function()\n" + arg(x.Args, 0) + "\nend)"
 	}
 	expr := arg(x.Args, 0)
 	if a, ok := Catalogue[x.Action]; ok {

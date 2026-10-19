@@ -243,7 +243,7 @@ func TestMigrateAndRevert(t *testing.T) {
 		t.Error("a second migration was allowed")
 	}
 
-	if _, err := Revert(p); err != nil {
+	if _, err := Revert(p, false); err != nil {
 		t.Fatal(err)
 	}
 	for f, s := range before {
@@ -290,5 +290,51 @@ func TestSetConflictReset(t *testing.T) {
 	}
 	if eff := Effective(d, Reset(o, "")); len(eff) != len(d.Binds) {
 		t.Fatal("reset all")
+	}
+}
+
+// Parentheses in strings and comments don't fool the stripper, and a bind
+// sharing its line with other code stops the migration instead of guessing.
+func TestStripHyprBinds(t *testing.T) {
+	src := strings.Join([]string{
+		`hl.bind("SUPER + A", hl.dsp.exec_cmd("notify-send '(beta'"))`, // 1
+		`hl.config({ general = { gaps_in = 5 } })`,                     // 2
+		`hl.exec_once("waybar")`,                                       // 3
+		`hl.bind("SUPER + B", hl.dsp.exec_cmd("echo")) -- :)`,          // 4
+		`hl.bind("SUPER + C",`,                                         // 5
+		`	hl.dsp.exec_cmd("say ':('"))`,                                // 6
+		`local x = 1 hl.bind("SUPER + D", hl.dsp.window.close())`,      // 7
+	}, "\n")
+	out, n, err := stripHyprBinds(strings.Join(strings.Split(src, "\n")[:6], "\n"), []int{1, 4, 6})
+	if err != nil || n != 3 {
+		t.Fatalf("n=%d err=%v", n, err)
+	}
+	if out != "hl.config({ general = { gaps_in = 5 } })\nhl.exec_once(\"waybar\")" {
+		t.Errorf("left:\n%s", out)
+	}
+	if _, _, err := stripHyprBinds(src, []int{7}); err == nil {
+		t.Error("a bind sharing its line with other code was cut")
+	}
+	if got := maskLua(`a("(") -- (` + "\n" + `--[[ ( ]] b([[)]])`); strings.Count(got, "(") != 2 || strings.Count(got, ")") != 2 {
+		t.Errorf("mask: %q", got)
+	}
+}
+
+func TestSetRejectsBadArgs(t *testing.T) {
+	d := Defaults{}
+	for _, b := range []Bind{
+		{Action: "workspace.focus"},
+		{Action: "workspace.focus", Args: []string{"3 })"}},
+		{Action: "workspace.relative", Args: []string{"next"}},
+		{Action: "exec", Args: []string{""}},
+		{Action: "shell", Args: []string{"bar", "toggle; rm -rf ~"}},
+		{Action: "window.close", Args: []string{"x"}},
+	} {
+		if _, err := Set(d, Overrides{}, "Super+K", "", &b, false); err == nil {
+			t.Errorf("accepted %+v", b)
+		}
+	}
+	if _, err := Set(d, Overrides{}, "Super+K", "", &Bind{Action: "workspace.focus", Args: []string{"3"}}, false); err != nil {
+		t.Error(err)
 	}
 }

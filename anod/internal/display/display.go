@@ -279,6 +279,8 @@ type Service struct {
 
 	mu       sync.Mutex
 	cursor   *Cursor // set by SetCursor before the config catches up
+	gen      int     // bumped per pending change, so an old timer can't revert a newer one
+	lastFP   string  // monitor set last seen by OutputsChanged
 	previous []Output
 	pending  []Output
 	timer    *time.Timer
@@ -351,16 +353,18 @@ func (s *Service) Apply(outs []Output) (*Pending, error) {
 		d = 15 * time.Second
 	}
 	s.previous, s.pending, s.until = cur, outs, time.Now().Add(d)
-	s.timer = time.AfterFunc(d, s.expire)
+	s.gen++
+	gen := s.gen
+	s.timer = time.AfterFunc(d, func() { s.expire(gen) })
 	p := &Pending{Outputs: outs, Deadline: s.until.Format(time.RFC3339), Seconds: int(d.Seconds())}
 	s.notify("display_pending", p)
 	return p, nil
 }
 
-func (s *Service) expire() {
+func (s *Service) expire(gen int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.timer != nil {
+	if s.timer != nil && gen == s.gen {
 		s.logf("not confirmed: reverting")
 		s.revertLocked()
 	}
@@ -526,15 +530,24 @@ func (s *Service) ListProfiles() ([]Profile, error) { return s.loadProfiles() }
 // OutputsChanged applies the profile saved for the monitors now connected
 // (a named one before "Last used"), and says which one it applied.
 func (s *Service) OutputsChanged() (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.timer != nil { // our own pending change (a monitor turned off) isn't a hotplug
+		return "", nil
+	}
 	cur, err := s.Backend.Current()
 	if err != nil {
 		return "", err
 	}
+	fp := Fingerprint(cur)
+	if fp == s.lastFP { // the same monitors: nothing was plugged or unplugged
+		return "", nil
+	}
+	s.lastFP = fp
 	ps, err := s.loadProfiles()
 	if err != nil {
 		return "", err
 	}
-	fp := Fingerprint(cur)
 	var pick *Profile
 	for i := range ps {
 		if ps[i].Fingerprint != fp {
@@ -547,14 +560,40 @@ func (s *Service) OutputsChanged() (string, error) {
 	if pick == nil {
 		return "", nil
 	}
-	if err := s.Backend.Apply(pick.Outputs); err != nil {
+	if err := s.Backend.Apply(byIdentity(pick.Outputs, cur)); err != nil {
 		return "", err
 	}
 	s.notify("display_profile", map[string]any{"name": pick.Name})
 	return pick.Name, nil
 }
 
+// byIdentity re-points saved outputs at the connectors the same monitors
+// (make, model, serial) are on now, so a port change doesn't misplace them.
+func byIdentity(saved, cur []Output) []Output {
+	used := map[int]bool{}
+	out := make([]Output, 0, len(saved))
+	for _, o := range saved {
+		for i, c := range cur {
+			if !used[i] && c.ID() == o.ID() {
+				used[i] = true
+				o.Name = c.Name
+				break
+			}
+		}
+		out = append(out, o)
+	}
+	return out
+}
+
 func writeAtomic(path, text string) error {
+	// Write through a symlinked dotfile, and keep the file's mode.
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		path = real
+	}
+	perm := os.FileMode(0o644)
+	if fi, err := os.Stat(path); err == nil {
+		perm = fi.Mode().Perm()
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -564,6 +603,10 @@ func writeAtomic(path, text string) error {
 	}
 	defer os.Remove(f.Name())
 	if _, err := f.WriteString(text); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Chmod(perm); err != nil {
 		f.Close()
 		return err
 	}

@@ -243,3 +243,24 @@ func TestCursor(t *testing.T) {
 		t.Error("bad theme name accepted")
 	}
 }
+
+func TestProfilesFollowIdentityAndIgnorePending(t *testing.T) {
+	a := Output{Name: "DP-1", Make: "Dell", Model: "A", Serial: "1", Width: 1920, Height: 1080, Refresh: 60, Scale: 1, Enabled: true}
+	b := Output{Name: "DP-2", Make: "Dell", Model: "A", Serial: "2", Width: 1920, Height: 1080, Refresh: 60, Scale: 1, X: 1920, Enabled: true}
+	// Saved with a on DP-1 at 0 and b on DP-2 at 1920; now the cables are swapped.
+	got := byIdentity([]Output{a, b}, []Output{{Name: "DP-2", Make: "Dell", Model: "A", Serial: "1"}, {Name: "DP-1", Make: "Dell", Model: "A", Serial: "2"}})
+	if got[0].Name != "DP-2" || got[0].X != 0 || got[1].Name != "DP-1" || got[1].X != 1920 {
+		t.Fatalf("by identity: %+v", got)
+	}
+	f := &fake{outs: []Output{edp}}
+	s, _ := newSvc(t, f)
+	s.Deadline = time.Minute
+	s.SaveProfile("Desk")
+	bigger := edp
+	bigger.Scale = 1.25
+	s.Apply([]Output{bigger})
+	if name, _ := s.OutputsChanged(); name != "" {
+		t.Errorf("a pending change was overridden by profile %q", name)
+	}
+	s.Revert()
+}

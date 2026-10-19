@@ -22,6 +22,7 @@ ColumnLayout {
     property int selected: 0
     property string message: ""
     property string profileName: ""
+    property bool included: true   // the compositor config includes anod's managed file
     readonly property var sel: root.edited[root.selected] ?? null
     readonly property bool dirty: JSON.stringify(root.edited) !== JSON.stringify(root.outputs)
 
@@ -32,6 +33,7 @@ ColumnLayout {
             root.outputs = r.outputs ?? []
             root.edited = JSON.parse(JSON.stringify(root.outputs))
             root.profiles = r.profiles ?? []
+            root.included = r.included ?? true
             root.selected = Math.min(root.selected, Math.max(0, root.edited.length - 1))
         })
     }
@@ -78,6 +80,11 @@ ColumnLayout {
         visible: !Anod.available
         level: "warning"
         text: "Displays are set through anod, which isn't running. Run `ano doctor`."
+    }
+    NoticeBox {
+        Layout.fillWidth: true
+        visible: Anod.available && !root.included
+        text: "Changes apply now, but your compositor config doesn't load AnoShell's managed file yet, so they reset when the compositor restarts. `ano keybinds migrate` adds the include line (with a backup; --revert undoes it)."
     }
     NoticeBox {
         Layout.fillWidth: true
