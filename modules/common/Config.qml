@@ -130,6 +130,17 @@ Singleton {
         if (root._previewOld !== null) root.cancelPreview()
         const old = {}
         for (const k of Object.keys(values)) {
+            const keys = k.split(".")
+            if (keys.length > 1 && root._isArrayLike(root.options[keys[0]])) {
+                // Arrays (bars.0.edge): change a copy and assign it whole, as setNestedValue does.
+                const top = "\u0000" + keys[0]
+                if (!(top in old)) old[top] = JSON.parse(JSON.stringify(root.options[keys[0]]))
+                const arr = Array.from(JSON.parse(JSON.stringify(root.options[keys[0]])))
+                const [p, leaf] = root._walkArrayPath(arr, keys.slice(1))
+                p[leaf] = values[k]
+                root.options[keys[0]] = arr
+                continue
+            }
             const [p, leaf] = root._walkPath(root.options, k, true)
             old[k] = p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf]))
             p[leaf] = values[k]
@@ -140,6 +151,7 @@ Singleton {
     function cancelPreview() {
         if (root._previewOld === null) return
         for (const k of Object.keys(root._previewOld)) {
+            if (k.startsWith("\u0000")) { root.options[k.slice(1)] = root._previewOld[k]; continue }
             const [p, leaf] = root._walkPath(root.options, k, true)
             p[leaf] = root._previewOld[k]
         }
@@ -740,6 +752,11 @@ Singleton {
                     property bool enableGPS: false
                     property int fetchInterval: 15
                 }
+            }
+
+            // First-run welcome: shown once on a fresh config (Settings → About runs it again).
+            property JsonObject onboarding: JsonObject {
+                property bool seen: false
             }
 
             // Pointer theme and size, applied by anod (Settings → Modules → Cursor).

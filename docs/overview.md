@@ -67,3 +67,4 @@ chrome: no bar and no dock.
 - [Reader](reader.md): the novel, manga and anime panels.
 - [Keybinds](keybinds.md): one keybind set for Hyprland and niri.
 - [Displays and cursor](displays.md): arrangement, modes, profiles, cursor.
+- [Welcome and presets](onboarding.md): the first-start wizard and whole-shell presets.

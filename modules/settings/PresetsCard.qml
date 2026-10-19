@@ -163,6 +163,7 @@ SettingsCard {
     RowLayout {
         Layout.fillWidth: true
         spacing: 8
+        RippleButton { buttonText: "Run welcome again"; onClicked: Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "welcome", "open"]) }
         RippleButton { buttonText: "Export my settings"; onClicked: card.exportMine() }
         ConfigTextInput {
             Layout.fillWidth: true

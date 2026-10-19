@@ -213,6 +213,9 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "onboarding": {
+    "seen": false
+  },
   "cursor": {
     "theme": "",
     "size": 24
