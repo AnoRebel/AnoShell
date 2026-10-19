@@ -53,7 +53,7 @@ Singleton {
         { name: "AnoSpot",    icon: "view_compact_alt",configRoots: ["anoSpot"] },
         { name: "Appearance", icon: "palette",         configRoots: ["appearance", "background", "animations"] },
         { name: "Overview",   icon: "overview",        configRoots: ["overview"] },
-        { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "powerProfiles", "network", "vpn", "nightLight", "lyrics", "calendar", "resources", "light", "shell", "weather"] },
+        { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "powerProfiles", "network", "vpn", "nightLight", "lyrics", "calendar", "resources", "light", "shell", "weather", "screenFilter"] },
         { name: "Displays",   icon: "desktop_windows", configRoots: ["cursor"] },
         { name: "Keybinds",   icon: "keyboard",        configRoots: [] },
         { name: "About",      icon: "info",            configRoots: ["user"] },

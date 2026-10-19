@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import qs.services
 
 /**
  * Hyprland backend (see BackendContract.md).
@@ -222,6 +223,8 @@ QtObject {
     }
     // Full-screen GLSL shader ("" clears). damage_tracking must be off (1 = monitor) while set.
     function setScreenShader(path) {
+        // anod clears it if the shell goes away without doing so (crash, kill).
+        Anod.call("screen.shaderSet", { path: path ?? "" })
         return root._eval(`hl.config({ decoration = { screen_shader = "${path ?? ""}" }, debug = { damage_tracking = ${path ? 1 : 2} } })`)
     }
     function setCursorZoom(factor) { return root._eval(`hl.config({ cursor = { zoom_factor = ${Number(factor)} } })`) }

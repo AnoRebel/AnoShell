@@ -214,6 +214,10 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "screenFilter": {
+    "mode": "none",
+    "last": "grayscale"
+  },
   "notepad": {
     "enable": false
   },

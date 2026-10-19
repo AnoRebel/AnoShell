@@ -2451,9 +2451,10 @@
   "page": 8,
   "card": "Night light",
   "label": "Night light",
-  "sublabel": "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway).",
+  "sublabel": "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway). Eye-care filters below.",
   "keys": [
-   "nightLight"
+   "nightLight",
+   "screenFilter"
   ]
  },
  {

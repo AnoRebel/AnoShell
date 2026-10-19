@@ -18,6 +18,7 @@ Singleton {
 
     // (The old `hyprctl keyword` calls are rejected by Hyprland's Lua config.)
     function enable(): void {
+        if (ScreenFilters.mode !== "none") ScreenFilters.set("none"); // one screen shader at a time
         if (CompositorService.setScreenShader(root.shaderPath)) root.enabled = true;
     }
 

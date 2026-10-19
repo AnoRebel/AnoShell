@@ -126,6 +126,17 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Eye-care screen filter (where the compositor takes a screen shader)
+        TogglePill {
+            visible: ScreenFilters.supported
+            iconName: ScreenFilters.mode === "none" ? "filter_none" : "filter_vintage"
+            label: ScreenFilters.mode === "none" ? "Filter" : (ScreenFilters.modes.find(m => m.id === ScreenFilters.mode)?.label ?? "Filter")
+            active: ScreenFilters.mode !== "none"
+            tooltip: ScreenFilters.mode === "none" ? `Tap for ${ScreenFilters.lastMode}` : "Tap to turn the filter off"
+            onClicked: ScreenFilters.toggle()
+            Layout.fillWidth: true
+        }
+
         // Battery (if laptop)
         Loader {
             Layout.fillWidth: true

@@ -24,7 +24,7 @@ ColumnLayout {
         configRoots: [
             "ai", "gameMode", "powerProfiles", "network", "vpn",
             "nightLight", "lyrics", "calendar", "resources", "light",
-            "shell", "weather", "recording"
+            "shell", "weather", "recording", "screenFilter"
         ]
     }
 
@@ -426,8 +426,22 @@ ColumnLayout {
     SettingsCard {
         icon: "nightlight"
         title: "Night light"
-        subtitle: "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway)."
-        configKeys: ["nightLight"]
+        subtitle: "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway). Eye-care filters below."
+        configKeys: ["nightLight", "screenFilter"]
+
+        ConfigRow {
+            label: "Screen filter"
+            configKey: "screenFilter.mode"
+            sublabel: ScreenFilters.supported ? "Grayscale, sepia, high contrast, or colour correction for protan/deutan/tritan vision"
+                : `Not available on ${CompositorService.compositor}: it has no screen shader`
+            enabled: ScreenFilters.supported
+            ChoiceRow {
+                compact: false
+                model: ScreenFilters.modes.map(m => ({ value: m.id, label: m.label, icon: m.icon }))
+                current: ScreenFilters.mode
+                onChose: value => ScreenFilters.set(value)
+            }
+        }
 
         ConfigSwitch {
             id: nlEnable

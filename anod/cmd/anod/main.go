@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -453,6 +454,33 @@ func main() {
 			name, err := disp.OutputsChanged()
 			return map[string]any{"profile": name}, err
 		})
+	}
+
+	// A screen shader the shell set (eye-care filter, anti-flashbang) must not
+	// outlive it: when its connection is gone, clear it (Hyprland).
+	var shaderMu sync.Mutex
+	shellShader := ""
+	srv.Handle("screen.shaderSet", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Path string `json:"path"`
+		}
+		json.Unmarshal(p, &req)
+		shaderMu.Lock()
+		shellShader = req.Path
+		shaderMu.Unlock()
+		return true, nil
+	})
+	srv.OnDisconnect = func(remaining int) {
+		shaderMu.Lock()
+		defer shaderMu.Unlock()
+		if remaining > 0 || shellShader == "" || os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") == "" {
+			return
+		}
+		log.Printf("the shell is gone: clearing its screen shader")
+		if err := exec.Command("hyprctl", "eval", `hl.config({ decoration = { screen_shader = "" }, debug = { damage_tracking = 2 } })`).Run(); err != nil {
+			log.Printf("clear screen shader: %v", err)
+		}
+		shellShader = ""
 	}
 
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {

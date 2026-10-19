@@ -45,6 +45,7 @@ ShellRoot {
         //   Anod                    — daemon socket + shell events for hooks
         void PowerProfilePersistence;
         void AntiFlashbang;
+        void ScreenFilters; // re-applies a kept eye-care filter
         void MinimizedWindows;
         void DefaultApps;
         void Anod;

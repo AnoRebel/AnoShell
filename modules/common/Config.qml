@@ -780,6 +780,13 @@ Singleton {
                 }
             }
 
+            // Eye-care screen filter (ScreenFilters): none | grayscale | sepia |
+            // high-contrast | protan | deutan | tritan.
+            property JsonObject screenFilter: JsonObject {
+                property string mode: "none"
+                property string last: "grayscale"
+            }
+
             // Productivity (right sidebar cards + a desktop note); all off by default.
             property JsonObject notepad: JsonObject {
                 property bool enable: false // tabs kept in ~/.local/share/anoshell/notepad.json

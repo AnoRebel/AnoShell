@@ -88,6 +88,8 @@ type Server struct {
 	mu       sync.Mutex
 	conns    map[*conn]struct{}
 	ln       net.Listener
+	// OnDisconnect runs after a connection closes, with how many are left.
+	OnDisconnect func(remaining int)
 }
 
 type conn struct {
@@ -216,8 +218,12 @@ func (s *Server) serveConn(c *conn) {
 	defer func() {
 		s.mu.Lock()
 		delete(s.conns, c)
+		left := len(s.conns)
 		s.mu.Unlock()
 		c.c.Close()
+		if s.OnDisconnect != nil {
+			s.OnDisconnect(left)
+		}
 	}()
 	sc := bufio.NewScanner(c.c)
 	sc.Buffer(make([]byte, 0, 4096), 1<<20)
