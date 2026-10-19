@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -208,8 +209,12 @@ Rectangle {
             Layout.fillWidth: true
             active: root.showVpn && VPN.providerName === "netbird" && !!VPN.status?.netbird
             visible: active
-            onVisibleChanged: VPN.watch(visible)
-            Component.onDestruction: if (visible) VPN.watch(false)
+            // Fast polling only while the sidebar is actually open (it stays
+            // loaded but hidden when closed, which doesn't change `visible`).
+            readonly property bool watching: active && GlobalStates.sidebarRightOpen
+            onWatchingChanged: VPN.watch(watching)
+            Component.onCompleted: if (watching) VPN.watch(true)
+            Component.onDestruction: if (watching) VPN.watch(false)
             sourceComponent: GridLayout {
                 readonly property var nb: VPN.status.netbird
                 columns: 2

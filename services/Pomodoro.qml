@@ -45,15 +45,21 @@ Singleton {
     }
     function swReset() { root.swRunning = false; root.swBanked = 0 }
 
+    // Off with pomodoro.enable: nothing ticks or notifies without the UI.
+    readonly property bool enabled: cfg.enable ?? false
     Timer {
-        interval: root.swRunning ? 100 : 1000
+        interval: 1000
         repeat: true
-        running: root.running || root.swRunning
+        running: root.enabled && root.running
         onTriggered: {
-            root.swNow = Date.now()
-            if (!root.running) return
             if (root.remaining > 0) root.remaining--
             else root._next()
         }
+    }
+    Timer {
+        interval: 100
+        repeat: true
+        running: root.enabled && root.swRunning
+        onTriggered: root.swNow = Date.now()
     }
 }

@@ -51,8 +51,10 @@ Singleton {
     onModeChanged: _apply()
     Connections { target: Config; function onReadyChanged() { root._apply() } }
     Component.onCompleted: _apply()
-    // Never leave a filter on the screen after the shell is gone.
-    Component.onDestruction: if (root._applied !== "") CompositorService.setScreenShader("")
+    // Never leave a filter on the screen after the shell is gone: anod clears
+    // it when the shell's connection closes; without anod, clear it here
+    // (not with anod: on a hot reload this would run after the new instance set it).
+    Component.onDestruction: if (root._applied !== "" && !Anod.available) CompositorService.setScreenShader("")
 
     IpcHandler {
         target: "screenFilter"

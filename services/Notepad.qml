@@ -45,11 +45,24 @@ Singleton {
             try {
                 const d = JSON.parse(text())
                 if (Array.isArray(d.tabs) && d.tabs.length) { root.tabs = d.tabs; root.current = Math.min(d.current ?? 0, d.tabs.length - 1) }
-            } catch (e) { console.warn(`[Notepad] ${e}`) }
-            root.loaded = true
+                root.loaded = true
+            } catch (e) {
+                // Unreadable (a hand edit, a truncated write): keep a copy before anything saves over it.
+                console.warn(`[Notepad] ${e}; keeping a copy as notepad.json.bad`)
+                backup.running = true
+            }
         }
         printErrors: false // missing until the first save
-        onLoadFailed: { root.loaded = true; mkdir.running = true }
+        onLoadFailed: error => {
+            if (error !== FileViewError.FileNotFound) { console.warn("[Notepad] can't read notepad.json; not saving"); return }
+            root.loaded = true
+            mkdir.running = true
+        }
+    }
+    Process {
+        id: backup
+        command: ["cp", "-f", "--", `${Directories.anoData}/notepad.json`, `${Directories.anoData}/notepad.json.bad`]
+        onExited: code => { if (code === 0) root.loaded = true }
     }
     Timer {
         id: saveTimer

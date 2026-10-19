@@ -37,7 +37,17 @@ Scope {
         printErrors: false // missing until the first save
         onLoadFailed: mkdir.running = true
     }
-    Timer { id: saveTimer; interval: 500; onTriggered: file.setText(area.text) }
+    Timer {
+        id: saveTimer
+        interval: 500
+        onTriggered: {
+            file.setText(area.text)
+            // The save replaces the file (atomic rename), which drops the watch: re-arm it.
+            file.watchChanges = false
+            rewatch.restart()
+        }
+    }
+    Timer { id: rewatch; interval: 200; onTriggered: file.watchChanges = true }
 
     PanelWindow {
         screen: Quickshell.screens.find(s => s.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]

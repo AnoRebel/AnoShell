@@ -62,6 +62,7 @@ Rectangle {
             Layout.preferredHeight: 160
             placeholderText: "Write something…"
             text: Notepad.tabs[Notepad.current]?.text ?? ""
+            readOnly: !Notepad.loaded // nothing typed before the file loads gets replaced
             onTextChanged: if (activeFocus) Notepad.setText(Notepad.current, text)
         }
     }

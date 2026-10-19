@@ -54,12 +54,51 @@ Scope {
     }
 
     Providers { id: providers; query: root.query }
-    // One list for keyboard navigation: provider results, then apps.
+
+    // A provider row (leading or trailing); `offset` is its place in the flat list.
+    component ProviderRow: Rectangle {
+        required property var modelData
+        required property int index
+        property int offset: 0
+        readonly property bool isSelected: root.selectedIndex === index + offset
+        Layout.fillWidth: true
+        implicitHeight: 44
+        radius: Appearance?.rounding.small ?? 8
+        color: isSelected ? Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.15)
+            : provMA.containsMouse ? Appearance.colors.colLayer1Hover : "transparent"
+        border.width: isSelected ? 1 : 0
+        border.color: Appearance.colors.colPrimary
+        RowLayout {
+            anchors { fill: parent; margins: 6 }
+            spacing: 10
+            Item {
+                implicitWidth: 32; implicitHeight: 32
+                MaterialSymbol { anchors.centerIn: parent; visible: !modelData.text; text: modelData.icon ?? "bolt"; iconSize: 24; color: Appearance.colors.colPrimary }
+                Text { anchors.centerIn: parent; visible: !!modelData.text; text: modelData.text ?? ""; font.pixelSize: 24 }
+            }
+            ColumnLayout {
+                Layout.fillWidth: true; spacing: 0
+                StyledText { text: modelData.title ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: isSelected ? Font.DemiBold : Font.Normal; elide: Text.ElideRight; Layout.fillWidth: true }
+                StyledText { text: modelData.subtitle ?? ""; visible: text !== ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.45; elide: Text.ElideRight; Layout.fillWidth: true }
+            }
+        }
+        MouseArea {
+            id: provMA
+            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+            onClicked: root.activate(index + offset)
+            onEntered: root.selectedIndex = index + offset
+        }
+    }
+    // One list for keyboard navigation: leading provider results, the apps,
+    // then trailing ones (emoji typed without ":"), so "fire" + Enter still
+    // launches Firefox.
     readonly property int providerCount: providers.results.length
-    readonly property int totalCount: providerCount + filteredApps.length
+    readonly property int appEnd: providerCount + filteredApps.length
+    readonly property int totalCount: appEnd + providers.trailing.length
     function activate(i) {
-        if (i < root.providerCount) {
-            if (providers.results[i].run() === false) return // e.g. a guarded action: stay and say why
+        const r = i < root.providerCount ? providers.results[i] : i >= root.appEnd ? providers.trailing[i - root.appEnd] : null
+        if (r) {
+            if (r.run() === false) return // e.g. a guarded action: stay and say why
             GlobalStates.searchOpen = false
             root.query = ""
             return
@@ -217,38 +256,7 @@ Scope {
                         // Provider results (calculator, emoji, actions, …)
                         Repeater {
                             model: providers.results
-                            Rectangle {
-                                required property var modelData
-                                required property int index
-                                readonly property bool isSelected: root.selectedIndex === index
-                                Layout.fillWidth: true
-                                implicitHeight: 44
-                                radius: Appearance?.rounding.small ?? 8
-                                color: isSelected ? Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.15)
-                                    : provMA.containsMouse ? Appearance.colors.colLayer1Hover : "transparent"
-                                border.width: isSelected ? 1 : 0
-                                border.color: Appearance.colors.colPrimary
-                                RowLayout {
-                                    anchors { fill: parent; margins: 6 }
-                                    spacing: 10
-                                    Item {
-                                        implicitWidth: 32; implicitHeight: 32
-                                        MaterialSymbol { anchors.centerIn: parent; visible: !modelData.text; text: modelData.icon ?? "bolt"; iconSize: 24; color: Appearance.colors.colPrimary }
-                                        Text { anchors.centerIn: parent; visible: !!modelData.text; text: modelData.text ?? ""; font.pixelSize: 24 }
-                                    }
-                                    ColumnLayout {
-                                        Layout.fillWidth: true; spacing: 0
-                                        StyledText { text: modelData.title ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: isSelected ? Font.DemiBold : Font.Normal; elide: Text.ElideRight; Layout.fillWidth: true }
-                                        StyledText { text: modelData.subtitle ?? ""; visible: text !== ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.45; elide: Text.ElideRight; Layout.fillWidth: true }
-                                    }
-                                }
-                                MouseArea {
-                                    id: provMA
-                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.activate(index)
-                                    onEntered: root.selectedIndex = index
-                                }
-                            }
+                            ProviderRow {}
                         }
 
                         Repeater {
@@ -300,6 +308,12 @@ Scope {
                                     onEntered: root.selectedIndex = index + root.providerCount
                                 }
                             }
+                        }
+
+                        // Emoji typed without ":" come after the apps.
+                        Repeater {
+                            model: providers.trailing
+                            ProviderRow { offset: root.appEnd }
                         }
 
                         StyledText {

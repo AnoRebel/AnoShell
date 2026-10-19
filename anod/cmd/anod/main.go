@@ -460,20 +460,21 @@ func main() {
 	// outlive it: when its connection is gone, clear it (Hyprland).
 	var shaderMu sync.Mutex
 	shellShader := ""
-	srv.Handle("screen.shaderSet", func(p json.RawMessage) (any, error) {
+	var shaderConn uint64 // the connection that set it
+	srv.HandleConn("screen.shaderSet", func(conn uint64, p json.RawMessage) (any, error) {
 		var req struct {
 			Path string `json:"path"`
 		}
 		json.Unmarshal(p, &req)
 		shaderMu.Lock()
-		shellShader = req.Path
+		shellShader, shaderConn = req.Path, conn
 		shaderMu.Unlock()
 		return true, nil
 	})
-	srv.OnDisconnect = func(remaining int) {
+	srv.OnDisconnect = func(conn uint64) {
 		shaderMu.Lock()
 		defer shaderMu.Unlock()
-		if remaining > 0 || shellShader == "" || os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") == "" {
+		if conn != shaderConn || shellShader == "" || os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") == "" {
 			return
 		}
 		log.Printf("the shell is gone: clearing its screen shader")

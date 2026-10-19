@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -68,6 +69,10 @@ func Errorf(code, format string, a ...any) *Error {
 // Handler serves one method. Returning a non-*Error error reports CodeFailed.
 type Handler func(params json.RawMessage) (any, error)
 
+// ConnHandler is a Handler that also gets the calling connection's id (the
+// one OnDisconnect reports), for state owned by one client.
+type ConnHandler func(conn uint64, params json.RawMessage) (any, error)
+
 // DefaultSocketPath is $XDG_RUNTIME_DIR/ano/anod.sock.
 func DefaultSocketPath() string {
 	dir := os.Getenv("XDG_RUNTIME_DIR")
@@ -84,15 +89,18 @@ type Server struct {
 	path     string
 	lock     *os.File
 	handlers map[string]Handler
+	connH    map[string]ConnHandler
+	nextID   atomic.Uint64
 	slow     map[string]bool // methods served off the connection's read loop
 	mu       sync.Mutex
 	conns    map[*conn]struct{}
 	ln       net.Listener
-	// OnDisconnect runs after a connection closes, with how many are left.
-	OnDisconnect func(remaining int)
+	// OnDisconnect runs after a connection closes, with its id.
+	OnDisconnect func(conn uint64)
 }
 
 type conn struct {
+	id     uint64
 	c      net.Conn
 	wmu    sync.Mutex
 	subAll bool
@@ -112,11 +120,17 @@ func (c *conn) send(v any) error {
 }
 
 func NewServer(path string) *Server {
-	return &Server{path: path, handlers: map[string]Handler{}, slow: map[string]bool{}, conns: map[*conn]struct{}{}}
+	return &Server{path: path, handlers: map[string]Handler{}, connH: map[string]ConnHandler{}, slow: map[string]bool{}, conns: map[*conn]struct{}{}}
 }
 
 // Handle registers a method. Call before Listen.
 func (s *Server) Handle(method string, h Handler) { s.handlers[method] = h }
+
+// HandleConn registers a method that is told which connection called it.
+func (s *Server) HandleConn(method string, h ConnHandler) {
+	s.connH[method] = h
+	s.handlers[method] = func(json.RawMessage) (any, error) { return nil, nil } // known to dispatch
+}
 
 // HandleSlow registers a method that may take long (a cold palette scan):
 // it runs in its own goroutine, so later requests on the same connection
@@ -199,7 +213,7 @@ func (s *Server) Serve(ctx context.Context) error {
 			}
 			return err
 		}
-		c := &conn{c: nc, subs: map[string]bool{}}
+		c := &conn{id: s.nextID.Add(1), c: nc, subs: map[string]bool{}}
 		s.mu.Lock()
 		s.conns[c] = struct{}{}
 		s.mu.Unlock()
@@ -218,11 +232,10 @@ func (s *Server) serveConn(c *conn) {
 	defer func() {
 		s.mu.Lock()
 		delete(s.conns, c)
-		left := len(s.conns)
 		s.mu.Unlock()
 		c.c.Close()
 		if s.OnDisconnect != nil {
-			s.OnDisconnect(left)
+			s.OnDisconnect(c.id)
 		}
 	}()
 	sc := bufio.NewScanner(c.c)
@@ -261,7 +274,13 @@ func (s *Server) dispatch(c *conn, line []byte) Response {
 	if !ok {
 		return Response{ID: req.ID, Error: Errorf(CodeMethod, "unknown method %q", req.Method)}
 	}
-	res, err := h(req.Params)
+	var res any
+	var err error
+	if ch, ok := s.connH[req.Method]; ok {
+		res, err = ch(c.id, req.Params)
+	} else {
+		res, err = h(req.Params)
+	}
 	if err != nil {
 		var e *Error
 		if !errors.As(err, &e) {

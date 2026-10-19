@@ -25,7 +25,10 @@ Item {
     readonly property var p: Config.options?.search?.plugins ?? {}
     function on(name) { return root.p?.[name]?.enable ?? false }
 
-    readonly property var results: [].concat(calcResults, actionResults, schemeResults, lookResults, emojiResults, packageResults)
+    // Leading results go above the apps; `trailing` (emoji typed without ":")
+    // below them, so Enter on a plain word still opens the app.
+    readonly property var results: [].concat(calcResults, actionResults, schemeResults, lookResults, root.query.trim().startsWith(":") ? emojiResults : [], packageResults)
+    readonly property var trailing: root.query.trim().startsWith(":") ? [] : emojiResults
     property string message: ""     // a one-line note (guarded action, missing helper)
 
     // ── Which helpers exist (once, only for enabled providers) ────────
@@ -57,10 +60,21 @@ Item {
         if (root.on("packages")) pkgDebounce.restart()
         root.message = ""
     }
-    Timer { id: calcDebounce; interval: 120; onTriggered: { calc.command = ["qalc", "-t", "--", root.query.trim()]; calc.running = true } }
+    // A process still running ignores a new command: queue a rerun, and only
+    // take an answer for the query it was asked (no "4" for "2+23").
+    Timer { id: calcDebounce; interval: 120; onTriggered: root.runCalc() }
+    function runCalc() {
+        if (calc.running) { calc.again = true; return }
+        calc.forQuery = root.query.trim()
+        calc.command = ["qalc", "-t", "--", calc.forQuery]
+        calc.running = true
+    }
     Process {
         id: calc
-        stdout: StdioCollector { onStreamFinished: root.calcAnswer = text.trim() }
+        property string forQuery: ""
+        property bool again: false
+        stdout: StdioCollector { onStreamFinished: if (calc.forQuery === root.query.trim()) root.calcAnswer = text.trim() }
+        onExited: if (again) { again = false; if (root.isCalc) root.runCalc() }
     }
 
     // ── Emoji ─────────────────────────────────────────────────────────
@@ -98,14 +112,23 @@ Item {
             root.pkgList = []
             if (root.pkgQuery.length < 2) return
             if (!root.helper) { root.message = "Package search needs yay or paru"; return }
-            pkg.command = [root.helper, "-Ss", "--", root.pkgQuery]
-            pkg.running = true
+            root.runPkg()
         }
+    }
+    function runPkg() {
+        if (pkg.running) { pkg.again = true; return }
+        pkg.forQuery = root.pkgQuery
+        pkg.command = [root.helper, "-Ss", "--", pkg.forQuery]
+        pkg.running = true
     }
     Process {
         id: pkg
+        property string forQuery: ""
+        property bool again: false
+        onExited: if (again) { again = false; if (root.pkgQuery.length >= 2) root.runPkg() }
         stdout: StdioCollector {
             onStreamFinished: {
+                if (pkg.forQuery !== root.pkgQuery) return
                 // "repo/name version [tags]\n    description"
                 const out = [], lines = text.split("\n")
                 for (let i = 0; i < lines.length && out.length < 12; i++) {

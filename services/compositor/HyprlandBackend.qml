@@ -180,6 +180,13 @@ QtObject {
         interval: 50 // coalesce bursts of events into one round of requests
         onTriggered: root.refresh()
     }
+    // Set before anod was up (startup, anod restart, hot reload): tell it now,
+    // and set it again in case the old connection's cleanup just cleared it.
+    property string _screenShader: ""
+    property var _anodWatch: Connections {
+        target: Anod
+        function onAvailableChanged() { if (Anod.available && root._screenShader) root.setScreenShader(root._screenShader) }
+    }
     property var _events: Connections {
         target: Hyprland
         function onRawEvent(event) {
@@ -224,6 +231,7 @@ QtObject {
     // Full-screen GLSL shader ("" clears). damage_tracking must be off (1 = monitor) while set.
     function setScreenShader(path) {
         // anod clears it if the shell goes away without doing so (crash, kill).
+        root._screenShader = path ?? ""
         Anod.call("screen.shaderSet", { path: path ?? "" })
         return root._eval(`hl.config({ decoration = { screen_shader = "${path ?? ""}" }, debug = { damage_tracking = ${path ? 1 : 2} } })`)
     }

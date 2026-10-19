@@ -18,6 +18,9 @@ Singleton {
         return p || `${Directories.anoData}/todo.txt`
     }
     property var items: []          // { done, text }
+    // Writes only once the file loaded (or is confirmed missing), so a file
+    // that fails to load (permissions) is never replaced.
+    property bool writable: false
 
     function parse(t) {
         return t.split("\n").map(l => l.replace(/\s+$/, "")).filter(l => l.trim() !== "").map(l =>
@@ -25,6 +28,7 @@ Singleton {
     }
     function serialize(list) { return list.map(i => (i.done ? "x " : "") + i.text.replace(/\n/g, " ")).join("\n") + "\n" }
     function save(list) {
+        if (!root.writable) { console.warn(`[Todo] ${root.path} didn't load; not saving`); return }
         root.items = list
         file.setText(root.serialize(list))
         // The save replaces the file (atomic rename), which drops the watch: re-arm it.
@@ -44,8 +48,14 @@ Singleton {
         path: root.enabled ? root.path : ""
         watchChanges: true
         onFileChanged: reload()
-        onLoaded: root.items = root.parse(text())
+        onPathChanged: root.writable = false
+        onLoaded: { root.items = root.parse(text()); root.writable = true }
         printErrors: false // missing until the first save
-        onLoadFailed: { root.items = []; mkdir.running = true }
+        onLoadFailed: error => {
+            root.items = []
+            root.writable = error === FileViewError.FileNotFound
+            if (root.writable) mkdir.running = true
+            else console.warn(`[Todo] can't read ${root.path}`)
+        }
     }
 }

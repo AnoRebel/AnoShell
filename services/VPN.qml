@@ -439,7 +439,9 @@ Singleton {
     onStatusChanged: {
         if (root.providerName !== "netbird") return
         const nb = root.status.netbird
-        root._backoff = nb ? 0 : Math.min(300000, Math.max(60000, root._backoff * 2))
+        // Only "service not running" backs off (auth prompts and parse misses don't).
+        if (nb) root._backoff = 0
+        else if ((root.status.reason ?? "").startsWith("Service not running")) root._backoff = Math.min(300000, Math.max(60000, root._backoff * 2))
         if (!nb) return
         const h = { management: nb.management.connected, signal: nb.signal.connected }
         if (root._health && (h.management !== root._health.management || h.signal !== root._health.signal)
