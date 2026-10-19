@@ -1,7 +1,11 @@
 package display
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/binary"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -153,5 +157,89 @@ func TestBackendsRead(t *testing.T) {
 	}
 	if !strings.Contains(niriOutput(n[0]), `mode "1920x1200@60.026"`) {
 		t.Error(niriOutput(n[0]))
+	}
+}
+
+func TestCursor(t *testing.T) {
+	// A theme dir with a 2-image XCursor arrow.
+	dir := t.TempDir()
+	td := filepath.Join(dir, "Test", "cursors")
+	os.MkdirAll(td, 0o755)
+	os.WriteFile(filepath.Join(dir, "Test", "index.theme"), []byte("[Icon Theme]\nName=Test Cursors\n"), 0o644)
+	os.MkdirAll(filepath.Join(dir, "NotCursors"), 0o755)
+	var xc bytes.Buffer
+	le := binary.LittleEndian
+	w := func(v uint32) { binary.Write(&xc, le, v) }
+	xc.WriteString("Xcur")
+	w(16)
+	w(0x10000)
+	w(2)
+	pos := uint32(16 + 2*12)
+	w(0xfffd0002)
+	w(24)
+	w(pos)
+	w(0xfffd0002)
+	w(48)
+	w(pos + 36 + 24*24*4)
+	for _, sz := range []uint32{24, 48} {
+		w(36)
+		w(0xfffd0002)
+		w(sz)
+		w(1)
+		w(sz)
+		w(sz)
+		w(1)
+		w(1)
+		w(0)
+		for i := uint32(0); i < sz*sz; i++ {
+			w(0x80800000) // half-transparent premultiplied red
+		}
+	}
+	os.WriteFile(filepath.Join(td, "left_ptr"), xc.Bytes(), 0o644)
+
+	themes := CursorThemes([]string{dir})
+	if len(themes) != 1 || themes[0].Name != "Test" || themes[0].Title != "Test Cursors" {
+		t.Fatalf("themes: %+v", themes)
+	}
+	pngData, err := Preview(themes[0].Path, 40)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, err := png.Decode(bytes.NewReader(pngData))
+	if err != nil || img.Bounds().Dx() != 48 {
+		t.Fatalf("preview: %v %v", img.Bounds(), err)
+	}
+	if c := color.NRGBAModel.Convert(img.At(0, 0)).(color.NRGBA); c.A != 0x80 || c.R != 0xff {
+		t.Errorf("pixel not un-premultiplied: %+v", c)
+	}
+
+	// Applying: hyprctl + gsettings run, settings.ini keys updated in place,
+	// the managed file carries XCURSOR_*.
+	f := &fake{outs: []Output{edp}}
+	s, d := newSvc(t, f)
+	ini := filepath.Join(d, "settings.ini")
+	os.WriteFile(ini, []byte("[Settings]\ngtk-theme-name=X\ngtk-cursor-theme-name=Old\ngtk-cursor-theme-size=16\n"), 0o644)
+	s.GtkSettings = []string{ini, filepath.Join(d, "missing.ini")}
+	var ran []string
+	s.Exec = func(n string, a ...string) error { ran = append(ran, n+" "+strings.Join(a, " ")); return nil }
+	if err := s.SetCursor(Cursor{Theme: "Test", Size: 32}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(strings.Join(ran, "\n"), "hyprctl setcursor Test 32") || !strings.Contains(strings.Join(ran, "\n"), "cursor-size 32") {
+		t.Errorf("ran: %v", ran)
+	}
+	b, _ := os.ReadFile(ini)
+	if string(b) != "[Settings]\ngtk-theme-name=X\ngtk-cursor-theme-name=Test\ngtk-cursor-theme-size=32\n" {
+		t.Errorf("ini: %q", b)
+	}
+	if _, err := os.Stat(filepath.Join(d, "missing.ini")); err == nil {
+		t.Error("created a settings.ini that wasn't there")
+	}
+	m, _ := os.ReadFile(s.HyprFile)
+	if !strings.Contains(string(m), `hl.env("XCURSOR_SIZE", "32")`) || !strings.Contains(string(m), `output = "eDP-1"`) {
+		t.Errorf("managed: %s", m)
+	}
+	if err := s.SetCursor(Cursor{Theme: "../x", Size: 32}); err == nil {
+		t.Error("bad theme name accepted")
 	}
 }

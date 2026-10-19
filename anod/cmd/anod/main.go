@@ -363,14 +363,61 @@ func main() {
 		}
 		cfg := filepath.Dir(filepath.Dir(config.UserPath()))
 		disp := &display.Service{
-			Backend:  dispBackend,
-			Deadline: 15 * time.Second,
-			HyprFile: filepath.Join(cfg, "hypr", "ano-managed.lua"),
-			NiriFile: filepath.Join(cfg, "niri", "ano-managed.kdl"),
-			Profiles: filepath.Join(cfg, "anoshell", "display-profiles.json"),
-			Notify:   srv.Broadcast,
-			Logf:     log.Printf,
+			Backend:     dispBackend,
+			Deadline:    15 * time.Second,
+			HyprFile:    filepath.Join(cfg, "hypr", "ano-managed.lua"),
+			NiriFile:    filepath.Join(cfg, "niri", "ano-managed.kdl"),
+			Profiles:    filepath.Join(cfg, "anoshell", "display-profiles.json"),
+			Notify:      srv.Broadcast,
+			Logf:        log.Printf,
+			GtkSettings: []string{filepath.Join(cfg, "gtk-3.0", "settings.ini"), filepath.Join(cfg, "gtk-4.0", "settings.ini")},
+			Cursor: func() *display.Cursor {
+				m, err := config.Effective()
+				if err != nil {
+					return nil
+				}
+				c := display.Cursor{Theme: config.String(m, "cursor.theme", ""), Size: config.Int(m, "cursor.size", 24)}
+				if c.Theme == "" {
+					return nil
+				}
+				return &c
+			},
 		}
+		if os.Getenv("ANOD_DISPLAY_DRYRUN") == "1" { // nothing outside anod's own files changes
+			disp.GtkSettings = nil
+			disp.Exec = func(name string, args ...string) error {
+				log.Printf("display (dry run): would run %s %v", name, args)
+				return nil
+			}
+		}
+		// Cursor themes with a preview each (PNG in the cache, made once).
+		srv.HandleSlow("cursor.themes", func(json.RawMessage) (any, error) {
+			dir := filepath.Join(cacheDir, "cursor-previews")
+			os.MkdirAll(dir, 0o755)
+			var out []map[string]any
+			for _, t := range display.CursorThemes(display.IconDirs()) {
+				p := filepath.Join(dir, t.Name+".png")
+				if _, err := os.Stat(p); err != nil {
+					if b, err := display.Preview(t.Path, 48); err == nil {
+						os.WriteFile(p, b, 0o644)
+					} else {
+						p = ""
+					}
+				}
+				out = append(out, map[string]any{"name": t.Name, "title": t.Title, "preview": p})
+			}
+			return out, nil
+		})
+		srv.Handle("cursor.apply", func(p json.RawMessage) (any, error) {
+			var c display.Cursor
+			if err := json.Unmarshal(p, &c); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {theme, size}")
+			}
+			if err := disp.SetCursor(c); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
+			}
+			return true, nil
+		})
 		srv.Handle("display.get", func(json.RawMessage) (any, error) {
 			outs, err := dispBackend.Current()
 			if err != nil {

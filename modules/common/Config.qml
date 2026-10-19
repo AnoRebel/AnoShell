@@ -692,6 +692,13 @@ Singleton {
                 }
             }
 
+            // Pointer theme and size, applied by anod (Settings → Modules → Cursor).
+            // theme "" leaves the cursor to your compositor config.
+            property JsonObject cursor: JsonObject {
+                property string theme: ""
+                property int size: 24
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // Reader — novel, manga and anime panels (backend: anod's reader)
             // ═══════════════════════════════════════════════════════════════

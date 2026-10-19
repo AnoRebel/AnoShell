@@ -213,6 +213,10 @@
   "media": {
     "filterDuplicatePlayers": true
   },
+  "cursor": {
+    "theme": "",
+    "size": 24
+  },
   "reader": {
     "enable": false,
     "idleTimeout": 120,
