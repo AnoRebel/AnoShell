@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"ano/anod/internal/config"
+	"ano/anod/internal/display"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/keybinds"
@@ -354,6 +355,58 @@ func main() {
 		return kbApply(keybinds.Reset(o, req.Chord))
 	})
 
+	// Displays (Settings → Displays): live apply, 15 s confirm-or-revert run
+	// here (a shell crash can't strand a bad mode), managed include files, profiles.
+	if dispBackend := displayBackend(); dispBackend != nil {
+		if os.Getenv("ANOD_DISPLAY_DRYRUN") == "1" {
+			dispBackend = &display.DryRun{Backend: dispBackend, Logf: log.Printf}
+		}
+		cfg := filepath.Dir(filepath.Dir(config.UserPath()))
+		disp := &display.Service{
+			Backend:  dispBackend,
+			Deadline: 15 * time.Second,
+			HyprFile: filepath.Join(cfg, "hypr", "ano-managed.lua"),
+			NiriFile: filepath.Join(cfg, "niri", "ano-managed.kdl"),
+			Profiles: filepath.Join(cfg, "anoshell", "display-profiles.json"),
+			Notify:   srv.Broadcast,
+			Logf:     log.Printf,
+		}
+		srv.Handle("display.get", func(json.RawMessage) (any, error) {
+			outs, err := dispBackend.Current()
+			if err != nil {
+				return nil, err
+			}
+			ps, _ := disp.ListProfiles()
+			return map[string]any{"outputs": outs, "pending": disp.PendingChange(), "profiles": ps, "compositor": dispBackend.Name()}, nil
+		})
+		srv.Handle("display.apply", func(p json.RawMessage) (any, error) {
+			var req struct {
+				Outputs []display.Output `json:"outputs"`
+			}
+			if err := json.Unmarshal(p, &req); err != nil || len(req.Outputs) == 0 {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {outputs: [...]}")
+			}
+			pending, err := disp.Apply(req.Outputs)
+			return map[string]any{"pending": pending}, err
+		})
+		srv.Handle("display.confirm", func(json.RawMessage) (any, error) { return true, disp.Confirm() })
+		srv.Handle("display.revert", func(json.RawMessage) (any, error) { return true, disp.Revert() })
+		srv.Handle("display.saveProfile", func(p json.RawMessage) (any, error) {
+			var req struct {
+				Name string `json:"name"`
+			}
+			if err := json.Unmarshal(p, &req); err != nil || strings.TrimSpace(req.Name) == "" {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {name}")
+			}
+			return true, disp.SaveProfile(strings.TrimSpace(req.Name))
+		})
+		// The shell reports a monitor plugged or unplugged; a matching profile applies.
+		srv.Handle("display.outputsChanged", func(json.RawMessage) (any, error) {
+			name, err := disp.OutputsChanged()
+			return map[string]any{"profile": name}, err
+		})
+	}
+
 	if err := listenOrTakeOver(srv, *socket, session); err != nil {
 		log.Fatalf("anod: %v", err)
 	}
@@ -402,6 +455,17 @@ func expandHome(p string) string {
 		return filepath.Join(home, strings.TrimPrefix(p, "~"))
 	}
 	return p
+}
+
+// displayBackend picks the running compositor's (nil when neither).
+func displayBackend() display.Backend {
+	switch {
+	case os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") != "":
+		return display.Hyprland{}
+	case os.Getenv("NIRI_SOCKET") != "":
+		return display.Niri{}
+	}
+	return nil
 }
 
 func xdgData() string {

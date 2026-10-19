@@ -68,7 +68,7 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 			}
 			text, n := stripHyprBinds(string(data), lines)
 			if file == p.HyprMain {
-				text = strings.TrimRight(text, "\n") + "\n\n" + IncludeHyprland + "\n"
+				text = strings.TrimRight(text, "\n") + "\n\n" + IncludeHyprlandManaged + "\n" + IncludeHyprland + "\n"
 			}
 			edits[file] = text
 			res.Moved[file] = n
@@ -89,7 +89,7 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 			onNiri[b.Key()] = true
 		}
 		text, n := stripNiriBinds(string(src))
-		edits[p.NiriMain] = strings.TrimRight(text, "\n") + "\n\n" + IncludeNiri + "\n"
+		edits[p.NiriMain] = strings.TrimRight(text, "\n") + "\n\n" + IncludeNiriManaged + "\n" + IncludeNiri + "\n"
 		res.Moved[p.NiriMain] = n
 	}
 

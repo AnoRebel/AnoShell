@@ -43,6 +43,7 @@ var features = []feature{
 	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
 	{"anime reader playback", "reader.enable", []string{"mpv"}},
+	{"keybinds: cheatsheet and migration (reads Lua configs)", "", []string{"lua"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.

@@ -106,6 +106,22 @@ Item {
         onTriggered: window.forceLayoutUpdate()
     }
 
+    // Through anod when it runs: it applies, asks "Keep these settings?"
+    // (DisplayConfirm) and reverts after 15 s unless kept, then persists.
+    function applyConfigs(configs) {
+        if (!Anod.available) { CompositorService.applyOutputs(configs); return }
+        const now = CompositorService.outputs ?? []
+        const outs = configs.map(c => {
+            const cur = now.find(o => o.name === c.name) ?? {}
+            return { name: c.name, width: Number(c.width), height: Number(c.height), refresh: Number(c.rate),
+                scale: Number(c.scale), x: c.x ?? cur.x ?? 0, y: c.y ?? cur.y ?? 0,
+                transform: cur.transform ?? 0, vrr: !!cur.vrr, enabled: true }
+        })
+        Anod.call("display.apply", { outputs: outs }, (r, e) => {
+            if (e) Quickshell.execDetached(["notify-send", "Display", e.message])
+        })
+    }
+
     // ─── System Query ───────────────────────────────────────────────────
     // Outputs come from the compositor backend (Hyprland: j/monitors).
     function loadOutputs() {
@@ -525,7 +541,7 @@ Item {
                         if (monitorsModel.count === 0) return;
                         if (monitorsModel.count === 1) {
                             let mon = monitorsModel.get(0);
-                            CompositorService.applyOutputs([{ name: mon.name, width: mon.resW, height: mon.resH, rate: mon.rate, scale: mon.sysScale, x: null, y: null }]);
+                            window.applyConfigs([{ name: mon.name, width: mon.resW, height: mon.resH, rate: mon.rate, scale: mon.sysScale, x: null, y: null }]);
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied: " + mon.resW + "x" + mon.resH + " @ " + mon.rate + "Hz"]);
                         } else {
                             let rects = [];
@@ -548,7 +564,7 @@ Item {
                                                y: Math.round((r.y - finalMinY) + originalLayoutOriginY) });
                                 summaryString += r.name + " ";
                             }
-                            CompositorService.applyOutputs(configs);
+                            window.applyConfigs(configs);
                             Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString]);
                         }
                         GlobalStates.displayManagerOpen = false;

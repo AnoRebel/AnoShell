@@ -201,6 +201,11 @@ func ChordUsers(binds []Bind, chord, submap string) []Bind {
 // IncludeHyprland is the one line migration adds to hyprland.lua.
 const IncludeHyprland = `pcall(dofile, (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/hypr/ano-managed-binds.lua") -- ano keybinds (ano keybinds migrate --revert undoes this)`
 
+// IncludeHyprlandManaged and IncludeNiriManaged pull in anod's other managed
+// file (displays, cursor: Settings → Displays), added by the same migration.
+const IncludeHyprlandManaged = `pcall(dofile, (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/hypr/ano-managed.lua") -- ano displays and cursor`
+const IncludeNiriManaged = `include optional=true "ano-managed.kdl" // ano displays and cursor`
+
 // IncludeNiri is the one line migration adds at the end of config.kdl.
 const IncludeNiri = `include optional=true "ano-managed-binds.kdl" // ano keybinds (ano keybinds migrate --revert undoes this)`
 
