@@ -218,7 +218,8 @@ func TestMigrateAndRevert(t *testing.T) {
 			t.Errorf("niri validate: %s", out)
 		}
 	}
-	// Nothing changes for the user: each compositor still has every bind it had.
+	// Every chord the user had is still bound: as theirs when the curated set
+	// leaves it free, else by the curated set (which wins on its chords).
 	origH, _ := ReadHyprland(filepath.Join(bundled, "hyprland", "hyprland.lua"))
 	origN, _ := ReadNiri(filepath.Join(bundled, "niri", "ano.kdl"))
 	genN, err := ReadNiri(p.NiriBinds)
@@ -227,9 +228,10 @@ func TestMigrateAndRevert(t *testing.T) {
 	}
 	for comp, pair := range map[string][2][]Bind{"hyprland": {origH, got}, "niri": {origN, genN}} {
 		for _, b := range pair[0] {
+			curated := describeOn(d.Binds, b.Key(), comp) != ""
 			found := false
 			for _, g := range pair[1] {
-				if g.Key() == b.Key() && Same(g, b) {
+				if g.Key() == b.Key() && (curated || Same(g, b)) {
 					found = true
 					break
 				}

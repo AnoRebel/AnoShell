@@ -13,16 +13,29 @@ so a chord does the same thing on both.
 
 ## The defaults
 
-The shipped set is built from the binds bundled in `ano/external/` (Hyprland
-Lua and niri `ano.kdl`) by a dev tool:
+The shipped set (`anod/internal/keybinds/defaults.json`) is curated by hand
+from your Hyprland and niri binds: cleaned up, the waybar/rofi/swaync/wlogout
+era replaced by the shell, and one meaning per chord on every compositor.
 
-```sh
-cd ano/anod && go run ./cmd/keybinds-import   # needs lua
-```
+| Keys | Does |
+|---|---|
+| Super (tap), Super+A | search; Super+Tab overview; Super+Grave task view |
+| Super+B / N / I / O / X | left sidebar / right sidebar / control panel / media / session |
+| Super+Comma, Super+Slash | Settings, cheatsheet |
+| Super+Return, Super+E, Super+Z, Super+D | terminal, files, browser (your default apps), vicinae |
+| Super+Q, Super+Shift+Q | close |
+| Super+F / Super+Alt+F | maximize / fullscreen |
+| Super+G or Super+W | tabs (a Hyprland group, a tabbed niri column) |
+| Super+arrows or H/J/K/; | focus; with Shift: move; Super+Ctrl+arrows: resize |
+| Super+[ / ] , Super+R, Super+Ctrl+F | column: pull in/out, width presets, fit (scrolling layouts) |
+| Super+1…0 | workspace; with Shift: move there; with Alt: send there |
+| Super+L, Ctrl+Alt+K | lock |
+| Print / Shift+Print / Super+Shift+S | screen → editor / region → editor / region → clipboard |
+| Super+Shift+X, Super+Shift+R | region text (OCR) to clipboard, record a region |
 
-Where the two bundled sets bind the same chord to different things, Hyprland's
-bind wins, unless it only exists on Hyprland (then each compositor keeps its
-own). Every clash is listed in `anod/internal/keybinds/import-report.md`.
+`go run ./cmd/keybinds-import [hyprland.lua niri.kdl]` (from `ano/anod`)
+writes `anod/internal/keybinds/import-report.md`: what a migration of those
+configs would replace and keep.
 
 ## Your changes
 
@@ -64,8 +77,10 @@ generated files are unused. `ano keybinds migrate`:
 
 1. Backs up `~/.config/hypr/hyprland.lua`, any file it `require`s that has
    binds, and `~/.config/niri/config.kdl` (next to them, with a timestamp).
-2. Turns every live bind that differs from the defaults into one of your
-   changes, for that compositor, so nothing you had stops working.
+2. Keeps your binds on chords the defaults leave free as your changes, for
+   that compositor. On chords the defaults bind, the defaults win; the report
+   lists each one (what it does now, what it did), and Settings → Keybinds
+   puts any back.
 3. Removes the bind statements from those files (Hyprland `hl.bind` calls,
    niri's `binds {}` block) and adds one include line at the end of each.
 4. Writes the managed files and reloads Hyprland. niri picks up the included

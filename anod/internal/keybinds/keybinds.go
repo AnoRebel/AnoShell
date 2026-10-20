@@ -191,7 +191,21 @@ var Catalogue = map[string]Action{
 	"window.fullscreen": {Label: "Fullscreen", Hypr: lit(`hl.dsp.window.fullscreen({ action = "toggle" })`), Niri: lit("fullscreen-window")},
 	"window.float":      {Label: "Toggle floating", Hypr: lit(`hl.dsp.window.float({ action = "toggle" })`), Niri: lit("toggle-window-floating")},
 	"window.center":     {Label: "Center window", Hypr: lit("hl.dsp.window.center()"), Niri: lit("center-column")},
-	"session.quit":      {Label: "Quit the compositor", Hypr: lit(`hl.dsp.exec_cmd("hyprshutdown")`), Niri: lit("quit")},
+	// Maximize keeps the bar and gaps; fullscreen covers the screen.
+	"window.maximize": {Label: "Maximize", Hypr: lit(`hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })`), Niri: lit("maximize-column")},
+	// Tabs: a Hyprland group, a tabbed niri column.
+	"window.tabs": {Label: "Tabbed group", Hypr: lit("hl.dsp.group.toggle()"), Niri: lit("toggle-column-tabbed-display")},
+	// Scrolling-layout column actions (Hyprland: only on a scrolling workspace, via layout_bind).
+	"column.consumeOrExpelLeft":  {Label: "Pull window into / out of the column (left)", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("consume_or_expel prev") })`), Niri: lit("consume-or-expel-window-left")},
+	"column.consumeOrExpelRight": {Label: "Pull window into / out of the column (right)", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("consume_or_expel next") })`), Niri: lit("consume-or-expel-window-right")},
+	"column.presetWidth":         {Label: "Cycle column width presets", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("colresize +conf") })`), Niri: lit("switch-preset-column-width")},
+	"column.fit":                 {Label: "Fit the column on screen", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("fit active") })`), Niri: lit("center-visible-columns")},
+	// Resize: column width / window height on scrolling layouts, the window elsewhere.
+	"window.resize.left":  {Label: "Narrower", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("colresize -0.1"), default = hl.dsp.window.resize({ relative = true, x = -40, y = 0 }) })`), Niri: lit(`set-column-width "-10%"`)},
+	"window.resize.right": {Label: "Wider", Hypr: lit(`layout_bind({ scrolling = hl.dsp.layout("colresize +0.1"), default = hl.dsp.window.resize({ relative = true, x = 40, y = 0 }) })`), Niri: lit(`set-column-width "+10%"`)},
+	"window.resize.up":    {Label: "Shorter", Hypr: lit("hl.dsp.window.resize({ relative = true, x = 0, y = -40 })"), Niri: lit(`set-window-height "-10%"`)},
+	"window.resize.down":  {Label: "Taller", Hypr: lit("hl.dsp.window.resize({ relative = true, x = 0, y = 40 })"), Niri: lit(`set-window-height "+10%"`)},
+	"session.quit":        {Label: "Quit the compositor", Hypr: lit(`hl.dsp.exec_cmd("hyprshutdown")`), Niri: lit("quit")},
 	"workspace.focus": {Label: "Go to workspace", Arg: "workspace number",
 		Hypr: func(a []string) string { return "hl.dsp.focus({ workspace = " + arg(a, 0) + " })" },
 		Niri: func(a []string) string { return "focus-workspace " + arg(a, 0) }},

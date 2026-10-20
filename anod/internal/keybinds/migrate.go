@@ -101,27 +101,37 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 		res.Moved[p.NiriMain] = n
 	}
 
-	// Live binds the defaults don't already give that compositor become
-	// overrides. An override replaces every default on its chord, so once one
-	// bind on a chord is kept, all of your binds on that chord are.
+	// The curated set wins on every chord it binds on that compositor (your
+	// old waybar/rofi/swaync binds give way to the shell's); your binds on
+	// chords it leaves free become overrides. An override replaces every
+	// default on its chord, so all of your binds on a kept chord are kept.
 	var ov Overrides
 	chordKept := map[string]bool{} // compositor + key
+	replaced := map[string]bool{}
 	for _, b := range live {
-		matched := false
+		taken := false
 		for _, x := range d.Binds {
-			if x.Key() == b.Key() && x.On(b.Only) && Same(x, b) {
-				matched = true
+			if x.Key() == b.Key() && x.On(b.Only) {
+				taken = true
 				break
 			}
 		}
-		if !matched {
+		if !taken {
 			chordKept[b.Only+"\x00"+b.Key()] = true
 		}
 	}
 	for _, b := range live {
-		if chordKept[b.Only+"\x00"+b.Key()] {
+		k := b.Only + "\x00" + b.Key()
+		switch {
+		case chordKept[k]:
 			ov.Binds = append(ov.Binds, b)
 			res.Report = append(res.Report, fmt.Sprintf("kept your %s bind %s → %s", b.Only, b.Chord, b.Describe()))
+		case !replaced[k]:
+			replaced[k] = true
+			if !rendersAs(d.Binds, b) {
+				now := describeOn(d.Binds, b.Key(), b.Only)
+				res.Report = append(res.Report, fmt.Sprintf("%s %s is now %s (was %s; Settings → Keybinds can put it back)", b.Only, b.Chord, now, b.Describe()))
+			}
 		}
 	}
 	res.Overrides = len(ov.Binds)
@@ -393,4 +403,32 @@ func stripNiriBinds(src string) (string, int) {
 		}
 	}
 	return strings.Join(out, "\n"), n
+}
+
+// describeOn is what the defaults do on key for comp ("a; b" when stacked).
+func describeOn(binds []Bind, key, comp string) string {
+	var out []string
+	for _, x := range binds {
+		if x.Key() == key && x.On(comp) {
+			out = append(out, x.Describe())
+		}
+	}
+	return strings.Join(out, "; ")
+}
+
+// rendersAs: a default on b's chord does exactly what b does on b's compositor.
+func rendersAs(binds []Bind, b Bind) bool {
+	line := func(x Bind) string {
+		x.Chord = "" // compare the action and its options only
+		if b.Only == "hyprland" {
+			return hyprLine(x)
+		}
+		return niriLine(x)
+	}
+	for _, x := range binds {
+		if x.Key() == b.Key() && x.On(b.Only) && (Same(x, b) || line(x) == line(b)) {
+			return true
+		}
+	}
+	return false
 }
