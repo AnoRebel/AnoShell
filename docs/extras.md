@@ -35,11 +35,15 @@ Settings → Sidebars → **Productivity**.
 - **Notepad** (`notepad.enable`): tabs of text in the right sidebar, saved
   as you type to `~/.local/share/anoshell/notepad.json`. A tab is named after
   its first line.
-- **To-do** (`todo.enable`): a list kept in a todo.txt, one task per line, with
-  `x ` in front when it's done. The file is `todo.file`, or
+- **To-do** (`todo.enable`): a list kept in a todo.txt (one task per line,
+  `x <date> ` in front when it's done). The file is `todo.file`, or
   `~/.local/share/anoshell/todo.txt` by default. Edit it in any editor and the
   sidebar updates at once; changes made in the sidebar are written straight
-  back.
+  back. Tick a task and it strikes through, then folds under **Done**;
+  double-click a task to edit it; remove one and **Undo** brings it back for a
+  few seconds. todo.txt markup shows as chips: `(A) ` priority (A red, B
+  tertiary), `due:2026-10-25` (or `due:today`, `due:tomorrow`, `due:fri`),
+  `+project` and `@context`.
 - **Pomodoro and stopwatch** (`pomodoro.enable`): focus, short break and long
   break (`focusMinutes`, `breakMinutes`, `longBreakMinutes`,
   `cyclesBeforeLongBreak`), with a notification at each change. It is separate
