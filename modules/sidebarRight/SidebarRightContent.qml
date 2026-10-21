@@ -36,6 +36,21 @@ Rectangle {
         "systemButtons", "quickSliders", "quickToggles", "networkDetail", "media", "notifications", "calendar", "systemInfo"
     ]
 
+    // Cards fade in top to bottom as the sidebar opens (one shared clock;
+    // opacity only, so nothing re-lays out or renders offscreen).
+    property real _enter: 1
+    NumberAnimation { id: enterAnim; target: root; property: "_enter"; from: 0; to: 1; duration: AnimationConfig.scaledDuration(450); easing.type: Easing.OutCubic }
+    function _staggerIn() {
+        const cards = mainColumn.children.filter(c => c.visible)
+        const step = 0.5 / Math.max(1, cards.length)
+        cards.forEach((c, i) => { c.opacity = Qt.binding(() => Math.max(0, Math.min(1, (root._enter - i * step) / 0.5))) })
+        enterAnim.restart()
+    }
+    Connections {
+        target: GlobalStates
+        function onSidebarRightOpenChanged() { if (GlobalStates.sidebarRightOpen && AnimationConfig.transitions) root._staggerIn() }
+    }
+
     StyledFlickable {
         anchors.fill: parent
         anchors.margins: 10

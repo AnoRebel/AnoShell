@@ -119,6 +119,8 @@ Scope {
 
             Loader {
                 id: contentLoader
+                // Parked (closed, slid away): not drawn at all, so nothing in it renders.
+                visible: !sidebarRoot.parked
                 active: GlobalStates.sidebarRightOpen || (Config?.options?.sidebar?.keepRightSidebarLoaded ?? true)
                 anchors { top: parent.top; right: parent.right; bottom: parent.bottom; margins: root.globalMargin }
                 width: root.sidebarWidth - root.globalMargin * 2

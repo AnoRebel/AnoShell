@@ -264,7 +264,11 @@ Rectangle {
         signal chevronClicked()
 
         implicitHeight: 44
-        radius: Appearance?.rounding.small ?? 8
+        // Morphs: a full pill while on, a rounded tile while off (springs between).
+        radius: active ? height / 2 : (Appearance?.rounding.small ?? 8)
+        Behavior on radius { MotionSpring { token: "snappy" } }
+        scale: pillMouse.pressed ? 0.95 : 1
+        Behavior on scale { MotionSpring { token: "snappy" } }
         color: active ? Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.2) : Appearance?.colors.colLayer2 ?? "#2B2930"
         border.width: active ? 1 : 0
         border.color: Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.4)
