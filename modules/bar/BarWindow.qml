@@ -272,18 +272,14 @@ PanelWindow {
             asynchronous: true
             active: true
 
-            anchors {
-                top: !barRoot.isBottom ? parent.top : undefined
-                bottom: barRoot.isBottom || barRoot.isVertical ? parent.bottom : undefined
-                left: !barRoot.isRight ? parent.left : undefined
-                right: barRoot.isRight || !barRoot.isVertical ? parent.right : undefined
-            }
-
-            // A Loader's implicit size is read-only (derived from the loaded
-            // item), so drive the thickness axis with explicit width/height.
-            // The other axis is governed by the 3-edge anchors above.
-            width: barRoot.isVertical ? barRoot.barThickness : undefined
-            height: barRoot.isVertical ? undefined : barRoot.barThickness
+            // Placed, not anchored: the window starts out as a top bar (before
+            // barConfig arrives), and a left+right anchor set then wrote width 0
+            // over the binding, which stayed once the bar turned vertical.
+            readonly property real _m: hideOffset + barRoot.formMargin
+            x: barRoot.edge === "left" ? _m : barRoot.edge === "right" ? parent.width - width - _m : 0
+            y: barRoot.edge === "top" ? _m : barRoot.edge === "bottom" ? parent.height - height - _m : 0
+            width: barRoot.isVertical ? barRoot.barThickness : parent.width
+            height: barRoot.isVertical ? parent.height : barRoot.barThickness
 
             // Auto-hide / fullscreen-hide slide
             property real hideOffset: barRoot.effectiveHidden ? -(barRoot.barThickness + barRoot.formMargin) : 0
@@ -297,10 +293,6 @@ PanelWindow {
                 }
             }
 
-            anchors.topMargin: edge === "top" ? hideOffset + barRoot.formMargin : 0
-            anchors.bottomMargin: edge === "bottom" ? hideOffset + barRoot.formMargin : 0
-            anchors.leftMargin: edge === "left" ? hideOffset + barRoot.formMargin : 0
-            anchors.rightMargin: edge === "right" ? hideOffset + barRoot.formMargin : 0
 
             sourceComponent: BarContent {
                 barConfig: barRoot.barConfig

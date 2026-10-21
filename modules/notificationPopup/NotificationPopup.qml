@@ -89,6 +89,11 @@ Scope {
             x: _o.x + stackClip.x
             y: _o.y + stackClip.y
             w: stackClip.width; h: stackClip.height
+            // In a corner the stack meets the side band: fillet into it (as
+            // StyledPopup does) instead of rounding on its own.
+            readonly property string _sn: popupWindow.screen?.name ?? ""
+            omitStartConnector: x <= PanelRegistry.inset(_sn, "left") + 0.5
+            omitEndConnector: x + w >= (popupWindow.screen?.width ?? 0) - PanelRegistry.inset(_sn, "right") - 0.5
         }
 
         // Blur follows each rounded card (ext-background-effect-v1); the

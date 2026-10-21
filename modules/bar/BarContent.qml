@@ -182,6 +182,9 @@ Item {
         if (!root._ready && root.along > 0 && root.visible) settle.restart()
     }
     onAlongChanged: _relayout()
+    // Vertical bars get their width after their length: bodies laid out
+    // before it were 0 wide (no background, groups centred on the edge).
+    onThicknessChanged: _relayout()
     onFormChanged: _relayout()
     onGroupsChanged: _relayout()
     onEdgeMarginChanged: _relayout()

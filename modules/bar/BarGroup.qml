@@ -39,15 +39,12 @@ Item {
     GridLayout {
         id: gridLayout
         columns: root.vertical ? 1 : -1
-        anchors {
-            verticalCenter: root.vertical ? undefined : parent.verticalCenter
-            horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-            left: root.vertical ? undefined : parent.left
-            right: root.vertical ? undefined : parent.right
-            top: root.vertical ? parent.top : undefined
-            bottom: root.vertical ? parent.bottom : undefined
-            margins: root.padding
-        }
+        // Placed, not anchored: switching anchor sets as `vertical` changes
+        // passed through left+right+horizontalCenter at once (a warning each time).
+        x: root.vertical ? (root.width - width) / 2 : root.padding
+        y: root.vertical ? root.padding : (root.height - height) / 2
+        width: root.vertical ? implicitWidth : root.width - root.padding * 2
+        height: root.vertical ? root.height - root.padding * 2 : implicitHeight
         columnSpacing: root.spacing
         rowSpacing: root.vertical ? Math.max(root.spacing, 4) : 12
     }
