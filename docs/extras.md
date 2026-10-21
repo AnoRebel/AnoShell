@@ -54,3 +54,21 @@ Settings → Sidebars → **Productivity**.
   pin, which turns click-through off again. Also
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
+
+## Clipboard history
+
+Alt+V opens the clipboard history (cliphist). Entries show what they are:
+
+- **Images** as thumbnails at their own shape, with type, size and weight.
+- **Copied files** (from a file manager) as tiles: image files and a frame
+  from each video (with a play badge), an icon for audio, PDFs and the rest.
+- **Colours** (`#rrggbb`) with a swatch.
+
+Previews are made only for rows in view, two at a time, under
+`/tmp/quickshell-anoshell/media/cliphist` (cleared when the shell starts;
+an image's preview goes when its entry does). Space, or the corner button,
+opens a large preview; for a video, **Play** opens it in your default player.
+
+Keys: ↑↓ select, Enter pastes, Space previews, Delete removes the selected
+entry (with the search empty), Esc closes the preview, then the panel.
+Right-click copies without pasting.

@@ -98,7 +98,7 @@ Singleton {
         Quickshell.execDetached(["mkdir", "-p", shellConfig])
         Quickshell.execDetached(["mkdir", "-p", favicons])
         Quickshell.execDetached(["bash", "-c", `rm -rf '${coverArt}'; mkdir -p '${coverArt}'`])
-        Quickshell.execDetached(["bash", "-c", `rm -rf '${cliphistDecode}'; mkdir -p '${cliphistDecode}'`])
+        // cliphistDecode is cleared by Cliphist itself, before its first preview.
         Quickshell.execDetached(["bash", "-c", `rm -rf '${tempImages}'; mkdir -p '${tempImages}'`])
         Quickshell.execDetached(["mkdir", "-p", FileUtils.trimFileProtocol(`${root.state}/anoshell/generated/wallpaper`)])
     }
