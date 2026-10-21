@@ -39,6 +39,7 @@ Scope {
         { key: "lock", icon: "lock", label: "Lock", accent: Appearance.colors.colInfo, confirm: false },
         { key: "logout", icon: "logout", label: "Logout", accent: Appearance.colors.colWarning, confirm: Config.options?.session?.confirmLogout ?? true },
         { key: "sleep", icon: "dark_mode", label: "Sleep", accent: Appearance.colors.colTertiary, confirm: false },
+        { key: "hibernate", icon: "downloading", label: "Hibernate", accent: Appearance.colors.colSecondary, confirm: true },
         { key: "reboot", icon: "restart_alt", label: "Reboot", accent: Appearance.colors.colSuccess, confirm: true },
         { key: "shutdown", icon: "power_settings_new", label: "Shutdown", accent: Appearance.colors.colError, confirm: Config.options?.session?.confirmShutdown ?? true }
     ]
@@ -68,6 +69,7 @@ Scope {
         switch (key) {
         case "lock": Quickshell.execDetached(["loginctl", "lock-session"]); break
         case "sleep": Quickshell.execDetached(["systemctl", "suspend"]); break
+        case "hibernate": Quickshell.execDetached(["systemctl", "hibernate"]); break
         case "logout":
             // Compositor exit where supported, else end the login session.
             root.endSession("logging_out", () => {
@@ -129,6 +131,8 @@ Scope {
                     if (event.key === Qt.Key_Right || event.key === Qt.Key_Down || event.key === Qt.Key_Tab) { root.selected = (root.selected + 1) % n; event.accepted = true }
                     else if (event.key === Qt.Key_Left || event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) { root.selected = (root.selected + n - 1) % n; event.accepted = true }
                     else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) { root.press(root.selected); event.accepted = true }
+                    // 1…n: that action, as if pressed (still twice for the ones that confirm)
+                    else if (event.key >= Qt.Key_1 && event.key < Qt.Key_1 + n) { root.press(event.key - Qt.Key_1); event.accepted = true }
                 }
 
                 // Avatar, name, uptime
@@ -209,7 +213,7 @@ Scope {
                 opacity: sessionCard.opacity * 0.6
                 text: root.armed !== ""
                     ? `Press ${root.actions.find(a => a.key === root.armed)?.label ?? ""} again to confirm · Esc cancels`
-                    : "←/→ choose · Enter · Esc closes"
+                    : "←/→ or 1–6 choose · Enter · Esc closes"
                 font.pixelSize: Appearance?.font.pixelSize.small ?? 13
                 color: "white"
             }
