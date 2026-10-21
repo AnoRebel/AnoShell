@@ -65,8 +65,8 @@ Scope {
             // Not running: launch through its desktop entry when there is one
             // (the app id is often not the executable name).
             const entry = DesktopEntries.heuristicLookup(appId)
-            if (entry) entry.execute()
-            else Quickshell.execDetached([appId])
+            if (entry) DefaultApps.launchEntry(entry)
+            else DefaultApps.launch([appId], "", appId)
         }
     }
 

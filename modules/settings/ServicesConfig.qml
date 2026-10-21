@@ -650,7 +650,7 @@ ColumnLayout {
                         MaterialSymbol { text: "edit"; iconSize: 14 }
                         StyledText { text: "Open config.json"; font.pixelSize: Appearance.font.pixelSize.smaller }
                     }
-                    onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
+                    onClicked: DefaultApps.launch(["xdg-open", Directories.userConfigPath])
                 }
             }
         }
@@ -706,7 +706,7 @@ ColumnLayout {
                         MaterialSymbol { text: "edit"; iconSize: 14 }
                         StyledText { text: "Open config.json"; font.pixelSize: Appearance.font.pixelSize.smaller }
                     }
-                    onClicked: Quickshell.execDetached(["xdg-open", Directories.userConfigPath])
+                    onClicked: DefaultApps.launch(["xdg-open", Directories.userConfigPath])
                 }
             }
         }

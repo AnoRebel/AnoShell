@@ -107,13 +107,52 @@ Singleton {
             console.warn(`[DefaultApps] no ${kind} configured or installed`)
             return false
         }
-        Quickshell.execDetached(cmd.concat(kind === "terminal" ? root.terminalArgs(cmd[0], args) : (args ?? [])))
+        return root.launch(cmd.concat(kind === "terminal" ? root.terminalArgs(cmd[0], args) : (args ?? [])))
+    }
+
+    // How apps start, probed once rather than assumed (OpenRC, runit, s6 and
+    // sysvinit have no user manager): "systemd" = its own transient scope in
+    // app.slice, out of the shell's cgroup and lifetime; "setsid" = a new
+    // session; "plain" = detached only. Until the probe answers: setsid.
+    property string launchMode: "setsid"
+    Process {
+        running: true
+        command: ["sh", "-c", 'if command -v systemd-run >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then echo systemd; elif command -v setsid >/dev/null 2>&1; then echo setsid; else echo plain; fi']
+        stdout: StdioCollector { onStreamFinished: root.launchMode = text.trim() || "plain" }
+    }
+    // A unit name from an app id: only unit-safe characters.
+    function _unitName(name) {
+        const id = String(name ?? "app").replace(/\.desktop$/, "").replace(/[^A-Za-z0-9_.]/g, "_").slice(0, 60) || "app"
+        return `app-anoshell-${id}-${Date.now().toString(16)}${Math.floor(Math.random() * 0xffff).toString(16)}.scope`
+    }
+
+    /// Start an app (argv) the way this system supports; every user-facing
+    /// launch goes through here. `name` names its systemd unit.
+    function launch(command, workingDirectory, name): bool {
+        if (!Array.isArray(command) || command.length === 0) return false
+        const argv = root.launchMode === "systemd"
+            ? ["systemd-run", "--user", "--scope", "--quiet", "--collect", "--slice=app.slice",
+               `--unit=${root._unitName(name ?? command[0])}`, "--"].concat(command)
+            : root.launchMode === "setsid" ? ["setsid"].concat(command) : command
+        Quickshell.execDetached(workingDirectory ? { command: argv, workingDirectory: workingDirectory } : argv)
         return true
+    }
+    /// A desktop entry, in the default terminal when it asks for one.
+    function launchEntry(entry): bool {
+        if (!entry) return false
+        let cmd = entry.command
+        if (entry.runInTerminal) {
+            const term = root.command("terminal")
+            if (term.length) cmd = term.concat(root.terminalArgs(term[0], ["-e"].concat(cmd)))
+        }
+        return root.launch(cmd, entry.workingDirectory, entry.id)
     }
 
     IpcHandler {
         target: "apps"
         function run(kind: string): void { root.run(kind, []) }
         function open(kind: string, arg: string): void { root.run(kind, [arg]) }
+        /// How apps are launched here: systemd | setsid | plain.
+        function launchMode(): string { return root.launchMode }
     }
 }

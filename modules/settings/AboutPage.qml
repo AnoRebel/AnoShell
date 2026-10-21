@@ -307,7 +307,7 @@ ColumnLayout {
                 ColumnLayout {
                     spacing: 4
                     ToolbarButton { iconName: "lock"; iconSize: 20; toolTipText: "Lock screen"; onClicked: Quickshell.execDetached(["loginctl", "lock-session"]) }
-                    ToolbarButton { iconName: "manage_accounts"; iconSize: 20; toolTipText: "Manage account"; onClicked: Quickshell.execDetached(["xdg-open", "settings://users"]) }
+                    ToolbarButton { iconName: "manage_accounts"; iconSize: 20; toolTipText: "Manage account"; onClicked: DefaultApps.launch(["xdg-open", "settings://users"]) }
                 }
             }
         }

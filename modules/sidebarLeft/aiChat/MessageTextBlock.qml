@@ -1,6 +1,7 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 
@@ -48,7 +49,7 @@ ColumnLayout {
             color: root.messageData?.role === "interface"
                 ? Appearance?.colors.colSubtext ?? "#888"
                 : Appearance?.m3colors.m3onBackground ?? "#E6E1E5"
-            onLinkActivated: link => Quickshell.execDetached(["xdg-open", link])
+            onLinkActivated: link => DefaultApps.launch(["xdg-open", link])
         }
     }
 

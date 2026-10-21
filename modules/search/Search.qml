@@ -114,7 +114,7 @@ Scope {
 
     function launch(app) {
         if (app) {
-            app.launch()
+            DefaultApps.launchEntry(app)
             // Track in recents
             const recents = [...(Config.options?.search?.recentApps ?? [])]
             const idx = recents.indexOf(app.id)

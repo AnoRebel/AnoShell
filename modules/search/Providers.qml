@@ -160,7 +160,7 @@ Item {
                     root.message = `"${a.name}" is guarded: Settings → Modules → App Launcher → Allow dangerous actions`
                     return false // keep the launcher open to show why
                 }
-                if (Array.isArray(a.command) && a.command.length) Quickshell.execDetached(a.command)
+                if (Array.isArray(a.command) && a.command.length) DefaultApps.launch(a.command)
             }
         }))
     }

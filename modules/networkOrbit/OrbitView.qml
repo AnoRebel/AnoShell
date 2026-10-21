@@ -401,7 +401,7 @@ Item {
         }
     }
 
-    function openUrl(url) { if (/^https?:\/\//.test(url)) Quickshell.execDetached(["xdg-open", url]) }
+    function openUrl(url) { if (/^https?:\/\//.test(url)) DefaultApps.launch(["xdg-open", url]) }
 
     // Card actions. Each `cmd` maps to a service call; `arg` (an SSID, a MAC,
     // an IP or a URL) is only ever an argv element or an object lookup key.
