@@ -23,17 +23,21 @@ Button {
     property var altAction
     property var middleClickAction
 
-    property color colBackground: ColorUtils.transparentize(Appearance?.colors.colLayer1Hover, 1) || "transparent"
-    property color colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
+    // ColorUtils.transparentize(c, a) sets alpha to a. The defaults here are
+    // explicit M3 state layers: colLayer1Hover's alpha is the content
+    // transparency setting (0 unless automatic), which made hovers invisible.
+    property color colBackground: "transparent"
+    property color colBackgroundHover: ColorUtils.transparentize(Appearance?.colors.colOnLayer1 ?? "#1D1B20", 0.08)
     property color colBackgroundToggled: Appearance?.colors.colPrimary ?? "#65558F"
     property color colBackgroundToggledHover: Appearance?.colors.colPrimaryHover ?? "#77699C"
-    property color colRipple: Appearance?.colors.colLayer1Active ?? "#D6CEE2"
+    property color colRipple: ColorUtils.transparentize(Appearance?.colors.colOnLayer1 ?? "#1D1B20", 0.12)
     property color colRippleToggled: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
 
     opacity: root.enabled ? 1 : 0.4
-    property color buttonColor: ColorUtils.transparentize(root.toggled ?
+    // Disabled: no fill (the whole button is dimmed by opacity).
+    property color buttonColor: !root.enabled ? "transparent" : root.toggled ?
         (root.hovered ? colBackgroundToggledHover : colBackgroundToggled) :
-        (root.hovered ? colBackgroundHover : colBackground), root.enabled ? 0 : 1)
+        (root.hovered ? colBackgroundHover : colBackground)
     property color rippleColor: root.toggled ? colRippleToggled : colRipple
 
     function startRipple(x, y) {

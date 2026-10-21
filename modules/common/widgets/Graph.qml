@@ -25,7 +25,7 @@ Canvas {
         var n = root.points
         var dx = width / (n - 1)
         ctx.strokeStyle = root.color
-        ctx.fillStyle = ColorUtils.transparentize(root.color, 1 - root.fillOpacity)
+        ctx.fillStyle = ColorUtils.transparentize(root.color, root.fillOpacity) // sets alpha
         ctx.lineWidth = 2
         ctx.beginPath()
         for (var i = 0; i < n; ++i) {
