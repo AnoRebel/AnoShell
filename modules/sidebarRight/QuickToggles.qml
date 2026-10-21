@@ -172,7 +172,8 @@ Rectangle {
             clip: true
             implicitHeight: root.networkExpanded ? netPicker.implicitHeight + 8 : 0
             opacity: root.networkExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            // A spring: the lists grow as scan results arrive, and a timed animation restarted on each.
+            Behavior on implicitHeight { MotionSpring { token: "settle" } }
             Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             WifiNetworkPicker {
@@ -187,7 +188,8 @@ Rectangle {
             clip: true
             implicitHeight: root.bluetoothExpanded ? btPicker.implicitHeight + 8 : 0
             opacity: root.bluetoothExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            // A spring: the lists grow as scan results arrive, and a timed animation restarted on each.
+            Behavior on implicitHeight { MotionSpring { token: "settle" } }
             Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             BluetoothDevicePicker {
@@ -204,7 +206,8 @@ Rectangle {
             clip: true
             implicitHeight: root.nightLightExpanded ? expanderCol.implicitHeight + 8 : 0
             opacity: root.nightLightExpanded ? 1 : 0
-            Behavior on implicitHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            // A spring: the lists grow as scan results arrive, and a timed animation restarted on each.
+            Behavior on implicitHeight { MotionSpring { token: "settle" } }
             Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
             ColumnLayout {

@@ -47,7 +47,19 @@ Scope {
         color: "transparent"
 
         implicitWidth: 380
-        implicitHeight: Math.min(notifColumn.implicitHeight + root.edgeMargin * 2, (screen?.height ?? 1080) * 0.6)
+        // Grows at once; shrinks only after the stack has retracted, so the
+        // retract isn't cut off (following the spring would resize the surface
+        // every frame instead).
+        readonly property real _want: notifColumn.implicitHeight + root.edgeMargin * 2
+        property real _winH: 0 // set by on_WantChanged (a binding would shrink at once)
+        on_WantChanged: { if (_want >= _winH) { _winH = _want; shrink.stop() } else shrink.restart() }
+        Component.onCompleted: _winH = _want
+        Timer {
+            id: shrink
+            interval: 120
+            onTriggered: { if (Math.abs(stackClip.height - stackClip.target) < 1) popupWindow._winH = popupWindow._want; else restart() }
+        }
+        implicitHeight: Math.min(_winH, (screen?.height ?? 1080) * 0.6)
 
         anchors {
             top: root.isTop
@@ -145,6 +157,9 @@ Scope {
                     }
 
                     opacity: entryOpacity
+                    // Top/bottom stacks don't slide sideways: the card settles in instead.
+                    scale: (root.isLeft || root.isRight) ? 1 : 0.96 + 0.04 * opacity
+                    transformOrigin: root.isTop ? Item.Top : Item.Bottom
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                     // The slide animates through notifCard's Behavior on x.
 

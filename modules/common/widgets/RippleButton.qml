@@ -96,7 +96,9 @@ Button {
         color: root.buttonColor
         Behavior on color { animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this) }
 
-        layer.enabled: true
+        // The mask only clips the ripple: an offscreen layer per button, redrawn
+        // on every hover colour change, cost frames in panels full of buttons.
+        layer.enabled: ripple.visible && ripple.opacity > 0
         layer.effect: OpacityMask {
             maskSource: Rectangle { width: buttonBackground.width; height: buttonBackground.height; radius: root.buttonEffectiveRadius }
         }
