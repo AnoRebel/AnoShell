@@ -65,7 +65,10 @@ Item {
         : root.anchorEdges === Edges.Right ? "left"
         : root.anchorEdges === Edges.Left ? "right" : "top"
     readonly property bool _vertical: root.edge === "top" || root.edge === "bottom"
-    property real reveal: root.shown ? 1 : 0
+    // The reveal starts once the popup's own surface is up (+ ~2 frames): it
+    // used to start at once, and creating the window ate most of the motion.
+    property bool _surfaceUp: false
+    property real reveal: root.shown && root._surfaceUp ? 1 : 0
     Behavior on reveal { MotionSpring { token: root.shown ? "liquid" : "settle" } }
     readonly property bool _open: root.shown || root.reveal > 0.005
 
@@ -94,24 +97,36 @@ Item {
         if (!root.anchorItem || !w) return
         const o = PanelRegistry.windowOrigin(w), ai = root.anchorItem.mapToItem(null, 0, 0)
         const iw = root.anchorItem.width, ih = root.anchorItem.height
-        root._anchorRect = root._vertical ? Qt.rect(0, -ai.y, Math.max(1, iw), Math.max(1, w.height))
-                                          : Qt.rect(-ai.x, 0, Math.max(1, w.width), Math.max(1, ih))
         const a = Qt.point(o.x + ai.x, o.y + ai.y)
         const sw = w.screen?.width ?? w.width ?? 0, sh = w.screen?.height ?? w.height ?? 0
-        const m = root._side, g = root._gap, pw = root.popupWidth, ph = root.popupHeight
         const sn = w.screen?.name ?? ""
+        // The bar's real body: its registry entry (the pill publishes its body,
+        // not its larger fixed window). Without one, the window itself; a window
+        // much bigger than the icon across the bar (the pill's envelope) uses the
+        // icon instead.
+        const cx = a.x + iw / 2, cy = a.y + ih / 2
+        const reg = PanelRegistry.panelsForScreen(sn).find(p => p.kind !== "popout" && p.w > 0 && p.h > 0
+            && cx >= p.x && cx <= p.x + p.w && cy >= p.y && cy <= p.y + p.h)
+        const envelope = root._vertical ? w.height > ih * 3 : w.width > iw * 3
+        const bar = reg ? Qt.rect(reg.x, reg.y, reg.w, reg.h)
+            : envelope ? (root._vertical ? Qt.rect(o.x, a.y - 6, w.width, ih + 12) : Qt.rect(a.x - 6, o.y, iw + 12, w.height))
+            : Qt.rect(o.x, o.y, w.width, w.height)
+        const m = root._side, g = root._gap, pw = root.popupWidth, ph = root.popupHeight
         let x, y
         if (root._vertical) {
             // Centred on the icon, clamped on-screen like the compositor does.
             x = Math.max(m, Math.min(a.x + iw / 2 - pw / 2, sw - pw - m))
-            y = root.edge === "top" ? o.y + w.height + g : o.y - g - ph
+            y = root.edge === "top" ? bar.y + bar.height + g : bar.y - g - ph
             root._flushStart = PanelRegistry.enabled && x <= PanelRegistry.inset(sn, "left") + 0.5
             root._flushEnd = PanelRegistry.enabled && x + pw >= sw - PanelRegistry.inset(sn, "right") - 0.5
+            // The popup window, placed exactly: a rect as wide as it, on the bar's edge.
+            root._anchorRect = Qt.rect(x - m - o.x, (root.edge === "top" ? bar.y + bar.height - 1 : bar.y) - o.y, pw + 2 * m, 1)
         } else {
             y = Math.max(m, Math.min(a.y + ih / 2 - ph / 2, sh - ph - m))
-            x = root.edge === "left" ? o.x + w.width + g : o.x - g - pw
+            x = root.edge === "left" ? bar.x + bar.width + g : bar.x - g - pw
             root._flushStart = PanelRegistry.enabled && y <= PanelRegistry.inset(sn, "top") + 0.5
             root._flushEnd = PanelRegistry.enabled && y + ph >= sh - PanelRegistry.inset(sn, "bottom") - 0.5
+            root._anchorRect = Qt.rect((root.edge === "left" ? bar.x + bar.width - 1 : bar.x) - o.x, y - m - o.y, 1, ph + 2 * m)
         }
         root._card = Qt.rect(x, y, pw, ph)
         root._screenName = sn
@@ -179,15 +194,18 @@ Item {
                 }
             }
 
+            // In window coordinates (see _measure): the popup sits exactly on
+            // the card the frame draws, whatever the window's size.
             anchor {
-                window: root.QsWindow.window
-                item: root.anchorItem
+                window: root.anchorItem?.QsWindow?.window ?? root.QsWindow.window
                 rect: root._anchorRect
                 edges: root.anchorEdges
                 gravity: root.anchorGravity
             }
 
             mask: Region { item: body }
+            onBackingWindowVisibleChanged: { if (backingWindowVisible) surfaceUpTimer.restart(); else { surfaceUpTimer.stop(); root._surfaceUp = false } }
+            Timer { id: surfaceUpTimer; interval: 32; onTriggered: root._surfaceUp = true }
 
             Item {
                 id: area
@@ -241,7 +259,10 @@ Item {
                         x: root.edge === "right" ? body.width - width : 0
                         y: root.edge === "bottom" ? body.height - height : 0
                         // Content fades in once the shape has started to grow.
-                        opacity: Math.max(0, Math.min(1, (root.reveal - 0.25) / 0.5))
+                        // (early, so the body never shows empty while it grows or shrinks)
+                        // Connected: no fade, the growing clip reveals it in step with the
+                        // frame's body (a fade lagged the body by a few frames).
+                        opacity: area.connectedMode ? (root.reveal > 0.01 ? 1 : 0) : Math.max(0, Math.min(1, (root.reveal - 0.1) / 0.4))
 
                         // Report hover so the caller can keep the popup open while
                         // the pointer is inside it (prevents flicker-close).

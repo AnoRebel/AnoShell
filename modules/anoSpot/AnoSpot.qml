@@ -203,9 +203,13 @@ Scope {
             property bool _growing: false
             onGrownChanged: { if (grown) _big = true; _growing = true; growSettle.restart() }
             onTransientShownChanged: { _growing = true; growSettle.restart() }
-            Timer { id: growSettle; interval: 1400; onTriggered: { spotWindow._growing = false; if (!spotWindow.grown) spotWindow._big = false } }
-            Behavior on _w { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
-            Behavior on _h { enabled: spotWindow._animated && spotWindow._growing; MotionSpring { token: "liquid" } }
+            // The tween's length plus a margin (was a 1.4 s guess).
+            Timer { id: growSettle; interval: AnimationConfig.scaledDuration(450) + 60; onTriggered: { spotWindow._growing = false; if (!spotWindow.grown) spotWindow._big = false } }
+            // Always animated (after the first appearance): gating on _growing lost
+            // the race with the new size in the same turn, so the morph jumped.
+            // Grow on the expressive curve, shrink on the accelerate one.
+            Behavior on _w { enabled: spotWindow._animated; MotionSpring { token: spotWindow.grown || spotWindow.transientShown ? "liquid" : "settle" } }
+            Behavior on _h { enabled: spotWindow._animated; MotionSpring { token: spotWindow.grown || spotWindow.transientShown ? "liquid" : "settle" } }
             readonly property real cornerRadius: grown ? Appearance.rounding.windowRounding : Math.min(_w, _h) / 2
 
             // ── Envelope ────────────────────────────────────────────────────
@@ -248,7 +252,8 @@ Scope {
             // overlap darker).
             readonly property bool _paintBody: (_growing || _moving || tuck > 0.001)
                 && (Config.options?.appearance?.connectedCorners?.opacity ?? 1) >= 0.999
-            Behavior on length { enabled: spotWindow._animated; MotionSpring { token: "snappy" } }
+            // _w follows length and already tweens; animating both stacked two curves.
+            Behavior on length { enabled: false; MotionSpring { token: "snappy" } }
             implicitWidth: Math.round(_envW)
             implicitHeight: Math.round(_envH)
 
@@ -395,8 +400,10 @@ Scope {
                 id: pillBody
                 // Content never shows outside its background.
                 clip: true
-                width: Math.round(spotWindow._w)
-                height: Math.round(spotWindow._h)
+                // Not rounded: rounding the animated size stepped the morph's
+                // ends a pixel at a time. Positions are still pixel-snapped.
+                width: spotWindow._w
+                height: spotWindow._h
                 x: root.position === "right" ? parent.width - width : root.position === "left" ? 0 : Math.round((parent.width - width) / 2)
                 y: root.position === "bottom" ? parent.height - height : root.position === "top" ? 0 : Math.round((parent.height - height) / 2)
                 radius: spotWindow.cornerRadius
@@ -532,7 +539,12 @@ Scope {
                     id: faceView
                     opacity: spotWindow.grown || spotWindow.transientShown ? 0 : 1
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
+                    // Sequential crossfade: the outgoing layer leaves fast, the incoming
+                    // one waits for it (both at once overlapped into a smear).
+                    Behavior on opacity { SequentialAnimation {
+                        PauseAnimation { duration: faceView.opacity < 0.5 ? AnimationConfig.scaledDuration(90) : 0 }
+                        NumberAnimation { duration: AnimationConfig.scaledDuration(faceView.opacity < 0.5 ? 160 : 90) }
+                    } }
                     anchors.fill: parent
                     anchors.margins: 6
                     // Reserve space for the drag handle on the leading edge
@@ -567,7 +579,10 @@ Scope {
                     rowSpacing: 6
                     visible: opacity > 0.01
                     opacity: spotWindow.transientShown ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
+                    Behavior on opacity { SequentialAnimation {
+                        PauseAnimation { duration: transientView.opacity < 0.5 ? AnimationConfig.scaledDuration(90) : 0 }
+                        NumberAnimation { duration: AnimationConfig.scaledDuration(transientView.opacity < 0.5 ? 160 : 90) }
+                    } }
                     anchors.centerIn: parent
                     columnSpacing: 10
                     readonly property bool level: ["volume", "brightness", "mic"].includes(PillTransient.kind)

@@ -192,10 +192,7 @@ Scope {
                         property real reach: GlobalStates.sessionOpen ? 172 : 0
                         Behavior on reach { SequentialAnimation {
                             PauseAnimation { duration: GlobalStates.sessionOpen ? AnimationConfig.scaledDuration(35 * index) : 0 }
-                            SpringAnimation {
-                                spring: Appearance.springs.liquid.spring; damping: Appearance.springs.liquid.damping
-                                mass: Appearance.springs.liquid.mass; epsilon: Appearance.springs.liquid.epsilon
-                            }
+                            MotionSpring { token: GlobalStates.sessionOpen ? "liquid" : "settle" }
                         } }
                         x: sessionCard.width / 2 + Math.cos(angle) * reach - width / 2
                         y: sessionCard.height / 2 + Math.sin(angle) * reach - height / 2
