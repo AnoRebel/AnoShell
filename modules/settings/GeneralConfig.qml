@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"
-        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery"]
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"]
     }
 
     // ═══ Audio ═══
@@ -384,6 +384,30 @@ ColumnLayout {
             value: Config.options?.notifications?.maxVisible ?? 5
             onValueChanged: Config.setNestedValue("notifications.maxVisible", Math.round(value))
             valueText: `${Math.round(value)}`
+        }
+    }
+
+    // ═══ Session ═══
+    SettingsCard {
+        icon: "power_settings_new"
+        title: "Session"
+        subtitle: "Confirmation for logout and shutdown"
+        configKeys: ["session"]
+
+        ConfigSwitch {
+            label: "Hold to confirm logout"
+            configKey: "session.confirmLogout"
+            sublabel: "Off: a single click logs out"
+            checked: Config.options?.session?.confirmLogout ?? true
+            onCheckedChanged: Config.setNestedValue("session.confirmLogout", checked)
+        }
+
+        ConfigSwitch {
+            label: "Hold to confirm shutdown"
+            configKey: "session.confirmShutdown"
+            sublabel: "Off: a single click powers off"
+            checked: Config.options?.session?.confirmShutdown ?? true
+            onCheckedChanged: Config.setNestedValue("session.confirmShutdown", checked)
         }
     }
 
