@@ -233,7 +233,7 @@ Singleton {
     rounding: QtObject {
         // Eased, so switching looks morphs every corner instead of snapping.
         property real _s: Looks.current.shape?.radiusScale ?? 1
-        Behavior on _s { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+        Behavior on _s { NumberAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
         property int unsharpen: 2
         property int unsharpenmore: 6
         property int verysmall: Math.round(8 * _s)

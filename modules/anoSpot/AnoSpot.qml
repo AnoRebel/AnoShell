@@ -152,8 +152,10 @@ Scope {
                 left: root.position === "left"
                 right: root.position === "right"
             }
-            implicitWidth: root.isVertical ? 3 : spotWindow._w
-            implicitHeight: root.isVertical ? spotWindow._h : 3
+            // The pill's resting length, not its springing size: this surface
+            // would otherwise resize every frame while the pill morphs.
+            implicitWidth: root.isVertical ? 3 : spotWindow.length
+            implicitHeight: root.isVertical ? spotWindow.length : 3
             MouseArea {
                 id: peekArea
                 anchors.fill: parent

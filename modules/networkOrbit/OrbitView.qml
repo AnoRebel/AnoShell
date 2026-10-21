@@ -56,7 +56,8 @@ Item {
         }
         ScriptAction { script: { root.introState = 0; root.exited() } }
     }
-    Timer { id: introTimer; interval: 10; onTriggered: root.introState = 1 }
+    // ~2 frames: the intro starts after the panel's first frame, not inside it.
+    Timer { id: introTimer; interval: 40; onTriggered: root.introState = 1 }
 
     function _start() {
         exitAnim.stop()

@@ -229,8 +229,8 @@ Item {
                             height: 90 + (90 * (currentSimH / 1080))
                             anchors { bottom: standNeck.top; bottomMargin: -10; horizontalCenter: parent.horizontalCenter }
                             radius: 12; color: window.crust; border.color: window.surface2; border.width: 2
-                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-                            Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                             Rectangle {
                                 anchors.fill: parent; anchors.margins: 10; radius: 6; color: window.surface0; clip: true

@@ -147,7 +147,7 @@ Item {
                 (textScroll.contentY + textScroll.height) / textScroll.contentHeight)
                 : parent.width
             height: parent.height; color: Appearance.m3colors.m3primary
-            Behavior on width { NumberAnimation { duration: 120 } }
+            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.OutCubic } }
         }
     }
 

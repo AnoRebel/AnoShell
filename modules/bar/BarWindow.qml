@@ -288,9 +288,12 @@ PanelWindow {
             // Auto-hide / fullscreen-hide slide
             property real hideOffset: barRoot.effectiveHidden ? -(barRoot.barThickness + barRoot.formMargin) : 0
             Behavior on hideOffset {
+                // Hiding accelerates away; showing decelerates in (decel both ways
+                // made the hide start sluggish).
                 NumberAnimation {
-                    duration: Appearance?.animation.elementMoveFast.duration ?? 200
-                    easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
+                    duration: barRoot.effectiveHidden ? (Appearance?.animation.elementMoveExit.duration ?? 200) : (Appearance?.animation.elementMoveEnter.duration ?? 400)
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: barRoot.effectiveHidden ? Appearance.animationCurves.emphasizedAccel : Appearance.animationCurves.emphasizedDecel
                 }
             }
 

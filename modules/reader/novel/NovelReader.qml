@@ -11,7 +11,7 @@ Item {
     id: root
     implicitWidth: fullscreen ? (Window.window?.width ?? 1200) : 600
 
-    Behavior on implicitWidth { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+    Behavior on implicitWidth { NumberAnimation { duration: AnimationConfig.scaledDuration(280); easing.type: Easing.OutCubic } }
 
     readonly property string fontBody: Appearance.font.family.main
 

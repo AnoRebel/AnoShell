@@ -210,7 +210,7 @@ Scope {
                                         : "transparent"
 
                                     scale: iconMA.pressed ? 0.85 : (iconMA.containsMouse ? 1.15 : 1)
-                                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                    Behavior on scale { MotionSpring { token: "snappy" } } // retargets as the pointer runs along the dock
                                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                                     // Desktop icon from freedesktop

@@ -501,7 +501,7 @@ Item {
                                         anchors.bottom: dayLbl.top; anchors.bottomMargin: 8
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         width: 42; height: Math.max(4, (parent.height - 25) * (model.total / Math.max(root.maxWeekTotal, 1)))
-                                        Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 600; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                        Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(root.isFirstLoad ? 500 : 400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                         Rectangle {
                                             anchors.fill: parent; radius: 4
                                             color: model.isTarget ? Appearance.m3colors.m3primary : Appearance.colors.colLayer2
@@ -570,7 +570,7 @@ Item {
                                     width: parent.width; radius: 2
                                     height: Math.max(2, parent.height * (root.hourlyData[index] / Math.max(root.maxHourlyTotal, 1)))
                                     color: Appearance.m3colors.m3primary; opacity: 0.6
-                                    Behavior on height { NumberAnimation { duration: root.isFirstLoad ? 800 : 400; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                                    Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(root.isFirstLoad ? 500 : 300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                                 }
                             }
                         }
