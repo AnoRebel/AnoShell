@@ -49,6 +49,7 @@ Singleton {
         { id: "anoSidebarRight", name: "Right Sidebar", icon: "view_sidebar", desc: "Quick controls, media, calendar, system info", category: "Sidebars", source: "modules/sidebarRight/SidebarRight.qml" },
         // Utilities & integrations
         { id: "anoClipboard", name: "Clipboard Manager", icon: "content_paste", desc: "Clipboard history browser", category: "Utilities", source: "modules/clipboard/ClipboardManager.qml" },
+        { id: "anoScreenshot", name: "Screenshots", icon: "screenshot_region", desc: "Region, window and screen captures with a preview card (copy, save, edit, delete)", category: "Utilities", source: "modules/screenshot/ScreenshotPreview.qml" },
         { id: "anoWallpaperSelector", name: "Wallpaper Selector", icon: "image", desc: "Browse and apply wallpapers", category: "Utilities", source: "modules/wallpaperSelector/WallpaperSelector.qml" },
         { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities", source: "modules/screenCorners/ScreenCorners.qml", key: "screenCorners.enable" },
         { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities", source: "modules/focusTime/FocusTimePanel.qml", key: "focusTime.enable" },
@@ -73,7 +74,7 @@ Singleton {
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen",
         "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize"]
-    readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoCheatsheet", "anoCalendar"]
+    readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote"]
     readonly property var familyModules: ({

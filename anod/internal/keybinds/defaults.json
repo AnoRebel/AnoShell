@@ -335,7 +335,7 @@
       "chord": "Print",
       "action": "exec",
       "args": [
-        "grim - | swappy -f -"
+        "qs -c ano ipc call screenshot screen || grim - | swappy -f -"
       ],
       "locked": true
     },
@@ -343,14 +343,14 @@
       "chord": "Shift+Print",
       "action": "exec",
       "args": [
-        "grim -g \"$(slurp)\" - | swappy -f -"
+        "qs -c ano ipc call screenshot region || grim -g \"$(slurp)\" - | swappy -f -"
       ]
     },
     {
       "chord": "Ctrl+Print",
       "action": "exec",
       "args": [
-        "mkdir -p \"$(xdg-user-dir PICTURES)/Screenshots\" && grim \"$(xdg-user-dir PICTURES)/Screenshots/Screenshot_$(date '+%Y-%m-%d_%H.%M.%S').png\""
+        "qs -c ano ipc call screenshot window || grim - | wl-copy"
       ],
       "locked": true
     },
@@ -358,7 +358,7 @@
       "chord": "Super+Shift+S",
       "action": "exec",
       "args": [
-        "grim -g \"$(slurp)\" - | wl-copy"
+        "qs -c ano ipc call screenshot region || grim -g \"$(slurp)\" - | wl-copy"
       ]
     },
     {

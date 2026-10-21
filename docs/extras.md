@@ -69,11 +69,23 @@ Previews are made only for rows in view, two at a time, under
 an image's preview goes when its entry does). Space, or the corner button,
 opens a large preview; for a video, **Play** opens it in your default player.
 
-**Pins** (the pin button, or P) keep an entry at the top, apart from the
+**Pins** (the pin button, or Ctrl+P) keep an entry at the top, apart from the
 history in `~/.local/share/anoshell/clipboard-pins.json` (pinned images are
 copied to `clipboard-pins/` beside it), so clearing the history keeps them.
 Unpinning removes the copy.
 
-Keys: ↑↓ select, Enter pastes, Space previews, P pins or unpins, Delete
-removes the selected entry (unpins a pin), all with the search empty; Esc
-closes the preview, then the panel. Right-click copies without pasting.
+Keys: ↑↓ select, Enter pastes, Space previews (search empty), Ctrl+P pins
+or unpins, Delete removes the selected entry or unpins a pin (search empty);
+Esc closes the preview, then the panel. Right-click copies without pasting.
+
+## Screenshots
+
+Print (screen), Shift+Print or Super+Shift+S (region), Ctrl+Print (the focused
+window), or `qs -c ano ipc call screenshot region|window|screen`, and
+`screenshot delayed <mode> <seconds>` for a countdown. On Hyprland they use
+slurp and grim; on niri, niri's own screenshot actions. The image goes on the
+clipboard (`screenshot.copyOnCapture`) and a card shows it: Copy, Save (to
+`screenshot.saveDir`, or Pictures/Screenshots), Edit (satty, else swappy),
+Delete, Close. It leaves after `screenshot.previewSeconds` (0 = stays) unless
+the pointer is on it; `screenshot.onTimeout` then keeps the temp file, saves
+it or deletes it. The card sits at `screenshot.previewEdge`.

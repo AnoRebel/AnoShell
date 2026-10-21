@@ -225,6 +225,13 @@
     "enable": false,
     "file": ""
   },
+  "screenshot": {
+    "copyOnCapture": true,
+    "previewEdge": "bottomRight",
+    "previewSeconds": 6,
+    "onTimeout": "keep",
+    "saveDir": ""
+  },
   "pomodoro": {
     "enable": false,
     "focusMinutes": 25,

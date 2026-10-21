@@ -30,7 +30,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super+[ / ] , Super+R, Super+Ctrl+F | column: pull in/out, width presets, fit (scrolling layouts) |
 | Super+1…0 | workspace; with Shift: move there; with Alt: send there |
 | Super+L, Ctrl+Alt+K | lock |
-| Print / Shift+Print / Super+Shift+S | screen → editor / region → editor / region → clipboard |
+| Print / Shift+Print / Ctrl+Print / Super+Shift+S | screenshot: screen / region / window / region (a card offers copy, save, edit, delete) |
 | Super+Shift+X, Super+Shift+R | region text (OCR) to clipboard, record a region |
 
 `go run ./cmd/keybinds-import [hyprland.lua niri.kdl]` (from `ano/anod`)

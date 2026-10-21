@@ -795,6 +795,14 @@ Singleton {
                 property bool enable: false
                 property string file: "" // todo.txt to keep in sync; "" = ~/.local/share/anoshell/todo.txt
             }
+            // Screenshots (services/Screenshot.qml) and the card shown after one.
+            property JsonObject screenshot: JsonObject {
+                property bool copyOnCapture: true      // the image goes on the clipboard at once
+                property string previewEdge: "bottomRight" // bottomRight | bottomLeft | topRight | topLeft
+                property int previewSeconds: 6         // 0 = the card stays until closed
+                property string onTimeout: "keep"      // keep (temp file) | save | delete
+                property string saveDir: ""            // "" = ~/Pictures/Screenshots
+            }
             property JsonObject pomodoro: JsonObject {
                 property bool enable: false
                 property int focusMinutes: 25
