@@ -55,7 +55,8 @@ Singleton {
         file.watchChanges = false
         rewatch.restart()
     }
-    Timer { id: rewatch; interval: 200; onTriggered: file.watchChanges = true }
+    // Re-arm, then re-read: an edit made elsewhere during the 200 ms isn't lost.
+    Timer { id: rewatch; interval: 200; onTriggered: { file.watchChanges = true; file.reload() } }
 
     function add(text) { if (text.trim()) root.save(root.items.concat([{ done: false, text: root.expandDue(text.trim()), completed: "" }])) }
     function toggle(i) {

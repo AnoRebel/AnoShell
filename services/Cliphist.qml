@@ -51,7 +51,8 @@ Singleton {
         const id = root._id(entry)
         const listed = String(entry ?? "").split("\t").slice(1).join("\t")
         // `cliphist list` cuts entries at ~100 characters: file lists are read in full.
-        const full = root.fullTexts[id]
+        // Only file lists read fullTexts, so other rows don't re-evaluate when it changes.
+        const full = listed.startsWith("file://") ? root.fullTexts[id] : undefined
         const text = full !== undefined && full !== "!" ? full : listed
         // A cut-off file list: the row asks for the whole text (requestText) first.
         if (full === undefined && listed.startsWith("file://") && listed.endsWith("…"))
@@ -60,7 +61,8 @@ Singleton {
         if (bin) return { id: id, kind: "image", ext: bin[2].toLowerCase(), size: bin[1], width: +bin[3], height: +bin[4], text: text }
         const uris = text.match(/file:\/\/[^\s…]+(?=\s|$)/g)
         if (uris && text.replace(/file:\/\/[^\s]+/g, "").trim().replace(/^…$/, "") === "") {
-            const files = uris.map(u => { let path; try { path = decodeURIComponent(u.slice(7)) } catch (e) { path = u.slice(7) } return { path: path, name: path.split("/").pop(), kind: root.fileKind(path) } })
+            // uri: for Image and Open (stays encoded: "#", "?" in names); path: for ffmpeg and display.
+            const files = uris.map(u => { let path; try { path = decodeURIComponent(u.slice(7)) } catch (e) { path = u.slice(7) } return { uri: u, path: path, name: path.split("/").pop(), kind: root.fileKind(path) } })
             return { id: id, kind: "files", files: files, text: text }
         }
         const t = text.trim()
@@ -126,6 +128,15 @@ Singleton {
         if (w.key !== "" && w.exitCode >= 0 && w.streamDone) root._finished(w, w.exitCode, w.result)
     }
     function _finished(w, code, output) {
+        // An entry deleted (or the history wiped) meanwhile: ids get reused, so drop it.
+        const id = w.key.startsWith("img:") || w.key.startsWith("txt:") ? w.key.slice(4) : ""
+        if (id && !root.entries.some(e => root._id(e) === id)) {
+            const q = Object.assign({}, root._queued); delete q[w.key]; root._queued = q
+            if (!w.text && code === 0) Quickshell.execDetached(["rm", "-f", "--", w.out])
+            w.key = ""
+            root._pump()
+            return
+        }
         // "!" = no preview (missing file, not a video…).
         if (w.text) {
             const t = Object.assign({}, root.fullTexts)
@@ -238,17 +249,21 @@ Singleton {
     // until the shell restarts; the directory is cleared then).
     function _prune() {
         const live = new Set(root.entries.map(e => root._id(e)))
+        const isGone = k => (k.startsWith("img:") || k.startsWith("txt:")) && !live.has(k.slice(4))
         const p = {}, gone = []
         for (const k in root.previews) {
-            if (k.startsWith("img:") && !live.has(k.slice(4))) { if (root.previews[k] !== "!") gone.push(root.previews[k]) }
-            else p[k] = root.previews[k]
+            if (!isGone(k)) p[k] = root.previews[k]
+            else if (root.previews[k] !== "!") gone.push(root.previews[k])
         }
-        if (gone.length === 0) return
+        const t = {}
+        for (const id in root.fullTexts) if (live.has(id)) t[id] = root.fullTexts[id]
+        const q = {}
+        for (const k in root._queued) if (!isGone(k)) q[k] = root._queued[k]
         root.previews = p
-        const q = Object.assign({}, root._queued)
-        for (const k in q) if (k.startsWith("img:") && !live.has(k.slice(4))) delete q[k]
+        root.fullTexts = t
         root._queued = q
-        Quickshell.execDetached(["rm", "-f", "--"].concat(gone))
+        root._jobs = root._jobs.filter(j => !isGone(j.key))
+        if (gone.length) Quickshell.execDetached(["rm", "-f", "--"].concat(gone))
     }
 
     IpcHandler {

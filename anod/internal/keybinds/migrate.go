@@ -107,7 +107,7 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 	// default on its chord, so all of your binds on a kept chord are kept.
 	var ov Overrides
 	chordKept := map[string]bool{} // compositor + key
-	replaced := map[string]bool{}
+	reported := map[string]bool{}  // compositor + key + what it did
 	for _, b := range live {
 		taken := false
 		for _, x := range d.Binds {
@@ -126,8 +126,10 @@ func Migrate(p Paths, d Defaults, now time.Time, dryRun bool) (MigrateResult, er
 		case chordKept[k]:
 			ov.Binds = append(ov.Binds, b)
 			res.Report = append(res.Report, fmt.Sprintf("kept your %s bind %s → %s", b.Only, b.Chord, b.Describe()))
-		case !replaced[k]:
-			replaced[k] = true
+		case !reported[k+"\x00"+b.Describe()]:
+			// Every one of your binds the curated set takes over is reported
+			// (Hyprland stacks several on a chord), once each.
+			reported[k+"\x00"+b.Describe()] = true
 			if !rendersAs(d.Binds, b) {
 				now := describeOn(d.Binds, b.Key(), b.Only)
 				res.Report = append(res.Report, fmt.Sprintf("%s %s is now %s (was %s; Settings → Keybinds can put it back)", b.Only, b.Chord, now, b.Describe()))

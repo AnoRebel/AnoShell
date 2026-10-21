@@ -186,7 +186,7 @@ Rectangle {
                     pending = true
                     commit.restart()
                 }
-                Timer { id: commit; interval: 420; onTriggered: Todo.toggle(row.idx) }
+                Timer { id: commit; interval: 420; onTriggered: { Todo.toggle(row.idx); row.pending = false } }
 
                 width: list.width
                 height: isHeader ? 30 : folded ? 0 : body.implicitHeight + 10

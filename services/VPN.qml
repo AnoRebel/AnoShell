@@ -483,13 +483,18 @@ Singleton {
         for (const n of out) n.exit = /(^|[\s,])(0\.0\.0\.0\/0|::\/0)([\s,]|$)/.test(n.network)
         return out
     }
+    // A refresh asked for while one runs (it may predate a change) runs again after it.
+    property bool _refreshAgain: false
     function refreshNetBirdNetworks() {
-        if (root.providerName !== "netbird" || netbirdNetworksProc.running || netbirdChain.running) return
+        if (root.providerName !== "netbird") return
+        if (netbirdNetworksProc.running || netbirdChain.running) { root._refreshAgain = true; return }
+        root._refreshAgain = false
         netbirdNetworksProc.running = true
     }
     Process {
         id: netbirdNetworksProc
         command: ["netbird", "networks", "list"]
+        onExited: if (root._refreshAgain) Qt.callLater(root.refreshNetBirdNetworks)
         stdout: StdioCollector {
             onStreamFinished: {
                 root.netbirdNetworks = root.parseNetBirdNetworks(text)

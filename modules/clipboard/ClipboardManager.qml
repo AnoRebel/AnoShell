@@ -32,21 +32,23 @@ Scope {
     Component.onCompleted: Cliphist.refresh()
 
     // The large preview over the list: an image, or a video's still with Open.
-    property string previewPath: ""
+    property string previewPath: ""     // a file:// URL
     property string previewKind: ""
-    property string previewOpen: ""     // the file Open hands to its default app
+    property string previewOpen: ""     // the file's URI, for Open / Play
+    // Our own preview files (plain paths, no special characters) as URLs; "" for none.
+    function fileUrl(path) { return path && path !== "!" ? "file://" + path : "" }
     function showPreview(path, kind, file) {
-        if (!path || path === "!") return
+        if (!path) return
         root.previewKind = kind
         root.previewOpen = file ?? ""
         root.previewPath = path
     }
     function previewEntry(entry) {
         const info = Cliphist.entryInfo(entry)
-        if (info.kind === "image") root.showPreview(Cliphist.preview("img:" + info.id), "image")
+        if (info.kind === "image") root.showPreview(root.fileUrl(Cliphist.preview("img:" + info.id)), "image")
         else if (info.kind === "files") {
             const f = info.files[0]
-            root.showPreview(f.kind === "image" ? f.path : f.kind === "video" ? Cliphist.preview("vid:" + f.path) : "", f.kind, f.path)
+            root.showPreview(f.kind === "image" ? f.uri : f.kind === "video" ? root.fileUrl(Cliphist.preview("vid:" + f.path)) : "", f.kind, f.uri)
         }
     }
 
@@ -233,7 +235,7 @@ Scope {
                                     Image {
                                         id: thumb
                                         anchors.fill: parent
-                                        source: imgFrame.path && imgFrame.path !== "!" ? "file://" + imgFrame.path : ""
+                                        source: root.fileUrl(imgFrame.path)
                                         fillMode: Image.PreserveAspectFit
                                         asynchronous: true
                                         cache: false
@@ -251,7 +253,7 @@ Scope {
                                         anchors { right: parent.right; top: parent.top; margins: 4 }
                                         visible: thumb.status === Image.Ready && (entryMA.containsMouse || row.selected)
                                         iconName: "open_in_full"; iconSize: 14; toolTipText: "Preview (Space)"
-                                        onClicked: root.showPreview(imgFrame.path, "image")
+                                        onClicked: root.showPreview(root.fileUrl(imgFrame.path), "image")
                                     }
                                 }
                                 StyledText {
@@ -271,8 +273,9 @@ Scope {
                                         delegate: Column {
                                             id: tile
                                             required property var modelData
-                                            readonly property string still: modelData.kind === "image" ? modelData.path
-                                                : modelData.kind === "video" ? Cliphist.preview("vid:" + modelData.path) : ""
+                                            // A URL: the file's own (encoded) URI, or our extracted frame.
+                                            readonly property string still: modelData.kind === "image" ? modelData.uri
+                                                : modelData.kind === "video" ? root.fileUrl(Cliphist.preview("vid:" + modelData.path)) : ""
                                             spacing: 2
                                             width: 96
                                             Rectangle {
@@ -283,7 +286,7 @@ Scope {
                                                 Image {
                                                     id: tileImg
                                                     anchors.fill: parent
-                                                    source: tile.still && tile.still !== "!" ? "file://" + tile.still : ""
+                                                    source: tile.still
                                                     fillMode: Image.PreserveAspectCrop
                                                     asynchronous: true
                                                     sourceSize.width: 192
@@ -307,7 +310,7 @@ Scope {
                                                     anchors.fill: parent
                                                     visible: tileImg.status === Image.Ready
                                                     cursorShape: Qt.PointingHandCursor
-                                                    onClicked: root.showPreview(tile.modelData.kind === "image" ? tile.modelData.path : tile.still, tile.modelData.kind, tile.modelData.path)
+                                                    onClicked: root.showPreview(tile.still, tile.modelData.kind, tile.modelData.uri)
                                                 }
                                             }
                                             StyledText {
@@ -403,7 +406,7 @@ Scope {
                 Image {
                     id: big
                     anchors { fill: parent; margins: 24; bottomMargin: 64 }
-                    source: root.previewPath ? "file://" + root.previewPath : ""
+                    source: root.previewPath
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     cache: false
@@ -423,7 +426,7 @@ Scope {
                     RippleButton {
                         visible: root.previewOpen !== ""
                         buttonText: root.previewKind === "video" ? "Play" : "Open"
-                        onClicked: { Qt.openUrlExternally("file://" + root.previewOpen); GlobalStates.clipboardOpen = false }
+                        onClicked: { Qt.openUrlExternally(root.previewOpen); GlobalStates.clipboardOpen = false }
                     }
                     RippleButton { buttonText: "Close"; onClicked: root.previewPath = "" }
                 }
