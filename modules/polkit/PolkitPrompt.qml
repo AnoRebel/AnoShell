@@ -37,7 +37,6 @@ Scope {
             // Its own entrance (the compositor's layer animation is off for
             // this namespace: scaling a full-screen dim looked janky).
             property bool _shown: false
-            Component.onCompleted: Qt.callLater(() => win._shown = true)
             Rectangle {
                 anchors.fill: parent
                 color: "black"
@@ -54,7 +53,8 @@ Scope {
             // disabled and nothing in the window holds focus for Keys handlers.
             Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: PolkitAuth.cancel() }
 
-            // ── Details, read when first shown ──
+            // ── Details, read as the prompt opens: fetched on the first
+            // toggle, rows arriving mid-expand made it stagger ──
             property bool showDetails: false
             property var action: ({})        // pkaction --verbose fields
             property string pkexecCommand: ""
@@ -63,15 +63,14 @@ Scope {
             // an app action annotated with the program's path).
             readonly property bool _viaPkexec: win.flow?.actionId === "org.freedesktop.policykit.exec"
                 || (win.action.annotation ?? "").includes("org.freedesktop.policykit.exec.path")
-            onShowDetailsChanged: if (showDetails && !actionProc.ran) {
-                actionProc.ran = true
+            Component.onCompleted: {
+                Qt.callLater(() => win._shown = true)
                 actionProc.command = ["pkaction", "--verbose", "--action-id", win.flow?.actionId ?? ""]
                 actionProc.running = true
                 pkexecProc.running = true
             }
             Process {
                 id: actionProc
-                property bool ran: false
                 stdout: StdioCollector {
                     onStreamFinished: {
                         const out = {}
