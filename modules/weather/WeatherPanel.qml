@@ -38,7 +38,7 @@ Scope {
         mask: Region { x: weatherCard.x; y: weatherCard.y; width: weatherCard.width; height: weatherCard.height }  // geometry: an item region keeps the scale-in size
         anchors { top: true; bottom: true; left: true; right: true }
         // Keys can't attach to a window (only to Items); a Shortcut works there.
-        Shortcut { sequence: "Escape"; onActivated: GlobalStates.weatherPanelOpen = false }
+        Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: GlobalStates.weatherPanelOpen = false }
 
         PanelDragHandle { panelCard: weatherCard; key: "weather" }
 

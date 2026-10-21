@@ -302,6 +302,10 @@ Singleton {
     function pin(entry) {
         const id = root._id(entry)
         if (!id || pinProc.running || pinProc.pending) return
+        if (!root._pinsLoaded) {
+            Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Clipboard", "clipboard-pins.json can't be read, so nothing is pinned (fix or remove the file)"])
+            return
+        }
         const info = root.entryInfo(entry)
         const key = `${Date.now()}`
         if (info.kind === "image") {
@@ -325,6 +329,7 @@ Singleton {
                 pinProc.pending = null
                 if (text === "") return
                 p.text = text
+                if (root.pins.some(q => q.kind === "text" && q.text === text)) return // already pinned
                 root._savePins([p].concat(root.pins))
             }
         }
@@ -343,7 +348,7 @@ Singleton {
     function copyPin(pin, andPaste) {
         const press = andPaste ? `; ${root.pressPasteCommand}` : ""
         if (pin.kind === "image")
-            Quickshell.execDetached({ command: ["bash", "-c", 'wl-copy -t "image/$EXT" < "$F"' + press], environment: ({ EXT: (pin.ext || "png").replace(/[^a-z0-9]/gi, ""), F: pin.file }) })
+            Quickshell.execDetached({ command: ["bash", "-c", 'wl-copy -t "image/$EXT" < "$F"' + press], environment: ({ EXT: ({ jpg: "jpeg" })[pin.ext] ?? (pin.ext || "png").replace(/[^a-z0-9]/gi, ""), F: pin.file }) })
         else {
             const uris = /^file:\/\//.test(pin.text ?? "")
             Quickshell.execDetached({ command: ["bash", "-c", (uris ? 'printf "%s" "$T" | wl-copy -t text/uri-list' : 'printf "%s" "$T" | wl-copy') + press], environment: ({ T: pin.text ?? "" }) })

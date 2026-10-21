@@ -25,6 +25,9 @@ Singleton {
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
+    // Bumped each time a connected-frame window maps: Top-layer surfaces stack in
+    // map order, so a sidebar mapped before it would sit under the frame.
+    property int frameGeneration: 0
     property bool mediaControlsOpen: false
     property bool osdBrightnessOpen: false
     property bool osdVolumeOpen: false

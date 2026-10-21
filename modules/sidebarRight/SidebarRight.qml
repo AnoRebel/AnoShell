@@ -104,7 +104,8 @@ Scope {
             exclusiveZone: 0
             implicitWidth: screen?.width ?? 1920
             WlrLayershell.namespace: "quickshell:sidebarRight"
-            WlrLayershell.keyboardFocus: GlobalStates.sidebarRightOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+            // Per screen: a parked copy on another monitor must not take the keyboard.
+            WlrLayershell.keyboardFocus: sidebarRoot.shouldShow ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             color: "transparent"
             anchors { top: true; right: true; bottom: true; left: true }
 
@@ -124,14 +125,14 @@ Scope {
 
                 transform: Translate {
                     id: slide
-                    x: GlobalStates.sidebarRightOpen ? 0 : (root.sidebarWidth + root.globalMargin)
+                    x: sidebarRoot.shouldShow ? 0 : (root.sidebarWidth + root.globalMargin) // per screen (see keyboardFocus)
                     Behavior on x {
                         enabled: !root.instantOpen
                         MotionSpring { token: GlobalStates.sidebarRightOpen ? "liquid" : "settle" }
                     }
                 }
 
-                focus: GlobalStates.sidebarRightOpen
+                focus: sidebarRoot.shouldShow
                 Keys.onPressed: event => { if (event.key === Qt.Key_Escape) sidebarRoot.hide() }
 
                 sourceComponent: SidebarRightContent {

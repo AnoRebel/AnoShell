@@ -45,6 +45,7 @@ Scope {
     property int selected: 0
     property string armed: ""          // the action waiting for its second press
     property real armLeft: 0           // 1 → 0 over the countdown
+    property real _armedAt: 0          // a confirm needs a deliberate second press
     NumberAnimation { id: armCountdown; target: root; property: "armLeft"; from: 1; to: 0; duration: 4000; onFinished: root.armed = "" }
     onArmedChanged: if (armed === "") { armCountdown.stop(); root.armLeft = 0 }
     Connections {
@@ -56,7 +57,9 @@ Scope {
         const a = root.actions[i]
         if (!a) return
         root.selected = i
-        if (a.confirm && root.armed !== a.key) { root.armed = a.key; armCountdown.restart(); return }
+        if (a.confirm && root.armed !== a.key) { root.armed = a.key; root._armedAt = Date.now(); armCountdown.restart(); return }
+        // A double-click or a bounced key isn't a second press.
+        if (a.confirm && Date.now() - root._armedAt < 400) return
         root.armed = ""
         root.run(a.key)
     }
@@ -94,9 +97,13 @@ Scope {
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: GlobalStates.sessionOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             anchors { top: true; bottom: true; left: true; right: true }
+            // Fading out: no input (a click there could still run an action).
+            mask: GlobalStates.sessionOpen ? null : noInput
+            Region { id: noInput; item: null }
 
             // Esc disarms first, then closes.
-            Shortcut { sequence: "Escape"; onActivated: { if (root.armed) root.armed = ""; else GlobalStates.sessionOpen = false } }
+            // autoRepeat off: holding Esc must not close (or disarm then close) in one go.
+            Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: { if (root.armed) root.armed = ""; else GlobalStates.sessionOpen = false } }
 
             // Dim backdrop
             Rectangle {
@@ -117,6 +124,7 @@ Scope {
                 Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(GlobalStates.sessionOpen ? 250 : 180); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
                 Keys.onPressed: event => {
+                    if (event.isAutoRepeat) { event.accepted = true; return } // holding a key never confirms
                     const n = root.actions.length
                     if (event.key === Qt.Key_Right || event.key === Qt.Key_Down || event.key === Qt.Key_Tab) { root.selected = (root.selected + 1) % n; event.accepted = true }
                     else if (event.key === Qt.Key_Left || event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) { root.selected = (root.selected + n - 1) % n; event.accepted = true }

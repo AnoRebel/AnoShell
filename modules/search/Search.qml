@@ -34,13 +34,13 @@ Scope {
         const rest = allApps.filter(a => !recentIds.includes(a.id)).sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
         return [...recents, ...rest].slice(0, 50)
     }
-    Timer { id: homeDebounce; interval: 1500; onTriggered: root._home = root._computeHome() }
+    Timer { id: homeDebounce; interval: 300; onTriggered: root._home = root._computeHome() }
     onAllAppsChanged: homeDebounce.restart()
     Connections { target: Config.options?.search ?? null; ignoreUnknownSignals: true; function onRecentAppsChanged() { homeDebounce.restart() } }
     Component.onCompleted: homeDebounce.restart()
 
     readonly property var filteredApps: {
-        if (query.length === 0) return root._home
+        if (query.length === 0) return root._home.filter(a => !!a && !!a.id) // an entry gone before the rebuild
         const q = query.toLowerCase()
         return allApps.filter(app => {
             const name = (app.name ?? "").toLowerCase()

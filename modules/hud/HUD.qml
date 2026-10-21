@@ -42,7 +42,7 @@ Scope {
 
         // Keys can't attach to a window (only to Items); a Shortcut works there.
 
-        Shortcut { sequence: "Escape"; onActivated: GlobalStates.hudVisible = false }
+        Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: GlobalStates.hudVisible = false }
 
         // Register spectrum when HUD is open
         Connections {

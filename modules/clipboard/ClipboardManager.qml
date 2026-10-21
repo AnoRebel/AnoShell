@@ -72,10 +72,13 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.clipboardOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
+        // Fading out: no input (a click would paste again).
+        mask: GlobalStates.clipboardOpen ? null : noInput
+        Region { id: noInput; item: null }
 
         // Keys can't attach to a window (only to Items); a Shortcut works there.
 
-        Shortcut { sequence: "Escape"; onActivated: { if (root.previewPath) root.previewPath = ""; else GlobalStates.clipboardOpen = false } }
+        Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: { if (root.previewPath) root.previewPath = ""; else GlobalStates.clipboardOpen = false } }
 
         // Click outside to close; nothing dims the desktop behind it.
         MouseArea { anchors.fill: parent; onClicked: GlobalStates.clipboardOpen = false }
@@ -149,7 +152,7 @@ Scope {
                                 else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && cur) {
                                     Cliphist.pasteItem(cur); GlobalStates.clipboardOpen = false; event.accepted = true
                                 } else if (event.key === Qt.Key_Delete && text === "" && cur) { Cliphist.deleteItem(cur); event.accepted = true }
-                                else if (event.key === Qt.Key_P && text === "" && cur) { Cliphist.togglePin(cur); event.accepted = true }
+                                else if (event.key === Qt.Key_P && (event.modifiers & Qt.ControlModifier) && cur) { Cliphist.togglePin(cur); event.accepted = true } // plain P types
                                 else if (event.key === Qt.Key_Space && text === "" && cur) { root.previewEntry(cur); event.accepted = true }
                             }
                             StyledText {
@@ -362,7 +365,7 @@ Scope {
                                 spacing: 2; Layout.alignment: Qt.AlignTop
                                 ToolbarButton {
                                     iconName: "push_pin"; iconSize: 14; iconFill: row.pinned ? 1 : 0
-                                    toolTipText: row.pinned ? "Unpin (P)" : "Pin: kept even when the history is cleared (P)"
+                                    toolTipText: row.pinned ? "Unpin (Ctrl+P)" : "Pin: kept even when the history is cleared (Ctrl+P)"
                                     onClicked: Cliphist.togglePin(modelData)
                                 }
                                 ToolbarButton {
@@ -400,7 +403,7 @@ Scope {
                 // Footer
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: "↑↓ select · Enter paste · Space preview · P pin · Delete remove · Right-click copy · Esc close"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; Layout.fillWidth: true }
+                    StyledText { text: "↑↓ select · Enter paste · Space preview · Ctrl+P pin · Delete remove · Right-click copy · Esc close"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; Layout.fillWidth: true }
                 }
             }
 

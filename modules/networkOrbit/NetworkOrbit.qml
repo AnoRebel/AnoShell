@@ -52,6 +52,7 @@ Scope {
 
         Shortcut {
             sequence: "Escape"
+            autoRepeat: false
             onActivated: {
                 if (content.item && content.item.pendingWifiSsid !== "") content.item.pendingWifiSsid = ""
                 else GlobalStates.networkOrbitOpen = false

@@ -222,7 +222,7 @@ Scope {
             // Exclusive while grown, so Escape works right after the click that
             // grew it (OnDemand only focuses on a later click).
             WlrLayershell.keyboardFocus: grown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-            Shortcut { sequence: "Escape"; enabled: spotWindow.grown; onActivated: spotWindow.grownTarget = "" }
+            Shortcut { sequence: "Escape"; autoRepeat: false; enabled: spotWindow.grown; onActivated: spotWindow.grownTarget = "" }
 
             // The pill fits its content (a fixed length clipped it), springing
             // between sizes; anoSpot.widthPx is the maximum length.

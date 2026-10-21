@@ -100,7 +100,7 @@ Scope {
 
         // Keys can't attach to a window (only to Items); a Shortcut works there.
 
-        Shortcut { sequence: "Escape"; onActivated: root.close() }
+        Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: root.close() }
 
         // Card
         PanelDragHandle { panelCard: csCard; key: "cheatsheet" }

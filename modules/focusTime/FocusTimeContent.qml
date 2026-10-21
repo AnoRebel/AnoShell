@@ -300,7 +300,7 @@ Item {
     // ─── Keyboard Navigation ────────────────────────────────────────────────
     Shortcut { sequence: "Left"; onActivated: changeDay(-1) }
     Shortcut { sequence: "Right"; onActivated: changeDay(1) }
-    Shortcut { sequence: "Escape"; onActivated: GlobalStates.focusTimeOpen = false }
+    Shortcut { sequence: "Escape"; autoRepeat: false; onActivated: GlobalStates.focusTimeOpen = false }
 
     // ═══════════════════════════════════════════════════════════════════════
     // UI
