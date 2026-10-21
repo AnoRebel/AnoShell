@@ -266,6 +266,95 @@ Singleton {
         if (gone.length) Quickshell.execDetached(["rm", "-f", "--"].concat(gone))
     }
 
+    // ── Pins: kept in anoshell/clipboard-pins.json (pinned images copied to
+    // clipboard-pins/ beside it), so a cliphist wipe doesn't take them.
+    // A pin: { key, kind: "text" | "image", text?, file?, ext?, width?, height? }
+    readonly property string pinsDir: `${Directories.anoData}/clipboard-pins`
+    property var pins: []
+    property bool _pinsLoaded: false
+    Process { running: true; command: ["mkdir", "-p", "--", root.pinsDir] }
+    FileView {
+        id: pinsFile
+        path: `${Directories.anoData}/clipboard-pins.json`
+        printErrors: false
+        onLoaded: {
+            try {
+                const d = JSON.parse(text())
+                root.pins = Array.isArray(d) ? d : []
+                root._pinsLoaded = true
+            } catch (e) { console.warn(`[Cliphist] clipboard-pins.json: ${e}; not saving pins`) }
+        }
+        onLoadFailed: error => { if (error === FileViewError.FileNotFound) root._pinsLoaded = true }
+    }
+    function _savePins(list) {
+        if (!root._pinsLoaded) return
+        root.pins = list
+        pinsFile.setText(JSON.stringify(list, null, 1))
+    }
+    function isPin(item) { return typeof item === "object" && item !== null && !!item.key }
+    // A pin seen like an entry (entryInfo's shape).
+    function pinInfo(pin) {
+        if (pin.kind === "image") return { id: "", kind: "image", ext: pin.ext ?? "png", size: "pinned", width: pin.width ?? 0, height: pin.height ?? 0, file: pin.file, text: "" }
+        const info = root.entryInfo("0\t" + (pin.text ?? ""))
+        return Object.assign(info, { id: "", needsText: false })
+    }
+    // Pin an entry: its full content is decoded first (the list is cut short).
+    function pin(entry) {
+        const id = root._id(entry)
+        if (!id || pinProc.running || pinProc.pending) return
+        const info = root.entryInfo(entry)
+        const key = `${Date.now()}`
+        if (info.kind === "image") {
+            const file = `${root.pinsDir}/${key}.${info.ext || "png"}`
+            pinProc.pending = { key: key, kind: "image", file: file, ext: info.ext, width: info.width, height: info.height }
+            pinProc.exec({ command: ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode > "$OUT"'], environment: ({ ID: id, BIN: root.cliphistBinary, OUT: file }) })
+        } else {
+            pinProc.pending = { key: key, kind: "text" }
+            pinProc.exec({ command: ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode | head -c 1048576'], environment: ({ ID: id, BIN: root.cliphistBinary }) })
+        }
+    }
+    // A text pin is saved once its output is read, an image pin once the
+    // file is written (exit and end of output can come in either order).
+    Process {
+        id: pinProc
+        property var pending: null
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const p = pinProc.pending
+                if (!p || p.kind !== "text") return
+                pinProc.pending = null
+                if (text === "") return
+                p.text = text
+                root._savePins([p].concat(root.pins))
+            }
+        }
+        onExited: code => {
+            const p = pinProc.pending
+            if (!p || p.kind !== "image") return
+            pinProc.pending = null
+            if (code === 0) root._savePins([p].concat(root.pins))
+        }
+    }
+    function unpin(pin) {
+        root._savePins(root.pins.filter(p => p.key !== pin.key))
+        if (pin.kind === "image" && pin.file) Quickshell.execDetached(["rm", "-f", "--", pin.file])
+    }
+    // Copy (and optionally paste) a pin: values go in as environment, not script text.
+    function copyPin(pin, andPaste) {
+        const press = andPaste ? `; ${root.pressPasteCommand}` : ""
+        if (pin.kind === "image")
+            Quickshell.execDetached({ command: ["bash", "-c", 'wl-copy -t "image/$EXT" < "$F"' + press], environment: ({ EXT: (pin.ext || "png").replace(/[^a-z0-9]/gi, ""), F: pin.file }) })
+        else {
+            const uris = /^file:\/\//.test(pin.text ?? "")
+            Quickshell.execDetached({ command: ["bash", "-c", (uris ? 'printf "%s" "$T" | wl-copy -t text/uri-list' : 'printf "%s" "$T" | wl-copy') + press], environment: ({ T: pin.text ?? "" }) })
+        }
+    }
+    // Either kind of row (a pin object, or a cliphist entry line).
+    function copyItem(item) { if (root.isPin(item)) root.copyPin(item, false); else root.copy(item) }
+    function pasteItem(item) { if (root.isPin(item)) root.copyPin(item, true); else root.paste(item) }
+    function deleteItem(item) { if (root.isPin(item)) root.unpin(item); else root.deleteEntry(item) }
+    function togglePin(item) { if (root.isPin(item)) root.unpin(item); else root.pin(item) }
+
     IpcHandler {
         target: "cliphistService"
         function update(): void { root.refresh() }

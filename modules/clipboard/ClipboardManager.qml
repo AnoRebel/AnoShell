@@ -19,14 +19,15 @@ Scope {
     id: root
     property string searchQuery: ""
 
+    // Pins first (objects), then cliphist entries (lines).
     readonly property var filteredEntries: {
         if (!GlobalStates.clipboardOpen) return []
-        if (searchQuery.length === 0) return Cliphist.entries
+        if (searchQuery.length === 0) return Cliphist.pins.concat(Cliphist.entries)
         const q = searchQuery.toLowerCase()
-        return Cliphist.entries.filter(entry => {
+        return Cliphist.pins.filter(p => (p.text ?? "").toLowerCase().includes(q)).concat(Cliphist.entries.filter(entry => {
             const text = entry.split("\t").slice(1).join("\t").toLowerCase()
             return text.includes(q)
-        })
+        }))
     }
 
     Component.onCompleted: Cliphist.refresh()
@@ -44,8 +45,8 @@ Scope {
         root.previewPath = path
     }
     function previewEntry(entry) {
-        const info = Cliphist.entryInfo(entry)
-        if (info.kind === "image") root.showPreview(root.fileUrl(Cliphist.preview("img:" + info.id)), "image")
+        const info = Cliphist.isPin(entry) ? Cliphist.pinInfo(entry) : Cliphist.entryInfo(entry)
+        if (info.kind === "image") root.showPreview(root.fileUrl(info.file ?? Cliphist.preview("img:" + info.id)), "image")
         else if (info.kind === "files") {
             const f = info.files[0]
             root.showPreview(f.kind === "image" ? f.uri : f.kind === "video" ? root.fileUrl(Cliphist.preview("vid:" + f.path)) : "", f.kind, f.uri)
@@ -146,8 +147,9 @@ Scope {
                                 if (event.key === Qt.Key_Down) { entryList.incrementCurrentIndex(); event.accepted = true }
                                 else if (event.key === Qt.Key_Up) { entryList.decrementCurrentIndex(); event.accepted = true }
                                 else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && cur) {
-                                    Cliphist.paste(cur); GlobalStates.clipboardOpen = false; event.accepted = true
-                                } else if (event.key === Qt.Key_Delete && text === "" && cur) { Cliphist.deleteEntry(cur); event.accepted = true }
+                                    Cliphist.pasteItem(cur); GlobalStates.clipboardOpen = false; event.accepted = true
+                                } else if (event.key === Qt.Key_Delete && text === "" && cur) { Cliphist.deleteItem(cur); event.accepted = true }
+                                else if (event.key === Qt.Key_P && text === "" && cur) { Cliphist.togglePin(cur); event.accepted = true }
                                 else if (event.key === Qt.Key_Space && text === "" && cur) { root.previewEntry(cur); event.accepted = true }
                             }
                             StyledText {
@@ -184,9 +186,10 @@ Scope {
 
                     delegate: Rectangle {
                         id: row
-                        required property string modelData
+                        required property var modelData
                         required property int index
-                        readonly property var info: Cliphist.entryInfo(modelData)
+                        readonly property bool pinned: Cliphist.isPin(modelData)
+                        readonly property var info: pinned ? Cliphist.pinInfo(modelData) : Cliphist.entryInfo(modelData)
                         readonly property bool selected: ListView.isCurrentItem
                         readonly property real contentWidth: entryList.width - 160 // minus the icon and the three actions
                         width: entryList.width
@@ -213,9 +216,10 @@ Scope {
                             spacing: 8
 
                             MaterialSymbol {
-                                text: ({ image: "image", files: "folder_open", color: "palette", text: "text_snippet" })[info.kind]
-                                iconSize: 18; opacity: 0.4
-                                color: info.kind === "text" ? Appearance.colors.colOnLayer1 : Appearance.colors.colPrimary
+                                text: row.pinned ? "push_pin" : ({ image: "image", files: "folder_open", color: "palette", text: "text_snippet" })[info.kind]
+                                fill: row.pinned ? 1 : 0
+                                iconSize: 18; opacity: row.pinned ? 0.9 : 0.4
+                                color: info.kind === "text" && !row.pinned ? Appearance.colors.colOnLayer1 : Appearance.colors.colPrimary
                                 Layout.alignment: Qt.AlignTop
                             }
 
@@ -227,7 +231,7 @@ Scope {
                                     id: imgFrame
                                     visible: info.kind === "image"
                                     readonly property real aspect: info.width && info.height ? info.width / info.height : 1.6
-                                    readonly property string path: Cliphist.preview("img:" + info.id)
+                                    readonly property string path: info.file ?? Cliphist.preview("img:" + info.id)
                                     Layout.preferredHeight: visible ? Math.round(Math.min(150, Math.max(40, row.contentWidth / aspect))) : 0
                                     Layout.preferredWidth: visible ? Math.min(row.contentWidth, Layout.preferredHeight * aspect) : 0
                                     radius: 6
@@ -357,19 +361,24 @@ Scope {
                             RowLayout {
                                 spacing: 2; Layout.alignment: Qt.AlignTop
                                 ToolbarButton {
+                                    iconName: "push_pin"; iconSize: 14; iconFill: row.pinned ? 1 : 0
+                                    toolTipText: row.pinned ? "Unpin (P)" : "Pin: kept even when the history is cleared (P)"
+                                    onClicked: Cliphist.togglePin(modelData)
+                                }
+                                ToolbarButton {
                                     iconName: "content_copy"; iconSize: 14
                                     toolTipText: "Copy to clipboard"
-                                    onClicked: Cliphist.copy(modelData)
+                                    onClicked: Cliphist.copyItem(modelData)
                                 }
                                 ToolbarButton {
                                     iconName: "content_paste"; iconSize: 14
                                     toolTipText: "Paste"
-                                    onClicked: { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
+                                    onClicked: { Cliphist.pasteItem(modelData); GlobalStates.clipboardOpen = false }
                                 }
                                 ToolbarButton {
                                     iconName: "delete"; iconSize: 14
-                                    toolTipText: "Delete entry"
-                                    onClicked: Cliphist.deleteEntry(modelData)
+                                    toolTipText: row.pinned ? "Unpin" : "Delete entry"
+                                    onClicked: Cliphist.deleteItem(modelData)
                                 }
                             }
                         }
@@ -381,8 +390,8 @@ Scope {
                             cursorShape: Qt.PointingHandCursor
                             onEntered: entryList.currentIndex = row.index
                             onClicked: event => {
-                                if (event.button === Qt.RightButton) Cliphist.copy(modelData)
-                                else { Cliphist.paste(modelData); GlobalStates.clipboardOpen = false }
+                                if (event.button === Qt.RightButton) Cliphist.copyItem(modelData)
+                                else { Cliphist.pasteItem(modelData); GlobalStates.clipboardOpen = false }
                             }
                         }
                     }
@@ -391,7 +400,7 @@ Scope {
                 // Footer
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: "↑↓ select · Enter paste · Space preview · Delete remove · Right-click copy · Esc close"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; Layout.fillWidth: true }
+                    StyledText { text: "↑↓ select · Enter paste · Space preview · P pin · Delete remove · Right-click copy · Esc close"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.3; Layout.fillWidth: true }
                 }
             }
 
