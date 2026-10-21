@@ -149,6 +149,15 @@ Bluetooth, and VPN (when a provider is set under `vpn.providers`).
   for one.
 - **Keys:** Tab cycles the tabs, and Escape closes the panel.
 
+The panel is the `anoNetworkOrbit` module (Overlays, in the ano and hefty
+families). Its IPC target is `networkOrbit`:
+
+```sh
+ano ipc call networkOrbit open wifi     # wifi | bt | vpn | eth
+ano ipc call networkOrbit toggle bt     # "" toggles whatever tab is open
+ano ipc call networkOrbit close
+```
+
 ### NetBird
 
 With `vpn.providers` set to NetBird, the right sidebar's Network card shows
@@ -164,15 +173,6 @@ change.
   / `deselect`).
 - The bar's network icon carries a small shield while the VPN is up, filled
   while traffic goes out an exit node; its popup names the exit node.
-
-The panel is the `anoNetworkOrbit` module (Overlays, in the ano and hefty
-families). Its IPC target is `networkOrbit`:
-
-```sh
-ano ipc call networkOrbit open wifi     # wifi | bt | vpn | eth
-ano ipc call networkOrbit toggle bt     # "" toggles whatever tab is open
-ano ipc call networkOrbit close
-```
 
 ## anod hooks
 
