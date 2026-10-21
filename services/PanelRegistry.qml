@@ -128,6 +128,23 @@ Singleton {
     function inset(screenName, edge) {
         return root.reserved(screenName, edge) || root.frameThickness
     }
+    /// The pill's widest span along its edge, per screen ({edge, from, to}),
+    /// set by AnoSpot: its window is that wide whatever the pill shows.
+    property var pillSpans: ({})
+    function setPillSpan(screenName, span) {
+        const m = Object.assign({}, root.pillSpans); m[screenName] = span; root.pillSpans = m
+    }
+    /// inset() for a surface spanning [from, to] along `edge`, leaving out the
+    /// pill's zone when the pill, even at its widest, stays clear of that span
+    /// (a sidebar beside a centred pill reaches the edge instead of stopping
+    /// a pill-height short).
+    function insetBeside(screenName, edge, from, to) {
+        const s = root.pillSpans[screenName]
+        const pill = root.panels.find(p => p.key === "pill:" + screenName)
+        if (!s || !pill || s.edge !== edge || pill.edge !== edge || (s.to > from && s.from < to))
+            return root.inset(screenName, edge)
+        return (root.reserved(screenName, edge) - pill.reserve) || root.frameThickness
+    }
     function reserved(screenName, edge) {
         let n = 0
         for (const p of root.panels) if (p.screenName === screenName && p.edge === edge) n += p.reserve

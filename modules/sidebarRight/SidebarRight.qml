@@ -76,7 +76,7 @@ Scope {
                     if (sidebarRoot.shouldShow) return
                     // Open on another monitor: nothing retracts here, hide now.
                     if (GlobalStates.sidebarRightOpen
-                        || Math.abs(Math.abs(slide.x) - (root.sidebarWidth + root.globalMargin)) < 1) sidebarRoot.parked = true
+                        || Math.abs(Math.abs(slide.x) - sidebarRoot._slideAway) < 1) sidebarRoot.parked = true
                     else restart()
                 }
             }
@@ -92,15 +92,27 @@ Scope {
                 screenName: sidebarRoot.modelData?.name ?? ""
                 active: !sidebarRoot.parked && progress > 0
                 x: (sidebarRoot.screen?.width ?? 0) - PanelRegistry.inset(_scr, "right") - root.sidebarWidth + root.globalMargin + slide.x
-                // The window is pushed in by exclusive zones (the bar).
                 readonly property string _scr: sidebarRoot.modelData?.name ?? ""
-                readonly property real _it: PanelRegistry.inset(_scr, "top")
-                y: _it + root.globalMargin
+                y: sidebarRoot._insetTop + root.globalMargin
                 w: root.sidebarWidth - root.globalMargin * 2
-                h: (sidebarRoot.screen?.height ?? 0) - _it - PanelRegistry.inset(_scr, "bottom") - root.globalMargin * 2
-                progress: 1 - slide.x / Math.max(1, root.sidebarWidth + root.globalMargin)
+                h: (sidebarRoot.screen?.height ?? 0) - sidebarRoot._insetTop - sidebarRoot._insetBottom - root.globalMargin * 2
+                progress: 1 - slide.x / Math.max(1, sidebarRoot._slideAway)
             }
 
+            // Where the content starts and ends: past the bar's zone, but not
+            // the pill's when the pill at its widest stays clear of the sidebar
+            // (it then reaches the edge). Ignoring zones means placing past the
+            // others by hand, which only the connected frame's registry knows.
+            readonly property string _scr: sidebarRoot.modelData?.name ?? ""
+            readonly property real _from: (sidebarRoot.screen?.width ?? 0) - root.sidebarWidth
+            readonly property real _to: sidebarRoot.screen?.width ?? 0
+            readonly property real _insetTop: PanelRegistry.insetBeside(_scr, "top", _from, _to)
+            readonly property real _insetBottom: PanelRegistry.insetBeside(_scr, "bottom", _from, _to)
+            readonly property bool _besidePill: PanelRegistry.enabled
+                && (_insetTop < PanelRegistry.inset(_scr, "top") || _insetBottom < PanelRegistry.inset(_scr, "bottom"))
+            exclusionMode: _besidePill ? ExclusionMode.Ignore : ExclusionMode.Normal
+            // Fully past the screen edge (and the frame band there, when the window covers it).
+            readonly property real _slideAway: root.sidebarWidth + root.globalMargin + (_besidePill ? PanelRegistry.inset(_scr, "right") : 0)
             exclusiveZone: 0
             implicitWidth: screen?.width ?? 1920
             WlrLayershell.namespace: "quickshell:sidebarRight"
@@ -122,12 +134,18 @@ Scope {
                 // Parked (closed, slid away): not drawn at all, so nothing in it renders.
                 visible: !sidebarRoot.parked
                 active: GlobalStates.sidebarRightOpen || (Config?.options?.sidebar?.keepRightSidebarLoaded ?? true)
-                anchors { top: parent.top; right: parent.right; bottom: parent.bottom; margins: root.globalMargin }
+                anchors {
+                    top: parent.top; right: parent.right; bottom: parent.bottom
+                    // Ignoring zones, the window covers the screen: add the insets.
+                    topMargin: root.globalMargin + (sidebarRoot._besidePill ? sidebarRoot._insetTop : 0)
+                    bottomMargin: root.globalMargin + (sidebarRoot._besidePill ? sidebarRoot._insetBottom : 0)
+                    rightMargin: root.globalMargin + (sidebarRoot._besidePill ? PanelRegistry.inset(sidebarRoot._scr, "right") : 0)
+                }
                 width: root.sidebarWidth - root.globalMargin * 2
 
                 transform: Translate {
                     id: slide
-                    x: sidebarRoot.shouldShow ? 0 : (root.sidebarWidth + root.globalMargin) // per screen (see keyboardFocus)
+                    x: sidebarRoot.shouldShow ? 0 : sidebarRoot._slideAway // per screen (see keyboardFocus)
                     Behavior on x {
                         enabled: !root.instantOpen
                         MotionSpring { token: GlobalStates.sidebarRightOpen ? "liquid" : "settle" }

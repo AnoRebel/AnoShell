@@ -325,7 +325,15 @@ Scope {
                 height: spotWindow.tuck > 0.99 ? 0 : pillBody.height
             }
 
+            // Its widest span along the edge (the window is that size), so a
+            // sidebar beside it can skip its reserved zone (PanelRegistry.insetBeside).
+            readonly property var _span: root.isVertical
+                ? { "edge": root.position, "from": pillLease._o.y, "to": pillLease._o.y + spotWindow._maxAlong }
+                : { "edge": root.position, "from": pillLease._o.x, "to": pillLease._o.x + spotWindow._maxAlong }
+            on_SpanChanged: PanelRegistry.setPillSpan(spotWindow.modelData?.name ?? "", _span)
+
             ConnectedSurfaceLease {
+                id: pillLease
                 key: "pill:" + (spotWindow.modelData?.name ?? "")
                 kind: "pill"; edge: root.position; priority: 15
                 immediate: true
