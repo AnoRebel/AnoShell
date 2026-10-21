@@ -34,14 +34,14 @@ Scope {
         onTriggered: { const a = root._pendingAction; root._pendingAction = null; if (a) a() }
     }
 
-    // The actions, in ring order. confirm: needs a second press (session.confirm*).
+    // The actions, in ring order. confirm: needs a second press.
     readonly property var actions: [
         { key: "lock", icon: "lock", label: "Lock", accent: Appearance.colors.colInfo, confirm: false },
-        { key: "logout", icon: "logout", label: "Logout", accent: Appearance.colors.colWarning, confirm: Config.options?.session?.confirmLogout ?? true },
+        { key: "logout", icon: "logout", label: "Logout", accent: Appearance.colors.colWarning, confirm: true },
         { key: "sleep", icon: "dark_mode", label: "Sleep", accent: Appearance.colors.colTertiary, confirm: false },
         { key: "hibernate", icon: "downloading", label: "Hibernate", accent: Appearance.colors.colSecondary, confirm: true },
         { key: "reboot", icon: "restart_alt", label: "Reboot", accent: Appearance.colors.colSuccess, confirm: true },
-        { key: "shutdown", icon: "power_settings_new", label: "Shutdown", accent: Appearance.colors.colError, confirm: Config.options?.session?.confirmShutdown ?? true }
+        { key: "shutdown", icon: "power_settings_new", label: "Shutdown", accent: Appearance.colors.colError, confirm: true }
     ]
     property int selected: 0
     property string armed: ""          // the action waiting for its second press

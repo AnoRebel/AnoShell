@@ -1054,14 +1054,6 @@ Singleton {
             }
 
             // ═══════════════════════════════════════════════════════════════
-            // Session
-            // ═══════════════════════════════════════════════════════════════
-            property JsonObject session: JsonObject {
-                property bool confirmLogout: true
-                property bool confirmShutdown: true
-            }
-
-            // ═══════════════════════════════════════════════════════════════
             // Audio protection
             // ═══════════════════════════════════════════════════════════════
             property JsonObject audio: JsonObject {

@@ -45,7 +45,7 @@ Singleton {
     // (top-level keys + dotted-path overrides) so the palette can resolve a
     // typed key to its page.
     readonly property var pages: [
-        { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"] },
+        { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery"] },
         { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search"] },
         { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
         { name: "Dock",       icon: "space_dashboard", configRoots: ["dock"] },

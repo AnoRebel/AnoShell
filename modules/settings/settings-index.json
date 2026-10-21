@@ -155,33 +155,6 @@
  },
  {
   "page": 0,
-  "card": "Session",
-  "label": "Session",
-  "sublabel": "Confirmation for logout and shutdown",
-  "keys": [
-   "session"
-  ]
- },
- {
-  "page": 0,
-  "card": "",
-  "label": "Hold to confirm logout",
-  "sublabel": "Off: a single click logs out",
-  "keys": [
-   "session.confirmLogout"
-  ]
- },
- {
-  "page": 0,
-  "card": "",
-  "label": "Hold to confirm shutdown",
-  "sublabel": "Off: a single click powers off",
-  "keys": [
-   "session.confirmShutdown"
-  ]
- },
- {
-  "page": 0,
   "card": "Scrolling & Interactions",
   "label": "Scrolling & Interactions",
   "sublabel": "Touchpad and mouse scroll speed",
