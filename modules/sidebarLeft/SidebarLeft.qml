@@ -32,19 +32,24 @@ Scope {
                 || (modelData?.name && modelData.name === GlobalStates.focusedScreenName)
             readonly property bool shouldShow: GlobalStates.sidebarLeftOpen && isFocusedScreen
 
-            Component.onCompleted: visible = shouldShow
+            // Mapped always; closed it is "parked" (no input, no focus, content
+            // slid away): mapping on every open cost a slow first frame.
+            property bool parked: !shouldShow
+            visible: true
+            mask: parked ? noInput : null
+            Region { id: noInput; item: null } // an empty input region: clicks pass through
 
             Connections {
                 target: GlobalStates
                 function onSidebarLeftOpenChanged() {
-                    if (sidebarRoot.shouldShow) { _closeTimer.stop(); sidebarRoot.visible = true }
-                    else if (root.instantOpen) { _closeTimer.stop(); sidebarRoot.visible = false }
+                    if (sidebarRoot.shouldShow) { _closeTimer.stop(); sidebarRoot.parked = false }
+                    else if (root.instantOpen) { _closeTimer.stop(); sidebarRoot.parked = true }
                     else _closeTimer.restart()
                 }
             }
             onShouldShowChanged: {
-                if (shouldShow) { _closeTimer.stop(); visible = true }
-                else if (root.instantOpen) { _closeTimer.stop(); visible = false }
+                if (shouldShow) { _closeTimer.stop(); parked = false }
+                else if (root.instantOpen) { _closeTimer.stop(); parked = true }
                 else _closeTimer.restart()
             }
             // Hide once the spring has retracted the body into its edge (a fixed
@@ -55,7 +60,7 @@ Scope {
                     if (sidebarRoot.shouldShow) return
                     // Open on another monitor: nothing retracts here, hide now.
                     if (GlobalStates.sidebarLeftOpen
-                        || Math.abs(Math.abs(slide.x) - (root.sidebarWidth + root.globalMargin)) < 1) sidebarRoot.visible = false
+                        || Math.abs(Math.abs(slide.x) - (root.sidebarWidth + root.globalMargin)) < 1) sidebarRoot.parked = true
                     else restart()
                 }
             }
@@ -70,7 +75,7 @@ Scope {
                 // flush, so they fillet into them instead of rounding on their own.
                 omitStartConnector: true; omitEndConnector: true
                 screenName: sidebarRoot.modelData?.name ?? ""
-                active: sidebarRoot.visible && progress > 0
+                active: !sidebarRoot.parked && progress > 0
                 x: PanelRegistry.inset(_scr, "left") + root.globalMargin + slide.x
                 // The window is pushed in by exclusive zones (the bar).
                 readonly property string _scr: sidebarRoot.modelData?.name ?? ""

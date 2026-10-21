@@ -24,17 +24,23 @@ Scope {
     property int selectedIndex: 0
 
     readonly property var allApps: DesktopEntries.applications.values
+    // The home list (recent apps, then A–Z) is kept while closed, rebuilt only
+    // once DesktopEntries / recents settle, so opening doesn't build ~50 rows
+    // (with icons) in its first frame. Searching builds as before.
+    property var _home: []
+    function _computeHome() {
+        const recentIds = Config.options?.search?.recentApps ?? []
+        const recents = recentIds.map(id => allApps.find(a => a.id === id)).filter(a => !!a)
+        const rest = allApps.filter(a => !recentIds.includes(a.id)).sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+        return [...recents, ...rest].slice(0, 50)
+    }
+    Timer { id: homeDebounce; interval: 1500; onTriggered: root._home = root._computeHome() }
+    onAllAppsChanged: homeDebounce.restart()
+    Connections { target: Config.options?.search ?? null; ignoreUnknownSignals: true; function onRecentAppsChanged() { homeDebounce.restart() } }
+    Component.onCompleted: homeDebounce.restart()
+
     readonly property var filteredApps: {
-        // Closed launcher: no list, so DesktopEntries churn (dozens of updates
-        // at startup) doesn't rebuild thousands of hidden delegates.
-        // Kept through the close animation so the card doesn't flash empty.
-        if (!GlobalStates.searchOpen && !(searchWindow.shown > 0.01)) return []
-        if (query.length === 0) {
-            // Show recent apps, then alphabetical
-            const recents = (Config.options?.search?.recentApps ?? []).map(id => allApps.find(a => a.id === id)).filter(a => !!a)
-            const rest = allApps.filter(a => !(Config.options?.search?.recentApps ?? []).includes(a.id)).sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-            return [...recents, ...rest].slice(0, 50)
-        }
+        if (query.length === 0) return root._home
         const q = query.toLowerCase()
         return allApps.filter(app => {
             const name = (app.name ?? "").toLowerCase()
@@ -123,9 +129,13 @@ Scope {
     Connections {
         target: GlobalStates
         function onSearchOpenChanged() {
-            if (GlobalStates.searchOpen) { root.query = ""; root.selectedIndex = 0 }
+            if (GlobalStates.searchOpen) { closeReset.stop(); root.query = ""; root.selectedIndex = 0 }
+            else closeReset.restart()
         }
     }
+    // Back to the home list once closed (not at the next open, where swapping
+    // the list would build its rows in the opening frame).
+    Timer { id: closeReset; interval: 450; onTriggered: { searchInput.text = ""; root.query = ""; root.selectedIndex = 0 } }
 
     IpcHandler {
         target: "search"

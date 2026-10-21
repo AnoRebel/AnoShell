@@ -89,7 +89,12 @@ Scope {
     function _applyFrameBlur() {
         if (root._shapedBlur) CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
         else CompositorService.setLayerBlur("^quickshell:anoScreen$", root._frameBlur, root._frameBlurIgnoreAlpha)
+        // While the frame's shaped region blurs the sidebars' silhouettes, their
+        // own layer blur only re-blurred a moving full-height surface a second
+        // time every frame (the slide dropped frames waiting on the compositor).
+        CompositorService.setLayerBlur("^quickshell:sidebar(Left|Right)$", !root._frameProvidesBlur, 0.1)
     }
+    readonly property bool _frameProvidesBlur: root._frameBlur && root._shapedBlur
     on_FrameBlurChanged: _applyFrameBlur()
     on_ShapedBlurChanged: _applyFrameBlur()
     on_FrameBlurIgnoreAlphaChanged: _applyFrameBlur()
@@ -103,6 +108,7 @@ Scope {
     Component.onDestruction: {
         if (_manageGaps) CompositorService.setOuterGaps(_floatingGapsOut)
         CompositorService.setLayerBlur("^quickshell:anoScreen$", false, 0)
+        CompositorService.setLayerBlur("^quickshell:sidebar(Left|Right)$", true, 0.1)
     }
 
     // ── Space reservation (FrameExclusions) ───────────────────────────────────
