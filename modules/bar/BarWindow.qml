@@ -204,6 +204,13 @@ PanelWindow {
         surfaceRadius: _b?.island ? barRoot.barRadius : undefined
         x: barRoot._origin.x + (_b?.x ?? 0); y: barRoot._origin.y + (_b?.y ?? 0)
         w: _b?.w ?? 0; h: _b?.h ?? 0
+        // A body running into the bands across its ends (a full-height side
+        // bar) blends into them like a sidebar, not a tapered connector each.
+        readonly property real _sl: barRoot.screen?.[barRoot.isVertical ? "height" : "width"] ?? 0
+        readonly property real _s0: barRoot.isVertical ? y : x
+        readonly property real _s1: _s0 + (barRoot.isVertical ? h : w)
+        omitStartConnector: !!_b && !_b.island && _s0 <= PanelRegistry.inset(screenName, barRoot.isVertical ? "top" : "left") + 0.5
+        omitEndConnector: !!_b && !_b.island && _s1 >= _sl - PanelRegistry.inset(screenName, barRoot.isVertical ? "bottom" : "right") - 0.5
         progress: 1 + barContentLoader.hideOffset / Math.max(1, barRoot.barThickness)
         reserve: index === 0 ? barRoot.exclusiveZone : 0
     }
