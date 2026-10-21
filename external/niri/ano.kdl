@@ -699,6 +699,16 @@ layer-rule {
     }
 }
 
+// Polkit prompt with polkit.blur off: dimmed only, and not faded (it is a
+// security prompt; the global rule's opacity would fade it).
+layer-rule {
+    match namespace=r#"^quickshell:polkitPlain$"#
+    opacity 1.0
+    background-effect {
+        blur false
+    }
+}
+
 // QuickShell bar specifically — tighter shadow
 layer-rule {
     match namespace="quickshell:bar"

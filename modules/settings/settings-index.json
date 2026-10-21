@@ -165,7 +165,7 @@
  {
   "page": 0,
   "card": "",
-  "label": "Hold to confirm logout",
+  "label": "Press twice to log out",
   "sublabel": "Off: a single click logs out",
   "keys": [
    "session.confirmLogout"
@@ -174,10 +174,37 @@
  {
   "page": 0,
   "card": "",
-  "label": "Hold to confirm shutdown",
+  "label": "Press twice to shut down",
   "sublabel": "Off: a single click powers off",
   "keys": [
    "session.confirmShutdown"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Password prompt",
+  "label": "Password prompt",
+  "sublabel": "AnoShell asks for your password when an app needs permission (polkit)",
+  "keys": [
+   "polkit"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Use AnoShell's password prompt",
+  "sublabel": "Off: another agent (or none) answers polkit",
+  "keys": [
+   "polkit.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Blur behind the prompt",
+  "sublabel": "Off: only dims the screen (needs the bundled compositor rules for quickshell:polkitPlain)",
+  "keys": [
+   "polkit.blur"
   ]
  },
  {

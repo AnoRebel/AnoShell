@@ -1069,6 +1069,15 @@ Singleton {
                 property bool confirmShutdown: true
             }
 
+            // Built-in polkit agent (services/PolkitAuth.qml). polkit takes one
+            // agent per session: one already running keeps it.
+            property JsonObject polkit: JsonObject {
+                property bool enable: true
+                // Blur behind the prompt (off: namespace quickshell:polkitPlain,
+                // which the bundled compositor configs leave unblurred).
+                property bool blur: true
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // Audio protection
             // ═══════════════════════════════════════════════════════════════

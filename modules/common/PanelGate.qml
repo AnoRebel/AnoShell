@@ -56,6 +56,7 @@ Singleton {
         { id: "anoReader", name: "Reader", icon: "auto_stories", desc: "Novel, manga and anime panels (anod's reader backend)", category: "Utilities", source: "modules/reader/ReaderHost.qml", key: "reader.enable" },
         { id: "anoStickyNote", name: "Sticky Note", icon: "sticky_note_2", desc: "A note on the desktop, kept in a file (click-through toggle)", category: "Utilities", source: "modules/stickyNotes/StickyNote.qml", key: "stickyNotes.enable" },
         { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor arrangement, mode and scale", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", capability: "outputConfig" },
+        { id: "anoPolkit", name: "Password Prompt", icon: "admin_panel_settings", desc: "Built-in polkit agent: asks for your password when an app needs permission", category: "Utilities", source: "modules/polkit/PolkitPrompt.qml", key: "polkit.enable" },
         { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
         // Features with their own Settings pages (not listed on the Modules page)
         { id: "anoScreen", source: "modules/anoScreen/AnoScreen.qml", key: "appearance.connectedCorners.enable", listed: false },
@@ -72,7 +73,7 @@ Singleton {
     // Ids each family hosts. Everything not listed here is unavailable in
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
-        "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen",
+        "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen", "anoPolkit",
         "anoSpot", "anoSpotStash", "anoSpotWorkspacePreview", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",

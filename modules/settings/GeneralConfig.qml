@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"
-        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session"]
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session", "polkit"]
     }
 
     // ═══ Audio ═══
@@ -395,7 +395,7 @@ ColumnLayout {
         configKeys: ["session"]
 
         ConfigSwitch {
-            label: "Hold to confirm logout"
+            label: "Press twice to log out"
             configKey: "session.confirmLogout"
             sublabel: "Off: a single click logs out"
             checked: Config.options?.session?.confirmLogout ?? true
@@ -403,11 +403,49 @@ ColumnLayout {
         }
 
         ConfigSwitch {
-            label: "Hold to confirm shutdown"
+            label: "Press twice to shut down"
             configKey: "session.confirmShutdown"
             sublabel: "Off: a single click powers off"
             checked: Config.options?.session?.confirmShutdown ?? true
             onCheckedChanged: Config.setNestedValue("session.confirmShutdown", checked)
+        }
+    }
+
+    // ═══ Password prompt (polkit) ═══
+    SettingsCard {
+        icon: "admin_panel_settings"
+        title: "Password prompt"
+        subtitle: "AnoShell asks for your password when an app needs permission (polkit)"
+        configKeys: ["polkit"]
+
+        ConfigSwitch {
+            label: "Use AnoShell's password prompt"
+            configKey: "polkit.enable"
+            sublabel: !PolkitAuth.wanted ? "Off: another agent (or none) answers polkit"
+                : PolkitAuth.registered ? "Active: AnoShell answers polkit in this session"
+                : PolkitAuth.otherAgent ? "Another agent already answers in this session, so AnoShell's stays quiet"
+                : "Registering…"
+            checked: Config.options?.polkit?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("polkit.enable", checked)
+        }
+        ConfigSwitch {
+            enabled: PolkitAuth.wanted
+            label: "Blur behind the prompt"
+            configKey: "polkit.blur"
+            sublabel: "Off: only dims the screen (needs the bundled compositor rules for quickshell:polkitPlain)"
+            checked: Config.options?.polkit?.blur ?? true
+            onCheckedChanged: Config.setNestedValue("polkit.blur", checked)
+        }
+        NoticeBox {
+            visible: PolkitAuth.wanted && PolkitAuth.otherAgent
+            Layout.fillWidth: true
+            iconName: "info"
+            text: "polkit takes one agent per session. To use AnoShell's, stop the other one (e.g. remove hyprpolkitagent from your compositor's autostart, or `systemctl --user stop hyprpolkitagent`), then press Retry."
+        }
+        RippleButton {
+            visible: PolkitAuth.wanted && PolkitAuth.otherAgent
+            buttonText: "Retry"
+            onClicked: PolkitAuth.retry()
         }
     }
 

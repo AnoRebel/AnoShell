@@ -600,6 +600,8 @@ hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|networkOrbit|me
 -- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
 -- the rectangular rule blur would show as a square halo around them.
 hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })
+-- Polkit prompt with polkit.blur off: dimmed only.
+hl.layer_rule({ match = { namespace = "^quickshell:polkitPlain$" }, blur = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
 -- Shell surfaces that animate themselves (slides, springs, fades): no compositor

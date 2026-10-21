@@ -55,6 +55,25 @@ Settings → Sidebars → **Productivity**.
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
 
+## Password prompt (polkit)
+
+When an app needs permission (pkexec, mounting a disk, a system setting),
+AnoShell asks for your password on the focused screen: Enter authenticates,
+Esc or Cancel says no. **Details** shows the polkit action, its description
+and vendor (from `pkaction`) and, for pkexec, the full command waiting to run
+and what started it.
+
+Settings → General → Password prompt:
+
+- `polkit.enable` (on): polkit takes one agent per session, so if another
+  one (hyprpolkitagent, polkit-gnome…) is already running, AnoShell's stays
+  quiet and the card says so. AnoShell never stops other agents; stop yours,
+  then press **Retry**.
+- `polkit.blur` (on): blur behind the prompt. Off, the prompt uses the
+  namespace `quickshell:polkitPlain`, which the bundled Hyprland and niri
+  configs leave unblurred (add the same rule to your own config if you don't
+  use the bundled one).
+
 ## Clipboard history
 
 Alt+V opens the clipboard history (cliphist). Entries show what they are:
