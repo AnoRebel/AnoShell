@@ -444,6 +444,60 @@
  },
  {
   "page": 1,
+  "card": "Screenshots",
+  "label": "Screenshots",
+  "sublabel": "Print, Shift+Print, Ctrl+Print, Super+Shift+S · the card shown after a capture",
+  "keys": [
+   "screenshot"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Copy to the clipboard",
+  "sublabel": "Every capture goes on the clipboard at once",
+  "keys": [
+   "screenshot.copyOnCapture"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Card position",
+  "sublabel": "",
+  "keys": [
+   "screenshot.previewEdge"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Card stays for",
+  "sublabel": "0 keeps it until you close it; the pointer on it keeps it too",
+  "keys": [
+   "screenshot.previewSeconds"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Then",
+  "sublabel": "What happens to the capture when the card leaves on its own",
+  "keys": [
+   "screenshot.onTimeout"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Save to",
+  "sublabel": "Empty: Pictures/Screenshots",
+  "keys": [
+   "screenshot.saveDir"
+  ]
+ },
+ {
+  "page": 1,
   "card": "App Launcher",
   "label": "App Launcher",
   "sublabel": "Extra results above your apps · each off until you turn it on",

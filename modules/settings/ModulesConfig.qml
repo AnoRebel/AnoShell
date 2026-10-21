@@ -29,7 +29,7 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot"
         ]
     }
 
@@ -398,6 +398,61 @@ ColumnLayout {
                     GroupButton { label: "Justified"; toggled: (Config.options?.taskView?.layout ?? "hero") === "justified"; onClicked: Config.setNestedValue("taskView.layout", "justified") },
                     GroupButton { label: "Masonry"; toggled: (Config.options?.taskView?.layout ?? "hero") === "masonry"; onClicked: Config.setNestedValue("taskView.layout", "masonry") }
                 ]
+            }
+        }
+    }
+
+    // ═══ Screenshots ═══
+    SettingsCard {
+        icon: "screenshot_region"
+        title: "Screenshots"
+        subtitle: "Print, Shift+Print, Ctrl+Print, Super+Shift+S · the card shown after a capture"
+        configKeys: ["screenshot"]
+
+        ConfigSwitch {
+            label: "Copy to the clipboard"
+            sublabel: "Every capture goes on the clipboard at once"
+            configKey: "screenshot.copyOnCapture"
+            checked: Config.options?.screenshot?.copyOnCapture ?? true
+            onCheckedChanged: Config.setNestedValue("screenshot.copyOnCapture", checked)
+        }
+        ConfigRow {
+            label: "Card position"
+            configKey: "screenshot.previewEdge"
+            ChoiceRow {
+                model: [{ value: "topLeft", label: "Top left", icon: "north_west" }, { value: "topRight", label: "Top right", icon: "north_east" },
+                        { value: "bottomLeft", label: "Bottom left", icon: "south_west" }, { value: "bottomRight", label: "Bottom right", icon: "south_east" }]
+                current: Config.options?.screenshot?.previewEdge ?? "bottomRight"
+                onChose: value => Config.setNestedValue("screenshot.previewEdge", value)
+            }
+        }
+        ConfigSlider {
+            label: "Card stays for"
+            configKey: "screenshot.previewSeconds"
+            sublabel: "0 keeps it until you close it; the pointer on it keeps it too"
+            from: 0; to: 30; stepSize: 1
+            value: Config.options?.screenshot?.previewSeconds ?? 6
+            onValueChanged: Config.setNestedValue("screenshot.previewSeconds", Math.round(value))
+            valueText: Math.round(value) === 0 ? "until closed" : `${Math.round(value)} s`
+        }
+        ConfigRow {
+            label: "Then"
+            configKey: "screenshot.onTimeout"
+            sublabel: "What happens to the capture when the card leaves on its own"
+            ChoiceRow {
+                model: [{ value: "keep", label: "Keep (temp)", icon: "schedule" }, { value: "save", label: "Save", icon: "save" }, { value: "delete", label: "Delete", icon: "delete" }]
+                current: Config.options?.screenshot?.onTimeout ?? "keep"
+                onChose: value => Config.setNestedValue("screenshot.onTimeout", value)
+            }
+        }
+        ConfigRow {
+            label: "Save to"
+            configKey: "screenshot.saveDir"
+            sublabel: "Empty: Pictures/Screenshots"
+            StyledTextInput {
+                text: Config.options?.screenshot?.saveDir ?? ""
+                onEditingFinished: Config.setNestedValue("screenshot.saveDir", text.trim())
+                Layout.preferredWidth: 200
             }
         }
     }
