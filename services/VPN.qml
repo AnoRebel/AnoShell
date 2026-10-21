@@ -448,16 +448,25 @@ Singleton {
         if (nb) root._backoff = 0
         else if ((root.status.reason ?? "").startsWith("Service not running")) root._backoff = Math.min(300000, Math.max(60000, root._backoff * 2))
         if (!nb) return
+        // A change is announced only once it has held for 45 s: brief signal
+        // flaps (a relay renegotiating) were a stream of notifications.
         const h = { management: nb.management.connected, signal: nb.signal.connected }
-        if (root._health && (h.management !== root._health.management || h.signal !== root._health.signal)
-                && (Config.options?.vpn?.notifyOnChange ?? true)) {
+        const same = (a, b) => a && b && a.management === b.management && a.signal === b.signal
+        if (!root._health) { root._health = h; return }
+        if (same(h, root._health)) { root._candidate = null; return }
+        if (!same(h, root._candidate)) { root._candidate = h; root._candidateSince = Date.now(); return }
+        if (Date.now() - root._candidateSince < 45000) return
+        if (Config.options?.vpn?.notifyOnChange ?? true) {
             const what = h.management !== root._health.management ? "Management" : "Signal"
             const now = what === "Management" ? nb.management : nb.signal
             Quickshell.execDetached(["notify-send", "-a", "NetBird", `${what} ${now.connected ? "connected" : "unreachable"}`,
                 now.connected ? (now.host || now.url) : (now.error || now.url)])
         }
         root._health = h
+        root._candidate = null
     }
+    property var _candidate: null
+    property real _candidateSince: 0
 
     // ── NetBird networks (`netbird networks list`): routes and exit nodes.
     // An exit node routes everything (0.0.0.0/0 or ::/0); only one is used
