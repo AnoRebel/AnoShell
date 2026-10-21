@@ -92,6 +92,14 @@ Singleton {
         return ""
     }
 
+    // `-e cmd…` in what this terminal takes (kitty/foot: the command alone,
+    // wezterm: start --, gnome-terminal: --), from the catalogue's `exec`.
+    function terminalArgs(term, args) {
+        if (!args?.length || args[0] !== "-e") return args ?? []
+        const t = (root.catalog.terminal ?? []).find(a => a.command === String(term).split("/").pop())
+        return t && Array.isArray(t.exec) ? t.exec.concat(args.slice(1)) : args
+    }
+
     // kind: "terminal" | "browser" | "fileManager"; extra args appended (e.g. a path).
     function run(kind: string, args): bool {
         const cmd = root.command(kind)
@@ -99,7 +107,7 @@ Singleton {
             console.warn(`[DefaultApps] no ${kind} configured or installed`)
             return false
         }
-        Quickshell.execDetached(cmd.concat(args ?? []))
+        Quickshell.execDetached(cmd.concat(kind === "terminal" ? root.terminalArgs(cmd[0], args) : (args ?? [])))
         return true
     }
 

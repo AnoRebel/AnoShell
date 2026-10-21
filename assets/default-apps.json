@@ -1,26 +1,172 @@
 {
   "_comment": "Default-app catalogue for Settings and `ano run` (spec default-apps). Order is the preference order: with nothing chosen, or the chosen app missing, the first installed one is used. `command` is what runs; `packages` names the package per package manager (aur: via yay/paru).",
   "terminal": [
-    { "command": "kitty", "name": "kitty", "packages": { "pacman": "kitty", "apt": "kitty", "dnf": "kitty" } },
-    { "command": "ghostty", "name": "Ghostty", "packages": { "pacman": "ghostty", "dnf": "ghostty" } },
-    { "command": "alacritty", "name": "Alacritty", "packages": { "pacman": "alacritty", "apt": "alacritty", "dnf": "alacritty" } },
-    { "command": "foot", "name": "foot", "packages": { "pacman": "foot", "apt": "foot", "dnf": "foot" } },
-    { "command": "wezterm", "name": "WezTerm", "packages": { "pacman": "wezterm", "dnf": "wezterm" } },
-    { "command": "konsole", "name": "Konsole", "packages": { "pacman": "konsole", "apt": "konsole", "dnf": "konsole" } },
-    { "command": "gnome-terminal", "name": "GNOME Terminal", "packages": { "pacman": "gnome-terminal", "apt": "gnome-terminal", "dnf": "gnome-terminal" } }
+    {
+      "command": "kitty",
+      "name": "kitty",
+      "packages": {
+        "pacman": "kitty",
+        "apt": "kitty",
+        "dnf": "kitty"
+      },
+      "exec": []
+    },
+    {
+      "command": "ghostty",
+      "name": "Ghostty",
+      "packages": {
+        "pacman": "ghostty",
+        "dnf": "ghostty"
+      },
+      "exec": [
+        "-e"
+      ]
+    },
+    {
+      "command": "alacritty",
+      "name": "Alacritty",
+      "packages": {
+        "pacman": "alacritty",
+        "apt": "alacritty",
+        "dnf": "alacritty"
+      },
+      "exec": [
+        "-e"
+      ]
+    },
+    {
+      "command": "foot",
+      "name": "foot",
+      "packages": {
+        "pacman": "foot",
+        "apt": "foot",
+        "dnf": "foot"
+      },
+      "exec": []
+    },
+    {
+      "command": "wezterm",
+      "name": "WezTerm",
+      "packages": {
+        "pacman": "wezterm",
+        "dnf": "wezterm"
+      },
+      "exec": [
+        "start",
+        "--"
+      ]
+    },
+    {
+      "command": "konsole",
+      "name": "Konsole",
+      "packages": {
+        "pacman": "konsole",
+        "apt": "konsole",
+        "dnf": "konsole"
+      },
+      "exec": [
+        "-e"
+      ]
+    },
+    {
+      "command": "gnome-terminal",
+      "name": "GNOME Terminal",
+      "packages": {
+        "pacman": "gnome-terminal",
+        "apt": "gnome-terminal",
+        "dnf": "gnome-terminal"
+      },
+      "exec": [
+        "--"
+      ]
+    }
   ],
   "browser": [
-    { "command": "zen-browser", "name": "Zen", "packages": { "aur": "zen-browser-bin" } },
-    { "command": "firefox", "name": "Firefox", "packages": { "pacman": "firefox", "apt": "firefox", "dnf": "firefox" } },
-    { "command": "brave", "name": "Brave", "packages": { "aur": "brave-bin" } },
-    { "command": "chromium", "name": "Chromium", "packages": { "pacman": "chromium", "apt": "chromium", "dnf": "chromium" } },
-    { "command": "google-chrome-stable", "name": "Google Chrome", "packages": { "aur": "google-chrome" } }
+    {
+      "command": "zen-browser",
+      "name": "Zen",
+      "packages": {
+        "aur": "zen-browser-bin"
+      }
+    },
+    {
+      "command": "firefox",
+      "name": "Firefox",
+      "packages": {
+        "pacman": "firefox",
+        "apt": "firefox",
+        "dnf": "firefox"
+      }
+    },
+    {
+      "command": "brave",
+      "name": "Brave",
+      "packages": {
+        "aur": "brave-bin"
+      }
+    },
+    {
+      "command": "chromium",
+      "name": "Chromium",
+      "packages": {
+        "pacman": "chromium",
+        "apt": "chromium",
+        "dnf": "chromium"
+      }
+    },
+    {
+      "command": "google-chrome-stable",
+      "name": "Google Chrome",
+      "packages": {
+        "aur": "google-chrome"
+      }
+    }
   ],
   "fileManager": [
-    { "command": "nemo", "name": "Nemo", "packages": { "pacman": "nemo", "apt": "nemo", "dnf": "nemo" } },
-    { "command": "nautilus", "name": "Files (Nautilus)", "packages": { "pacman": "nautilus", "apt": "nautilus", "dnf": "nautilus" } },
-    { "command": "thunar", "name": "Thunar", "packages": { "pacman": "thunar", "apt": "thunar", "dnf": "thunar" } },
-    { "command": "dolphin", "name": "Dolphin", "packages": { "pacman": "dolphin", "apt": "dolphin", "dnf": "dolphin" } },
-    { "command": "pcmanfm-qt", "name": "PCManFM-Qt", "packages": { "pacman": "pcmanfm-qt", "apt": "pcmanfm-qt", "dnf": "pcmanfm-qt" } }
+    {
+      "command": "nemo",
+      "name": "Nemo",
+      "packages": {
+        "pacman": "nemo",
+        "apt": "nemo",
+        "dnf": "nemo"
+      }
+    },
+    {
+      "command": "nautilus",
+      "name": "Files (Nautilus)",
+      "packages": {
+        "pacman": "nautilus",
+        "apt": "nautilus",
+        "dnf": "nautilus"
+      }
+    },
+    {
+      "command": "thunar",
+      "name": "Thunar",
+      "packages": {
+        "pacman": "thunar",
+        "apt": "thunar",
+        "dnf": "thunar"
+      }
+    },
+    {
+      "command": "dolphin",
+      "name": "Dolphin",
+      "packages": {
+        "pacman": "dolphin",
+        "apt": "dolphin",
+        "dnf": "dolphin"
+      }
+    },
+    {
+      "command": "pcmanfm-qt",
+      "name": "PCManFM-Qt",
+      "packages": {
+        "pacman": "pcmanfm-qt",
+        "apt": "pcmanfm-qt",
+        "dnf": "pcmanfm-qt"
+      }
+    }
   ]
 }

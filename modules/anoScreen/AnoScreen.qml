@@ -213,6 +213,7 @@ Scope {
             // makes BarWindow crash-safe; `active: true` alone can fire mid-commit
             // and hit the QS 0.3.0 refWindow segfault).
             property bool ready: false
+            onReadyChanged: if (ready) GlobalStates.frameGeneration++
             onVisibleChanged: if (visible) Qt.callLater(() => { if (win) win.ready = true })
             Component.onCompleted: if (visible) Qt.callLater(() => { if (win) win.ready = true })
 

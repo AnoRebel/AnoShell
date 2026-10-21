@@ -228,8 +228,7 @@ Rectangle {
                         { label: "Management", value: nb.management.host || nb.management.url, ok: nb.management.connected, err: nb.management.error },
                         { label: "Signal", value: nb.signal.host || nb.signal.url, ok: nb.signal.connected, err: nb.signal.error },
                         { label: "IP", value: nb.ip, copy: true },
-                        { label: "FQDN", value: nb.fqdn, copy: true },
-                        { label: "Peers", value: `${nb.peersConnected} of ${nb.peersTotal} connected` }
+                        { label: "FQDN", value: nb.fqdn, copy: true }
                     ]
                     delegate: RowLayout {
                         required property var modelData
@@ -316,6 +315,105 @@ Rectangle {
                         checked: modelData.selected
                         enabled: !VPN.netbirdNetworksBusy
                         onClicked: VPN.setNetBirdNetwork(modelData.id, checked)
+                    }
+                }
+              }
+
+              // ── Peers: a count that opens into a scrolling list ──
+              ColumnLayout {
+                id: peersBox
+                Layout.fillWidth: true
+                spacing: 2
+                property bool open: false
+                // Rows are updated in place (status refreshes every 2 s while shown).
+                ListModel { id: peerRows }
+                readonly property var sorted: (nb.peers ?? []).slice().sort((a, b) =>
+                    ((b.status === "Connected") - (a.status === "Connected")) || String(a.fqdn).localeCompare(String(b.fqdn)))
+                function ago(iso) {
+                    const t = Date.parse(iso)
+                    if (!isFinite(t) || t < Date.parse("2000-01-01")) return "never"
+                    const s = Math.max(0, Math.round((Date.now() - t) / 1000))
+                    return s < 60 ? `${s} s ago` : s < 3600 ? `${Math.round(s / 60)} min ago` : s < 86400 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} d ago`
+                }
+                function row(p) {
+                    const on = p.status === "Connected"
+                    const ms = Math.round((p.latency ?? 0) / 1e6)
+                    const bits = [p.netbirdIp ?? ""]
+                    if (on) bits.push(p.connectionType === "P2P" ? "P2P" : "Relayed", `${ms} ms`)
+                    bits.push(`handshake ${peersBox.ago(p.lastWireguardHandshake)}`)
+                    return { fqdn: String(p.fqdn ?? ""), name: String(p.fqdn ?? "").split(".")[0], ip: String(p.netbirdIp ?? ""), on: on, detail: bits.join(" · ") }
+                }
+                onSortedChanged: sync()
+                Component.onCompleted: sync()
+                function sync() {
+                    const rows = peersBox.sorted.map(peersBox.row)
+                    const same = rows.length === peerRows.count && rows.every((r, i) => peerRows.get(i).fqdn === r.fqdn)
+                    if (same) rows.forEach((r, i) => peerRows.set(i, r))
+                    else { peerRows.clear(); rows.forEach(r => peerRows.append(r)) }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    MaterialSymbol { text: "group"; iconSize: 16; color: Appearance.colors.colSubtext }
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: `Peers · ${nb.peersConnected} of ${nb.peersTotal} connected`
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        color: Appearance.colors.colSubtext
+                    }
+                    MaterialSymbol {
+                        text: "expand_more"; iconSize: 18; color: Appearance.colors.colSubtext
+                        rotation: peersBox.open ? 0 : -90
+                        Behavior on rotation { Anim {} }
+                    }
+                    TapHandler { onTapped: peersBox.open = !peersBox.open }
+                }
+                ListView {
+                    id: peerList
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: peersBox.open ? Math.min(contentHeight, 260) : 0
+                    Behavior on Layout.preferredHeight { MotionSpring { token: "settle" } }
+                    visible: Layout.preferredHeight > 0.5
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: peerRows
+                    spacing: 2
+                    delegate: RowLayout {
+                        required property string name
+                        required property string ip
+                        required property bool on
+                        required property string detail
+                        width: peerList.width
+                        spacing: 8
+                        Rectangle {
+                            implicitWidth: 8; implicitHeight: 8; radius: 4
+                            color: on ? Appearance.colors.colSuccess : Appearance.colors.colOutline
+                            Behavior on color { CAnim {} }
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+                            StyledText { Layout.fillWidth: true; elide: Text.ElideRight; text: name; font.pixelSize: Appearance.font.pixelSize.small }
+                            StyledText {
+                                Layout.fillWidth: true; elide: Text.ElideRight
+                                text: detail
+                                font.pixelSize: Appearance.font.pixelSize.smallest
+                                font.family: Appearance.font.family.mono
+                                color: Appearance.colors.colSubtext
+                            }
+                        }
+                        ToolbarButton {
+                            iconName: "content_copy"; iconSize: 14
+                            toolTipText: `Copy ${ip}`
+                            onClicked: Quickshell.clipboardText = ip
+                        }
+                        ToolbarButton {
+                            iconName: "terminal"; iconSize: 14
+                            toolTipText: `netbird ssh ${name}`
+                            visible: on && /^[0-9.]+$/.test(ip) // offline peers: nothing to SSH into
+                            onClicked: DefaultApps.run("terminal", ["-e", "netbird", "ssh", ip]) // NetBird's own SSH (peer keys over the mesh)
+                        }
                     }
                 }
               }

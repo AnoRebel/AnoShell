@@ -16,8 +16,24 @@ import (
 var runKinds = map[string]string{"terminal": "terminal", "browser": "browser", "files": "fileManager"}
 
 type appEntry struct {
-	Command string `json:"command"`
-	Name    string `json:"name"`
+	Command string   `json:"command"`
+	Name    string   `json:"name"`
+	Exec    []string `json:"exec"` // terminals: what goes before a command to run in it
+}
+
+// terminalArgs turns `-e cmd…` into what the chosen terminal takes (kitty and
+// foot: the command alone; wezterm: start --; gnome-terminal: --). Terminals
+// not in the catalogue keep -e.
+func terminalArgs(term string, args []string, catalog map[string][]appEntry) []string {
+	if len(args) == 0 || args[0] != "-e" {
+		return args
+	}
+	for _, a := range catalog["terminal"] {
+		if a.Command == filepath.Base(term) && a.Exec != nil {
+			return append(append([]string{}, a.Exec...), args[1:]...)
+		}
+	}
+	return args
 }
 
 // loadCatalog reads assets/default-apps.json (the preference order per key).
@@ -81,7 +97,11 @@ func runCmd(args []string) int {
 		fmt.Fprintln(os.Stderr, "ano:", err)
 		return 1
 	}
-	argv = append(argv, args[1:]...)
+	extra := args[1:]
+	if key == "terminal" {
+		extra = terminalArgs(argv[0], extra, catalog)
+	}
+	argv = append(argv, extra...)
 	if print {
 		fmt.Println(strings.Join(argv, " "))
 		return 0

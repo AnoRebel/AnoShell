@@ -35,20 +35,33 @@ Scope {
             // Mapped always; closed it is "parked" (no input, no focus, content
             // slid away): mapping on every open cost a slow first frame.
             property bool parked: !shouldShow
-            visible: true
+            // Mapped on the first open (after the connected frame exists) and kept;
+            // re-mapped if the frame window was re-created since, to stay above it
+            // (Top-layer surfaces stack in map order).
+            property bool _mapped: false
+            property int _mappedGen: -1
+            visible: _mapped
+            function _ensureMapped() {
+                if (_remap.running) return
+                if (!_mapped) { _mapped = true; _mappedGen = GlobalStates.frameGeneration }
+                else if (_mappedGen !== GlobalStates.frameGeneration && parked) { _mapped = false; _remap.restart() }
+            }
+            // Unmapped for a moment (a real unmap, not a same-turn flip), then mapped above the frame.
+            Timer { id: _remap; interval: 30; onTriggered: { sidebarRoot._mapped = true; sidebarRoot._mappedGen = GlobalStates.frameGeneration } }
+            Component.onCompleted: if (shouldShow) _ensureMapped()
             mask: parked ? noInput : null
             Region { id: noInput; item: null } // an empty input region: clicks pass through
 
             Connections {
                 target: GlobalStates
                 function onSidebarLeftOpenChanged() {
-                    if (sidebarRoot.shouldShow) { _closeTimer.stop(); sidebarRoot.parked = false }
+                    if (sidebarRoot.shouldShow) { _closeTimer.stop(); sidebarRoot._ensureMapped(); sidebarRoot.parked = false }
                     else if (root.instantOpen) { _closeTimer.stop(); sidebarRoot.parked = true }
                     else _closeTimer.restart()
                 }
             }
             onShouldShowChanged: {
-                if (shouldShow) { _closeTimer.stop(); parked = false }
+                if (shouldShow) { _closeTimer.stop(); _ensureMapped(); parked = false }
                 else if (root.instantOpen) { _closeTimer.stop(); parked = true }
                 else _closeTimer.restart()
             }
