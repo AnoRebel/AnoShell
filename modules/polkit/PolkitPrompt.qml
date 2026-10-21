@@ -33,7 +33,17 @@ Scope {
             screen: Quickshell.screens.find(s => s.name === root.screenName) ?? Quickshell.screens[0]
             anchors { top: true; bottom: true; left: true; right: true }
             exclusionMode: ExclusionMode.Ignore
-            color: Qt.rgba(0, 0, 0, 0.35)
+            color: "transparent"
+            // Its own entrance (the compositor's layer animation is off for
+            // this namespace: scaling a full-screen dim looked janky).
+            property bool _shown: false
+            Component.onCompleted: Qt.callLater(() => win._shown = true)
+            Rectangle {
+                anchors.fill: parent
+                color: "black"
+                opacity: win._shown ? 0.35 : 0
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220) } }
+            }
             // The blur is the compositor's, per namespace: the bundled configs
             // leave quickshell:polkitPlain unblurred.
             WlrLayershell.namespace: (Config.options?.polkit?.blur ?? true) ? "quickshell:polkit" : "quickshell:polkitPlain"
@@ -101,6 +111,10 @@ Scope {
                 height: col.implicitHeight + 40
                 radius: Appearance.rounding.large
                 color: Appearance.m3colors.m3surfaceContainer
+                opacity: win._shown ? 1 : 0
+                scale: win._shown ? 1 : 0.94
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
+                Behavior on scale { MotionSpring { token: "liquid" } }
 
                 ColumnLayout {
                     id: col
@@ -200,47 +214,58 @@ Scope {
                         }
                     }
 
-                    RippleButton {
-                        implicitHeight: 28
-                        buttonText: win.showDetails ? "Hide details" : "Details"
-                        onClicked: win.showDetails = !win.showDetails
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        visible: win.showDetails
+                    // Flush with the text above (a button's padding set it off).
+                    RowLayout {
                         spacing: 4
-                        Repeater {
-                            model: [
-                                ["Action", win.flow?.actionId ?? ""],
-                                ["What", win.action.description ?? ""],
-                                ["From", win.action.vendor ?? ""],
-                                ["Command", win._viaPkexec ? win.pkexecCommand : ""],
-                                ["Started by", win._viaPkexec ? win.requestedBy : ""],
-                                ["Program", win.action.annotation ?? ""],
-                            ].filter(r => r[1])
-                            delegate: Item {
-                                required property var modelData
-                                required property int index
-                                Layout.fillWidth: true
-                                implicitHeight: detailRow.implicitHeight
-                                RowLayout {
-                                    id: detailRow
-                                    width: parent.width
-                                    spacing: 12
-                                    StyledText {
-                                        Layout.preferredWidth: 76
-                                        Layout.alignment: Qt.AlignTop
-                                        text: modelData[0]
-                                        color: Appearance.colors.colSubtext
-                                        font.pixelSize: Appearance.font.pixelSize.small
-                                    }
-                                    StyledText {
-                                        Layout.fillWidth: true
-                                        text: modelData[1]
-                                        wrapMode: Text.WrapAnywhere
-                                        font.family: Appearance.font.family.mono
-                                        font.pixelSize: Appearance.font.pixelSize.small
-                                    }
+                        MaterialSymbol {
+                            text: "expand_more"; iconSize: 18
+                            color: Appearance.colors.colSubtext
+                            rotation: win.showDetails ? 180 : 0
+                            Behavior on rotation { MotionSpring { token: "snappy" } }
+                        }
+                        StyledText {
+                            text: win.showDetails ? "Hide details" : "Details"
+                            color: Appearance.colors.colSubtext
+                            font.pixelSize: Appearance.font.pixelSize.small
+                        }
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                        TapHandler { onTapped: win.showDetails = !win.showDetails }
+                    }
+                    // Grows open (the card follows its height) instead of jumping.
+                    Item {
+                        Layout.fillWidth: true
+                        clip: true
+                        implicitHeight: win.showDetails ? detailsGrid.implicitHeight : 0
+                        Behavior on implicitHeight { MotionSpring { token: win.showDetails ? "liquid" : "settle" } }
+                        visible: implicitHeight > 0.5
+                        opacity: win.showDetails ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
+                        // Label | value pairs: the label column is as wide as its
+                        // longest label, rows share a baseline.
+                        GridLayout {
+                            id: detailsGrid
+                            width: parent.width
+                            columns: 2; columnSpacing: 12; rowSpacing: 4
+                            Repeater {
+                                model: [
+                                    ["Action", win.flow?.actionId ?? ""],
+                                    ["What", win.action.description ?? ""],
+                                    ["From", win.action.vendor ?? ""],
+                                    ["Command", win._viaPkexec ? win.pkexecCommand : ""],
+                                    ["Started by", win._viaPkexec ? win.requestedBy : ""],
+                                    ["Program", win.action.annotation ?? ""],
+                                ].filter(r => r[1]).flat()
+                                delegate: StyledText {
+                                    required property var modelData
+                                    required property int index
+                                    readonly property bool isLabel: index % 2 === 0
+                                    Layout.alignment: Qt.AlignLeft | Qt.AlignBaseline
+                                    Layout.fillWidth: !isLabel
+                                    text: modelData
+                                    wrapMode: isLabel ? Text.NoWrap : Text.WrapAnywhere
+                                    color: isLabel ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
+                                    font.family: isLabel ? Appearance.font.family.main : Appearance.font.family.mono
+                                    font.pixelSize: Appearance.font.pixelSize.small
                                 }
                             }
                         }
