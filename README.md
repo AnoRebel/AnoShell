@@ -626,7 +626,7 @@ ano/
 │   ├── settings/                   # 10-page settings system + SettingsKeyHandler + SettingsPageHeader + SettingsCommandPalette (Ctrl+K) + SettingsRegistry (dynamic search index)
 │   ├── osd/                        # 6-indicator on-screen display
 │   ├── hud/                        # Heads-up display
-│   ├── session/                    # Hold-to-confirm power screen
+│   ├── session/                    # Power menu: actions around the avatar, press twice to confirm
 │   ├── dock/                       # Pill / macOS application dock
 │   ├── clipboard/                  # cliphist browser
 │   ├── mediaControls/              # Full media player with vinyl art + lyrics

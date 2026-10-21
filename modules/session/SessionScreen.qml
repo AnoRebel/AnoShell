@@ -4,15 +4,17 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
+import QtQuick.Shapes
 import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 
 /**
- * Session/Power screen — fullscreen overlay with lock, logout, suspend, reboot, shutdown.
- * Each button requires a hold-to-confirm (progress ring fills as you hold).
- * Inspired by ilyamiro's battery popup power actions.
+ * Session/Power screen: lock, logout, sleep, reboot and shutdown on a ring
+ * around your avatar. Logout, reboot and shutdown need a second press: the
+ * first arms the action and a ring counts down (4 s); Esc or the countdown
+ * disarms. Keys: ←/→ or Tab move, Enter/Space press, Esc disarms, then closes.
  */
 Scope {
     id: root
@@ -30,6 +32,49 @@ Scope {
         id: endSessionTimer
         interval: 500
         onTriggered: { const a = root._pendingAction; root._pendingAction = null; if (a) a() }
+    }
+
+    // The actions, in ring order. confirm: needs a second press (session.confirm*).
+    readonly property var actions: [
+        { key: "lock", icon: "lock", label: "Lock", accent: Appearance.colors.colInfo, confirm: false },
+        { key: "logout", icon: "logout", label: "Logout", accent: Appearance.colors.colWarning, confirm: Config.options?.session?.confirmLogout ?? true },
+        { key: "sleep", icon: "dark_mode", label: "Sleep", accent: Appearance.colors.colTertiary, confirm: false },
+        { key: "reboot", icon: "restart_alt", label: "Reboot", accent: Appearance.colors.colSuccess, confirm: true },
+        { key: "shutdown", icon: "power_settings_new", label: "Shutdown", accent: Appearance.colors.colError, confirm: Config.options?.session?.confirmShutdown ?? true }
+    ]
+    property int selected: 0
+    property string armed: ""          // the action waiting for its second press
+    property real armLeft: 0           // 1 → 0 over the countdown
+    NumberAnimation { id: armCountdown; target: root; property: "armLeft"; from: 1; to: 0; duration: 4000; onFinished: root.armed = "" }
+    onArmedChanged: if (armed === "") { armCountdown.stop(); root.armLeft = 0 }
+    Connections {
+        target: GlobalStates
+        function onSessionOpenChanged() { root.armed = ""; if (GlobalStates.sessionOpen) root.selected = 0 }
+    }
+
+    function press(i) {
+        const a = root.actions[i]
+        if (!a) return
+        root.selected = i
+        if (a.confirm && root.armed !== a.key) { root.armed = a.key; armCountdown.restart(); return }
+        root.armed = ""
+        root.run(a.key)
+    }
+    function run(key) {
+        GlobalStates.sessionOpen = false
+        switch (key) {
+        case "lock": Quickshell.execDetached(["loginctl", "lock-session"]); break
+        case "sleep": Quickshell.execDetached(["systemctl", "suspend"]); break
+        case "logout":
+            // Compositor exit where supported, else end the login session.
+            root.endSession("logging_out", () => {
+                if (!CompositorService.exit())
+                    Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
+            })
+            break
+        case "reboot": root.endSession("rebooting", () => Quickshell.execDetached(["systemctl", "reboot"])); break
+        case "shutdown": root.endSession("shutting_down", () => Quickshell.execDetached(["systemctl", "poweroff"])); break
+        }
     }
 
     Variants {
@@ -50,11 +95,10 @@ Scope {
             WlrLayershell.keyboardFocus: GlobalStates.sessionOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             anchors { top: true; bottom: true; left: true; right: true }
 
-            // Keys can't attach to a window (only to Items); a Shortcut works there.
+            // Esc disarms first, then closes.
+            Shortcut { sequence: "Escape"; onActivated: { if (root.armed) root.armed = ""; else GlobalStates.sessionOpen = false } }
 
-            Shortcut { sequence: "Escape"; onActivated: GlobalStates.sessionOpen = false }
-
-            // Blurred dim backdrop
+            // Dim backdrop
             Rectangle {
                 anchors.fill: parent
                 color: "#000000"
@@ -63,238 +107,176 @@ Scope {
                 MouseArea { anchors.fill: parent; onClicked: GlobalStates.sessionOpen = false }
             }
 
-            // Content
-            Item {
+            // The ring: avatar in the middle, actions around it.
+            FocusScope {
                 id: sessionCard
                 anchors.centerIn: parent
-                width: 600; height: 350
+                width: 460; height: 460
+                focus: GlobalStates.sessionOpen
                 opacity: GlobalStates.sessionOpen ? 1 : 0
-                scale: GlobalStates.sessionOpen ? 1 : 0.85
-                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
-                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(GlobalStates.sessionOpen ? 250 : 180); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 32
+                Keys.onPressed: event => {
+                    const n = root.actions.length
+                    if (event.key === Qt.Key_Right || event.key === Qt.Key_Down || event.key === Qt.Key_Tab) { root.selected = (root.selected + 1) % n; event.accepted = true }
+                    else if (event.key === Qt.Key_Left || event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) { root.selected = (root.selected + n - 1) % n; event.accepted = true }
+                    else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) { root.press(root.selected); event.accepted = true }
+                }
 
-                    // User avatar + greeting
-                    ColumnLayout {
-                        Layout.alignment: Qt.AlignHCenter
-                        spacing: 8
-
-                        // Circular avatar
-                        Rectangle {
-                            Layout.alignment: Qt.AlignHCenter
-                            width: 72; height: 72; radius: 36
-                            color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-                            border.width: 2; border.color: Appearance?.colors.colPrimary ?? "#65558F"
-
-                            Image {
-                                anchors.centerIn: parent
-                                width: 64; height: 64
-                                source: `file://${Directories.userAvatarPath}`
-                                fillMode: Image.PreserveAspectCrop
-                                visible: status === Image.Ready
-                                layer.enabled: true
-                                layer.effect: OpacityMask {
-                                    maskSource: Rectangle { width: 64; height: 64; radius: 32 }
-                                }
-                            }
-                            MaterialSymbol {
-                                anchors.centerIn: parent
-                                text: "person"; iconSize: 36
-                                color: Appearance?.colors.colPrimary ?? "#65558F"
-                                visible: parent.children[0].status !== Image.Ready
-                            }
+                // Avatar, name, uptime
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 6
+                    scale: GlobalStates.sessionOpen ? 1 : 0.8
+                    Behavior on scale { MotionSpring { token: GlobalStates.sessionOpen ? "liquid" : "settle" } }
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 96; height: 96; radius: 48
+                        color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+                        border.width: 2; border.color: Appearance?.colors.colPrimary ?? "#65558F"
+                        Image {
+                            id: avatarImg
+                            anchors.centerIn: parent
+                            width: 88; height: 88
+                            source: `file://${Directories.userAvatarPath}`
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                            visible: status === Image.Ready
+                            layer.enabled: visible
+                            layer.effect: OpacityMask { maskSource: Rectangle { width: 88; height: 88; radius: 44 } }
                         }
-
-                        StyledText {
-                            text: Quickshell.env("USER") || "user"
-                            font.pixelSize: Appearance?.font.pixelSize.huger ?? 24
-                            font.weight: Font.Bold
-                            color: "white"
-                            font.capitalization: Font.Capitalize
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        StyledText {
-                            text: `Up ${DateTime.uptime}`
-                            font.pixelSize: Appearance?.font.pixelSize.small ?? 14
-                            color: "white"; opacity: 0.5
-                            Layout.alignment: Qt.AlignHCenter
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            visible: avatarImg.status !== Image.Ready
+                            text: "person"; iconSize: 44
+                            color: Appearance?.colors.colPrimary ?? "#65558F"
                         }
                     }
-
-                    // Power action buttons
-                    RowLayout {
-                        Layout.alignment: Qt.AlignHCenter
-                        spacing: 20
-
-                        SessionButton {
-                            iconName: "lock"
-                            label: "Lock"
-                            accentColor: Appearance.colors.colInfo
-                            holdDuration: 500
-                            onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["loginctl", "lock-session"]) }
-                        }
-                        SessionButton {
-                            iconName: "logout"
-                            label: "Logout"
-                            accentColor: Appearance.colors.colWarning
-                            holdDuration: 1200
-                            requireHold: Config.options?.session?.confirmLogout ?? true
-                            onActivated: {
-                                GlobalStates.sessionOpen = false
-                                // Compositor exit where supported, else end the login session.
-                                root.endSession("logging_out", () => {
-                                    if (!CompositorService.exit())
-                                        Quickshell.execDetached(["loginctl", "terminate-session", Quickshell.env("XDG_SESSION_ID") || ""])
-                                })
-                            }
-                        }
-                        SessionButton {
-                            iconName: "dark_mode"
-                            label: "Sleep"
-                            accentColor: Appearance.colors.colTertiary
-                            holdDuration: 1000
-                            onActivated: { GlobalStates.sessionOpen = false; Quickshell.execDetached(["systemctl", "suspend"]) }
-                        }
-                        SessionButton {
-                            iconName: "restart_alt"
-                            label: "Reboot"
-                            accentColor: Appearance.colors.colSuccess
-                            holdDuration: 2000
-                            onActivated: { GlobalStates.sessionOpen = false; root.endSession("rebooting", () => Quickshell.execDetached(["systemctl", "reboot"])) }
-                        }
-                        SessionButton {
-                            iconName: "power_settings_new"
-                            label: "Shutdown"
-                            accentColor: Appearance.colors.colError
-                            holdDuration: 2500
-                            requireHold: Config.options?.session?.confirmShutdown ?? true
-                            onActivated: { GlobalStates.sessionOpen = false; root.endSession("shutting_down", () => Quickshell.execDetached(["systemctl", "poweroff"])) }
-                        }
-                    }
-
-                    // Hint
                     StyledText {
-                        text: "Hold to confirm • Press Escape to cancel"
-                        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                        color: "white"; opacity: 0.3
-                        Layout.alignment: Qt.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: Quickshell.env("USER") || "user"
+                        font.pixelSize: Appearance?.font.pixelSize.huger ?? 24
+                        font.weight: Font.Bold
+                        font.capitalization: Font.Capitalize
+                        color: "white"
+                    }
+                    StyledText {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: `Up ${DateTime.uptime}`
+                        font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                        color: "white"; opacity: 0.5
                     }
                 }
+
+                Repeater {
+                    model: root.actions
+                    delegate: SessionButton {
+                        required property var modelData
+                        required property int index
+                        action: modelData
+                        order: index
+                        // On a circle, starting at the top; flies out from the avatar.
+                        readonly property real angle: -Math.PI / 2 + index * 2 * Math.PI / root.actions.length
+                        property real reach: GlobalStates.sessionOpen ? 172 : 0
+                        Behavior on reach { SequentialAnimation {
+                            PauseAnimation { duration: GlobalStates.sessionOpen ? AnimationConfig.scaledDuration(35 * index) : 0 }
+                            SpringAnimation {
+                                spring: Appearance.springs.liquid.spring; damping: Appearance.springs.liquid.damping
+                                mass: Appearance.springs.liquid.mass; epsilon: Appearance.springs.liquid.epsilon
+                            }
+                        } }
+                        x: sessionCard.width / 2 + Math.cos(angle) * reach - width / 2
+                        y: sessionCard.height / 2 + Math.sin(angle) * reach - height / 2
+                        selectedHere: root.selected === index
+                        armedHere: root.armed === modelData.key
+                        onClicked: root.press(index)
+                        onHovered: root.selected = index
+                    }
+                }
+            }
+
+            // Hint
+            StyledText {
+                anchors { horizontalCenter: parent.horizontalCenter; top: sessionCard.bottom; topMargin: 4 }
+                opacity: sessionCard.opacity * 0.6
+                text: root.armed !== ""
+                    ? `Press ${root.actions.find(a => a.key === root.armed)?.label ?? ""} again to confirm · Esc cancels`
+                    : "←/→ choose · Enter · Esc closes"
+                font.pixelSize: Appearance?.font.pixelSize.small ?? 13
+                color: "white"
             }
         }
     }
 
-    // Hold-to-confirm button with circular progress fill
+    // One action: a circle with its icon; armed, an accent ring counts down.
     component SessionButton: Item {
         id: btn
-        property string iconName: ""
-        property string label: ""
-        property color accentColor: Appearance.colors.colPrimary
-        property int holdDuration: 1500
-        // false = a single click activates (session.confirm* off)
-        property bool requireHold: true
-        signal activated()
+        property var action: ({})
+        property int order: 0
+        property bool selectedHere: false
+        property bool armedHere: false
+        signal clicked()
+        signal hovered()
+        readonly property color accent: action.accent ?? Appearance.colors.colPrimary
+        width: 84; height: 96
+        opacity: GlobalStates.sessionOpen ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200) } }
 
-        width: 80; height: 100
+        Item {
+            id: circle
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 68; height: 68
+            scale: btnMA.pressed ? 0.9 : (btn.selectedHere || btn.armedHere ? 1.08 : 1)
+            Behavior on scale { MotionSpring { token: "snappy" } }
 
-        property real holdProgress: 0
-        property bool isHolding: false
-
-        NumberAnimation {
-            id: holdAnim
-            target: btn; property: "holdProgress"
-            from: 0; to: 1; duration: btn.holdDuration
-            easing.type: Easing.Linear
-        }
-
-        onHoldProgressChanged: {
-            if (holdProgress >= 1) {
-                holdProgress = 0
-                isHolding = false
-                holdAnim.stop()
-                btn.activated()
+            Rectangle {
+                anchors.fill: parent; radius: width / 2
+                color: Qt.rgba(btn.accent.r, btn.accent.g, btn.accent.b, btn.armedHere ? 0.35 : btn.selectedHere ? 0.22 : 0.1)
+                border.width: btn.selectedHere ? 2 : 1
+                border.color: Qt.rgba(btn.accent.r, btn.accent.g, btn.accent.b, btn.selectedHere ? 0.9 : 0.4)
+                Behavior on color { CAnim {} }
+            }
+            // Countdown ring (GPU path, not a repainted Canvas)
+            Shape {
+                anchors.fill: parent
+                visible: btn.armedHere
+                preferredRendererType: Shape.CurveRenderer
+                ShapePath {
+                    strokeColor: btn.accent
+                    strokeWidth: 4
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    PathAngleArc {
+                        centerX: circle.width / 2; centerY: circle.height / 2
+                        radiusX: circle.width / 2 - 3; radiusY: circle.height / 2 - 3
+                        startAngle: -90
+                        sweepAngle: 360 * root.armLeft
+                    }
+                }
+            }
+            MaterialSymbol {
+                anchors.centerIn: parent
+                text: btn.action.icon ?? ""; iconSize: 30
+                fill: btn.armedHere ? 1 : 0
+                color: btn.armedHere ? btn.accent : "white"
+                Behavior on color { CAnim {} }
+            }
+            MouseArea {
+                id: btnMA
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onEntered: btn.hovered()
+                onClicked: btn.clicked()
             }
         }
-
-        ColumnLayout {
-            anchors.fill: parent
-            spacing: 6
-
-            // Button circle with progress ring
-            Item {
-                Layout.alignment: Qt.AlignHCenter
-                width: 64; height: 64
-
-                // Background circle
-                Rectangle {
-                    anchors.fill: parent; radius: 32
-                    color: Qt.rgba(btn.accentColor.r, btn.accentColor.g, btn.accentColor.b, btnMA.containsMouse || btn.isHolding ? 0.25 : 0.1)
-                    border.width: 2
-                    border.color: Qt.rgba(btn.accentColor.r, btn.accentColor.g, btn.accentColor.b, 0.4)
-                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
-
-                    scale: btnMA.pressed ? 0.92 : (btnMA.containsMouse ? 1.05 : 1)
-                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
-                }
-
-                // Progress ring (fills as you hold)
-                Canvas {
-                    id: holdCanvas
-                    anchors.fill: parent
-                    visible: btn.holdProgress > 0
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.clearRect(0, 0, width, height)
-                        ctx.beginPath()
-                        ctx.arc(width / 2, height / 2, width / 2 - 3, -Math.PI / 2, -Math.PI / 2 + (btn.holdProgress * 2 * Math.PI))
-                        ctx.strokeStyle = btn.accentColor
-                        ctx.lineWidth = 4
-                        ctx.lineCap = "round"
-                        ctx.stroke()
-                    }
-                    // Repaint whenever btn.holdProgress ticks. The earlier
-                    // dual-handler version had an unattached onHoldProgressChanged
-                    // on Canvas (Canvas has no such signal) — Quickshell 0.3
-                    // flagged it. One Connections targeting btn is enough.
-                    Connections {
-                        target: btn
-                        function onHoldProgressChanged() { holdCanvas.requestPaint() }
-                    }
-                }
-
-                // Icon
-                MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: btn.iconName; iconSize: 28; fill: btn.isHolding ? 1 : 0
-                    color: btn.isHolding ? btn.accentColor : "white"
-                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
-                }
-
-                MouseArea {
-                    id: btnMA
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onPressed: {
-                        if (!btn.requireHold) { btn.activated(); return }
-                        btn.isHolding = true; btn.holdProgress = 0; holdAnim.start()
-                    }
-                    onReleased: { btn.isHolding = false; holdAnim.stop(); btn.holdProgress = 0 }
-                    onCanceled: { btn.isHolding = false; holdAnim.stop(); btn.holdProgress = 0 }
-                }
-            }
-
-            StyledText {
-                text: btn.label
-                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                font.weight: Font.DemiBold
-                color: btn.isHolding ? btn.accentColor : "white"
-                Layout.alignment: Qt.AlignHCenter
-                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
-            }
+        StyledText {
+            anchors { horizontalCenter: parent.horizontalCenter; top: circle.bottom; topMargin: 6 }
+            text: btn.armedHere ? "Again" : (btn.action.label ?? "")
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+            font.weight: Font.DemiBold
+            color: btn.armedHere ? btn.accent : "white"
+            Behavior on color { CAnim {} }
         }
     }
 
