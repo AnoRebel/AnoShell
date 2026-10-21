@@ -295,10 +295,15 @@ Singleton {
     onProviderNameChanged: {
         status = { connected: false, state: "disconnected", reason: "", authUrl: "" };
         root.connected = false;
+        root.netbirdNetworks = [];
+        root.refreshNetBirdNetworks();
         statusCheckTimer.start();
     }
 
-    Component.onCompleted: root.enabled && statusCheckTimer.start()
+    Component.onCompleted: {
+        if (root.enabled) statusCheckTimer.start()
+        root.refreshNetBirdNetworks()
+    }
 
     Process {
         id: nmMonitor
@@ -452,6 +457,100 @@ Singleton {
                 now.connected ? (now.host || now.url) : (now.error || now.url)])
         }
         root._health = h
+    }
+
+    // ── NetBird networks (`netbird networks list`): routes and exit nodes.
+    // An exit node routes everything (0.0.0.0/0 or ::/0); only one is used
+    // at a time, so choosing one deselects the others.
+    property var netbirdNetworks: []      // [{ id, network, domains, selected, exit }]
+    readonly property var netbirdExitNodes: root.netbirdNetworks.filter(n => n.exit)
+    readonly property string netbirdExitNode: (root.netbirdExitNodes.find(n => n.selected) ?? {}).id ?? ""
+    property bool netbirdNetworksBusy: false
+    property string netbirdNetworksError: ""
+
+    function parseNetBirdNetworks(text) {
+        const out = []
+        let cur = null
+        for (const raw of text.split("\n")) {
+            const l = raw.trim()
+            let m
+            if ((m = l.match(/^- ID:\s*(.+)$/))) { cur = { id: m[1].trim(), network: "", domains: "", selected: false, exit: false }; out.push(cur); continue }
+            if (!cur) continue
+            if ((m = l.match(/^Network:\s*(.*)$/))) cur.network = m[1].trim()
+            else if ((m = l.match(/^Domains:\s*(.*)$/))) cur.domains = m[1].trim()
+            else if ((m = l.match(/^Status:\s*(.*)$/))) cur.selected = m[1].trim() === "Selected"
+        }
+        for (const n of out) n.exit = /(^|[\s,])(0\.0\.0\.0\/0|::\/0)([\s,]|$)/.test(n.network)
+        return out
+    }
+    function refreshNetBirdNetworks() {
+        if (root.providerName !== "netbird" || netbirdNetworksProc.running || netbirdChain.running) return
+        netbirdNetworksProc.running = true
+    }
+    Process {
+        id: netbirdNetworksProc
+        command: ["netbird", "networks", "list"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.netbirdNetworks = root.parseNetBirdNetworks(text)
+                root.netbirdNetworksError = ""
+            }
+        }
+        stderr: StdioCollector { onStreamFinished: if (text.trim()) root.netbirdNetworksError = text.trim().split("\n").pop() }
+    }
+
+    // Commands run one after another (argv only, ids from the list itself).
+    property var _netbirdQueue: []
+    function _runNetBird(cmds) {
+        root._netbirdQueue = cmds
+        root.netbirdNetworksBusy = true
+        root.netbirdNetworksError = ""
+        root._nextNetBird()
+    }
+    function _nextNetBird() {
+        if (root._netbirdQueue.length === 0) {
+            root.netbirdNetworksBusy = false
+            root.refreshNetBirdNetworks()
+            root.checkStatus()
+            return
+        }
+        netbirdChain.command = root._netbirdQueue[0]
+        root._netbirdQueue = root._netbirdQueue.slice(1)
+        netbirdChain.running = true
+    }
+    Process {
+        id: netbirdChain
+        stderr: StdioCollector { id: chainErr }
+        onExited: code => {
+            if (code !== 0) {
+                root.netbirdNetworksError = chainErr.text.trim().split("\n").pop() || `netbird exited with ${code}`
+                root._netbirdQueue = []
+            }
+            root._nextNetBird()
+        }
+    }
+    function _known(id) { return root.netbirdNetworks.some(n => n.id === id) }
+    // A routed network on or off (exit nodes: setNetBirdExitNode).
+    function setNetBirdNetwork(id, on) {
+        if (!root._known(id) || root.netbirdNetworksBusy) return
+        root._runNetBird([["netbird", "networks", on ? "select" : "deselect"].concat(on ? ["-a", id] : [id])])
+    }
+    // Route everything through one exit node ("" = none).
+    function setNetBirdExitNode(id) {
+        if ((id && !root._known(id)) || root.netbirdNetworksBusy) return
+        const others = root.netbirdExitNodes.filter(n => n.selected && n.id !== id).map(n => n.id)
+        const cmds = []
+        if (others.length) cmds.push(["netbird", "networks", "deselect"].concat(others))
+        if (id && id !== root.netbirdExitNode) cmds.push(["netbird", "networks", "select", "-a", id])
+        if (cmds.length) root._runNetBird(cmds)
+    }
+    // Networks are listed while a panel shows them (and after each change).
+    onWatchersChanged: if (root.watchers > 0) root.refreshNetBirdNetworks()
+    Timer {
+        running: root.enabled && root.providerName === "netbird" && root.watchers > 0
+        interval: 15000
+        repeat: true
+        onTriggered: root.refreshNetBirdNetworks()
     }
 
     Timer {

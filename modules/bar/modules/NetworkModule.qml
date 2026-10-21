@@ -26,6 +26,21 @@ Item {
         iconSize: Appearance?.font.pixelSize.larger ?? 20
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
+    // VPN up: a small shield; filled and tinted while traffic goes out an exit node.
+    readonly property bool vpnOn: VPN.enabled && VPN.connected
+    readonly property string exitNode: VPN.providerName === "netbird" ? VPN.netbirdExitNode : ""
+    MaterialSymbol {
+        anchors { right: icon.right; bottom: icon.bottom; rightMargin: -4; bottomMargin: -2 }
+        visible: opacity > 0
+        opacity: root.vpnOn ? 1 : 0
+        scale: root.vpnOn ? 1 : 0.5
+        Behavior on opacity { Anim {} }
+        Behavior on scale { MotionSpring { token: "snappy" } }
+        text: "shield"
+        fill: root.exitNode ? 1 : 0
+        iconSize: 11
+        color: root.exitNode ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+    }
 
     // Left-click pins the popout open so the network picker is usable (hover
     // alone would dismiss it as you move to the popup). Click again to unpin.
@@ -59,6 +74,19 @@ Item {
                     Layout.fillWidth: true; spacing: 1
                     StyledText { text: Network.ethernet ? "Ethernet" : (Network.wifi ? Network.networkName : "Disconnected"); font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
                     StyledText { text: Network.wifiStatus; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5 }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                visible: root.vpnOn
+                spacing: 6
+                MaterialSymbol { text: root.exitNode ? "vpn_lock" : "shield"; iconSize: 16; color: Appearance.colors.colPrimary }
+                StyledText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    text: `${VPN.providerName === "netbird" ? "NetBird" : VPN.providerName} · ${root.exitNode ? "exit node " + root.exitNode : "direct"}`
+                    font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
 

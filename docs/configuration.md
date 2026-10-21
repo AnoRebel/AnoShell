@@ -149,6 +149,22 @@ Bluetooth, and VPN (when a provider is set under `vpn.providers`).
   for one.
 - **Keys:** Tab cycles the tabs, and Escape closes the panel.
 
+### NetBird
+
+With `vpn.providers` set to NetBird, the right sidebar's Network card shows
+the management and signal servers (with their errors), your NetBird IP and
+FQDN (copy buttons), and how many peers are connected. It checks every 30 s,
+every 2 s while the sidebar is open, and backs off to 5 min while the NetBird
+service is down; `vpn.notifyOnChange` announces a management or signal
+change.
+
+- **Exit node:** choose **Direct** or one of your exit nodes (networks routing
+  `0.0.0.0/0`). Only one is used at a time; choosing one deselects the others.
+- **Networks:** each routed network has a switch (`netbird networks select -a`
+  / `deselect`).
+- The bar's network icon carries a small shield while the VPN is up, filled
+  while traffic goes out an exit node; its popup names the exit node.
+
 The panel is the `anoNetworkOrbit` module (Overlays, in the ano and hefty
 families). Its IPC target is `networkOrbit`:
 

@@ -215,8 +215,11 @@ Rectangle {
             onWatchingChanged: VPN.watch(watching)
             Component.onCompleted: if (watching) VPN.watch(true)
             Component.onDestruction: if (watching) VPN.watch(false)
-            sourceComponent: GridLayout {
-                readonly property var nb: VPN.status.netbird
+            sourceComponent: ColumnLayout {
+              readonly property var nb: VPN.status.netbird
+              spacing: 8
+              GridLayout {
+                Layout.fillWidth: true
                 columns: 2
                 columnSpacing: 10
                 rowSpacing: 2
@@ -260,6 +263,71 @@ Rectangle {
                         }
                     }
                 }
+              }
+
+              // Exit node: everything goes through one peer, or none (direct).
+              RowLayout {
+                Layout.fillWidth: true
+                visible: VPN.netbirdExitNodes.length > 0
+                spacing: 6
+                StyledText {
+                    Layout.preferredWidth: 86
+                    text: "Exit node"
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colSubtext
+                }
+                ChoiceRow {
+                    Layout.fillWidth: true
+                    enabled: !VPN.netbirdNetworksBusy
+                    opacity: enabled ? 1 : 0.6
+                    model: [{ value: "", label: "Direct", icon: "public" }].concat(VPN.netbirdExitNodes.map(n => ({ value: n.id, label: n.id, icon: "vpn_lock" })))
+                    current: VPN.netbirdExitNode
+                    onChose: value => VPN.setNetBirdExitNode(value)
+                }
+                MaterialSymbol {
+                    visible: VPN.netbirdNetworksBusy
+                    text: "progress_activity"; iconSize: 16
+                    color: Appearance.colors.colPrimary
+                    RotationAnimation on rotation { running: VPN.netbirdNetworksBusy; from: 0; to: 360; duration: 900; loops: Animation.Infinite }
+                }
+              }
+
+              // Routed networks
+              Repeater {
+                model: VPN.netbirdNetworks.filter(n => !n.exit)
+                delegate: RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: 6
+                    MaterialSymbol { text: "lan"; iconSize: 16; color: modelData.selected ? Appearance.colors.colPrimary : Appearance.colors.colSubtext }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 0
+                        StyledText { Layout.fillWidth: true; elide: Text.ElideRight; text: modelData.id; font.pixelSize: Appearance.font.pixelSize.small }
+                        StyledText {
+                            Layout.fillWidth: true; elide: Text.ElideRight
+                            text: modelData.domains || modelData.network
+                            font.pixelSize: Appearance.font.pixelSize.smallest
+                            font.family: Appearance.font.family.mono
+                            color: Appearance.colors.colSubtext
+                        }
+                    }
+                    StyledSwitch {
+                        checked: modelData.selected
+                        enabled: !VPN.netbirdNetworksBusy
+                        onClicked: VPN.setNetBirdNetwork(modelData.id, checked)
+                    }
+                }
+              }
+
+              StyledText {
+                Layout.fillWidth: true
+                visible: VPN.netbirdNetworksError !== ""
+                text: VPN.netbirdNetworksError
+                wrapMode: Text.Wrap
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                color: Appearance.colors.colError
+              }
             }
         }
     }
