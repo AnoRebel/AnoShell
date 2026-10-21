@@ -1354,7 +1354,8 @@
    "notepad",
    "todo",
    "pomodoro",
-   "stickyNotes"
+   "stickyNotes",
+   "screenTime"
   ]
  },
  {
@@ -1391,6 +1392,33 @@
   "sublabel": "Separate from Focus Time: no Do Not Disturb, no tracking",
   "keys": [
    "pomodoro.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Screen time",
+  "sublabel": "Time per app and window title, kept only on this machine (needs anod); idle and locked time isn't counted",
+  "keys": [
+   "screenTime.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Idle after",
+  "sublabel": "No input this long (and nothing playing) stops the count",
+  "keys": [
+   "screenTime.idleSeconds"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Keep",
+  "sublabel": "Older days are deleted",
+  "keys": [
+   "screenTime.keepDays"
   ]
  },
  {

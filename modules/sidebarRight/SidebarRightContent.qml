@@ -179,6 +179,12 @@ Rectangle {
             // ═══════════════════════════════════════
             Loader {
                 Layout.fillWidth: true
+                active: Config.options?.screenTime?.enable ?? false
+                visible: active
+                sourceComponent: ScreenTimeCard {}
+            }
+            Loader {
+                Layout.fillWidth: true
                 active: Config.options?.pomodoro?.enable ?? false
                 visible: active
                 sourceComponent: PomodoroCard {}

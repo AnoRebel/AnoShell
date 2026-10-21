@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.services
 import "."
 
@@ -15,7 +16,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Sidebars"
         subtitle: "Behavior, widget toggles, sliders"
-        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes"]
+        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "screenTime"]
     }
 
     // ═══ Sidebar Behavior ═══
@@ -182,7 +183,7 @@ ColumnLayout {
         icon: "task_alt"
         title: "Productivity"
         subtitle: "Notepad, to-do and pomodoro in the right sidebar; a sticky note on the desktop · all off by default"
-        configKeys: ["notepad", "todo", "pomodoro", "stickyNotes"]
+        configKeys: ["notepad", "todo", "pomodoro", "stickyNotes", "screenTime"]
 
         ConfigSwitch {
             label: "Notepad"; configKey: "notepad.enable"
@@ -229,6 +230,30 @@ ColumnLayout {
                 onValueChanged: Config.setNestedValue(`pomodoro.${modelData.key}`, Math.round(value))
                 valueText: modelData.key.endsWith("Minutes") ? `${Math.round(value)} min` : `${Math.round(value)}`
             }
+        }
+        ConfigSwitch {
+            label: "Screen time"; configKey: "screenTime.enable"
+            sublabel: "Time per app and window title, kept only on this machine (needs anod); idle and locked time isn't counted"
+            checked: Config.options?.screenTime?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("screenTime.enable", checked)
+        }
+        ConfigSlider {
+            visible: Config.options?.screenTime?.enable ?? false
+            label: "Idle after"; configKey: "screenTime.idleSeconds"
+            sublabel: "No input this long (and nothing playing) stops the count"
+            from: 30; to: 600; stepSize: 30
+            value: Config.options?.screenTime?.idleSeconds ?? 120
+            onValueChanged: Config.setNestedValue("screenTime.idleSeconds", Math.round(value))
+            valueText: Format.formatDuration(value * 1000)
+        }
+        ConfigSlider {
+            visible: Config.options?.screenTime?.enable ?? false
+            label: "Keep"; configKey: "screenTime.keepDays"
+            sublabel: "Older days are deleted"
+            from: 7; to: 365; stepSize: 1
+            value: Config.options?.screenTime?.keepDays ?? 30
+            onValueChanged: Config.setNestedValue("screenTime.keepDays", Math.round(value))
+            valueText: `${Math.round(value)} days`
         }
         ConfigSwitch {
             label: "Sticky note"; configKey: "stickyNotes.enable"

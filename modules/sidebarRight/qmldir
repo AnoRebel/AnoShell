@@ -6,6 +6,7 @@ NotificationCenter 1.0 NotificationCenter.qml
 PomodoroCard 1.0 PomodoroCard.qml
 QuickSliders 1.0 QuickSliders.qml
 QuickToggles 1.0 QuickToggles.qml
+ScreenTimeCard 1.0 ScreenTimeCard.qml
 SidebarRightContent 1.0 SidebarRightContent.qml
 SidebarRight 1.0 SidebarRight.qml
 SystemInfoPanel 1.0 SystemInfoPanel.qml

@@ -89,3 +89,15 @@ clipboard (`screenshot.copyOnCapture`) and a card shows it: Copy, Save (to
 Delete, Close. It leaves after `screenshot.previewSeconds` (0 = stays) unless
 the pointer is on it; `screenshot.onTimeout` then keeps the temp file, saves
 it or deletes it. The card sits at `screenshot.previewEdge`.
+
+## Screen time
+
+`screenTime.enable` (Settings → Sidebars → Productivity) counts how long each
+app, and each of its window titles, is focused: every 15 s the focused window
+gets 15 s, unless there has been no input for `screenTime.idleSeconds`
+(default 120) with nothing playing, or the screen is locked. Idle inhibitors
+are ignored, so a forgotten "keep awake" toggle doesn't count the night.
+anod keeps one file per day in `~/.local/state/anoshell/screentime/` (0600,
+never sent anywhere) and deletes days older than `screenTime.keepDays`
+(default 30). The sidebar card shows today's total, the top apps (click one
+for its top titles) and the last 7 days.

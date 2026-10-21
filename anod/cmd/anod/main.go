@@ -26,6 +26,7 @@ import (
 	"ano/anod/internal/keybinds"
 	"ano/anod/internal/palette"
 	"ano/anod/internal/reader"
+	"ano/anod/internal/screentime"
 	"ano/anod/internal/secrets"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
@@ -455,6 +456,52 @@ func main() {
 			return map[string]any{"profile": name}, err
 		})
 	}
+
+	// Screen time: the shell reports focused time; stored per day, pruned
+	// after screenTime.keepDays (default 30), daily.
+	st := &screentime.Store{Dir: filepath.Join(xdgState(), "anoshell", "screentime")}
+	keepDays := func() int {
+		m, err := config.Effective()
+		if err != nil {
+			return 30
+		}
+		return config.Int(m, "screenTime.keepDays", 30)
+	}
+	go func() {
+		for {
+			if n, err := st.Prune(time.Now(), keepDays()); err != nil {
+				log.Printf("screentime prune: %v", err)
+			} else if n > 0 {
+				log.Printf("screentime: pruned %d old days", n)
+			}
+			time.Sleep(24 * time.Hour)
+		}
+	}()
+	srv.Handle("screentime.add", func(p json.RawMessage) (any, error) {
+		var req struct {
+			App     string `json:"app"`
+			Title   string `json:"title"`
+			Seconds int    `json:"seconds"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {app, title, seconds}")
+		}
+		return true, st.Add(time.Now(), req.App, req.Title, req.Seconds)
+	})
+	srv.Handle("screentime.day", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Date string `json:"date"`
+		}
+		json.Unmarshal(p, &req)
+		if req.Date == "" {
+			req.Date = time.Now().Format("2006-01-02")
+		}
+		if _, err := time.Parse("2006-01-02", req.Date); err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "date is YYYY-MM-DD")
+		}
+		return st.DaySummary(req.Date)
+	})
+	srv.Handle("screentime.week", func(json.RawMessage) (any, error) { return st.Week(time.Now()) })
 
 	// A screen shader the shell set (eye-care filter, anti-flashbang) must not
 	// outlive it: when its connection is gone, clear it (Hyprland).

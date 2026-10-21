@@ -51,6 +51,8 @@ ShellRoot {
         void Anod;
         void AppColorScheme;
         void StaticThemeLoader; // singletons only exist once referenced; static/fixed themes need it
+        void ScreenTime;  // counts focused time (screenTime.enable)
+        void Screenshot;  // `screenshot` IPC target the Print keybinds call
     }
 
     // ═══════════════════════════════════════════════════════════════════════

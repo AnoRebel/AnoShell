@@ -232,6 +232,11 @@
     "onTimeout": "keep",
     "saveDir": ""
   },
+  "screenTime": {
+    "enable": false,
+    "keepDays": 30,
+    "idleSeconds": 120
+  },
   "pomodoro": {
     "enable": false,
     "focusMinutes": 25,

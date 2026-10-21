@@ -803,6 +803,12 @@ Singleton {
                 property string onTimeout: "keep"      // keep (temp file) | save | delete
                 property string saveDir: ""            // "" = ~/Pictures/Screenshots
             }
+            // Screen time (services/ScreenTime.qml → anod screentime.*): local only.
+            property JsonObject screenTime: JsonObject {
+                property bool enable: false
+                property int keepDays: 30      // older days are deleted
+                property int idleSeconds: 120  // no input this long = not counted
+            }
             property JsonObject pomodoro: JsonObject {
                 property bool enable: false
                 property int focusMinutes: 25
