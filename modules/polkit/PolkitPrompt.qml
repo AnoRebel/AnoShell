@@ -237,7 +237,9 @@ Scope {
                         clip: true
                         implicitHeight: win.showDetails ? detailsGrid.implicitHeight : 0
                         Behavior on implicitHeight { MotionSpring { token: win.showDetails ? "liquid" : "settle" } }
-                        visible: implicitHeight > 0.5
+                        // Shown as soon as asked for: a hidden box's layout reports
+                        // no height, so waiting for one never showed it.
+                        visible: win.showDetails || implicitHeight > 0.5
                         opacity: win.showDetails ? 1 : 0
                         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         // Label | value pairs: the label column is as wide as its
