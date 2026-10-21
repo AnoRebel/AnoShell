@@ -120,7 +120,9 @@ Item {
             RowLayout {
                 Layout.fillWidth: true; spacing: 8
                 StyledText { text: "WiFi"; font.pixelSize: Appearance.font.pixelSize.smaller; Layout.fillWidth: true }
-                StyledSwitch { checked: Network.wifiEnabled; onCheckedChanged: Network.enableWifi(checked) }
+                // onToggled, not onCheckedChanged: the binding changing (state loading
+                // at startup, an rfkill flip) wrote the radio back and could turn Wi-Fi off.
+                StyledSwitch { checked: Network.wifiEnabled; onToggled: Network.enableWifi(checked) }
             }
 
             // Network picker — only when the popout is pinned (left-clicked), so
