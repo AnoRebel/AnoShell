@@ -62,9 +62,15 @@ Item {
     // Size from the data (count of visible cells + the expand button), NOT from
     // wsRow.implicitWidth — wsRow is centered in this Item, so deriving the
     // Item's size from a centered child forms a binding loop.
-    readonly property int _cellCount: visibleWorkspaces.length + ((hasHidden || expanded) ? 1 : 0)
-    implicitWidth: vertical ? buttonSize : (_cellCount * buttonSize)
-    implicitHeight: vertical ? (_cellCount * buttonSize) : Appearance.sizes.barHeight
+    readonly property bool _showToggle: hasHidden || expanded
+    readonly property int _toggleSize: Math.round(buttonSize * 0.7)
+    readonly property int _gap: 2
+    // Cells + the toggle + the gaps between them: the grid's exact length, so
+    // the group's padding is the same at both ends.
+    readonly property int _length: visibleWorkspaces.length * buttonSize + (_showToggle ? _toggleSize : 0)
+        + _gap * Math.max(0, visibleWorkspaces.length - (_showToggle ? 0 : 1))
+    implicitWidth: vertical ? buttonSize : _length
+    implicitHeight: vertical ? _length : Appearance.sizes.barHeight
 
     function updateOccupied() {
         const ws = CompositorService.workspacesFor(root.screenName)
@@ -105,8 +111,8 @@ Item {
         z: 3
         anchors.centerIn: parent
         flow: vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-        columnSpacing: 2
-        rowSpacing: 2
+        columnSpacing: root._gap
+        rowSpacing: root._gap
 
         Repeater {
             model: root.visibleWorkspaces
@@ -157,15 +163,17 @@ Item {
 
         // Expand / collapse affordance — only when there are hidden workspaces.
         MouseArea {
-            visible: root.hasHidden || root.expanded
-            implicitWidth: visible ? Math.round(buttonSize * 0.7) : 0
-            implicitHeight: vertical ? Math.round(buttonSize * 0.7) : Appearance.sizes.barHeight
+            visible: root._showToggle
+            Layout.alignment: Qt.AlignCenter
+            implicitWidth: !visible ? 0 : vertical ? buttonSize : root._toggleSize
+            implicitHeight: vertical ? root._toggleSize : Appearance.sizes.barHeight
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.PointingHandCursor
             onClicked: root.expanded = !root.expanded
             MaterialSymbol {
                 anchors.centerIn: parent
-                text: root.expanded ? "chevron_left" : "more_horiz"
+                // Collapsing points back along the bar: up when it's vertical.
+                text: root.expanded ? (root.vertical ? "expand_less" : "chevron_left") : (root.vertical ? "more_vert" : "more_horiz")
                 iconSize: 16
                 color: Appearance?.colors.colOnLayer1Inactive ?? "#A0A0A0"
             }
