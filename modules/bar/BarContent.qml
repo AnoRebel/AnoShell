@@ -147,6 +147,11 @@ Item {
     readonly property real along: isVertical ? height : width
     readonly property real thickness: isVertical ? width : height
 
+    // The pill's span along this bar when it sits inside it ([from, to] in
+    // this item's coordinates, or null): centre groups make way (BarLayout).
+    property var pillHole: null
+    onPillHoleChanged: _relayout()
+
     // Body segments + islands in this item's coordinates: [{x, y, w, h, island, id}]
     property var bodyRects: []
     property var _targets: ({})
@@ -170,7 +175,7 @@ Item {
             if (it) items.push(it)
         }
         root._targets = BarLayout.place({ length: root.along, padding: root.edgePadding, spacing: root.groupSpacing,
-            form: root.form, margin: root.edgeMargin }, items.map(it => ({ id: it.gid, zone: it.zone, len: it.len })))
+            form: root.form, margin: root.edgeMargin, hole: root.pillHole }, items.map(it => ({ id: it.gid, zone: it.zone, len: it.len })))
         const bodies = BarLayout.bodies({ length: root.along, padding: root.edgePadding, form: root.form,
             gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin },
             items.map(it => ({ id: it.gid, pos: it.pos, len: it.len, sep: Math.max(0, Math.min(1, it.sep)) })))

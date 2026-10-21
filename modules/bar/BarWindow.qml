@@ -178,6 +178,17 @@ PanelWindow {
         target: PanelRegistry
         function onRevisionChanged() { Qt.callLater(barRoot._updateOrigin) }
     }
+    // A pill inside this bar (classic style, same edge; AnoSpot): its live
+    // span along the bar in content coordinates, so the centre makes way.
+    // ponytail: connected mode only (the registry is how the bar sees it).
+    readonly property var _pillHole: {
+        if (BarStyle.pillBar || BarStyle.pillEdge !== barRoot.edge) return null
+        const p = PanelRegistry.panels.find(e => e.key === "pill:" + barRoot._screenName)
+        if (!p) return null
+        const from = barRoot.isVertical ? p.y - barRoot._origin.y - barContentLoader.y : p.x - barRoot._origin.x - barContentLoader.x
+        return [from, from + (barRoot.isVertical ? p.h : p.w)]
+    }
+
     // Fixed slots, switched on and off: an Instantiator would destroy and
     // recreate every lease when the body count changes, leaving the frame
     // without a bar for a frame.
@@ -302,6 +313,7 @@ PanelWindow {
 
 
             sourceComponent: BarContent {
+                pillHole: barRoot._pillHole
                 barConfig: barRoot.barConfig
                 barIndex: barRoot.barIndex
                 isVertical: barRoot.isVertical

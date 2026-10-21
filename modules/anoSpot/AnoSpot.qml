@@ -257,8 +257,13 @@ Scope {
             implicitWidth: Math.round(_envW)
             implicitHeight: Math.round(_envH)
 
-            // Normal: placed past the bar on the same edge instead of over it.
-            exclusionMode: ExclusionMode.Normal
+            // A classic bar on the same edge: the pill sits inside its band,
+            // centred across it (the bar's centre groups make way, BarWindow).
+            // Otherwise Normal: placed past whatever else reserves the edge.
+            readonly property var _hostBar: root.barMode ? null : PanelRegistry.panels.find(e => e.kind === "bar"
+                && e.screenName === (modelData?.name ?? "") && e.edge === root.position && e.reserve > 0) ?? null
+            readonly property real _inBarInset: _hostBar ? Math.max(0, Math.round((_hostBar.reserve - root.heightPx) / 2)) : 0
+            exclusionMode: _hostBar ? ExclusionMode.Ignore : ExclusionMode.Normal
             // As the bar it reserves its edge (not while tucked in fullscreen).
             readonly property int barReserve: root.barMode && !screenFullscreen ? root.heightPx + gap : 0
             exclusiveZone: barReserve
@@ -277,7 +282,7 @@ Scope {
             // Connected mode: flush on its edge, painted by the frame.
             // The frame retracts in fullscreen, so the pill paints itself then.
             readonly property bool connected: PanelRegistry.enabled && !(Config.options?.anoSpot?.floating ?? false) && !screenFullscreen
-            readonly property int gap: connected ? 0 : 6
+            readonly property int gap: _hostBar ? _inBarInset : connected ? 0 : 6
             margins {
                 top: root.position === "top" ? gap : 0
                 bottom: root.position === "bottom" ? gap : 0
@@ -497,22 +502,21 @@ Scope {
                 Rectangle {
                     id: dragHandle
                     visible: root.draggable
+                    // The leading 14 px across the pill. Placed, not anchored:
+                    // switching anchor sets as the edge resolved at startup
+                    // sometimes left it 36 tall, the grip over the content.
+                    x: 0; y: 0
                     width: root.isVertical ? parent.width : 14
                     height: root.isVertical ? 14 : parent.height
                     color: "transparent"
-                    anchors {
-                        top: root.isVertical ? parent.top : undefined
-                        left: root.isVertical ? undefined : parent.left
-                        horizontalCenter: root.isVertical ? parent.horizontalCenter : undefined
-                        verticalCenter: root.isVertical ? undefined : parent.verticalCenter
-                    }
 
                     MaterialSymbol {
                         anchors.centerIn: parent
-                        text: "drag_indicator"
+                        // A glyph per direction: rotating drag_indicator (its box
+                        // isn't square) drew it below its slot, onto the content.
+                        text: root.isVertical ? "drag_handle" : "drag_indicator"
                         iconSize: 12
                         opacity: handleArea.containsMouse || handleArea.drag.active ? 0.85 : 0.5
-                        rotation: root.isVertical ? 90 : 0
                         color: Appearance?.colors?.colOnLayer0Subtle ?? "#a6adc8"
                         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
                     }

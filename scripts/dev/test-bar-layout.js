@@ -40,6 +40,10 @@ a(b.length===1 && b[0].pos===6 && b[0].len===1280-12,'fit body is inset');
 a(B.formOf('bogus')==='full','unknown form falls back to full');
 a(B.groupsFromModules({left:['a'],right:['b']}).map(g=>g.id).join()==='start,center,end','migration');
 a(B.neckK(14,0)===14 && B.neckK(14,1)===0 && B.neckK(14,0.5)===7,'neck thins to nothing as the island separates');
+// A pill inside the bar: centre groups move past it, others don't.
+const hg=[{id:'m',zone:'center',len:100}];
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[430,570]},hg).m===578,'centre moves past the pill');
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[10,50]},hg).m===450,'a pill elsewhere leaves the centre alone');
 console.log('bar layout ok');
 
 // BarEdit: module moves, add/remove groups.

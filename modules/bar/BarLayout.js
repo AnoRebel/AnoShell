@@ -29,7 +29,7 @@ function sepTarget(form, group) {
 }
 
 // Target positions along the axis.
-//   opts: { length, padding, spacing, form }
+//   opts: { length, padding, spacing, form, margin, hole }
 //   groups: [{ id, zone, len }] (empty groups have len 0 and are skipped)
 // Returns { id: pos }.
 function place(opts, groups) {
@@ -55,6 +55,10 @@ function place(opts, groups) {
     var mids = live.filter(function (g) { return g.zone === "center"; });
     var midTotal = mids.reduce(function (a, g) { return a + g.len; }, 0) + s * Math.max(0, mids.length - 1);
     var xm = (L - midTotal) / 2;
+    // A pill inside the bar (opts.hole = [from, to] along the bar): the
+    // centre groups move just past it instead of running under it.
+    var h = opts.hole;
+    if (h && midTotal > 0 && xm < h[1] + s && xm + midTotal > h[0] - s) xm = h[1] + s;
     mids.forEach(function (g) { out[g.id] = xm; xm += g.len + s; });
     return out;
 }
