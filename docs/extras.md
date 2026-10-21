@@ -78,6 +78,12 @@ Keys: ↑↓ select, Enter pastes, Space previews (search empty), Ctrl+P pins
 or unpins, Delete removes the selected entry or unpins a pin (search empty);
 Esc closes the preview, then the panel. Right-click copies without pasting.
 
+**Passwords stay out.** A copy marked sensitive (a password manager's copy,
+or `wl-copy --sensitive`) is never stored: wl-paste passes it on as
+`CLIPBOARD_STATE=sensitive` and `cliphist store` (0.7.0) skips it. This needs
+the bundled watch lines (`wl-paste --watch … cliphist store`), or your own,
+to run `cliphist store` with the environment intact.
+
 ## Screenshots
 
 Print (screen), Shift+Print or Super+Shift+S (region), Ctrl+Print (the focused
