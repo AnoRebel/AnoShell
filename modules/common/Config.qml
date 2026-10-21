@@ -841,6 +841,14 @@ Singleton {
                 property string theme: ""
                 property int size: 24
             }
+            // Desktop icon theme (GTK + qt5ct/qt6ct): "" leaves it alone. The
+            // palette ones (anoshell-icons, anoshell-icons-primary) draw folders
+            // and file types in the wallpaper's colours and inherit the rest
+            // from `base` (services/PaletteThemes.qml).
+            property JsonObject icons: JsonObject {
+                property string theme: ""
+                property string base: "Papirus-Dark"
+            }
 
             // ═══════════════════════════════════════════════════════════════
             // Reader — novel, manga and anime panels (backend: anod's reader)

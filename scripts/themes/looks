@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+# The icon and cursor themes installed on this machine, and setting the icon
+# theme (the cursor is set by anod: cursor.apply).
+# Ported from Bioma (GPL-3.0, https://github.com/AkusenArcade/Bioma), scripts/looks.
+#
+#     looks list                 {"icons": [{"id", "name", "slotted"}], "cursors": [{"id", "name", "slotted"}],
+#                                 "current": {"icons", "iconsLive", "cursor", "live", "size"}}
+#     looks icons ID             GTK (gsettings) and qt5ct/qt6ct
+#
+# A theme is a directory under the XDG icon paths. It is an icon theme when its
+# index.theme lists Directories, and a cursor theme when it has a cursors/
+# directory; some are both. The names are the themes' own, from index.theme.
+#
+# A theme is `slotted` when it has the two slots AnoShell's own cursors and icons
+# carry (scripts/themes/cursors, scripts/themes/icon-theme): <id>.a and <id>.b, empty themes
+# inheriting from it,
+# which the desktop is pointed at instead of <id> so that a rebuilt theme can be
+# shown by changing the name. They are not themes anybody picks, so they are not
+# listed, and `current` names the theme a slot stands for; `live` is the name
+# the desktop is actually set to.
+import configparser
+import json
+import os
+import re
+import subprocess
+import sys
+
+HOME = os.environ["HOME"]
+DATA_HOME = os.environ.get("XDG_DATA_HOME") or os.path.join(HOME, ".local", "share")
+CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config")
+DATA_DIRS = (os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share").split(":")
+
+ROOTS = [os.path.join(HOME, ".icons"), os.path.join(DATA_HOME, "icons")] + \
+        [os.path.join(d, "icons") for d in DATA_DIRS if d]
+
+# Fallbacks every desktop carries, which nobody chooses as a look.
+NOT_A_LOOK = {"hicolor", "locolor", "default"}
+
+
+def index_of(path):
+    parser = configparser.ConfigParser(interpolation=None, strict=False)
+    try:
+        parser.read(os.path.join(path, "index.theme"), encoding="utf-8")
+    except (configparser.Error, UnicodeDecodeError):
+        return None
+    return parser["Icon Theme"] if parser.has_section("Icon Theme") else None
+
+
+def catalogue():
+    icons, cursors, seen = {}, {}, set()
+    for root in ROOTS:
+        if not os.path.isdir(root):
+            continue
+        for entry in sorted(os.listdir(root)):
+            path = os.path.join(root, entry)
+            if entry in seen or entry in NOT_A_LOOK or not os.path.isdir(path):
+                continue
+            seen.add(entry)
+            index = index_of(path)
+            name = (index.get("Name") if index else None) or entry
+            if index is not None and index.get("Directories", "").strip():
+                # Hidden is a fallback nobody picks — except Adwaita, which
+                # hides itself and is still GNOME's own default look.
+                if index.get("Hidden", "false").lower() != "true" or entry == "Adwaita":
+                    icons[entry] = name
+            if os.path.isdir(os.path.join(path, "cursors")):
+                cursors[entry] = name
+    as_list = lambda found: sorted(({"id": k, "name": v} for k, v in found.items()),
+                                  key=lambda t: t["name"].lower())
+    icon_list, cursor_list = as_list(icons), as_list(cursors)
+    for theme in icon_list + cursor_list:
+        theme["slotted"] = all(slot_of(f"{theme['id']}.{s}") == theme["id"] for s in "ab")
+    return icon_list, cursor_list
+
+
+def slot_of(name):
+    """The theme a slot stands for, or None when `name` is not a slot."""
+    match = re.match(r"^(.+)\.[ab]$", name)
+    if not match:
+        return None
+    for root in ROOTS:
+        index = index_of(os.path.join(root, name))
+        if index is not None:
+            if index.get("Inherits", "").strip() == match.group(1) and \
+                    not os.path.isdir(os.path.join(root, name, "cursors")):
+                return match.group(1)
+            return None
+    return None
+
+
+def gsettings(*args):
+    try:
+        return subprocess.run(["gsettings", *args], capture_output=True, text=True,
+                              timeout=5).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def current():
+    unquote = lambda value: value.strip("'\"")
+    size = gsettings("get", "org.gnome.desktop.interface", "cursor-size")
+    live = unquote(gsettings("get", "org.gnome.desktop.interface", "cursor-theme"))
+    icons = unquote(gsettings("get", "org.gnome.desktop.interface", "icon-theme"))
+    return {"icons": slot_of(icons) or icons,
+            "iconsLive": icons,
+            "cursor": slot_of(live) or live,
+            "live": live,
+            "size": int(size) if size.isdigit() else 24}
+
+
+def set_qtct(theme):
+    for tool in ("qt5ct", "qt6ct"):
+        path = os.path.join(CONFIG_HOME, tool, f"{tool}.conf")
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.read().split("\n")
+        out, section, done = [], None, False
+        for line in lines:
+            header = re.match(r"^\[(.+)\]\s*$", line)
+            if header:
+                if section == "Appearance" and not done:
+                    out.append(f"icon_theme={theme}")
+                    done = True
+                section = header.group(1)
+            elif section == "Appearance" and line.startswith("icon_theme="):
+                line = f"icon_theme={theme}"
+                done = True
+            out.append(line)
+        if not done:
+            if section != "Appearance":
+                out.append("[Appearance]")
+            out.append(f"icon_theme={theme}")
+        text = "\n".join(out)
+        with open(path + ".tmp", "w", encoding="utf-8") as handle:
+            handle.write(text)
+        os.replace(path + ".tmp", path)
+
+
+if __name__ == "__main__":
+    command = sys.argv[1] if len(sys.argv) > 1 else ""
+    if command == "list":
+        icons, cursors = catalogue()
+        print(json.dumps({"icons": icons, "cursors": cursors, "current": current()}))
+    elif command == "icons" and len(sys.argv) == 3:
+        gsettings("set", "org.gnome.desktop.interface", "icon-theme", sys.argv[2])
+        set_qtct(sys.argv[2])
+    else:
+        print("usage: looks list | icons ID", file=sys.stderr)
+        sys.exit(1)

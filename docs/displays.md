@@ -64,6 +64,24 @@ theme's arrow, and a size. Choosing one:
 The choice is `cursor.theme` and `cursor.size` in your config. "Leave the
 cursor to my compositor config" sets the theme to `""`.
 
+**AnoShell** and **AnoShell Cell** are cursors drawn in your wallpaper's
+colours (ported from Bioma). They're listed before they exist; choosing one
+builds it into `~/.local/share/icons` (`scripts/themes/cursors`, needs
+`rsvg-convert` and `magick`), and every palette change rebuilds it. Apps keep
+a cursor theme loaded by name, so each has two empty slots,
+`anoshell-cursor.a` and `.b`, and the shell moves between them after a
+rebuild; that's the name you'll see in gsettings.
+
+## Icons
+
+The **Icons** card sets the desktop icon theme (GTK through gsettings, Qt
+through `icon_theme` in qt5ct/qt6ct); type to find one of the installed
+themes. **AnoShell** and **AnoShell Primary** draw folders and file types in
+the wallpaper's colours and inherit everything else (apps first) from the
+last other theme you picked (`icons.base`, default Papirus-Dark). They're
+rebuilt and slot-switched like the cursors. "Leave icons to my desktop
+settings" sets `icons.theme` to `""`; nothing is changed until you pick one.
+
 ## For scripts
 
 anod's socket: `display.get`, `display.apply` (`{"outputs": [...]}`),

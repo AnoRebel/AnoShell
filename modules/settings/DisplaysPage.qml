@@ -72,8 +72,8 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Displays"
-        subtitle: "Arrangement, mode, scale, rotation, VRR, profiles and the cursor"
-        configRoots: ["cursor"]
+        subtitle: "Arrangement, mode, scale, rotation, VRR, profiles, the cursor and icons"
+        configRoots: ["cursor", "icons"]
     }
     NoticeBox {
         Layout.fillWidth: true
@@ -276,4 +276,5 @@ ColumnLayout {
     }
 
     CursorCard {}
+    IconsCard {}
 }

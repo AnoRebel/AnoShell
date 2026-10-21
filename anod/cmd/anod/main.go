@@ -399,7 +399,8 @@ func main() {
 			var out []map[string]any
 			for _, t := range display.CursorThemes(display.IconDirs()) {
 				p := filepath.Join(dir, t.Name+".png")
-				if _, err := os.Stat(p); err != nil {
+				// redrawn when the theme is newer (a palette cursor is rebuilt in place)
+				if pi, err := os.Stat(p); err != nil || themeNewer(t.Path, pi.ModTime()) {
 					if b, err := display.Preview(t.Path, 48); err == nil {
 						os.WriteFile(p, b, 0o644)
 					} else {
@@ -568,6 +569,12 @@ func hookConfig() hooks.Config {
 		c.Commands[ev] = config.String(m, "hooks."+key, "")
 	}
 	return c
+}
+
+// themeNewer: the theme directory changed after t (it is swapped in whole on a rebuild).
+func themeNewer(dir string, t time.Time) bool {
+	fi, err := os.Stat(dir)
+	return err == nil && fi.ModTime().After(t)
 }
 
 func xdgCache() string {

@@ -22,13 +22,25 @@ SettingsCard {
         onTriggered: if (cursorCard.pendingSize !== (Config.options?.cursor?.size ?? 24))
             cursorCard.apply(Config.options?.cursor?.theme ?? "", cursorCard.pendingSize)
     }
-    function load() { if (Anod.available) Anod.call("cursor.themes", {}, r => { if (r) cursorCard.themes = r }) }
+    // The palette cursors are listed before they're first built (choosing one builds it).
+    function load() {
+        if (!Anod.available) return
+        Anod.call("cursor.themes", {}, r => {
+            if (!r) return
+            const missing = PaletteThemes.cursorIds.filter(id => !r.some(t => t.name === id))
+                .map(id => ({ name: id, title: id === "anoshell-cursor" ? "AnoShell" : "AnoShell Cell", preview: "" }))
+            cursorCard.themes = missing.concat(r)
+        })
+    }
     function apply(theme, size) {
+        const was = Config.options?.cursor?.theme ?? ""
         Config.setNestedValue("cursor.theme", theme)
         Config.setNestedValue("cursor.size", size)
-        if (theme !== "") Anod.call("cursor.apply", { theme: theme, size: size })
+        if (!PaletteThemes.cursorIds.includes(theme)) { if (theme !== "") Anod.call("cursor.apply", { theme: theme, size: size }) }
+        else if (theme === was) PaletteThemes.applyCursor() // a new size; a new theme applies once built
     }
     Component.onCompleted: load()
+    Connections { target: PaletteThemes; function onCursorBuilt() { cursorCard.load() } }
 
     NoticeBox {
         Layout.fillWidth: true
@@ -51,6 +63,7 @@ SettingsCard {
                     Image {
                         Layout.alignment: Qt.AlignHCenter
                         source: modelData.preview ? "file://" + modelData.preview : ""
+                        cache: false // a palette cursor's preview is redrawn in place
                         sourceSize: Qt.size(40, 40)
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40
                         fillMode: Image.PreserveAspectFit
