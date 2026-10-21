@@ -26,7 +26,8 @@ Scope {
 
     PanelWindow {
         id: weatherWindow
-        visible: GlobalStates.weatherPanelOpen
+        // Mapped until the card's exit animation ends (closing used to unmap at once).
+        visible: GlobalStates.weatherPanelOpen || weatherCard.opacity > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:weather"
@@ -54,8 +55,8 @@ Scope {
 
             opacity: GlobalStates.weatherPanelOpen ? 1 : 0
             scale: GlobalStates.weatherPanelOpen ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.weatherPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.weatherPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             ColumnLayout {
                 id: weatherContent

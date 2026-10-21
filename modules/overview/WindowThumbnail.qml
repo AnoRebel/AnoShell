@@ -28,6 +28,7 @@ Item {
     property real targetZ: 0
     property real targetRotation: 0
     property bool moveCursorToActiveWindow: false
+    property int order: 0 // staggers the first capture and the entrance
 
     // Parent AnoView injects these
     property bool animateWindows: false
@@ -39,8 +40,8 @@ Item {
     x: 0; y: 0; z: targetZ; rotation: 0
     visible: !!wHandle
 
-    NumberAnimation { id: animX; target: thumbContainer; property: "x"; duration: animateWindows ? AnimationConfig.scaledDuration(100) : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
-    NumberAnimation { id: animY; target: thumbContainer; property: "y"; duration: animateWindows ? AnimationConfig.scaledDuration(100) : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+    NumberAnimation { id: animX; target: thumbContainer; property: "x"; duration: animateWindows ? AnimationConfig.scaledDuration(300) : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+    NumberAnimation { id: animY; target: thumbContainer; property: "y"; duration: animateWindows ? AnimationConfig.scaledDuration(300) : 0; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
     NumberAnimation { id: animRotation; target: thumbContainer; property: "rotation"; duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.expressiveFastSpatial }
 
     function updateLastPos() {
@@ -75,13 +76,20 @@ Item {
     function refreshThumb() {
         if (thumbLoader.item) thumbLoader.item.captureFrame()
     }
+    // First capture, staggered so a dozen don't land in one frame.
+    Timer { running: thumbLoader.status === Loader.Ready; interval: 30 + Math.min(thumbContainer.order, 12) * 25; onTriggered: thumbContainer.refreshThumb() }
+    // Entrance: once its first frame is in (or after a moment without one).
+    readonly property bool shown: (thumbLoader.item?.hasContent ?? false) || entranceFallback.fired
+    Timer { id: entranceFallback; property bool fired: false; running: true; interval: 600; onTriggered: fired = true }
 
     Item {
         id: card
         anchors.fill: parent
-        scale: thumbContainer.hovered ? 1.05 : 0.95
+        scale: !thumbContainer.shown ? 0.85 : thumbContainer.hovered ? 1.05 : 0.95
+        opacity: thumbContainer.shown ? 1 : 0
         transformOrigin: Item.Center
-        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(100); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on scale { MotionSpring { token: "snappy" } }
+        Behavior on opacity { Anim {} }
 
         MouseArea {
             anchors.fill: parent

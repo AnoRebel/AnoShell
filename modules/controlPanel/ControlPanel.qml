@@ -32,7 +32,8 @@ Scope {
 
     PanelWindow {
         id: cpWindow
-        visible: GlobalStates.controlPanelOpen
+        // Mapped until the card's exit animation ends (closing used to unmap at once).
+        visible: GlobalStates.controlPanelOpen || cpCard.opacity > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:controlPanel"
@@ -61,9 +62,11 @@ Scope {
             clip: true
 
             opacity: GlobalStates.controlPanelOpen ? 1 : 0
-            transform: Translate { y: GlobalStates.controlPanelOpen ? 0 : -20 }
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-            Behavior on transform { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            transform: Translate {
+                y: GlobalStates.controlPanelOpen ? 0 : -20
+                Behavior on y { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: GlobalStates.controlPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel } }
+            }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.controlPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             StyledFlickable {
                 anchors { fill: parent; margins: 16 }

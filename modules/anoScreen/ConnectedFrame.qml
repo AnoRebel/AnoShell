@@ -108,38 +108,67 @@ Item {
     /// ring (window minus the rounded cutout), every active slot with its own
     /// corner radii, and the concave fillets joining them, so the whole
     /// silhouette is one material.
+    // The blur region follows the silhouette at most every 100 ms (and once
+    // exactly when it settles): rebuilt every frame, the compositor re-blurs a
+    // new region per frame and every sliding panel stutters.
+    property var _b: ({ cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
+        cutRadius: root._cutRadius, packed: root._packed, fillets: root._fillets })
+    property bool _blurDirty: false
+    function _snapshotBlur() {
+        root._b = { cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
+            cutRadius: root._cutRadius, packed: root._packed, fillets: root._fillets }
+    }
+    Component.onCompleted: root._snapshotBlur() // a plain value from here on, not a live binding
+    function _blurChanged() { root._blurDirty = true; if (!blurThrottle.running) blurThrottle.start() }
+    on_PackedChanged: _blurChanged()
+    on_FilletsChanged: _blurChanged()
+    on_CutRadiusChanged: _blurChanged()
+    on_CutLChanged: _blurChanged()
+    on_CutTChanged: _blurChanged()
+    on_CutRChanged: _blurChanged()
+    on_CutBChanged: _blurChanged()
+    Timer {
+        id: blurThrottle
+        interval: 100
+        onTriggered: {
+            if (!root._blurDirty) return
+            root._blurDirty = false
+            root._snapshotBlur()
+            restart() // one more look: changes that came after this snapshot
+        }
+    }
     readonly property Region blurShape: Region {
         width: root.width; height: root.height
         Region {
             intersection: Intersection.Subtract
-            x: root._cutL; y: root._cutT
-            width: root._cutR - root._cutL; height: root._cutB - root._cutT
-            radius: root._cutRadius
+            x: root._b.cutL; y: root._b.cutT
+            width: root._b.cutR - root._b.cutL; height: root._b.cutB - root._b.cutT
+            radius: root._b.cutRadius
         }
-        SlotRegion { p: root._packed[0] }
-        SlotRegion { p: root._packed[1] }
-        SlotRegion { p: root._packed[2] }
-        SlotRegion { p: root._packed[3] }
-        SlotRegion { p: root._packed[4] }
-        SlotRegion { p: root._packed[5] }
-        SlotRegion { p: root._packed[6] }
-        SlotRegion { p: root._packed[7] }
-        FilletRegion { f: root._fillets[0] }
-        FilletRegion { f: root._fillets[1] }
-        FilletRegion { f: root._fillets[2] }
-        FilletRegion { f: root._fillets[3] }
-        FilletRegion { f: root._fillets[4] }
-        FilletRegion { f: root._fillets[5] }
-        FilletRegion { f: root._fillets[6] }
-        FilletRegion { f: root._fillets[7] }
-        FilletRegion { f: root._fillets[8] }
-        FilletRegion { f: root._fillets[9] }
-        FilletRegion { f: root._fillets[10] }
-        FilletRegion { f: root._fillets[11] }
-        FilletRegion { f: root._fillets[12] }
-        FilletRegion { f: root._fillets[13] }
-        FilletRegion { f: root._fillets[14] }
-        FilletRegion { f: root._fillets[15] }
+        SlotRegion { p: root._b.packed[0] }
+        SlotRegion { p: root._b.packed[1] }
+        SlotRegion { p: root._b.packed[2] }
+        SlotRegion { p: root._b.packed[3] }
+        SlotRegion { p: root._b.packed[4] }
+        SlotRegion { p: root._b.packed[5] }
+        SlotRegion { p: root._b.packed[6] }
+        SlotRegion { p: root._b.packed[7] }
+        FilletRegion { f: root._b.fillets[0] }
+        FilletRegion { f: root._b.fillets[1] }
+        FilletRegion { f: root._b.fillets[2] }
+        FilletRegion { f: root._b.fillets[3] }
+        FilletRegion { f: root._b.fillets[4] }
+        FilletRegion { f: root._b.fillets[5] }
+        FilletRegion { f: root._b.fillets[6] }
+        FilletRegion { f: root._b.fillets[7] }
+        FilletRegion { f: root._b.fillets[8] }
+        FilletRegion { f: root._b.fillets[9] }
+        FilletRegion { f: root._b.fillets[10] }
+        FilletRegion { f: root._b.fillets[11] }
+        FilletRegion { f: root._b.fillets[12] }
+        FilletRegion { f: root._b.fillets[13] }
+        FilletRegion { f: root._b.fillets[14] }
+        FilletRegion { f: root._b.fillets[15] }
     }
     // k×k square minus the circle the fillet is tangent to.
     component FilletRegion: Region {

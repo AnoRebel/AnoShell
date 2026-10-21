@@ -40,7 +40,9 @@ Scope {
             required property var modelData
             screen: modelData
 
-            visible: GlobalStates.sessionOpen
+            // Mapped until the card's exit animation ends (closing used to unmap at once).
+
+            visible: GlobalStates.sessionOpen || sessionCard.opacity > 0.01
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:session"
@@ -63,12 +65,13 @@ Scope {
 
             // Content
             Item {
+                id: sessionCard
                 anchors.centerIn: parent
                 width: 600; height: 350
                 opacity: GlobalStates.sessionOpen ? 1 : 0
                 scale: GlobalStates.sessionOpen ? 1 : 0.85
-                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -234,7 +237,7 @@ Scope {
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
 
                     scale: btnMA.pressed ? 0.92 : (btnMA.containsMouse ? 1.05 : 1)
-                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                    Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
                 }
 
                 // Progress ring (fills as you hold)

@@ -35,11 +35,11 @@ QtObject {
     property var surfaceRadius: undefined
     property bool omitStartConnector: false
     property bool omitEndConnector: false
-    // Publish in the same turn instead of coalescing to the next one. For a
-    // surface that animates its own shape (the pill): the frame then draws
-    // the shape in the same frame as the surface's content, instead of one
-    // behind (content ran ahead of its background).
-    property bool immediate: false
+    // Publish in the same turn instead of coalescing to the next one, so the
+    // frame draws a moving surface's body in the same frame as its content
+    // instead of one behind (content running ahead of its background reads
+    // as stutter). On for every surface; false coalesces to the next turn.
+    property bool immediate: true
 
     property string _owner: ""
     property string _ownedKey: ""

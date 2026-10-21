@@ -78,7 +78,6 @@ Scope {
                         exposeArea.currentIndex = -1
                         searchBox.reset()
                         GlobalStates.overviewOpen = true
-                        refreshThumbs()
                     }
                 }
 
@@ -90,10 +89,15 @@ Scope {
                     }
                 }
 
-                // Periodically refresh thumbnails
+                // Thumbnails capture once as they appear (WindowThumbnail), then
+                // refresh once a second; not while the view is opening (a capture
+                // landing mid-animation dropped frames, 8 a second did constantly).
+                property bool settled: false
+                Timer { running: GlobalStates.overviewOpen && !root.settled; interval: 400; onTriggered: root.settled = true }
+                Connections { target: GlobalStates; function onOverviewOpenChanged() { if (!GlobalStates.overviewOpen) root.settled = false } }
                 Timer {
-                    interval: 125; repeat: true
-                    running: GlobalStates.overviewOpen
+                    interval: 1000; repeat: true
+                    running: GlobalStates.overviewOpen && root.settled
                     onTriggered: root.refreshThumbs()
                 }
 
@@ -199,19 +203,20 @@ Scope {
                                     model: windowLayoutModel
 
                                     delegate: WindowThumbnail {
-                                        hWin: modelData.win
+                                        hWin: modelData?.win
                                         wHandle: hWin?.toplevel ?? null
-                                        winKey: String(modelData.address ?? modelData.win?.address ?? index)
-                                        thumbW: modelData.width
-                                        thumbH: modelData.height
+                                        winKey: String(modelData?.address ?? modelData?.win?.address ?? index)
+                                        thumbW: modelData?.width ?? 0
+                                        thumbH: modelData?.height ?? 0
                                         clientInfo: ({})
-                                        targetX: modelData.x
-                                        targetY: modelData.y
-                                        targetZ: (visible && exposeArea.currentIndex === index) ? 1000 : (modelData.zIndex || 0)
-                                        targetRotation: modelData.rotation || 0
+                                        targetX: modelData?.x ?? 0
+                                        targetY: modelData?.y ?? 0
+                                        targetZ: (visible && exposeArea.currentIndex === index) ? 1000 : (modelData?.zIndex || 0)
+                                        targetRotation: modelData?.rotation || 0
                                         hovered: visible && (exposeArea.currentIndex === index)
                                         animateWindows: root.animateWindows
                                         lastPositions: root.lastPositions
+                                        order: index
 
                                         onActivated: root.activateWindow(hWin)
                                         onClosed: root.closeWindow(hWin)

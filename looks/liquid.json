@@ -8,7 +8,7 @@
   "texture": { "shader": "caustics", "animate": "interaction", "params": { "strength": 0.35 } },
   "typography": {},
   "motion": {
-    "liquid": { "spring": 3.2, "damping": 0.28, "mass": 1.0 },
+    "liquid": { "spring": 3.6, "damping": 0.42, "mass": 1.0 },
     "settle": { "spring": 7.0, "damping": 0.65, "mass": 1.0 },
     "snappy": { "spring": 6.0, "damping": 0.55, "mass": 0.8 }
   },

@@ -62,7 +62,8 @@ Scope {
 
     PanelWindow {
         id: clipWindow
-        visible: GlobalStates.clipboardOpen
+        // Mapped until the card's exit animation ends (closing used to unmap at once).
+        visible: GlobalStates.clipboardOpen || clipCard.opacity > 0.01
 
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:clipboard"
@@ -92,8 +93,8 @@ Scope {
 
             opacity: GlobalStates.clipboardOpen ? 1 : 0
             scale: GlobalStates.clipboardOpen ? 1 : 0.92
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.clipboardOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.clipboardOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             ColumnLayout {
                 anchors { fill: parent; margins: 16 }

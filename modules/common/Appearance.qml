@@ -324,11 +324,13 @@ Singleton {
         // From the active look's motion profile (Looks.qml); speed scales stiffness.
         readonly property var _m: Looks.current.motion ?? ({})
         // Surfaces growing out of an edge / morphing shapes: soft, slight give.
-        readonly property QtObject liquid: QtObject { readonly property real spring: (root.springs._m.liquid?.spring ?? 3.2) * root.springs._k; readonly property real damping: root.springs._m.liquid?.damping ?? 0.28; readonly property real mass: root.springs._m.liquid?.mass ?? 1.0; readonly property real epsilon: 0.25 }
+        // Damping at least 0.3 (a look may ask for less): lower wobbles visibly.
+        // epsilon 0.5 px: the sub-pixel tail ended in irregular frames.
+        readonly property QtObject liquid: QtObject { readonly property real spring: (root.springs._m.liquid?.spring ?? 3.2) * root.springs._k; readonly property real damping: Math.max(0.3, root.springs._m.liquid?.damping ?? 0.42); readonly property real mass: root.springs._m.liquid?.mass ?? 1.0; readonly property real epsilon: 0.5 }
         // Retracting into an edge: firm, settles flush without a long tail.
-        readonly property QtObject settle: QtObject { readonly property real spring: (root.springs._m.settle?.spring ?? 7.0) * root.springs._k; readonly property real damping: root.springs._m.settle?.damping ?? 0.65; readonly property real mass: root.springs._m.settle?.mass ?? 1.0; readonly property real epsilon: 0.25 }
+        readonly property QtObject settle: QtObject { readonly property real spring: (root.springs._m.settle?.spring ?? 7.0) * root.springs._k; readonly property real damping: root.springs._m.settle?.damping ?? 0.65; readonly property real mass: root.springs._m.settle?.mass ?? 1.0; readonly property real epsilon: 0.5 }
         // Small UI elements (chips, toggles, indicators).
-        readonly property QtObject snappy: QtObject { readonly property real spring: (root.springs._m.snappy?.spring ?? 6.0) * root.springs._k; readonly property real damping: root.springs._m.snappy?.damping ?? 0.55; readonly property real mass: root.springs._m.snappy?.mass ?? 0.8; readonly property real epsilon: 0.25 }
+        readonly property QtObject snappy: QtObject { readonly property real spring: (root.springs._m.snappy?.spring ?? 6.0) * root.springs._k; readonly property real damping: root.springs._m.snappy?.damping ?? 0.55; readonly property real mass: root.springs._m.snappy?.mass ?? 0.8; readonly property real epsilon: 0.5 }
     }
 
     // ═══════════════════════════════════════════════════════════════════════

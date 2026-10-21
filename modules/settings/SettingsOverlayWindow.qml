@@ -16,7 +16,8 @@ import "."
  */
 PanelWindow {
     id: settingsPanel
-    visible: GlobalStates.settingsOpen
+    // Mapped until the card's exit animation ends (closing used to unmap at once).
+    visible: GlobalStates.settingsOpen || settingsCard.opacity > 0.01
 
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "quickshell:settings"
@@ -45,8 +46,8 @@ PanelWindow {
 
         opacity: GlobalStates.settingsOpen ? 1 : 0
         scale: GlobalStates.settingsOpen ? 1 : 0.92
-        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.settingsOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+        Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.settingsOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
         RowLayout {
             anchors.fill: parent

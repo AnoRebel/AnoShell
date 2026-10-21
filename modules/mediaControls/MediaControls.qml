@@ -36,7 +36,8 @@ Scope {
 
     PanelWindow {
         id: mediaWindow
-        visible: GlobalStates.mediaControlsOpen
+        // Mapped until the card's exit animation ends (closing used to unmap at once).
+        visible: GlobalStates.mediaControlsOpen || mediaCard.opacity > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "quickshell:media"
@@ -76,8 +77,8 @@ Scope {
 
             opacity: GlobalStates.mediaControlsOpen ? 1 : 0
             scale: GlobalStates.mediaControlsOpen ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.mediaControlsOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.mediaControlsOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             MediaControlsContent {
                 id: mediaContent
