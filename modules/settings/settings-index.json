@@ -202,7 +202,7 @@
   "page": 0,
   "card": "",
   "label": "Blur behind the prompt",
-  "sublabel": "Off: only dims the screen (needs the bundled compositor rules for quickshell:polkitPlain)",
+  "sublabel": "Off (default): only dims the screen; the bundled compositor configs leave quickshell:polkitPlain unblurred",
   "keys": [
    "polkit.blur"
   ]

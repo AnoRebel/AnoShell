@@ -432,8 +432,8 @@ ColumnLayout {
             enabled: PolkitAuth.wanted
             label: "Blur behind the prompt"
             configKey: "polkit.blur"
-            sublabel: "Off: only dims the screen (needs the bundled compositor rules for quickshell:polkitPlain)"
-            checked: Config.options?.polkit?.blur ?? true
+            sublabel: "Off (default): only dims the screen; the bundled compositor configs leave quickshell:polkitPlain unblurred"
+            checked: Config.options?.polkit?.blur ?? false
             onCheckedChanged: Config.setNestedValue("polkit.blur", checked)
         }
         NoticeBox {

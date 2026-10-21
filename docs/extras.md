@@ -69,7 +69,7 @@ Settings → General → Password prompt:
   one (hyprpolkitagent, polkit-gnome…) is already running, AnoShell's stays
   quiet and the card says so. AnoShell never stops other agents; stop yours,
   then press **Retry**.
-- `polkit.blur` (on): blur behind the prompt. Off, the prompt uses the
+- `polkit.blur` (off): blur behind the prompt. Off, the prompt uses the
   namespace `quickshell:polkitPlain`, which the bundled Hyprland and niri
   configs leave unblurred (add the same rule to your own config if you don't
   use the bundled one).

@@ -46,7 +46,7 @@ Scope {
             }
             // The blur is the compositor's, per namespace: the bundled configs
             // leave quickshell:polkitPlain unblurred.
-            WlrLayershell.namespace: (Config.options?.polkit?.blur ?? true) ? "quickshell:polkit" : "quickshell:polkitPlain"
+            WlrLayershell.namespace: (Config.options?.polkit?.blur ?? false) ? "quickshell:polkit" : "quickshell:polkitPlain"
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -256,7 +256,7 @@ Scope {
                                     ["Command", win._viaPkexec ? win.pkexecCommand : ""],
                                     ["Started by", win._viaPkexec ? win.requestedBy : ""],
                                     ["Program", win.action.annotation ?? ""],
-                                ].filter(r => r[1]).flat()
+                                ].filter(r => r[1]).reduce((a, r) => a.concat(r), []) // no Array.flat in QML's JS
                                 delegate: StyledText {
                                     required property var modelData
                                     required property int index

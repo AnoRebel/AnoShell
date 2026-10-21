@@ -1075,7 +1075,7 @@ Singleton {
                 property bool enable: true
                 // Blur behind the prompt (off: namespace quickshell:polkitPlain,
                 // which the bundled compositor configs leave unblurred).
-                property bool blur: true
+                property bool blur: false
             }
 
             // ═══════════════════════════════════════════════════════════════
