@@ -10,15 +10,24 @@ import qs.services
 /**
  * Screen time (screenTime.enable): every 15 s the focused window's app and
  * title get 15 s, unless the session is idle (no input for
- * screenTime.idleSeconds and nothing playing: a video you watch still
- * counts) or locked. Idle inhibitors are ignored, so a forgotten
+ * screenTime.idleSeconds, unless the focused app is the one playing media:
+ * a video you watch counts, music in the background while you're away
+ * doesn't) or locked. Idle inhibitors are ignored, so a forgotten
  * "keep awake" toggle doesn't count the whole night. Credits go to anod once a minute
  * (screentime.add), which keeps them in local day files.
  */
 Singleton {
     id: root
     readonly property bool enabled: Config.options?.screenTime?.enable ?? false
-    readonly property bool idle: root._noInput && !MprisController.isPlaying
+    readonly property bool idle: root._noInput && !root._focusedIsPlaying
+    readonly property bool _focusedIsPlaying: {
+        const p = MprisController.activePlayer
+        const app = String(ToplevelManager.activeToplevel?.appId ?? "").toLowerCase()
+        if (!MprisController.isPlaying || !p || !app) return false
+        const names = [p.desktopEntry, p.identity].map(n => String(n ?? "").toLowerCase()).filter(n => n.length > 1)
+        const base = app.split(".").pop()
+        return names.some(n => n === app || n.includes(base) || base.includes(n))
+    }
     readonly property bool counting: root.enabled && !root.idle && !GlobalStates.screenLocked && !!ToplevelManager.activeToplevel
 
     property var _pending: ({})        // "app\u0000title" → seconds not sent yet
@@ -62,13 +71,20 @@ Singleton {
         if (!Anod.available) return // kept until anod is back
         const p = root._pending
         root._pending = {}
+        let left = 0
+        const done = () => { if (--left === 0) root.updated() } // refresh once they've landed
         for (const key in p) {
             const [app, title] = key.split("\u0000")
             // anod takes at most 120 s per report (time saved up while it was away goes in parts)
-            for (let left = p[key]; left > 0; left -= 120)
-                Anod.call("screentime.add", { app: app, title: title, seconds: Math.min(120, left) }, () => {})
+            for (let rest = p[key]; rest > 0; rest -= 120) {
+                const secs = Math.min(120, rest)
+                left++
+                Anod.call("screentime.add", { app: app, title: title, seconds: secs }, (r, e) => {
+                    if (e) { const q = Object.assign({}, root._pending); q[key] = (q[key] ?? 0) + secs; root._pending = q } // try again next minute
+                    done()
+                })
+            }
         }
-        root.updated()
     }
     signal updated()
 }

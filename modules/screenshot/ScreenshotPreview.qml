@@ -31,7 +31,7 @@ Scope {
         // Out of the next picture: made transparent at once while the window
         // stays mapped (an unmapping layer can linger in the compositor's
         // own exit animation and end up in the shot).
-        function onPreparingChanged() { if (Screenshot.preparing) root.close() }
+        function onPreparingChanged() { if (Screenshot.preparing) { root.settlePrevious(); root.close() } }
         function onCaptured(path, mode) {
             root.file = path
             root.note = ""
@@ -50,12 +50,15 @@ Scope {
         if (withNote) root.note = "Copied"
     }
     function save() { saveProc.exec({ command: ["bash", "-c",
-        'P=$(xdg-user-dir PICTURES 2>/dev/null); [ -z "$P" ] || [ "$P" = "$HOME" ] && P="$HOME/Pictures"; D="${SAVE:-$P/Screenshots}"; D="${D/#\\~/$HOME}"; mkdir -p -- "$D" && cp -- "$F" "$D/" && printf "%s" "$D/${F##*/}"'],
+        'P=$(xdg-user-dir PICTURES 2>/dev/null); [ -z "$P" ] || [ "$P" = "$HOME" ] && P="$HOME/Pictures"; D="${SAVE:-$P/Screenshots}"; D="${D/#\\~/$HOME}"; mkdir -p -- "$D" && N="${F##*/}" && N="${N%.*}" && N="${N%.*}.png" && mv -- "$F" "$D/$N" && chmod 644 -- "$D/$N" && printf "%s" "$D/$N"'],
         environment: ({ F: root.file, SAVE: root.cfg.saveDir ?? "" }) }) }
     Process {
         id: saveProc
         stdout: StdioCollector { id: savedTo }
-        onExited: code => { root.note = code === 0 ? `Saved to ${savedTo.text.replace(Quickshell.env("HOME"), "~")}` : "Couldn't save" }
+        onExited: code => {
+            root.note = code === 0 ? `Saved to ${savedTo.text.replace(Quickshell.env("HOME"), "~")}` : "Couldn't save"
+            if (code === 0 && savedTo.text) root.file = savedTo.text // moved: Copy/Edit/Delete act on the saved file now
+        }
     }
     function edit() {
         Quickshell.execDetached({ command: ["bash", "-c", 'if command -v satty >/dev/null; then exec satty --filename "$F"; else exec swappy -f "$F"; fi'], environment: ({ F: root.file }) })
@@ -67,6 +70,14 @@ Scope {
         root.close()
     }
     function close() { dismiss.stop(); root.shown = false }
+    // A new shot while this one's card is up: this one still gets its timeout
+    // action (onTimeout "save" would otherwise lose it).
+    function settlePrevious() {
+        if (!dismiss.running || !root.file) return
+        const act = root.cfg.onTimeout ?? "keep"
+        if (act === "save") root.save()
+        else if (act === "delete") Quickshell.execDetached(["rm", "-f", "--", root.file])
+    }
 
     // Auto-dismiss, paused while the pointer is on the card.
     Timer {

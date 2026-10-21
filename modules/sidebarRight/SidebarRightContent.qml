@@ -48,7 +48,7 @@ Rectangle {
     }
     Connections {
         target: GlobalStates
-        function onSidebarRightOpenChanged() { if (GlobalStates.sidebarRightOpen && AnimationConfig.transitions) root._staggerIn() }
+        function onSidebarRightOpenChanged() { if (GlobalStates.sidebarRightOpen && AnimationConfig.transitions) Qt.callLater(root._staggerIn) } // after the parked content is shown again
     }
 
     StyledFlickable {

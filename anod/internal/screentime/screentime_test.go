@@ -85,3 +85,19 @@ func TestTitlesCappedAndCleaned(t *testing.T) {
 		t.Error("empty app not recorded as unknown")
 	}
 }
+
+func TestCorruptDaySetAside(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "2026-10-21.json"), []byte("{not json"), 0o600)
+	s := &Store{Dir: dir}
+	at := time.Date(2026, 10, 21, 10, 0, 0, 0, time.Local)
+	if err := s.Add(at, "kitty", "x", 30); err != nil {
+		t.Fatalf("add after a corrupt file: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "2026-10-21.json.bad")); err != nil {
+		t.Error("corrupt file not kept aside")
+	}
+	if sum, _ := s.DaySummary("2026-10-21"); sum.Total != 30 {
+		t.Errorf("total %d", sum.Total)
+	}
+}

@@ -468,13 +468,18 @@ func main() {
 		return config.Int(m, "screenTime.keepDays", 30)
 	}
 	go func() {
+		// Checked hourly against the wall clock: a 24 h sleep drifts across suspend.
+		last := ""
 		for {
-			if n, err := st.Prune(time.Now(), keepDays()); err != nil {
-				log.Printf("screentime prune: %v", err)
-			} else if n > 0 {
-				log.Printf("screentime: pruned %d old days", n)
+			if today := time.Now().Format("2006-01-02"); today != last {
+				last = today
+				if n, err := st.Prune(time.Now(), keepDays()); err != nil {
+					log.Printf("screentime prune: %v", err)
+				} else if n > 0 {
+					log.Printf("screentime: pruned %d old days", n)
+				}
 			}
-			time.Sleep(24 * time.Hour)
+			time.Sleep(time.Hour)
 		}
 	}()
 	srv.Handle("screentime.add", func(p json.RawMessage) (any, error) {

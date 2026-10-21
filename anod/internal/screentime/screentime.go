@@ -57,7 +57,10 @@ func (s *Store) load(date string) (*Day, error) {
 		return nil, err
 	}
 	if err := json.Unmarshal(b, d); err != nil {
-		return nil, err
+		// Unreadable: set it aside (kept for a look) and start the day fresh,
+		// rather than refuse every report for the rest of the day.
+		os.Rename(s.path(date), s.path(date)+".bad")
+		return &Day{Hours: map[string]map[string]*AppHour{}}, nil
 	}
 	if d.Hours == nil {
 		d.Hours = map[string]map[string]*AppHour{}
@@ -244,7 +247,16 @@ func (s *Store) Prune(now time.Time, keepDays int) (int, error) {
 	n := 0
 	for _, e := range ents {
 		name := e.Name()
+		if strings.HasSuffix(name, ".json.tmp") { // a write that never finished
+			if fi, err := e.Info(); err == nil && now.Sub(fi.ModTime()) > time.Hour {
+				os.Remove(filepath.Join(s.Dir, name))
+			}
+			continue
+		}
 		date, ok := strings.CutSuffix(name, ".json")
+		if !ok {
+			date, ok = strings.CutSuffix(name, ".json.bad")
+		}
 		if !ok {
 			continue
 		}
