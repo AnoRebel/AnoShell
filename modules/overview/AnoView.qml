@@ -27,7 +27,9 @@ Scope {
         LazyLoader {
             id: viewLoader
             required property var modelData
-            active: GlobalStates.overviewOpen
+            // Built in the background (incubated) and shown once ready: building
+            // it synchronously on the keypress stalled its opening ~200 ms.
+            activeAsync: GlobalStates.overviewOpen
 
             component: PanelWindow {
                 id: root
