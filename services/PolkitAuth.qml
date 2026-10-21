@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Polkit
 import qs.modules.common
 
@@ -35,9 +36,17 @@ Singleton {
     readonly property bool asking: root.agent?.isActive ?? false
     // Wanted but not registered a few seconds on: another agent holds the session.
     property bool otherAgent: false
+    // Not registered shortly after starting: polkit may still hold the
+    // previous shell's (or a reload's) registration for a moment, so retry
+    // on its own first; only after that is it another agent.
     Timer {
         running: root.wanted && !root.registered
-        interval: 4000
+        interval: 1500
+        onTriggered: root.retry()
+    }
+    Timer {
+        running: root.wanted && !root.registered && !retryTimer.running
+        interval: 8000
         onTriggered: root.otherAgent = !root.registered
     }
     onRegisteredChanged: if (root.registered) root.otherAgent = false
@@ -67,5 +76,14 @@ Singleton {
             root._resting = true
             Qt.callLater(() => root._resting = false)
         }
+    }
+
+    IpcHandler {
+        target: "polkit"
+        /// {wanted, registered, otherAgent, asking} as JSON.
+        function status(): string {
+            return JSON.stringify({ wanted: root.wanted, registered: root.registered, otherAgent: root.otherAgent, asking: root.asking })
+        }
+        function retry(): void { root.retry() }
     }
 }
