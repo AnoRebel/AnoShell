@@ -6,6 +6,7 @@ BarConfig 1.0 BarConfig.qml
 DockConfig 1.0 DockConfig.qml
 CursorCard 1.0 CursorCard.qml
 IconsCard 1.0 IconsCard.qml
+KeyboardLayoutsCard 1.0 KeyboardLayoutsCard.qml
 CustomizeSheet 1.0 CustomizeSheet.qml
 DisplaysPage 1.0 DisplaysPage.qml
 GeneralConfig 1.0 GeneralConfig.qml

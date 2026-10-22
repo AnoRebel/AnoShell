@@ -11,6 +11,28 @@ so a chord does the same thing on both.
   shortcut are kept as that compositor's own action and generated only there.
   `ano keybinds list` shows which compositor each bind is for.
 
+## Keyboard layouts
+
+The **Keyboard layouts** card at the top of Settings → Keybinds lists the
+XKB catalogue (`/usr/share/X11/xkb/rules/evdev.xml`, from
+xkeyboard-config): type a language or a code (`fr`, `azerty`) and click one
+to add it. Your layouts are kept in order in `keyboard.layouts`
+(`[{"layout": "fr", "variant": "azerty"}]`); the first is the default, and
+the `keyboard` bar/pill module switches between them (click: next,
+right-click: previous).
+
+anod (`keyboard.apply`) checks each against the catalogue and applies them:
+
+- **Hyprland**: live, with `hyprctl eval` of `input`'s `kb_layout` and
+  `kb_variant` only, and in `~/.config/hypr/ano-managed.lua`.
+- **niri**: in `~/.config/niri/ano-managed.kdl` (an `input { keyboard { xkb } }`
+  block; niri merges it into yours field by field and reloads it).
+
+The managed files only count once your compositor config loads them (at the
+end, so they win). An empty list leaves your compositor config's layouts
+alone. `keyboard.catalogue` returns the catalogue as
+`[{"layout", "variant", "short", "description"}]`.
+
 ## The defaults
 
 The shipped set (`anod/internal/keybinds/defaults.json`) is curated by hand

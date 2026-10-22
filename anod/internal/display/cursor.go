@@ -179,10 +179,7 @@ func (s *Service) SetCursor(c Cursor) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.cursor = &c
-	run := s.Exec
-	if run == nil {
-		run = func(name string, args ...string) error { return exec.Command(name, args...).Run() }
-	}
+	run := s.exec
 	if s.Backend.Name() == "hyprland" {
 		if err := run("hyprctl", "setcursor", c.Theme, strconv.Itoa(c.Size)); err != nil {
 			s.logf("hyprctl setcursor: %v", err)
@@ -204,6 +201,14 @@ func (s *Service) SetCursor(c Cursor) error {
 		}
 	}
 	return s.writeManaged(cur)
+}
+
+// exec runs a command through Exec (swapped by tests and the dry run).
+func (s *Service) exec(name string, args ...string) error {
+	if s.Exec != nil {
+		return s.Exec(name, args...)
+	}
+	return exec.Command(name, args...).Run()
 }
 
 // setIniKeys replaces the values of keys already present (never adds any,

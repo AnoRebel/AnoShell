@@ -55,7 +55,7 @@ Singleton {
         { name: "Overview",   icon: "overview",        configRoots: ["overview"] },
         { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "powerProfiles", "network", "vpn", "nightLight", "lyrics", "calendar", "resources", "light", "shell", "weather", "recording", "screenFilter", "drives"] },
         { name: "Displays",   icon: "desktop_windows", configRoots: ["cursor", "icons"] },
-        { name: "Keybinds",   icon: "keyboard",        configRoots: [] },
+        { name: "Keybinds",   icon: "keyboard",        configRoots: ["keyboard"] },
         { name: "About",      icon: "info",            configRoots: ["user"] },
     ]
 

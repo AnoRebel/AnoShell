@@ -880,6 +880,12 @@ Singleton {
                 property int size: 24
                 property bool adopted: false // the AnoShell cursor went on at first start
             }
+            // Keyboard layouts in order, [{ layout, variant }] from the XKB catalogue
+            // (Settings → Keybinds). anod applies them live and in the managed
+            // compositor file; empty leaves your compositor config's layouts.
+            property JsonObject keyboard: JsonObject {
+                property var layouts: []
+            }
             // Desktop icon theme (GTK + qt5ct/qt6ct): "" leaves it alone. The
             // palette ones (anoshell-icons, anoshell-icons-primary) draw folders
             // and file types in the wallpaper's colours and inherit the rest

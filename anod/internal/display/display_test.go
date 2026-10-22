@@ -264,3 +264,27 @@ func TestProfilesFollowIdentityAndIgnorePending(t *testing.T) {
 	}
 	s.Revert()
 }
+
+func TestKeyboard(t *testing.T) {
+	f := &fake{outs: []Output{edp}}
+	s, _ := newSvc(t, f)
+	var ran []string
+	s.Exec = func(n string, a ...string) error { ran = append(ran, n+" "+strings.Join(a, " ")); return nil }
+	if err := s.SetKeyboard(Keyboard{Layouts: "us,fr", Variants: ",azerty"}); err != nil {
+		t.Fatal(err)
+	}
+	want := `hyprctl eval hl.config({ input = { kb_layout = "us,fr", kb_variant = ",azerty" } })`
+	if len(ran) != 1 || ran[0] != want {
+		t.Errorf("ran: %v", ran)
+	}
+	m, _ := os.ReadFile(s.HyprFile)
+	if !strings.Contains(string(m), `kb_layout = "us,fr"`) || !strings.Contains(string(m), `output = "eDP-1"`) {
+		t.Errorf("managed: %s", m)
+	}
+	if err := s.SetKeyboard(Keyboard{Layouts: `us"})os.exit()--`}); err == nil {
+		t.Error("bad layouts accepted")
+	}
+	if got := niriKeyboard(Keyboard{Layouts: "us,fr", Variants: ",azerty"}); !strings.Contains(got, `layout "us,fr"`) || !strings.Contains(got, `variant ",azerty"`) {
+		t.Errorf("niri: %s", got)
+	}
+}

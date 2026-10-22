@@ -130,9 +130,11 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Keybinds"
-        subtitle: "One set for Hyprland and niri · search, add, change, remove, reset"
-        configRoots: []
+        subtitle: "Keyboard layouts, and one set of keybinds for Hyprland and niri · search, add, change, remove, reset"
+        configRoots: ["keyboard"]
     }
+
+    KeyboardLayoutsCard {}
 
     NoticeBox {
         Layout.fillWidth: true

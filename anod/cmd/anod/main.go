@@ -22,6 +22,7 @@ import (
 
 	"ano/anod/internal/camera"
 	"ano/anod/internal/downloads"
+	"ano/anod/internal/xkb"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/hooks"
@@ -497,6 +498,17 @@ func main() {
 				}
 				return &c
 			},
+			Keyboard: func() *display.Keyboard {
+				m, err := config.Effective()
+				if err != nil {
+					return nil
+				}
+				k, err := keyboardFrom(m)
+				if err != nil {
+					return nil
+				}
+				return k
+			},
 		}
 		if os.Getenv("ANOD_DISPLAY_DRYRUN") == "1" { // nothing outside anod's own files changes
 			disp.GtkSettings = nil
@@ -530,6 +542,26 @@ func main() {
 				return nil, ipc.Errorf(ipc.CodeBadInput, "want {theme, size}")
 			}
 			if err := disp.SetCursor(c); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
+			}
+			return true, nil
+		})
+		// Keyboard layouts (Settings → Keyboard): the catalogue, and applying
+		// keyboard.layouts from the config live and into the managed files.
+		srv.Handle("keyboard.catalogue", func(json.RawMessage) (any, error) { return xkb.Catalogue(xkb.Path) })
+		srv.Handle("keyboard.apply", func(json.RawMessage) (any, error) {
+			m, err := config.Effective()
+			if err != nil {
+				return nil, err
+			}
+			k, err := keyboardFrom(m)
+			if err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
+			}
+			if k == nil {
+				return false, nil // empty list: the compositor config's own layouts
+			}
+			if err := disp.SetKeyboard(*k); err != nil {
 				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
 			}
 			return true, nil
@@ -696,6 +728,32 @@ func xdgCache() string {
 	}
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, ".cache")
+}
+
+// keyboardFrom reads keyboard.layouts ([{layout, variant}]) and checks it
+// against the XKB catalogue; nil for an empty list.
+func keyboardFrom(m map[string]any) (*display.Keyboard, error) {
+	v, _ := config.Get(m, "keyboard.layouts")
+	list, _ := v.([]any)
+	if len(list) == 0 {
+		return nil, nil
+	}
+	var picks []xkb.Layout
+	for _, e := range list {
+		o, _ := e.(map[string]any)
+		l, _ := o["layout"].(string)
+		vr, _ := o["variant"].(string)
+		picks = append(picks, xkb.Layout{Layout: l, Variant: vr})
+	}
+	cat, err := xkb.Catalogue(xkb.Path)
+	if err != nil {
+		return nil, err
+	}
+	ls, vs, err := xkb.Join(cat, picks)
+	if err != nil {
+		return nil, err
+	}
+	return &display.Keyboard{Layouts: ls, Variants: vs}, nil
 }
 
 func expandHome(p string) string {
