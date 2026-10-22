@@ -16,6 +16,9 @@ Item {
 
     default property alias content: holder.data
     property bool enabled: true
+    // Most it may open to (the room left in the pill); the content elides to it.
+    property real maxWidth: Infinity
+    readonly property real openWidth: Math.max(collapsedWidth, Math.min(fullWidth, maxWidth))
     // Width while collapsed: the leading icon (the zone's first child).
     readonly property real collapsedWidth: Math.ceil(item?.children?.[0]?.implicitWidth ?? 18)
     readonly property Item item: holder.children[0] ?? null
@@ -26,7 +29,7 @@ Item {
     // reads as false while its parent is hidden, so copying it would stick.
     implicitHeight: item?.implicitHeight ?? 0
     implicitWidth: Math.round(_w)
-    property real _w: expanded ? fullWidth : Math.min(collapsedWidth, fullWidth)
+    property real _w: expanded ? openWidth : Math.min(collapsedWidth, fullWidth)
     Behavior on _w { MotionSpring { token: root.expanded ? "liquid" : "settle" } }
     Layout.preferredWidth: implicitWidth
     clip: true
@@ -36,9 +39,9 @@ Item {
 
     Item {
         id: holder
-        width: root.fullWidth
+        width: root.openWidth
         height: root.height
         // The item keeps its own layout width; we only clip the rest.
-        onChildrenChanged: if (children[0]) { children[0].width = Qt.binding(() => root.fullWidth); children[0].height = Qt.binding(() => root.height) }
+        onChildrenChanged: if (children[0]) { children[0].width = Qt.binding(() => root.openWidth); children[0].height = Qt.binding(() => root.height) }
     }
 }

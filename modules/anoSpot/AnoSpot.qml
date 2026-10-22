@@ -564,6 +564,7 @@ Scope {
                     anchors.topMargin: root.isVertical && root.draggable ? 18 : 6
                     vertical: root.isVertical
                     thickness: root.heightPx
+                    maxLength: Math.min(root.widthPx, spotWindow._maxAlong) - spotWindow._lead - 6
                     faces: root.faces
                     barMode: root.barMode
                 }
