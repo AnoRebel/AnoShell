@@ -81,6 +81,7 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.showBattery` | `true` | Battery (hidden without one) |
 | `anoSpot.showLyrics` | `false` | Current lyric line in place of the track title |
 | `anoSpot.accordion` | `true` | Track, notification and battery collapse to icons and open on hover |
+| `anoSpot.modules` | `[]` | Bar modules (`drives`, `privacy`, …) on the status face, after the zones above; the same modules the bars use |
 | `anoSpot.notificationTimeoutMs` | `4000` | How long a notification transient stays |
 | `anoSpot.faces.media` | `true` | Media face |
 | `anoSpot.faces.spectrum` | `false` | Spectrum face |

@@ -27,6 +27,11 @@ Item {
     property bool barMode: false
     readonly property bool accordion: Config.options?.anoSpot?.accordion ?? true
     property real thickness: 36
+    // Longest the faces may be (the pill's maximum minus its grip and padding).
+    property real maxLength: Infinity
+    // Status row length with every zone collapsed; an opening zone gets the
+    // rest of maxLength, so the row never outgrows the pill and clips its ends.
+    property real _restLength: 0
     // Face ids in cycle order; the caller drops disabled/unavailable ones.
     property var faces: ["status"]
     property real progress: 0
@@ -152,28 +157,39 @@ Item {
     Component {
         id: statusH
         RowLayout {
+            id: statusRow
             spacing: 10
+            readonly property bool anyOpen: [accMpris, accNotif, accBattery].some(a => a.visible && a.enabled && a._w > a.collapsedWidth + 0.5)
+            onImplicitWidthChanged: if (!anyOpen) root._restLength = implicitWidth
+            onAnyOpenChanged: if (!anyOpen) root._restLength = implicitWidth
             AnoSpotWorkspace  { visible: !root.barMode && (Config.options?.anoSpot?.showWorkspace ?? true) }
             WorkspacesModule  { visible: root.barMode }
             // Long zones collapse to their icon and open on hover
             // (anoSpot.accordion); the clock always shows.
             AnoSpotAccordion {
+                id: accMpris
                 enabled: root.accordion
+                maxWidth: root.maxLength - root._restLength + collapsedWidth
                 visible: (Config.options?.anoSpot?.showMpris ?? true) && AnoSpotState.mpris !== null
                 AnoSpotMpris { }
             }
             AnoSpotRecording  { visible: (Config.options?.anoSpot?.showRecording ?? true) && AnoSpotState.recording.active }
             AnoSpotAccordion {
+                id: accNotif
                 enabled: root.accordion
+                maxWidth: root.maxLength - root._restLength + collapsedWidth
                 visible: (Config.options?.anoSpot?.showNotification ?? true) && AnoSpotState.latestNotification !== null
                 AnoSpotNotification { }
             }
             AnoSpotClockWeather { visible: Config.options?.anoSpot?.showClockWeather ?? true }
             AnoSpotAccordion {
+                id: accBattery
                 enabled: root.accordion
+                maxWidth: root.maxLength - root._restLength + collapsedWidth
                 visible: Battery.available && (Config.options?.anoSpot?.showBattery ?? true)
                 AnoSpotBattery { }
             }
+            Repeater { model: root.extraModules; delegate: barModule }
             TrayModule        { visible: root.barMode }
         }
     }
@@ -220,6 +236,21 @@ Item {
                     font.pixelSize: Appearance.font.pixelSize.smallest
                 }
             }
+            Repeater { model: root.extraModules; delegate: barModule }
+        }
+    }
+    // Bar modules the user put on the pill (anoSpot.modules): the same
+    // components the bars load, so any module can live in a bar, the pill, or both.
+    readonly property var extraModules: (Config.options?.anoSpot?.modules ?? []).filter(m => BarModuleLoader.isKnownModule(m))
+    Component {
+        id: barModule
+        Loader {
+            required property string modelData
+            Layout.alignment: Qt.AlignCenter
+            Layout.preferredHeight: root.vertical ? -1 : root.thickness
+            Layout.preferredWidth: root.vertical ? root.thickness : -1
+            sourceComponent: BarModuleLoader.getModule(modelData)
+            onLoaded: if (item.hasOwnProperty("vertical")) item.vertical = Qt.binding(() => root.vertical)
         }
     }
 

@@ -1615,6 +1615,15 @@
  },
  {
   "page": 5,
+  "card": "Bar modules",
+  "label": "Bar modules",
+  "sublabel": "Any bar module can sit on the pill too (after the zones above). Most hide themselves when idle: drives while nothing is plugged in, privacy while nothing records.",
+  "keys": [
+   "anoSpot.modules"
+  ]
+ },
+ {
+  "page": 5,
   "card": "Faces",
   "label": "Faces",
   "sublabel": "Resting faces you swipe between (horizontal scroll, or drag along the pill). Status is always first.",

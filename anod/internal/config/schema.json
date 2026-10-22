@@ -38,6 +38,7 @@
   "anoSpot.growInto.mediaControls": "bool",
   "anoSpot.heightPx": "int",
   "anoSpot.hideOnFullscreen": "bool",
+  "anoSpot.modules": "var",
   "anoSpot.notificationTimeoutMs": "int",
   "anoSpot.pillOnly": "bool",
   "anoSpot.position": "string",

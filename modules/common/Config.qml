@@ -1448,6 +1448,9 @@ Singleton {
                 // Status zones (track, notification, battery) collapse to their icon
                 // and open on hover.
                 property bool accordion: true
+                // Bar modules (BarModuleLoader ids: "drives", "privacy", …) shown
+                // on the status face after the built-in zones.
+                property var modules: []
                 // Resting faces, switched by horizontal swipe / shift-wheel. Status
                 // is always first; media/spectrum need a player, lyrics the
                 // lyrics service.

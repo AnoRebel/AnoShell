@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.modules.bar.modules
 import qs.services
 import "."
 
@@ -235,6 +236,59 @@ ColumnLayout {
             sublabel: "Hidden automatically on desktops without a battery"
             checked: Config.options?.anoSpot?.showBattery ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showBattery", checked)
+        }
+    }
+
+    // ═══ Bar modules ═══
+    SettingsCard {
+        icon: "extension"
+        title: "Bar modules"
+        subtitle: "Any bar module can sit on the pill too (after the zones above). Most hide themselves when idle: drives while nothing is plugged in, privacy while nothing records."
+        configKeys: ["anoSpot.modules"]
+        Flow {
+            Layout.fillWidth: true
+            spacing: 6
+            Repeater {
+                model: BarModuleLoader.availableModuleIds
+                delegate: Rectangle {
+                    id: modChip
+                    required property string modelData
+                    readonly property var current: Config.options?.anoSpot?.modules ?? []
+                    readonly property bool on: current.includes(modelData)
+                    implicitWidth: modRow.implicitWidth + 20
+                    implicitHeight: 30
+                    radius: Appearance?.rounding.small ?? 8
+                    color: on ? Appearance.colors.colPrimaryContainer
+                        : modMA.containsMouse ? Appearance.colors.colLayer1Hover : Appearance.colors.colLayer1
+                    border.width: on ? 0 : 1
+                    border.color: Appearance.colors.colOutlineVariant
+                    RowLayout {
+                        id: modRow
+                        anchors.centerIn: parent
+                        spacing: 4
+                        MaterialSymbol {
+                            text: modChip.on ? "check" : "add"; iconSize: 14
+                            color: modChip.on ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+                        }
+                        StyledText {
+                            text: BarModuleLoader.labelFor(modChip.modelData)
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: modChip.on ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnLayer1
+                        }
+                    }
+                    MouseArea {
+                        id: modMA
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        // Kept in catalogue order, so the pill reads the same as the bar editor.
+                        onClicked: {
+                            const want = modChip.on ? modChip.current.filter(m => m !== modChip.modelData) : modChip.current.concat([modChip.modelData])
+                            Config.setNestedValue("anoSpot.modules", BarModuleLoader.availableModuleIds.filter(m => want.includes(m)))
+                        }
+                    }
+                }
+            }
         }
     }
 

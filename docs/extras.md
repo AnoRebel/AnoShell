@@ -57,7 +57,8 @@ Settings → Sidebars → **Productivity**.
 
 ## Removable drives
 
-The bar module `drives` appears while a USB stick, SD card or other
+The module `drives` (add it to any bar in Settings → Bar, or to the pill in
+Settings → AnoSpot → Bar modules) appears while a USB stick, SD card or other
 hot-pluggable disk is plugged in. Its popout lists each drive and its
 partitions: **Mount** / **Unmount**, **Open** (your file manager) and
 **Eject**, which unmounts everything and powers the drive off. While data is
