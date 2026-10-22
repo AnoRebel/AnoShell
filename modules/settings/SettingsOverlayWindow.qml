@@ -64,11 +64,22 @@ PanelWindow {
                     anchors { fill: parent; margins: 10 }
                     spacing: 4
 
-                    StyledText {
-                        text: "Settings"
-                        font.pixelSize: Appearance?.font.pixelSize.huger ?? 22
-                        font.weight: Font.Bold
+                    RowLayout {
+                        Layout.fillWidth: true
                         Layout.bottomMargin: 10
+                        StyledText {
+                            text: "Settings"
+                            font.pixelSize: Appearance?.font.pixelSize.huger ?? 22
+                            font.weight: Font.Bold
+                            Layout.fillWidth: true
+                        }
+                        RippleButton {
+                            implicitWidth: 32; implicitHeight: 32
+                            buttonRadius: 16
+                            contentItem: MaterialSymbol { text: "close"; iconSize: 20; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                            onClicked: GlobalStates.settingsOpen = false
+                            StyledToolTip { text: "Close (Esc)" }
+                        }
                     }
 
                     Repeater {
@@ -168,6 +179,18 @@ PanelWindow {
             flickable: pageFlickable
             activePageItem: pageLoader.item
             onPageRequested: idx => GlobalStates.settingsPage = idx
+        }
+    }
+
+    // Esc wherever focus is inside the window (the handler below only hears
+    // keys while it holds focus itself): the palette first, then Settings.
+    Shortcut {
+        sequence: "Escape"
+        autoRepeat: false
+        enabled: GlobalStates.settingsOpen
+        onActivated: {
+            if (GlobalStates.settingsCommandPaletteOpen) GlobalStates.settingsCommandPaletteOpen = false
+            else GlobalStates.settingsOpen = false
         }
     }
 
