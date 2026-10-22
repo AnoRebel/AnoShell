@@ -21,9 +21,10 @@ import qs.services
  * qt5ct/qt6ct).
  *
  * On the first start (as Bioma does) the desktop's icon theme becomes the
- * base and AnoShell Tint goes on, so the folders follow the wallpaper without
- * a trip to Settings. Once: icons.adopted is written either way, so a theme
- * chosen afterwards, "" included, is never taken back.
+ * base and AnoShell Tint goes on, and the AnoShell cursor goes on at the
+ * desktop's cursor size, so both follow the wallpaper without a trip to
+ * Settings. Once each: icons.adopted / cursor.adopted are written either way,
+ * so a theme chosen afterwards, "" included, is never taken back.
  */
 Singleton {
     id: root
@@ -44,8 +45,9 @@ Singleton {
     property string iconsLive: ""
     // Installed icon themes, from scripts/themes/looks list: [{id, name, slotted}]
     property var iconThemes: []
-    // The desktop's icon theme when the shell started (null until listed).
+    // The desktop's icon theme and cursor size when the shell started (null/0 until listed).
     property var desktopIcons: null
+    property int desktopCursorSize: 0
     signal cursorBuilt()
 
     // The slot `id` is not on now, so the toolkits load it afresh.
@@ -111,17 +113,28 @@ Singleton {
         if (!root.iconsWanted) root.applyIcons() // a palette theme applies once built
     }
 
-    readonly property bool adopted: Config.options?.icons?.adopted ?? true
-    readonly property bool canAdopt: Config.ready && !root.adopted && root.desktopIcons !== null
+    // First start: the palette icons and cursor go on, once each (see the top).
+    readonly property bool canAdopt: Config.ready && root.desktopIcons !== null
+        && !((Config.options?.icons?.adopted ?? true) && (Config.options?.cursor?.adopted ?? true))
     onCanAdoptChanged: if (root.canAdopt) Qt.callLater(root.adopt)
     function adopt(): void {
         if (!root.canAdopt) return
-        if (!root.iconTheme) {
-            const cur = root.desktopIcons
-            if (cur && !root.iconIds.includes(cur)) Config.setNestedValue("icons.base", cur)
-            Config.setNestedValue("icons.theme", "anoshell-icons-tint")
+        if (!(Config.options?.icons?.adopted ?? true)) {
+            if (!root.iconTheme) {
+                const cur = root.desktopIcons
+                if (cur && !root.iconIds.includes(cur)) Config.setNestedValue("icons.base", cur)
+                Config.setNestedValue("icons.theme", "anoshell-icons-tint")
+            }
+            Config.setNestedValue("icons.adopted", true)
         }
-        Config.setNestedValue("icons.adopted", true)
+        if (!(Config.options?.cursor?.adopted ?? true)) {
+            // at the size the desktop already uses
+            if (!root.cursorTheme) {
+                if (root.desktopCursorSize > 0) Config.setNestedValue("cursor.size", root.desktopCursorSize)
+                Config.setNestedValue("cursor.theme", "anoshell-cursor")
+            }
+            Config.setNestedValue("cursor.adopted", true)
+        }
     }
 
     function refresh(): void { if (!lister.running) lister.running = true }
@@ -133,7 +146,10 @@ Singleton {
                 try {
                     const d = JSON.parse(text)
                     root.iconThemes = d.icons ?? []
-                    if (root.desktopIcons === null) root.desktopIcons = d.current?.icons ?? ""
+                    if (root.desktopIcons === null) {
+                        root.desktopCursorSize = d.current?.size ?? 0
+                        root.desktopIcons = d.current?.icons ?? ""
+                    }
                     if (!root.cursorLive) root.cursorLive = d.current?.live ?? ""
                     if (!root.iconsLive) root.iconsLive = d.current?.iconsLive ?? ""
                 } catch (e) {}

@@ -72,6 +72,13 @@ a cursor theme loaded by name, so each has two empty slots,
 `anoshell-cursor.a` and `.b`, and the shell moves between them after a
 rebuild; that's the name you'll see in gsettings.
 
+**On the first start** the shell puts AnoShell on at the cursor size your
+desktop already uses, so the pointer follows the wallpaper from the start
+(once: `cursor.adopted`; a theme you pick afterwards, "" included, is
+kept). Hyprland and GTK apps switch live; niri reads it from the managed
+file; XWayland and some Electron apps draw their own cursor and pick it up
+when they next start.
+
 ## Icons
 
 The **Icons** card sets the desktop icon theme (GTK through gsettings, Qt

@@ -192,6 +192,7 @@
   "calendar.holidays.fallbackCountry": "string",
   "calendar.upcomingDays": "int",
   "compositor.backend": "string",
+  "cursor.adopted": "bool",
   "cursor.size": "int",
   "cursor.theme": "string",
   "disabledPanels": "var",

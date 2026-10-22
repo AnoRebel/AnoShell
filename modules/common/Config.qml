@@ -878,6 +878,7 @@ Singleton {
             property JsonObject cursor: JsonObject {
                 property string theme: ""
                 property int size: 24
+                property bool adopted: false // the AnoShell cursor went on at first start
             }
             // Desktop icon theme (GTK + qt5ct/qt6ct): "" leaves it alone. The
             // palette ones (anoshell-icons, anoshell-icons-primary) draw folders
