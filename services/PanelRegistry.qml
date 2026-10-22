@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 
 /**
@@ -150,6 +151,25 @@ Singleton {
         for (const p of root.panels) if (p.screenName === screenName && p.edge === edge) n += p.reserve
         return n
     }
+    /// Space other clients reserve on an edge (waybar, another panel): what
+    /// the compositor reserves beyond our own inset. Hyprland only; its
+    /// monitor `reserved` is [left, top, right, bottom], re-read whenever a
+    /// layer surface opens or closes.
+    /// ponytail: 0 on niri (no reserved-area IPC); surfaces there assume no foreign panels.
+    function foreignInset(screenName, edge) {
+        const r = Hyprland.monitors.values.find(m => m.name === screenName)?.lastIpcObject?.reserved
+        if (!r) return 0
+        const v = r[["left", "top", "right", "bottom"].indexOf(edge)] ?? 0
+        return Math.max(0, v - root.inset(screenName, edge))
+    }
+    Connections {
+        target: Hyprland
+        enabled: CompositorService.compositor === "hyprland"
+        function onRawEvent(event) { if (event.name === "openlayer" || event.name === "closelayer") layerSettle.restart() }
+    }
+    // The exclusive zone lands a commit after openlayer.
+    Timer { id: layerSettle; interval: 300; onTriggered: Hyprland.refreshMonitors() }
+
     /// Screen-space origin of a layer-shell window (Qt.point), for surfaces
     /// that map items to their window and need screen coordinates. Models the
     /// layer shell's placement: unless it ignores exclusion, the window is laid
@@ -163,7 +183,7 @@ Singleton {
         const own = root.windowEdge(w)
         const pushed = w.exclusionMode !== ExclusionMode.Ignore
         const zone = Math.max(0, w.exclusiveZone ?? 0)
-        const ins = e => pushed ? Math.max(0, root.inset(sc.name, e) - (e === own ? zone : 0)) : 0
+        const ins = e => pushed ? Math.max(0, root.inset(sc.name, e) + root.foreignInset(sc.name, e) - (e === own ? zone : 0)) : 0
         const axis = (lo, hi, eLo, eHi, mLo, mHi, size, total) => {
             const s = ins(eLo), t = total - ins(eHi)
             return lo && !hi ? s + (mLo ?? 0) : hi && !lo ? t - size - (mHi ?? 0) : s + (t - s - size) / 2
