@@ -18,7 +18,7 @@ import Quickshell.Services.Pipewire
  * - Cameras opened directly (most apps): anod watches /dev/video*
  *   ("camera_users"; anod/internal/camera).
  * - Hyprland: its screencast events (screencopy clients, the portal), counted
- *   once a cast has lasted castDelay, so a screenshot doesn't flash it.
+ *   once a capture has stayed open castDelay, so a screenshot doesn't flash it.
  *
  * uses: [{ kind: "microphone" | "camera" | "screen", app, detail }]
  */
@@ -90,34 +90,46 @@ Singleton {
     Component.onCompleted: root._askCameras()
 
     // ── Hyprland screencasts ─────────────────────────────────────────────
-    // Hyprland toggles screencast 1/0 around nearly every captured frame, so
-    // the events are activity pings: live once captures keep coming for
-    // castDelay (a screenshot's single frame never is), over castIdle after
-    // the last one.
-    // ponytail: a capture paused longer than castIdle (damage-only recorders
-    // on a still screen) blinks off; portal casts also show via PipeWire.
+    // screencastv2>>STATE,OWNER,NAME opens (1) and closes (0) a capture per
+    // target (a monitor, a window, a region); Hyprland sends the 0 about half
+    // a second after the last frame. A capture counts once it has stayed open
+    // castDelay: a screenshot (one frame, open ~0.5 s) never does, however many
+    // are taken in a row. A 0 closes after castGrace unless a 1 revives it, for
+    // clients that toggle around each frame.
     readonly property int castDelay: 700
-    readonly property int castIdle: 2000
-    property double _castStart: 0
-    property string _castTarget: ""
-    property bool _castLive: false
-    function _castPing() {
-        if (!castIdleTimer.running) root._castStart = Date.now()
-        castIdleTimer.restart()
-        if (!root._castLive && Date.now() - root._castStart >= root.castDelay) root._castLive = true
+    readonly property int castGrace: 300
+    property var _casts: ({})         // "owner,name" → { since, closing, name }
+    property double _now: Date.now()
+    readonly property bool _castLive: Object.values(root._casts).some(c => !c.closing && root._now - c.since >= root.castDelay)
+    readonly property string _castTarget: Object.values(root._casts).find(c => !c.closing && c.owner === "window")?.name ?? ""
+    function _castEvent(data) {
+        // NAME (a window title) may hold commas.
+        const parts = data.split(","), key = parts.slice(1).join(","), m = Object.assign({}, root._casts)
+        if (parts[0] === "1") {
+            m[key] = m[key] ? Object.assign({}, m[key], { closing: false }) : { since: Date.now(), closing: false, owner: parts[1], name: parts.slice(2).join(",") }
+            castCheck.restart()
+        } else if (m[key]) {
+            m[key] = Object.assign({}, m[key], { closing: true, closedAt: Date.now() })
+            castSweep.restart()
+        }
+        root._casts = m
+        root._now = Date.now()
     }
-    Timer { id: castIdleTimer; interval: root.castIdle; onTriggered: root._castLive = false }
+    // Re-evaluate once a fresh capture is old enough, and drop closed ones.
+    Timer { id: castCheck; interval: root.castDelay + 10; onTriggered: root._now = Date.now() }
+    Timer {
+        id: castSweep; interval: root.castGrace
+        onTriggered: {
+            const m = {}, now = Date.now()
+            for (const [k, c] of Object.entries(root._casts)) if (!c.closing || now - c.closedAt < root.castGrace) m[k] = c
+            root._casts = m
+            if (Object.values(m).some(c => c.closing)) castSweep.restart()
+        }
+    }
     Connections {
         target: Hyprland
         enabled: CompositorService.compositor === "hyprland"
-        function onRawEvent(event) {
-            if (event.name === "screencast") root._castPing()
-            else if (event.name === "screencastv2") {
-                // STATE,OWNER,NAME: the name (a window title) may hold commas.
-                const parts = event.data.split(",")
-                if (parts[0] === "1") root._castTarget = parts.slice(2).join(",")
-            }
-        }
+        function onRawEvent(event) { if (event.name === "screencastv2") root._castEvent(event.data) }
     }
 
     IpcHandler {
