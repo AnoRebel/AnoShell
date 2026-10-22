@@ -3,6 +3,7 @@ ActiveWindowModule 1.0 ActiveWindowModule.qml
 singleton BarModuleLoader 1.0 BarModuleLoader.qml
 BatteryModule 1.0 BatteryModule.qml
 BluetoothModule 1.0 BluetoothModule.qml
+DrivesModule 1.0 DrivesModule.qml
 ClockModule 1.0 ClockModule.qml
 GameModeModule 1.0 GameModeModule.qml
 IdleModule 1.0 IdleModule.qml

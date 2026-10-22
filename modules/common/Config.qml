@@ -1069,6 +1069,11 @@ Singleton {
                 property bool confirmShutdown: true
             }
 
+            // Removable drives (services/Drives.qml, bar module "drives").
+            property JsonObject drives: JsonObject {
+                property bool notify: true   // a notification when a drive is plugged in
+            }
+
             // Built-in polkit agent (services/PolkitAuth.qml). polkit takes one
             // agent per session: one already running keeps it.
             property JsonObject polkit: JsonObject {

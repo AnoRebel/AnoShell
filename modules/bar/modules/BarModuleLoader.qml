@@ -28,6 +28,7 @@ QtObject {
         "notifications",
         "idle",
         "privacy",
+        "drives",
         "gamemode"
     ]
 
@@ -50,6 +51,7 @@ QtObject {
         "notifications": "Notifications",
         "idle": "Idle inhibit",
         "privacy": "Privacy",
+        "drives": "Removable drives",
         "gamemode": "Game mode"
     })
 
@@ -81,6 +83,7 @@ QtObject {
             case "notifications": return notificationsModule
             case "idle": return idleModule
             case "privacy": return privacyModule
+            case "drives": return drivesModule
             case "gamemode": return gameModeModule
             default:
                 console.warn(`[BarModuleLoader] Unknown module: ${name}`)
@@ -103,5 +106,6 @@ QtObject {
     property Component notificationsModule: Component { NotificationsModule {} }
     property Component idleModule: Component { IdleModule {} }
     property Component privacyModule: Component { PrivacyModule {} }
+    property Component drivesModule: Component { DrivesModule {} }
     property Component gameModeModule: Component { GameModeModule {} }
 }

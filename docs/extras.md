@@ -55,6 +55,19 @@ Settings → Sidebars → **Productivity**.
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
 
+## Removable drives
+
+The bar module `drives` appears while a USB stick, SD card or other
+hot-pluggable disk is plugged in. Its popout lists each drive and its
+partitions: **Mount** / **Unmount**, **Open** (your file manager) and
+**Eject**, which unmounts everything and powers the drive off. While data is
+still going to a drive the icon spins and the drive says *Writing … MB/s ·
+not safe to remove*, with how much the system still has to write; during
+Eject it says *Ejecting…* until the data is on the drive. A notification
+says when a drive is plugged in and when it's safe to remove
+(`drives.notify`, Settings → Services). `qs -c ano ipc call drives list`
+prints the state; `mount`, `unmount` and `eject` take a device path.
+
 ## Privacy indicator
 
 The bar module `privacy` shows a red icon while the microphone, a camera or

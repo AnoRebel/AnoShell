@@ -47,6 +47,7 @@ var features = []feature{
 	{"keybinds: cheatsheet and migration (reads Lua configs)", "", []string{"lua"}},
 	{"apps in their own session (else systemd-run)", "", []string{"setsid"}},
 	{"password prompt (polkit) details", "polkit.enable", []string{"pkaction", "pgrep", "ps"}},
+	{"removable drives (bar module drives)", "", []string{"udisksctl", "lsblk", "udevadm"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.

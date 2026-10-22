@@ -20,12 +20,28 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording"
+        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
             "ai", "gameMode", "powerProfiles", "network", "vpn",
             "nightLight", "lyrics", "calendar", "resources", "light",
-            "shell", "weather", "recording", "screenFilter"
+            "shell", "weather", "recording", "screenFilter", "drives"
         ]
+    }
+
+    // ═══ Removable drives ═══
+    SettingsCard {
+        icon: "usb"
+        title: "Removable drives"
+        subtitle: "USB sticks and SD cards: the bar's \"drives\" module mounts, opens and ejects them"
+        configKeys: ["drives"]
+
+        ConfigSwitch {
+            label: "Notify when a drive is plugged in"
+            configKey: "drives.notify"
+            sublabel: "Also when it's safe to remove after Eject, or when an action fails"
+            checked: Config.options?.drives?.notify ?? true
+            onCheckedChanged: Config.setNestedValue("drives.notify", checked)
+        }
     }
 
     // ═══ Screen recording ═══
