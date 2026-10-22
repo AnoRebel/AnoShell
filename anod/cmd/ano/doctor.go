@@ -45,6 +45,8 @@ var features = []feature{
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
 	{"anime reader playback", "reader.enable", []string{"mpv"}},
 	{"keybinds: cheatsheet and migration (reads Lua configs)", "", []string{"lua"}},
+	{"apps in their own session (else systemd-run)", "", []string{"setsid"}},
+	{"password prompt (polkit) details", "polkit.enable", []string{"pkaction", "pgrep", "ps"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.
@@ -175,6 +177,19 @@ func runChecks() []check {
 		}
 		if len(missing) > 0 {
 			add("warn", "optional: "+f.Name, "missing %s", strings.Join(missing, ", "))
+		}
+	}
+
+	// Palette cursor/icon themes: drawn only once one is chosen.
+	if strings.HasPrefix(config.String(eff, "cursor.theme", ""), "anoshell-") || strings.HasPrefix(config.String(eff, "icons.theme", ""), "anoshell-") {
+		var missing []string
+		for _, b := range []string{"rsvg-convert", "magick"} {
+			if !have(b) {
+				missing = append(missing, b)
+			}
+		}
+		if len(missing) > 0 {
+			add("warn", "palette cursors/icons", "missing %s (librsvg, imagemagick)", strings.Join(missing, ", "))
 		}
 	}
 

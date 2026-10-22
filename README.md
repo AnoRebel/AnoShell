@@ -563,6 +563,22 @@ Each AnoSpot widget/action and the underlying tool that makes it work:
 
 If any dependency is missing, the corresponding action shows a `notify-send` failure message but the rest of AnoSpot keeps working.
 
+### System integration dependency map
+What each feature needs from the system (`ano doctor` checks the binaries):
+
+| Feature | Needs | Without it |
+|---------|-------|------------|
+| Apps launched in their own unit (dock, launcher, default apps) | a systemd user manager (`systemd-run`, `systemctl`), else `setsid` (util-linux) | plain detached launch |
+| Password prompt (polkit) | `polkit` (polkitd; `pkaction` for Details), `procps-ng` (`pgrep`, `ps`) for the pkexec command in Details; no other agent running (e.g. hyprpolkitagent) | another agent answers, Settings says so |
+| Blur behind the polkit prompt (`polkit.blur`) | the bundled Hyprland/niri layer rules for `quickshell:polkit` / `quickshell:polkitPlain` | the compositor's own rules decide |
+| Sensitive clipboard entries skipped | `wl-clipboard` (`wl-paste --watch`) + `cliphist` (verified with 0.7.0) | password-manager copies land in the history |
+| Privacy: microphone, PipeWire cameras | PipeWire + WirePlumber | not shown |
+| Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
+| Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown |
+| Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
+
+Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
+
 ### Color Pipeline
 ```
 Wallpaper → awww (apply) → matugen (Material You → colors.json) → MaterialThemeLoader
