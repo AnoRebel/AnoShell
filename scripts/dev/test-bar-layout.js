@@ -44,6 +44,14 @@ a(B.neckK(14,0)===14 && B.neckK(14,1)===0 && B.neckK(14,0.5)===7,'neck thins to 
 const hg=[{id:'m',zone:'center',len:100}];
 a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[430,570]},hg).m===578,'centre moves past the pill');
 a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[10,50]},hg).m===450,'a pill elsewhere leaves the centre alone');
+const hs=[{id:'l',zone:'start',len:300},{id:'m',zone:'center',len:100},{id:'r',zone:'end',len:300}];
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[420,620]},hs).$hideCenter===true,'no room either side, nothing to squeeze: centre hides');
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[440,640]},hs).m===332,'room only before the pill: centre goes before it');
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[360,520]},hs).m===528,'room after the pill: centre goes after it');
+const hf=[{id:'l',zone:'start',len:300,flex:200},{id:'m',zone:'center',len:100},{id:'r',zone:'end',len:300}];
+let pf=B.place({length:1000,padding:8,spacing:8,form:'full',hole:[420,620]},hf);
+a(pf.$squeeze.l===4 && pf.m===312,'the title gives way just enough for the centre before the pill');
+a(B.place({length:1000,padding:8,spacing:8,form:'full',hole:[420,620]},[{id:'l',zone:'start',len:300},{id:'m',zone:'center',len:300},{id:'r',zone:'end',len:300}]).$hideCenter===true,'no room and nothing to squeeze: centre hides');
 console.log('bar layout ok');
 
 // BarEdit: module moves, add/remove groups.

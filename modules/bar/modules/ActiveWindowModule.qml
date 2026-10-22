@@ -13,7 +13,11 @@ Item {
     id: root
     // Vertical bars run the title along the bar, rotated, capped in length.
     property bool vertical: false
-    implicitWidth: vertical ? title.implicitHeight + 8 : title.implicitWidth
+    // A pill in the bar may ask the title to give way (BarLayout squeeze).
+    property real barSqueeze: 0
+    readonly property real _natural: Math.min(title.implicitWidth, 300)
+    readonly property real barFlex: vertical ? 0 : _natural
+    implicitWidth: vertical ? title.implicitHeight + 8 : Math.max(0, _natural - barSqueeze)
     implicitHeight: vertical ? Math.min(title.implicitWidth, 160) : Appearance.sizes.barHeight
     Layout.fillWidth: !vertical
 
@@ -36,5 +40,6 @@ Item {
         font.pixelSize: Appearance?.font.pixelSize.small ?? 14
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
         elide: Text.ElideRight
+        visible: root.vertical || root.implicitWidth >= 24
     }
 }

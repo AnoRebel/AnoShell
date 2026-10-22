@@ -174,8 +174,10 @@ Item {
             const it = groupRep.itemAt(i)
             if (it) items.push(it)
         }
+        // Natural lengths (before any squeeze) and what each group can give.
         root._targets = BarLayout.place({ length: root.along, padding: root.edgePadding, spacing: root.groupSpacing,
-            form: root.form, margin: root.edgeMargin, hole: root.pillHole }, items.map(it => ({ id: it.gid, zone: it.zone, len: it.len })))
+            form: root.form, margin: root.edgeMargin, hole: root.pillHole },
+            items.map(it => ({ id: it.gid, zone: it.zone, len: it.contentLen + Math.min(it.squeeze, it.flex), flex: it.flex })))
         const bodies = BarLayout.bodies({ length: root.along, padding: root.edgePadding, form: root.form,
             gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin },
             items.map(it => ({ id: it.gid, pos: it.pos, len: it.len, sep: Math.max(0, Math.min(1, it.sep)) })))
@@ -205,7 +207,21 @@ Item {
             readonly property string gid: modelData.id ?? `group${index}`
             readonly property string zone: ["start", "center", "end"].includes(modelData.zone) ? modelData.zone : "start"
             readonly property var mods: modelData.modules ?? []
-            readonly property real len: mods.length === 0 ? 0 : (root.isVertical ? content.implicitHeight : content.implicitWidth)
+            readonly property real contentLen: mods.length === 0 ? 0 : (root.isVertical ? content.implicitHeight : content.implicitWidth)
+            readonly property real len: hiddenCenter ? 0 : contentLen
+            // No room beside a pill in the bar: the centre steps aside (BarLayout $hideCenter).
+            readonly property bool hiddenCenter: zone === "center" && !!root._targets.$hideCenter
+            // Width the group is asked to give up, and how much its modules can
+            // (modules with barFlex/barSqueeze: the window title).
+            readonly property real squeeze: root._targets.$squeeze?.[gid] ?? 0
+            property int _modRev: 0
+            readonly property real flex: {
+                void _modRev
+                let f = 0
+                for (let i = 0; i < modRep.count; i++) f += modRep.itemAt(i)?.item?.barFlex ?? 0
+                return f
+            }
+            onFlexChanged: root._relayout()
 
             // Along-axis position and separation (0 attached … 1 island).
             property real pos: root._targets[gid] ?? 0
@@ -215,6 +231,7 @@ Item {
             onPosChanged: root._relayout()
             onSepChanged: root._relayout()
             onLenChanged: root._relayout()
+            onContentLenChanged: root._relayout()
             Component.onCompleted: root._relayout()
 
             visible: len > 0
@@ -265,15 +282,19 @@ Item {
                 backgroundRadius: root.centerGroupRadius
 
                 Repeater {
+                    id: modRep
                     // End zones read from the bar's edge inwards, as before.
                     model: grp.zone === "end" ? grp.mods.slice().reverse() : grp.mods
                     Loader {
+                        id: modLoader
                         required property string modelData
                         Layout.fillHeight: !root.isVertical
                         Layout.fillWidth: root.isVertical
                         Layout.alignment: root.isVertical ? Qt.AlignHCenter : Qt.AlignVCenter
                         sourceComponent: BarModuleLoader.getModule(modelData)
-                        onLoaded: root._place(item, grp.zone === "start" ? "left" : grp.zone === "end" ? "right" : "center")
+                        onLoaded: { root._place(item, grp.zone === "start" ? "left" : grp.zone === "end" ? "right" : "center"); grp._modRev++ }
+                        // ponytail: every flexible module in the group gets the whole squeeze; fine while the title is the only one.
+                        Binding { when: !!modLoader.item && modLoader.item.hasOwnProperty("barSqueeze"); target: modLoader.item; property: "barSqueeze"; value: grp.squeeze }
                     }
                 }
             }

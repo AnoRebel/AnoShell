@@ -56,9 +56,35 @@ function place(opts, groups) {
     var midTotal = mids.reduce(function (a, g) { return a + g.len; }, 0) + s * Math.max(0, mids.length - 1);
     var xm = (L - midTotal) / 2;
     // A pill inside the bar (opts.hole = [from, to] along the bar): the
-    // centre groups move just past it instead of running under it.
+    // centre groups move just past it instead of running under it, to the
+    // side that has room (after it first). Without room, groups that can give
+    // way (g.flex: px a module like the window title can shrink) squeeze on
+    // the start side, then the end side: the result carries $squeeze
+    // ({id: px}). Still no room: $hideCenter.
     var h = opts.hole;
-    if (h && midTotal > 0 && xm < h[1] + s && xm + midTotal > h[0] - s) xm = h[1] + s;
+    if (h && midTotal > 0 && xm < h[1] + s && xm + midTotal > h[0] - s) {
+        var after = x1 - (h[1] + s), before = (h[0] - s) - x0;
+        if (after >= midTotal) xm = h[1] + s;
+        else if (before >= midTotal) xm = h[0] - s - midTotal;
+        else {
+            var zones = [["start", before], ["end", after]];
+            for (var i = 0; i < zones.length; i++) {
+                var z = zones[i][0], need = midTotal - zones[i][1];
+                var flex = live.reduce(function (a, g) { return a + (g.zone === z ? g.flex || 0 : 0); }, 0);
+                if (flex < need) continue;
+                var sq = {};
+                var squeezed = groups.map(function (g) {
+                    if (g.zone !== z || !g.flex || need <= 0) return g;
+                    var d = Math.min(g.flex, need); need -= d; sq[g.id] = d;
+                    return { id: g.id, zone: g.zone, len: g.len - d };
+                });
+                var r = place(opts, squeezed);
+                r.$squeeze = sq;
+                return r;
+            }
+            out.$hideCenter = true;
+        }
+    }
     mids.forEach(function (g) { out[g.id] = xm; xm += g.len + s; });
     return out;
 }
