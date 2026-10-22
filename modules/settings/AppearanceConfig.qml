@@ -361,16 +361,16 @@ ColumnLayout {
             label: "Qt apps"
             configKey: "appearance.theme.qt"
             visible: appearanceRoot.materialYou
-            sublabel: (Config.options?.appearance?.theme?.qt ?? "kvantum") === "palette"
+            sublabel: (Config.options?.appearance?.theme?.qt ?? "palette") === "palette"
                 ? "Fusion style on the palette: open apps change colour with the wallpaper (needs qt6ct)"
-                : (Config.options?.appearance?.theme?.qt ?? "kvantum") === "kvantum"
-                ? "A Kvantum theme in the palette: apps get new colours when they next start (needs qt6ct and Kvantum)"
+                : (Config.options?.appearance?.theme?.qt ?? "palette") === "kvantum"
+                ? "Kvantum's shapes, palette colours for text and backgrounds: apps get them when they next start (needs qt6ct and Kvantum)"
                 : "Qt apps are left alone"
             ChoiceRow {
-                model: [{ value: "kvantum", label: "Kvantum", icon: "palette" },
-                        { value: "palette", label: "Live palette", icon: "sync" },
+                model: [{ value: "palette", label: "Live palette", icon: "sync" },
+                        { value: "kvantum", label: "Kvantum", icon: "palette" },
                         { value: "off", label: "Off", icon: "block" }]
-                current: Config.options?.appearance?.theme?.qt ?? "kvantum"
+                current: Config.options?.appearance?.theme?.qt ?? "palette"
                 onChose: value => { Config.setNestedValue("appearance.theme.qt", value); qtSoon.restart() }
             }
             // after the config is on disk: the script reads it from there

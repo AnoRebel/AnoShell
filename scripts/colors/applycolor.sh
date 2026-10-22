@@ -75,12 +75,13 @@ secondary=$(_col '.secondary' '.colors.color2' '#ccc2dc')
 tertiary=$(_col '.tertiary' '.colors.color5' '#efb8c8')
 error=$(_col '.error' '.colors.color1' '#f2b8b5')
 
-# Qt: appearance.theme.qt in the shell config. "kvantum" (default): a
-# recoloured Kvantum theme, which apps read when they start; "palette": the
+# Qt: appearance.theme.qt in the shell config. "palette" (default): the
 # Fusion style on qt5ct/qt6ct's palette, which running apps pick up live;
-# "off": Qt is left alone.
+# "kvantum": a recoloured Kvantum theme, which apps read when they start
+# (Kvantum draws from an SVG with its colours baked in, so it can't follow a
+# palette live); "off": Qt is left alone.
 QT_MODE=$(jq -r '.appearance.theme.qt // empty' "$XDG_CONFIG_HOME/anoshell/config.json" 2>/dev/null || true)
-QT_MODE=${QT_MODE:-kvantum}
+QT_MODE=${QT_MODE:-palette}
 
 # #RRGGBB → 0xFFRRGGBB (opaque) for hyprland/hyprtoolkit color syntax.
 _hexToHl() { local h="${1#\#}"; [[ "${#h}" -eq 6 ]] && echo "0xFF${h^^}" || echo "0xFF181818"; }
@@ -297,9 +298,14 @@ apply_qt() {
         printf '[ColorScheme]\nactive_colors=%s\ndisabled_colors=%s\ninactive_colors=%s\n' \
             "$active" "$disabled" "$active" > "$dir/colors/anoshell.conf"
         [[ -f "$dir/$tool.conf" ]] || printf '[Appearance]\nicon_theme=Papirus-Dark\nstandard_dialogs=default\n' > "$dir/$tool.conf"
-        _qt_point "$dir" "$dir/colors/anoshell.conf" "$style"
+        # palette: a style you set that draws with the palette (Breeze, …) is
+        # kept; only Kvantum, which doesn't, or none becomes Fusion
+        local want="$style" cur
+        cur=$(sed -n 's/^style=//p' "$dir/$tool.conf" | head -n1)
+        [[ "$QT_MODE" == palette && -n "$cur" && "${cur,,}" != kvantum ]] && want="$cur"
+        _qt_point "$dir" "$dir/colors/anoshell.conf" "$want"
+        log "Wrote the $tool palette (style: $want)"
     done
-    log "Wrote the qt5ct/qt6ct palette (Qt style: ${style})"
 
     [[ "$QT_MODE" == "kvantum" ]] && _qt_kvantum
 

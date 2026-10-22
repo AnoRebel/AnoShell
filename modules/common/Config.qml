@@ -734,10 +734,10 @@ Singleton {
                     // GTK 3/4 apps take the palette: anod keeps a marked block in
                     // ~/.config/gtk-{3,4}.0/gtk.css (libadwaita colours); off removes it.
                     property bool gtk: true
-                    // Qt apps (scripts/colors/applycolor.sh, via qt5ct/qt6ct): "kvantum"
-                    // (a recoloured Kvantum theme, read when an app starts), "palette"
-                    // (Fusion on qt6ct's palette: running apps follow live) or "off".
-                    property string qt: "kvantum"
+                    // Qt apps (scripts/colors/applycolor.sh, via qt5ct/qt6ct): "palette"
+                    // (Fusion on qt6ct's palette: running apps follow live), "kvantum"
+                    // (a recoloured Kvantum theme, read when an app starts) or "off".
+                    property string qt: "palette"
                     // Light/dark for your apps (GTK color-scheme, portal-aware Qt apps):
                     // "follow" the shell, or always "light" / "dark".
                     property string appColorScheme: "follow"

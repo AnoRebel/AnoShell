@@ -75,13 +75,21 @@ Theme source, `appearance.theme.qt`) picks the style:
 
 | Value | Style | When apps change colour |
 |---|---|---|
-| `"kvantum"` (default) | a Kvantum theme in the palette (`~/.config/Kvantum/AnoColors`, shapes from KvArcDark) | when they next start |
-| `"palette"` | Fusion on qt6ct's palette | live: qt6ct re-reads its config about 3 s after a change, palette and icon theme included |
+| `"palette"` (default) | qt6ct's palette, with Fusion or the palette-drawn style you picked | live: qt6ct re-reads its config about 3 s after a change, palette and icon theme included |
+| `"kvantum"` | a Kvantum theme in the palette (`~/.config/Kvantum/AnoColors`, shapes from KvArcDark) | when they next start |
 | `"off"` | left alone | never |
 
 It needs the qt6ct platform theme installed and `QT_QPA_PLATFORMTHEME=qt6ct`
 in the session; without it Qt apps ignore all of this. Changing the style
 takes effect when an app starts.
+
+Kvantum can't follow a palette live: it draws widgets from an SVG whose
+colours are baked in, and reads its theme when an app starts, so in
+`"kvantum"` only text and background colours come from the palette.
+For nicer shapes than Fusion that still follow live, KDE's Breeze style
+(package `breeze`) uses the palette too: pick it in qt6ct (or set
+`style=Breeze` in qt6ct.conf). In `"palette"` any style other than Kvantum
+is kept; Kvantum or none becomes Fusion.
 
 In the **Fixed** colour mode (Settings → Appearance → Theme source) step 3 is
 skipped: the colours don't follow the wallpaper.
