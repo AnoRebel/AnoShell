@@ -716,6 +716,9 @@ Singleton {
                     // moments | dynamic: wallpaper palette everywhere | fixed: the AnoShell
                     // palette (ano-dark/light); wallpaper changes leave colours alone.
                     property string colorMode: "dynamicAccent"
+                    // GTK 3/4 apps take the palette: anod keeps a marked block in
+                    // ~/.config/gtk-{3,4}.0/gtk.css (libadwaita colours); off removes it.
+                    property bool gtk: true
                     // Light/dark for your apps (GTK color-scheme, portal-aware Qt apps):
                     // "follow" the shell, or always "light" / "dark".
                     property string appColorScheme: "follow"

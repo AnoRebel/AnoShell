@@ -5,7 +5,7 @@
 #     icon-theme build < request.json   {"colours": {"background", "primary", "cell", "raised",
 #                                                    "rim", "line", "grad_top", "grad_bottom",
 #                                                    "back_top", "back_bottom"},
-#                                        "base": "<icon theme id>"}
+#                                        "base": "<icon theme id>", "tint": bool}
 #                                       prints {"built": true | false}
 #
 # The drawings are data, assets/icon-theme/drawings.json. Every theme listed
@@ -18,16 +18,25 @@
 # applications first — comes from `base`, the theme the user chose under it,
 # which the themes inherit from, then hicolor.
 #
+# With "tint", anoshell-icons-tint is built too: the base theme's own folder
+# and place icons (its chain of Inherits, hicolor aside), their colours turned
+# to the primary's hue; greys and whites stay. Papirus-style colour variants
+# (folder-red-*) are left out: apps ask for folder, folder-documents and the
+# like. Everything else is the base's, inherited.
+#
 # GTK and Qt keep an icon theme loaded by its name, so, as with the cursors
 # (scripts/themes/cursors), each theme has two slots, <id>.a and <id>.b: hidden themes
 # with no icons of their own that inherit everything from <id>. The shell moves
 # the desktop from one to the other after a build, and the new name is what
 # makes the toolkits draw the new colours. Nothing is rebuilt when neither the
 # request nor the drawings have changed.
+import colorsys
+import configparser
 import hashlib
 import json
 import math
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -38,6 +47,17 @@ DRAWINGS = os.path.join(HERE, "assets", "icon-theme", "drawings.json")
 HOME = os.environ["HOME"]
 DATA_HOME = os.environ.get("XDG_DATA_HOME") or os.path.join(HOME, ".local", "share")
 ICONS = os.path.join(DATA_HOME, "icons")
+
+DATA_DIRS = (os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share").split(":")
+ROOTS = [os.path.join(HOME, ".icons"), ICONS] + [os.path.join(d, "icons") for d in DATA_DIRS if d]
+
+TINT = "anoshell-icons-tint"
+TINT_THEME = {"name": "AnoShell Tint", "comment": "Your icon theme's folders, in the palette's colour."}
+# Colour names icon themes give their folder variants (Papirus, Suru++ …).
+FOLDER_COLOURS = {"adwaita", "black", "blue", "bluegrey", "breeze", "brown", "carmine", "cyan", "darkcyan",
+                  "deeporange", "green", "grey", "indigo", "magenta", "nordic", "orange", "palebrown",
+                  "paleorange", "pink", "red", "teal", "violet", "white", "yaru", "yellow"}
+HEX = re.compile(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b")
 
 SLOTS = ("a", "b")
 ROLES = ("background", "primary", "cell", "raised", "rim", "line",
@@ -157,6 +177,101 @@ def write_theme(theme_id, theme, data, colours, base, root):
         handle.write("\n".join(lines))
 
 
+# ---- Tint ------------------------------------------------------------------------
+
+
+def theme_dir(name):
+    for root in ROOTS:
+        path = os.path.join(root, name)
+        if os.path.isfile(os.path.join(path, "index.theme")):
+            return path
+    return None
+
+
+def index(path):
+    parser = configparser.ConfigParser(interpolation=None, strict=False)
+    parser.optionxform = str
+    parser.read(os.path.join(path, "index.theme"), encoding="utf-8")
+    return parser
+
+
+def recolour(text, hue):
+    def turn(m):
+        h = m.group(1)
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+        _, light, sat = colorsys.rgb_to_hls(r, g, b)
+        if sat < 0.12 or light < 0.06 or light > 0.94:  # greys, black, white: the drawing's own
+            return m.group(0)
+        r, g, b = colorsys.hls_to_rgb(hue, light, sat)
+        return "#%02x%02x%02x" % tuple(round(c * 255) for c in (r, g, b))
+    return HEX.sub(turn, text)
+
+
+def colour_variant(name):
+    parts = name.split("-")
+    return len(parts) > 1 and parts[0] == "folder" and parts[1] in FOLDER_COLOURS
+
+
+def write_tint(base, primary, root):
+    """The base theme's Places icons, turned to the primary's hue."""
+    h = primary.lstrip("#")
+    hue, _, _ = colorsys.rgb_to_hls(*(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)))
+    target = os.path.join(root, TINT)
+    os.makedirs(target)
+    sections, seen, done = {}, set(), {}
+    queue = [base]
+    while queue:
+        name = queue.pop(0)
+        if name in seen or name == "hicolor" or len(seen) > 8:
+            continue
+        seen.add(name)
+        path = theme_dir(name)
+        if not path:
+            continue
+        parser = index(path)
+        if not parser.has_section("Icon Theme"):
+            continue
+        queue += [t.strip() for t in parser["Icon Theme"].get("Inherits", "").split(",") if t.strip()]
+        for d in parser["Icon Theme"].get("Directories", "").split(","):
+            d = d.strip()
+            if not d or not parser.has_section(d) or parser[d].get("Context") != "Places" or "symbolic" in d:
+                continue
+            src = os.path.join(path, d)
+            if not os.path.isdir(src):
+                continue
+            out = os.path.join(target, d)
+            os.makedirs(out, exist_ok=True)
+            sections.setdefault(d, dict(parser[d]))
+            for entry in sorted(os.listdir(src)):
+                stem, ext = os.path.splitext(entry)
+                if ext != ".svg" or colour_variant(stem) or os.path.lexists(os.path.join(out, entry)):
+                    continue
+                real = os.path.realpath(os.path.join(src, entry))
+                dest = os.path.join(out, entry)
+                if real in done:  # the same drawing under another name
+                    os.symlink(os.path.relpath(done[real], out), dest)
+                    continue
+                try:
+                    with open(real, encoding="utf-8") as handle:
+                        text = handle.read()
+                except (OSError, UnicodeDecodeError):
+                    continue
+                with open(dest, "w", encoding="utf-8") as handle:
+                    handle.write(recolour(text, hue))
+                done[real] = dest
+    if not sections:
+        raise ValueError(f"no folder icons to tint in {base}")
+    lines = ["[Icon Theme]", f"Name={TINT_THEME['name']}", f"Comment={TINT_THEME['comment']}",
+             f"Inherits={','.join(dict.fromkeys(t for t in (base, 'hicolor') if t))}",
+             f"Directories={','.join(sections)}", ""]
+    for d, keys in sections.items():
+        lines += [f"[{d}]"] + [f"{k}={v}" for k, v in keys.items()] + [""]
+    with open(os.path.join(target, "index.theme"), "w", encoding="utf-8") as handle:
+        handle.write("\n".join(lines))
+
+
 def slot(theme_id, theme, letter):
     path = os.path.join(ICONS, f"{theme_id}.{letter}")
     os.makedirs(path, exist_ok=True)
@@ -196,9 +311,14 @@ def build(request):
     for theme_id, theme in data["themes"].items():
         for letter in SLOTS:
             slot(theme_id, theme, letter)
+    for letter in SLOTS:
+        slot(TINT, TINT_THEME, letter)
 
+    built = False
+    if request.get("tint"):
+        built = build_tint(base, colours["primary"])
     if all(_read(os.path.join(ICONS, t, ".stamp")) == stamp for t in data["themes"]):
-        return False
+        return built
 
     # Built beside the old ones and swapped in whole.
     staging = tempfile.mkdtemp(prefix=".anoshell-icons-", dir=ICONS)
@@ -212,6 +332,24 @@ def build(request):
             if os.path.isdir(live):
                 os.rename(live, os.path.join(staging, theme_id + ".old"))
             os.rename(os.path.join(staging, theme_id), live)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+    return True
+
+
+def build_tint(base, primary):
+    stamp = hashlib.sha256(json.dumps([RENDERER, TINT, base, primary.lower()]).encode()).hexdigest()
+    if _read(os.path.join(ICONS, TINT, ".stamp")) == stamp:
+        return False
+    staging = tempfile.mkdtemp(prefix=".anoshell-icons-", dir=ICONS)
+    try:
+        write_tint(base, primary, staging)
+        with open(os.path.join(staging, TINT, ".stamp"), "w", encoding="utf-8") as handle:
+            handle.write(stamp)
+        live = os.path.join(ICONS, TINT)
+        if os.path.isdir(live):
+            os.rename(live, os.path.join(staging, TINT + ".old"))
+        os.rename(os.path.join(staging, TINT), live)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return True

@@ -23,7 +23,7 @@ SettingsCard {
     readonly property var themes: {
         const listed = PaletteThemes.iconThemes
         const ours = PaletteThemes.iconIds.map(id => listed.find(t => t.id === id)
-            ?? { id: id, name: id === "anoshell-icons" ? "AnoShell" : "AnoShell Primary" })
+            ?? { id: id, name: ({ "anoshell-icons": "AnoShell", "anoshell-icons-primary": "AnoShell Primary", "anoshell-icons-tint": "AnoShell Tint" })[id] })
         const q = iconsCard.filter.trim().toLowerCase()
         const rest = listed.filter(t => !PaletteThemes.iconIds.includes(t.id)
             && (q ? (t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))
@@ -75,7 +75,7 @@ SettingsCard {
     StyledText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: `AnoShell icons draw folders and file types; apps and the rest come from ${Config.options?.icons?.base ?? "Papirus-Dark"} (the last other theme you picked).`
+        text: `AnoShell and AnoShell Primary draw their own folders and file types; AnoShell Tint keeps ${iconsCard.base}'s folders in the palette's colour. Apps and the rest come from ${iconsCard.base} (the last other theme you picked).`
         font.pixelSize: Appearance.font.pixelSize.smaller
         color: Appearance.colors.colSubtext
     }

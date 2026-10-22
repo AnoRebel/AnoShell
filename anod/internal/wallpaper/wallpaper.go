@@ -26,6 +26,7 @@ import (
 	"syscall"
 	"time"
 
+	"ano/anod/internal/gtkcss"
 	"ano/anod/internal/palette"
 )
 
@@ -56,6 +57,7 @@ type Settings struct {
 	// PerWallpaper: colour picks remembered for the image (Pipeline.Choices)
 	// replace the defaults above.
 	PerWallpaper bool
+	Gtk          bool // palette block in GTK 3/4 gtk.css (appearance.theme.gtk); off removes it
 	Hooks        []Hook
 }
 
@@ -105,6 +107,7 @@ type Pipeline struct {
 	// ColorCache: a directory of generated palettes by image and options, so
 	// coming back to a wallpaper (the focused-monitor mode) skips matugen.
 	ColorCache string
+	GtkDirs    []string // ~/.config/gtk-3.0, gtk-4.0
 	mu         sync.Mutex
 }
 
@@ -194,6 +197,7 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 			res.ColorImage = img
 			p.saveColors(img)
 		}
+		res.Steps = append(res.Steps, p.Gtk(s))
 	}
 
 	// 3. hooks, in order
@@ -314,6 +318,50 @@ func (p *Pipeline) matugen(ctx context.Context, img string, s Settings) StepResu
 		_ = writeAtomic(cached, colors)
 	}
 	st.OK = true
+	return st
+}
+
+// Gtk writes the palette block into each GTK dir's gtk.css, or removes it
+// when s.Gtk is off. Fixed colour mode leaves app colours as they are.
+func (p *Pipeline) Gtk(s Settings) StepResult {
+	start := time.Now()
+	st := StepResult{Name: "gtk"}
+	if s.FixedColor {
+		st.Skipped = "fixed colour mode"
+		return st
+	}
+	var colors map[string]string
+	if s.Gtk {
+		b, err := os.ReadFile(p.ColorsPath)
+		if err == nil {
+			var raw map[string]any
+			err = json.Unmarshal(b, &raw)
+			colors = map[string]string{}
+			for k, v := range raw {
+				if c, ok := v.(string); ok {
+					colors[k] = c
+				}
+			}
+		}
+		if err != nil {
+			st.Error = err.Error()
+			return st
+		}
+	}
+	for _, dir := range p.GtkDirs {
+		var err error
+		if s.Gtk {
+			err = gtkcss.Apply(dir, gtkcss.Block(colors, filepath.Base(dir) == "gtk-4.0"))
+		} else {
+			err = gtkcss.Remove(dir)
+		}
+		if err != nil {
+			st.Error = err.Error()
+			return st
+		}
+	}
+	st.OK = true
+	st.Duration = int(time.Since(start).Milliseconds())
 	return st
 }
 

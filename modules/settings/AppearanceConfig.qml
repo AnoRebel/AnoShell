@@ -346,6 +346,17 @@ ColumnLayout {
                 onChose: value => Config.setNestedValue("appearance.theme.appColorScheme", value)
             }
         }
+        ConfigSwitch {
+            label: "Colour GTK apps"
+            configKey: "appearance.theme.gtk"
+            visible: appearanceRoot.materialYou
+            sublabel: "GTK 3 and 4 (libadwaita) apps opened from now on use the palette; your own gtk.css rules are kept"
+            checked: Config.options?.appearance?.theme?.gtk ?? true
+            onCheckedChanged: if (checked !== (Config.options?.appearance?.theme?.gtk ?? true)) {
+                Config.setNestedValue("appearance.theme.gtk", checked)
+                Wallpapers.refreshGtk()
+            }
+        }
 
         // ─── Theme grid (visible only when source = static or while previewing) ───
         Item {

@@ -24,7 +24,8 @@ Singleton {
     id: root
 
     readonly property var cursorIds: ["anoshell-cursor", "anoshell-cursor-cell"]
-    readonly property var iconIds: ["anoshell-icons", "anoshell-icons-primary"]
+    // anoshell-icons-tint: the base theme's own folders, turned to the palette's hue.
+    readonly property var iconIds: ["anoshell-icons", "anoshell-icons-primary", "anoshell-icons-tint"]
 
     readonly property string cursorTheme: Config.options?.cursor?.theme ?? ""
     readonly property int cursorSize: Config.options?.cursor?.size ?? 24
@@ -74,7 +75,8 @@ Singleton {
     }) : ""
     readonly property string iconRequest: root.iconsWanted ? JSON.stringify({
         "colours": root.colours,
-        "base": root.iconBase
+        "base": root.iconBase,
+        "tint": root.iconTheme === "anoshell-icons-tint"
     }) : ""
 
     // The palette eases between colours: build once it has rested.

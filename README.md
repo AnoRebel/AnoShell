@@ -584,7 +584,8 @@ Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_
 ```
 Wallpaper → awww (apply) → matugen (Material You → colors.json) → MaterialThemeLoader
                          → pywal (terminal colors + cava gradients)
-                         → applycolor.sh (kitty/ghostty/foot/GTK)
+                         → gtk.css block (anod, GTK 3/4 + libadwaita; appearance.theme.gtk)
+                         → applycolor.sh (kitty/ghostty/foot/Qt)
 Wallpapers are applied by anod: `ano wallpaper set IMAGE` (awww, matugen colours, then `background.hooks`).
 ```
 

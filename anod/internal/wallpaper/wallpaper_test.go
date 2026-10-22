@@ -70,7 +70,7 @@ func TestApplyRunsChainInOrder(t *testing.T) {
 	for _, s := range res.Steps {
 		names = append(names, s.Name+":"+map[bool]string{true: "ok", false: "x"}[s.OK]+s.Skipped)
 	}
-	want := "awww:ok matugen:ok pywal:ok off:xdisabled swaync:ok missing:xnot installed: no-such-tool"
+	want := "awww:ok matugen:ok gtk:ok pywal:ok off:xdisabled swaync:ok missing:xnot installed: no-such-tool"
 	if strings.Join(names, " ") != want {
 		t.Fatalf("steps:\n got %s\nwant %s", strings.Join(names, " "), want)
 	}

@@ -127,7 +127,9 @@ func main() {
 		StatePath:  filepath.Join(stateDir, "wallpaper.json"),
 		Choices:    &wallpaper.Choices{Path: filepath.Join(stateDir, "wallpaper-colors.json")},
 		ColorCache: filepath.Join(xdgCache(), "anoshell", "colors"),
-		Logf:       log.Printf,
+		GtkDirs: []string{filepath.Join(filepath.Dir(filepath.Dir(config.UserPath())), "gtk-3.0"),
+			filepath.Join(filepath.Dir(filepath.Dir(config.UserPath())), "gtk-4.0")},
+		Logf: log.Printf,
 	}
 	// hook: run the user's wallpaper_changed hook (once per change/cycle).
 	announce := func(res wallpaper.Result, s wallpaper.Settings, hook bool) {
@@ -226,6 +228,16 @@ func main() {
 		}
 		_, err := recolor(wallpaper.Request{Image: img, ColorsOnly: true}, s)
 		return err == nil, err
+	})
+	// The GTK palette block now: written or removed per appearance.theme.gtk
+	// (the Settings switch, so turning it off doesn't wait for a wallpaper).
+	srv.Handle("theme.gtk", func(json.RawMessage) (any, error) {
+		_, s := wallpaperSettings()
+		st := wp.Gtk(s)
+		if st.Error != "" {
+			return nil, errors.New(st.Error)
+		}
+		return st, nil
 	})
 	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
 	srv.Handle("wallpaper.status", func(json.RawMessage) (any, error) {
@@ -773,6 +785,7 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 		SchemeType:   config.String(m, "appearance.colors.schemeType", "tonal-spot"),
 		Prefer:       config.String(m, "appearance.colors.prefer", "saturation"),
 		PerWallpaper: config.Bool(m, "appearance.colors.perWallpaper", true),
+		Gtk:          config.Bool(m, "appearance.theme.gtk", true),
 		FixedColor: config.String(m, "appearance.theme.colorMode", "dynamicAccent") == "fixed" ||
 			config.String(m, "appearance.theme.source", "materialYou") == "static",
 	}

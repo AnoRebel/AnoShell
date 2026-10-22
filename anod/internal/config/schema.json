@@ -101,6 +101,7 @@
   "appearance.shadows.opacity": "real",
   "appearance.theme.appColorScheme": "string",
   "appearance.theme.colorMode": "string",
+  "appearance.theme.gtk": "bool",
   "appearance.theme.name": "string",
   "appearance.theme.source": "string",
   "appearance.transparency.automatic": "bool",

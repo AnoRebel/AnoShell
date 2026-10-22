@@ -78,8 +78,11 @@ The **Icons** card sets the desktop icon theme (GTK through gsettings, Qt
 through `icon_theme` in qt5ct/qt6ct); type to find one of the installed
 themes. **AnoShell** and **AnoShell Primary** draw folders and file types in
 the wallpaper's colours and inherit everything else (apps first) from the
-last other theme you picked (`icons.base`, default Papirus-Dark). They're
-rebuilt and slot-switched like the cursors. "Leave icons to my desktop
+last other theme you picked (`icons.base`, default Papirus-Dark).
+**AnoShell Tint** keeps that theme's own folder and place icons and turns
+their colours to the palette's hue (greys and whites stay); colour variants
+such as Papirus's `folder-red-*` are left out. A first build takes a few
+seconds. They're rebuilt and slot-switched like the cursors. "Leave icons to my desktop
 settings" sets `icons.theme` to `""`; nothing is changed until you pick one.
 
 ## For scripts

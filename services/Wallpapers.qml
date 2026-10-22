@@ -136,6 +136,16 @@ Singleton {
         if ((Config.options?.appearance?.theme?.source ?? "materialYou") === "static") return
         root._colors(Object.assign({ remember: perWallpaper }, pick))
     }
+    // The GTK palette block now (written or removed per appearance.theme.gtk),
+    // once the config is on disk (anod reads it from there).
+    function refreshGtk() { gtkSoon.restart() }
+    Timer {
+        id: gtkSoon
+        interval: 1000
+        onTriggered: Anod.call("theme.gtk", {}, (res, err) => {
+            if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "GTK colours", err.message])
+        })
+    }
     // Forget the current wallpaper's picks (back to the defaults).
     function resetColors() { root._colors({ reset: true }) }
     function setDefaultColors(pick) {

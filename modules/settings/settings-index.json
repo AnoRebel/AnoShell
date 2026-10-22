@@ -2012,6 +2012,15 @@
  },
  {
   "page": 6,
+  "card": "",
+  "label": "Colour GTK apps",
+  "sublabel": "GTK 3 and 4 (libadwaita) apps opened from now on use the palette; your own gtk.css rules are kept",
+  "keys": [
+   "appearance.theme.gtk"
+  ]
+ },
+ {
+  "page": 6,
   "card": "Wallpaper colours",
   "label": "Wallpaper colours",
   "sublabel": "How the palette is made from the wallpaper; picks can be remembered per wallpaper",
