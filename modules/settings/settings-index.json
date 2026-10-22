@@ -1065,6 +1065,15 @@
  },
  {
   "page": 2,
+  "card": "",
+  "label": "Show windows on hover",
+  "sublabel": "Hovering a workspace button shows its windows as live thumbnails; click one to go to it",
+  "keys": [
+   "bar.workspaces.hoverWindows"
+  ]
+ },
+ {
+  "page": 2,
   "card": "Weather",
   "label": "Weather",
   "sublabel": "Weather data in bar and sidebar",
@@ -1565,6 +1574,7 @@
    "anoSpot.showRecording",
    "anoSpot.showClockWeather",
    "anoSpot.showWorkspace",
+   "anoSpot.workspaceHoverPreview",
    "anoSpot.showBattery",
    "anoSpot.showLyrics",
    "anoSpot.accordion"
@@ -1622,6 +1632,24 @@
   "sublabel": "Active workspace number/name (click → overview)",
   "keys": [
    "anoSpot.showWorkspace"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Workspace preview",
+  "sublabel": "Hovering the workspace shows its windows as live thumbnails; click one to focus it",
+  "keys": [
+   "anoSpot.workspaceHoverPreview.enable"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Preview every workspace",
+  "sublabel": "Windows of all workspaces, labelled with their workspace; off: this screen's current workspace",
+  "keys": [
+   "anoSpot.workspaceHoverPreview.allWorkspaces"
   ]
  },
  {

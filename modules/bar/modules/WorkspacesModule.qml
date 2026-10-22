@@ -22,6 +22,8 @@ Item {
 
     readonly property int workspacesShown: Config.options?.bar?.workspaces?.shown ?? 10
     readonly property bool alwaysShowAll: Config.options?.bar?.workspaces?.alwaysShowAll ?? false
+    // Hovering a button shows that workspace's windows (bar.workspaces.hoverWindows).
+    readonly property bool hoverWindows: Config.options?.bar?.workspaces?.hoverWindows ?? false
     property bool expanded: false
 
     readonly property string screenName: root.QsWindow.window?.screen?.name ?? ""
@@ -125,7 +127,39 @@ Item {
                 implicitHeight: vertical ? buttonSize : Appearance.sizes.barHeight
                 acceptedButtons: Qt.LeftButton
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.switchTo(cell.modelData)
+                hoverEnabled: root.hoverWindows
+                onClicked: { windowsPopout.item?.dismiss(); root.switchTo(cell.modelData) }
+
+                // This workspace's windows, under the button after a short dwell.
+                // Made only while hovered or open, and kept a moment after it
+                // closes so it can retract.
+                Timer { id: dwell; interval: 250; running: cell.containsMouse }
+                Timer { id: retract; interval: 400 }
+                Loader {
+                    id: windowsPopout
+                    anchors.fill: parent
+                    readonly property bool open: item?.effectiveShown ?? false
+                    onOpenChanged: if (!open) retract.restart()
+                    active: root.hoverWindows && (cell.containsMouse || open || retract.running)
+                    sourceComponent: BarModulePopout {
+                        id: popout
+                        shown: cell.containsMouse && !dwell.running
+                        popupWidth: strip.implicitWidth + 24
+                        popupHeight: strip.implicitHeight + 24
+                        WindowStrip {
+                            id: strip
+                            active: popout.effectiveShown
+                            maxWidth: (root.QsWindow.window?.screen?.width ?? 1280) * 0.8
+                            Binding on windows {
+                                when: strip.active
+                                restoreMode: Binding.RestoreNone
+                                value: CompositorService.windows.filter(w => w.workspace === cell.modelData
+                                    && (!CompositorService.supports.perOutputWorkspaces || w.output === root.screenName))
+                            }
+                            onActivated: popout.dismiss()
+                        }
+                    }
+                }
 
                 // Active / occupied background pill
                 Rectangle {

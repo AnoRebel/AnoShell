@@ -7,7 +7,6 @@ AnoSpotNotification 1.0 AnoSpotNotification.qml
 AnoSpot 1.0 AnoSpot.qml
 AnoSpotRecording 1.0 AnoSpotRecording.qml
 AnoSpotStashPopout 1.0 AnoSpotStashPopout.qml
-AnoSpotWorkspacePreview 1.0 AnoSpotWorkspacePreview.qml
 AnoSpotWorkspace 1.0 AnoSpotWorkspace.qml
 AnoSpotFaces 1.0 AnoSpotFaces.qml
 AnoSpotEdgePicker 1.0 AnoSpotEdgePicker.qml

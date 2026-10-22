@@ -207,7 +207,7 @@ ColumnLayout {
         icon: "widgets"
         title: "Widgets"
         subtitle: "Which slots to render"
-        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.showBattery", "anoSpot.showLyrics", "anoSpot.accordion"]
+        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.workspaceHoverPreview", "anoSpot.showBattery", "anoSpot.showLyrics", "anoSpot.accordion"]
 
         ConfigSwitch {
             label: "Collapse to icons"
@@ -247,6 +247,22 @@ ColumnLayout {
             sublabel: "Active workspace number/name (click → overview)"
             checked: Config.options?.anoSpot?.showWorkspace ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showWorkspace", checked)
+        }
+        ConfigSwitch {
+            label: "Workspace preview"
+            configKey: "anoSpot.workspaceHoverPreview.enable"
+            sublabel: "Hovering the workspace shows its windows as live thumbnails; click one to focus it"
+            enabled: Config.options?.anoSpot?.showWorkspace ?? true
+            checked: Config.options?.anoSpot?.workspaceHoverPreview?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.workspaceHoverPreview.enable", checked)
+        }
+        ConfigSwitch {
+            label: "Preview every workspace"
+            configKey: "anoSpot.workspaceHoverPreview.allWorkspaces"
+            sublabel: "Windows of all workspaces, labelled with their workspace; off: this screen's current workspace"
+            enabled: (Config.options?.anoSpot?.showWorkspace ?? true) && (Config.options?.anoSpot?.workspaceHoverPreview?.enable ?? true)
+            checked: Config.options?.anoSpot?.workspaceHoverPreview?.allWorkspaces ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.workspaceHoverPreview.allWorkspaces", checked)
         }
         ConfigSwitch {
             label: "Battery"

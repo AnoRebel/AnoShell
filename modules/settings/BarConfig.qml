@@ -849,6 +849,13 @@ ColumnLayout {
             onValueChanged: Config.setNestedValue("bar.workspaces.shown", Math.round(value))
             valueText: `${Math.round(value)}`
         }
+        ConfigSwitch {
+            label: "Show windows on hover"
+            configKey: "bar.workspaces.hoverWindows"
+            sublabel: "Hovering a workspace button shows its windows as live thumbnails; click one to go to it"
+            checked: Config.options?.bar?.workspaces?.hoverWindows ?? false
+            onCheckedChanged: Config.setNestedValue("bar.workspaces.hoverWindows", checked)
+        }
     }
 
     // ═══ Weather ═══

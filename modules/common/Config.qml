@@ -735,6 +735,8 @@ Singleton {
                     // When false (default) only occupied + current workspaces
                     // show, with a ••• button to expand; true shows all `shown`.
                     property bool alwaysShowAll: false
+                    // Hovering a workspace button shows its windows; click one to go there.
+                    property bool hoverWindows: false
                 }
 
                 // Global layout defaults; per-bar bars[].* override these.
@@ -1485,6 +1487,8 @@ Singleton {
                     property bool enable: true
                     property int openDelayMs: 200
                     property int closeDelayMs: 300
+                    // Every workspace's windows instead of this screen's current one.
+                    property bool allWorkspaces: false
                     property int thumbnailWidth: 180
                     property int thumbnailHeight: 110
                 }

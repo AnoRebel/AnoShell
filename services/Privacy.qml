@@ -101,7 +101,8 @@ Singleton {
     property var _casts: ({})         // "owner,name" → { since, closing, name }
     property double _now: Date.now()
     readonly property bool _castLive: Object.values(root._casts).some(c => !c.closing && root._now - c.since >= root.castDelay)
-    readonly property string _castTarget: Object.values(root._casts).find(c => !c.closing && c.owner === "window")?.name ?? ""
+    // The captured monitor's name, for the tooltip ("" for a region).
+    readonly property string _castTarget: Object.values(root._casts).find(c => !c.closing && c.owner === "monitor")?.name ?? ""
     function _castEvent(data) {
         // NAME (a window title) may hold commas.
         const parts = data.split(","), key = parts.slice(1).join(","), m = Object.assign({}, root._casts)
@@ -129,7 +130,10 @@ Singleton {
     Connections {
         target: Hyprland
         enabled: CompositorService.compositor === "hyprland"
-        function onRawEvent(event) { if (event.name === "screencastv2") root._castEvent(event.data) }
+        // Window captures are left out: the shell's own live thumbnails (pill
+        // and bar previews, AnoView, the switcher) are window captures, and an
+        // app sharing a window goes through the portal, which PipeWire shows.
+        function onRawEvent(event) { if (event.name === "screencastv2" && !event.data.startsWith("1,window,") && !event.data.startsWith("0,window,")) root._castEvent(event.data) }
     }
 
     IpcHandler {

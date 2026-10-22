@@ -59,7 +59,6 @@ Singleton {
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false
     property bool anoSpotStashOpen: false
-    property bool anoSpotWorkspacePreviewOpen: false
     property bool calendarOpen: false
     // Network Orbit panel (modules/networkOrbit) and its tab: wifi, bt, vpn, eth.
     property bool networkOrbitOpen: false

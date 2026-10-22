@@ -109,7 +109,8 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.acceptDrops` | `true` | Accept dropped files |
 | `anoSpot.stashDir` | `""` | Where dropped files go (empty: a cache folder) |
 | `anoSpot.dropTargets` | `[]` | Your own drop actions |
-| `anoSpot.workspaceHoverPreview.enable` | `true` | Workspace preview on hover |
+| `anoSpot.workspaceHoverPreview.enable` | `true` | Workspace preview on hover: live thumbnails under the chip, click one to focus it |
+| `anoSpot.workspaceHoverPreview.allWorkspaces` | `false` | Every workspace's windows (labelled) instead of this screen's current one |
 | `anoSpot.workspaceHoverPreview.openDelayMs` | `200` | |
 | `anoSpot.workspaceHoverPreview.closeDelayMs` | `300` | |
 | `anoSpot.workspaceHoverPreview.thumbnailWidth` | `180` | |

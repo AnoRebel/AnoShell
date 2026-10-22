@@ -60,11 +60,16 @@ Item {
     // the gap between the icon and the popup surface.
     property int closeDelay: 180
 
-    readonly property bool effectiveShown: root.shown || root.popupHovered || _graceActive
+    readonly property bool effectiveShown: !root._dismissed && (root.shown || root.popupHovered || _graceActive)
     property bool _graceActive: false
+    /// Close now (e.g. after a pick inside it), even under the pointer; the
+    /// next request opens it again.
+    function dismiss() { root._dismissed = true }
+    property bool _dismissed: false
 
     onShownChanged: {
         if (root.shown) {
+            root._dismissed = false
             _closeTimer.stop()
             _graceActive = false
         } else {
