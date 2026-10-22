@@ -12,9 +12,9 @@ import Quickshell.Services.Pipewire
  * (spec system-integration, privacy indicator).
  *
  * - PipeWire: a capture link from a source node (not a stream, not a sink's
- *   monitor) into an app's stream, audio or video by the stream's type. Audio
- *   is the microphone; video is a camera when the source is a device
- *   (v4l2/libcamera), otherwise a screencast (the portal's node).
+ *   monitor) into an app. Audio is the microphone; video is a camera when the
+ *   source is a device (v4l2/libcamera), otherwise a screencast (the
+ *   portal's node).
  * - Cameras opened directly (most apps): anod watches /dev/video*
  *   ("camera_users"; anod/internal/camera).
  * - Hyprland: its screencast events (screencopy clients, the portal), counted
@@ -49,14 +49,19 @@ Singleton {
     // ── PipeWire ─────────────────────────────────────────────────────────
     readonly property var _links: Pipewire.links?.values ?? []
     function _is(node, flag) { return ((node?.type ?? 0) & flag) === flag }
-    // The media type comes from the app's stream: virtual sources (EasyEffects'
-    // easyeffects_source) carry no type flags of their own.
-    function _capture(link, media) {
+    // Quickshell types audio streams but not video ones, and virtual audio
+    // sources (EasyEffects' easyeffects_source) carry no flags: audio is told
+    // by the app's stream, video by the source (a camera or the portal).
+    function _audioCapture(link) {
         const s = link?.source, t = link?.target
-        return !!s && !!t && !s.isStream && !s.isSink && t.isStream && root._is(t, media)
+        return !!s && !!t && !s.isStream && !s.isSink && t.isStream && root._is(t, PwNodeType.Audio)
     }
-    readonly property var _audioLinks: root._links.filter(l => root._capture(l, PwNodeType.Audio))
-    readonly property var _videoLinks: root._links.filter(l => root._capture(l, PwNodeType.Video))
+    function _videoCapture(link) {
+        const s = link?.source
+        return !!s && !!link?.target && !s.isStream && root._is(s, PwNodeType.Video | PwNodeType.Source)
+    }
+    readonly property var _audioLinks: root._links.filter(l => root._audioCapture(l))
+    readonly property var _videoLinks: root._links.filter(l => root._videoCapture(l))
     // A node's properties are only filled while it is bound.
     PwObjectTracker {
         objects: root._audioLinks.concat(root._videoLinks).reduce((a, l) => a.concat([l.source, l.target]), []) // no flatMap in QML's JS

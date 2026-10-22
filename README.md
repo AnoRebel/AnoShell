@@ -574,7 +574,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Sensitive clipboard entries skipped | `wl-clipboard` (`wl-paste --watch`) + `cliphist` (verified with 0.7.0) | password-manager copies land in the history |
 | Privacy: microphone, PipeWire cameras | PipeWire + WirePlumber | not shown |
 | Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
-| Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown |
+| Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

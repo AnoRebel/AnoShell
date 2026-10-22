@@ -66,6 +66,10 @@ camera doesn't show), and screen captures (Hyprland's screencast events,
 after 0.7 s so a screenshot doesn't show; portal casts also through
 PipeWire). `qs -c ano ipc call privacy uses` prints the same list.
 
+A browser sharing **one of its own tabs** captures it internally, with no
+portal, PipeWire stream or compositor event, so nothing on the desktop can see
+it and the indicator stays off; sharing a window or the screen shows.
+
 ## Password prompt (polkit)
 
 When an app needs permission (pkexec, mounting a disk, a system setting),
