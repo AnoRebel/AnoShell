@@ -470,8 +470,18 @@ def dump_state_to_json(c):
         pass
 
 
+def die_with_parent():
+    """Exit when the shell that started us goes, even if it was killed."""
+    try:
+        import ctypes, signal
+        ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)  # PR_SET_PDEATHSIG
+    except (OSError, AttributeError):
+        pass
+
+
 def main():
     global current_app_class, current_app_title
+    die_with_parent()
 
     if COMPOSITOR == "hyprland":
         current_app_class, current_app_title = get_active_window_hyprctl()

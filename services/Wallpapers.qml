@@ -143,10 +143,12 @@ Singleton {
         if (pick.prefer) Config.setNestedValue("appearance.colors.prefer", pick.prefer)
         if (pick.mode) Config.setNestedValue("appearance.colors.darkMode", pick.mode === "dark")
     }
-    // anod works out the wallpaper the colours follow.
-    function _colors(req) {
+    // anod works out the wallpaper the colours follow. quiet: a status check,
+    // errors only logged (a notification is for picks the user made).
+    function _colors(req, quiet = false) {
         Anod.call("wallpaper.colors", req, (res, err) => {
-            if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Colours", `Couldn't regenerate: ${err.message}`])
+            if (err && quiet) console.warn("[Wallpapers] wallpaper.colors:", err.message)
+            else if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Colours", `Couldn't regenerate: ${err.message}`])
             if (!err) root._takeScheme(res.scheme, res.custom, res.image)
         })
     }
@@ -155,7 +157,7 @@ Singleton {
         function onEvent(name, data) {
             if (name === "wallpaper_changed" || name === "wallpaper_colors") root._takeScheme(data?.scheme, data?.custom, data?.colorImage)
         }
-        function onAvailableChanged() { if (Anod.available) { root._colors({}); root._reportFocus() } } // report only
+        function onAvailableChanged() { if (Anod.available) { root._colors({}, true); root._reportFocus() } } // report only
     }
     // Colours from the focused monitor: anod hears where focus is.
     readonly property string colorsFrom: Config.options?.appearance?.colors?.from ?? "last"
@@ -174,7 +176,7 @@ Singleton {
         interval: 1000
         onTriggered: { root._reportFocus(); if (root.colorsFrom !== "focused") root._colors({ recolor: true }) }
     }
-    Component.onCompleted: if (Anod.available) root._colors({})
+    Component.onCompleted: if (Anod.available) root._colors({}, true)
 
     // ── Favourites (background.favourites: absolute paths) ──────────────────
     readonly property var favourites: Array.from(Config.options?.background?.favourites ?? []) // a plain array (config lists are V4Sequences)
