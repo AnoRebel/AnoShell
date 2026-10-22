@@ -1420,6 +1420,10 @@ Singleton {
                 // Float as its own rounded pill with a gap, even when the
                 // connected frame is on (otherwise it fuses into the frame).
                 property bool floating: false
+                // On a bar's edge: nest inside the bar's band instead of beside it.
+                property bool inBar: false
+                // Tucked into its edge until the pointer reaches it.
+                property bool autoHide: false
                 // Pill only: no bar and no dock; the pill is the whole shell chrome.
                 property bool pillOnly: false
                 property bool showMpris: true

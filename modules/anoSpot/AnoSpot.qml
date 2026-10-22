@@ -138,12 +138,13 @@ Scope {
         id: spotScope
         required property var modelData
 
-        // Edge strip that brings a tucked pill back on hover (fullscreen only).
+        // Edge strip that brings a tucked pill back on hover (fullscreen, or
+        // auto-hide: then past whatever reserves the edge, where the pill sits).
         PanelWindow {
             screen: spotScope.modelData
-            visible: spotWindow.screenFullscreen
+            visible: spotWindow.screenFullscreen || spotWindow.autoHide
             color: "transparent"
-            exclusionMode: ExclusionMode.Ignore
+            exclusionMode: spotWindow.screenFullscreen || spotWindow._hostBar ? ExclusionMode.Ignore : ExclusionMode.Normal
             WlrLayershell.namespace: "quickshell:anospot:peek"
             WlrLayershell.layer: WlrLayer.Overlay
             anchors {
@@ -260,12 +261,12 @@ Scope {
             // A classic bar on the same edge: the pill sits inside its band,
             // centred across it (the bar's centre groups make way, BarWindow).
             // Otherwise Normal: placed past whatever else reserves the edge.
-            readonly property var _hostBar: root.barMode ? null : PanelRegistry.panels.find(e => e.kind === "bar"
+            readonly property var _hostBar: !BarStyle.pillInBar ? null : PanelRegistry.panels.find(e => e.kind === "bar"
                 && e.screenName === (modelData?.name ?? "") && e.edge === root.position && e.reserve > 0) ?? null
             readonly property real _inBarInset: _hostBar ? Math.max(0, Math.round((_hostBar.reserve - root.heightPx) / 2)) : 0
             exclusionMode: _hostBar ? ExclusionMode.Ignore : ExclusionMode.Normal
             // As the bar it reserves its edge (not while tucked in fullscreen).
-            readonly property int barReserve: root.barMode && !screenFullscreen ? root.heightPx + gap : 0
+            readonly property int barReserve: root.barMode && !screenFullscreen && !autoHide ? root.heightPx + gap : 0
             exclusiveZone: barReserve
             WlrLayershell.namespace: "quickshell:anospot"
             WlrLayershell.layer: WlrLayer.Overlay
@@ -301,8 +302,9 @@ Scope {
             }
             // Shown while hovered, and for a grace period after the pointer
             // touches the edge strip or leaves the pill.
+            readonly property bool autoHide: Config.options?.anoSpot?.autoHide ?? false
             readonly property bool tucked: root.edgeLeaving
-                || (screenFullscreen && !pillHover.hovered && !peekArea.containsMouse && !peekGrace.running)
+                || ((screenFullscreen || autoHide) && !grown && !pillHover.hovered && !peekArea.containsMouse && !peekGrace.running)
             function peek() { peekGrace.restart() }
             Timer { id: peekGrace; interval: 1000 }
             HoverHandler {

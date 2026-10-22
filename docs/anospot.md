@@ -72,6 +72,8 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.heightPx` | `36` | Thickness |
 | `anoSpot.hideOnFullscreen` | `true` | Slide into the edge over fullscreen windows; hover the edge to bring it back |
 | `anoSpot.floating` | `false` | Its own floating capsule even when the connected frame is on |
+| `anoSpot.inBar` | `false` | On a bar's edge, nest in the bar's band instead of beside it (not while floating) |
+| `anoSpot.autoHide` | `false` | Stay tucked into the edge; pointing at the edge brings it out |
 | `anoSpot.pillOnly` | `false` | Hide the bar and dock; the pill is all the chrome |
 | `anoSpot.showWorkspace` | `true` | Workspace on the status face |
 | `anoSpot.showMpris` | `true` | Track on the status face |

@@ -20,6 +20,9 @@ Singleton {
 
     // The pill's edge (anoSpot.position; bottom by default, design D12).
     readonly property string pillEdge: Config.options?.anoSpot?.position ?? "bottom"
+    // A pill on a bar's edge nests in the bar's band (anoSpot.inBar, so it
+    // doesn't eat into sidebars); otherwise, or floating, it sits beside the bar.
+    readonly property bool pillInBar: !pillBar && (Config.options?.anoSpot?.inBar ?? false) && !(Config.options?.anoSpot?.floating ?? false)
 
     function opposite(e) { return ({ top: "bottom", bottom: "top", left: "right", right: "left" })[e] ?? "bottom" }
 

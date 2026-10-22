@@ -1504,6 +1504,8 @@
    "anoSpot.position",
    "anoSpot.draggable",
    "anoSpot.floating",
+   "anoSpot.inBar",
+   "anoSpot.autoHide",
    "anoSpot.hideOnFullscreen"
   ]
  },
@@ -1523,6 +1525,24 @@
   "sublabel": "Keep the pill as its own rounded island with a gap, instead of fusing it into the connected frame",
   "keys": [
    "anoSpot.floating"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Inside the bar",
+  "sublabel": "Not while floating: a floating pill sits beside the bar",
+  "keys": [
+   "anoSpot.inBar"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Auto-hide",
+  "sublabel": "Stay tucked into the edge; point at the edge to bring it out",
+  "keys": [
+   "anoSpot.autoHide"
   ]
  },
  {

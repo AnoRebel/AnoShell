@@ -103,7 +103,7 @@ ColumnLayout {
         icon: "open_in_full"
         title: "Position"
         subtitle: "Which screen edge the overlay anchors to"
-        configKeys: ["anoSpot.position", "anoSpot.draggable", "anoSpot.floating", "anoSpot.hideOnFullscreen"]
+        configKeys: ["anoSpot.position", "anoSpot.draggable", "anoSpot.floating", "anoSpot.inBar", "anoSpot.autoHide", "anoSpot.hideOnFullscreen"]
 
         Item {
             Layout.fillWidth: true
@@ -173,6 +173,24 @@ ColumnLayout {
             sublabel: "Keep the pill as its own rounded island with a gap, instead of fusing it into the connected frame"
             checked: Config.options?.anoSpot?.floating ?? false
             onCheckedChanged: Config.setNestedValue("anoSpot.floating", checked)
+        }
+
+        ConfigSwitch {
+            label: "Inside the bar"
+            configKey: "anoSpot.inBar"
+            sublabel: (Config.options?.anoSpot?.floating ?? false) ? "Not while floating: a floating pill sits beside the bar"
+                : "On a bar's edge, sit in the bar's band (the bar's centre makes way) instead of beside it; keeps sidebars clear of the pill"
+            enabled: !(Config.options?.anoSpot?.floating ?? false)
+            checked: Config.options?.anoSpot?.inBar ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.inBar", checked)
+        }
+
+        ConfigSwitch {
+            label: "Auto-hide"
+            configKey: "anoSpot.autoHide"
+            sublabel: "Stay tucked into the edge; point at the edge to bring it out"
+            checked: Config.options?.anoSpot?.autoHide ?? false
+            onCheckedChanged: Config.setNestedValue("anoSpot.autoHide", checked)
         }
 
         ConfigSwitch {
