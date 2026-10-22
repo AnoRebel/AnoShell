@@ -494,6 +494,21 @@ Singleton {
             // bundle; the new key wins on read.
         }
 
+        // nightLight.mode "schedule" (enable + sun times) -> nightLight.schedule "sun";
+        // enable is now the "warm now" toggle.
+        const nlBlock = root._userDelta?.nightLight;
+        if (nlBlock && nlBlock.mode !== undefined) {
+            if (nlBlock.mode === "schedule" && nlBlock.schedule === undefined) {
+                nlBlock.schedule = "sun";
+                nlBlock.enable = false;
+                opts.nightLight.schedule = "sun";
+                opts.nightLight.enable = false;
+                root._migratedKeys["nightLight.schedule"] = true;
+            }
+            delete nlBlock.mode;
+            migrated = true;
+        }
+
         // hud.enabled -> hud.enable (the HUD always read `enable`).
         const hudBlock = root._userDelta?.hud;
         if (hudBlock && hudBlock.enabled !== undefined) {
@@ -1132,12 +1147,17 @@ Singleton {
             // Night light (colour temperature) — consumed by services/NightLight
             // ═══════════════════════════════════════════════════════════════
             property JsonObject nightLight: JsonObject {
-                property bool enable: false
-                property string mode: "manual" // "manual" | "auto" (lat/long sunset)
+                property bool enable: false // the quick toggle: warm now
+                property string schedule: "off" // "off" | "sun" (latitude/longitude) | "times" (start–end)
                 property int dayTemp: 6500
                 property int nightTemp: 4000
                 property real latitude: 0
                 property real longitude: 0
+                property string start: "20:00"
+                property string end: "07:00"
+                property int fade: 30 // minutes
+                property real gamma: 1.0 // wlsunset -g
+                property var outputs: [] // monitor names; empty = all (wlsunset -o)
             }
 
             // ═══════════════════════════════════════════════════════════════

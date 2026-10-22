@@ -29,7 +29,8 @@ QtObject {
         "idle",
         "privacy",
         "drives",
-        "gamemode"
+        "gamemode",
+        "nightlight"
     ]
 
     // Human-readable labels for the UI. Falls back to the raw ID when
@@ -52,7 +53,8 @@ QtObject {
         "idle": "Idle inhibit",
         "privacy": "Privacy",
         "drives": "Removable drives",
-        "gamemode": "Game mode"
+        "gamemode": "Game mode",
+        "nightlight": "Night light"
     })
 
     function isKnownModule(name) {
@@ -85,6 +87,7 @@ QtObject {
             case "privacy": return privacyModule
             case "drives": return drivesModule
             case "gamemode": return gameModeModule
+            case "nightlight": return nightLightModule
             default:
                 console.warn(`[BarModuleLoader] Unknown module: ${name}`)
                 return null
@@ -108,4 +111,5 @@ QtObject {
     property Component privacyModule: Component { PrivacyModule {} }
     property Component drivesModule: Component { DrivesModule {} }
     property Component gameModeModule: Component { GameModeModule {} }
+    property Component nightLightModule: Component { NightLightModule {} }
 }

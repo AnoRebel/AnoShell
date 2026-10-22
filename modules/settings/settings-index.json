@@ -2662,7 +2662,7 @@
   "page": 8,
   "card": "Night light",
   "label": "Night light",
-  "sublabel": "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway). Eye-care filters below.",
+  "sublabel": "Warms the screen at night through wlsunset (Hyprland, niri, sway): now, or on a schedule. Plus eye-care screen filters.",
   "keys": [
    "nightLight",
    "screenFilter"
@@ -2671,8 +2671,8 @@
  {
   "page": 8,
   "card": "",
-  "label": "Enable",
-  "sublabel": "",
+  "label": "On now",
+  "sublabel": "The same switch as the night light toggle in the bar, pill and sidebar. Holds the night temperature over any schedule.",
   "keys": [
    "nightLight.enable"
   ]
@@ -2680,10 +2680,55 @@
  {
   "page": 8,
   "card": "",
-  "label": "Mode",
-  "sublabel": "Manual holds a fixed temperature; schedule transitions at sunrise/sunset",
+  "label": "Automatic",
+  "sublabel": "sun",
   "keys": [
-   "nightLight.mode"
+   "nightLight.schedule"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "From",
+  "sublabel": "24-hour time, HH:mm",
+  "keys": [
+   "nightLight.start"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Until",
+  "sublabel": "24-hour time, HH:mm",
+  "keys": [
+   "nightLight.end"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Fade",
+  "sublabel": "How long the change from day to night (and back) takes",
+  "keys": [
+   "nightLight.fade"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Latitude",
+  "sublabel": "Decimal degrees, north positive (e.g. 51.5)",
+  "keys": [
+   "nightLight.latitude"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Longitude",
+  "sublabel": "Decimal degrees, east positive (e.g. -0.1)",
+  "keys": [
+   "nightLight.longitude"
   ]
  },
  {
@@ -2699,7 +2744,7 @@
   "page": 8,
   "card": "",
   "label": "Day temperature",
-  "sublabel": "Used in schedule mode at noon",
+  "sublabel": "Outside the night hours (6500K is neutral)",
   "keys": [
    "nightLight.dayTemp"
   ]
@@ -2707,19 +2752,19 @@
  {
   "page": 8,
   "card": "",
-  "label": "Latitude",
-  "sublabel": "",
+  "label": "Gamma",
+  "sublabel": "Brightness curve while it's on; 1.0 leaves it as is",
   "keys": [
-   "nightLight.latitude"
+   "nightLight.gamma"
   ]
  },
  {
   "page": 8,
   "card": "",
-  "label": "Longitude",
-  "sublabel": "",
+  "label": "Monitors",
+  "sublabel": "Only the ones picked",
   "keys": [
-   "nightLight.longitude"
+   "nightLight.outputs"
   ]
  },
  {

@@ -442,7 +442,7 @@ ColumnLayout {
     SettingsCard {
         icon: "nightlight"
         title: "Night light"
-        subtitle: "Warm-shifts the display via wlsunset. Works on any wlroots compositor (Hyprland, Niri, sway). Eye-care filters below."
+        subtitle: "Warms the screen at night through wlsunset (Hyprland, niri, sway): now, or on a schedule. Plus eye-care screen filters."
         configKeys: ["nightLight", "screenFilter"]
 
         ConfigRow {
@@ -460,37 +460,89 @@ ColumnLayout {
         }
 
         ConfigSwitch {
-            id: nlEnable
-            label: "Enable"
+            label: "On now"
             configKey: "nightLight.enable"
-            checked: Config.options?.nightLight?.enable ?? false
-            onCheckedChanged: Config.setNestedValue("nightLight.enable", checked)
+            sublabel: "The same switch as the night light toggle in the bar, pill and sidebar. Holds the night temperature over any schedule."
+            checked: NightLight.enabled
+            onCheckedChanged: if (checked !== NightLight.enabled) Config.setNestedValue("nightLight.enable", checked)
         }
 
         ConfigRow {
-            label: "Mode"
-            configKey: "nightLight.mode"
-            sublabel: "Manual holds a fixed temperature; schedule transitions at sunrise/sunset"
-            enabled: nlEnable.checked
-            RowLayout {
-                spacing: 4
-                Repeater {
-                    model: ["manual", "schedule"]
-                    RippleButton {
-                        required property string modelData
-                        implicitHeight: 28
-                        buttonRadius: 8
-                        toggled: (Config.options?.nightLight?.mode ?? "manual") === modelData
-                        colBackgroundToggled: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
-                        contentItem: StyledText {
-                            text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            anchors.leftMargin: 10
-                            anchors.rightMargin: 10
-                        }
-                        onClicked: Config.setNestedValue("nightLight.mode", modelData)
-                    }
-                }
+            label: "Automatic"
+            configKey: "nightLight.schedule"
+            sublabel: NightLight.schedule === "sun" ? "Warm from sunset to sunrise where you are"
+                : NightLight.schedule === "times" ? "Warm between the times you set"
+                : "Only when you turn it on"
+            ChoiceRow {
+                model: [
+                    { value: "off", label: "Off", icon: "block" },
+                    { value: "sun", label: "Sunset to sunrise", icon: "wb_twilight" },
+                    { value: "times", label: "Set times", icon: "schedule" }
+                ]
+                current: NightLight.schedule
+                onChose: value => Config.setNestedValue("nightLight.schedule", value)
+            }
+        }
+
+        ConfigRow {
+            visible: NightLight.schedule === "times"
+            label: "From"
+            configKey: "nightLight.start"
+            sublabel: "24-hour time, HH:mm"
+            ConfigTextInput {
+                Layout.preferredWidth: 90
+                placeholderText: "20:00"
+                text: NightLight.start
+                validator: t => NightLight.validTime(t) ? "" : "Use HH:mm, e.g. 20:00"
+                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.start", text)
+            }
+        }
+        ConfigRow {
+            visible: NightLight.schedule === "times"
+            label: "Until"
+            configKey: "nightLight.end"
+            sublabel: "24-hour time, HH:mm"
+            ConfigTextInput {
+                Layout.preferredWidth: 90
+                placeholderText: "07:00"
+                text: NightLight.end
+                validator: t => NightLight.validTime(t) ? "" : "Use HH:mm, e.g. 07:00"
+                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.end", text)
+            }
+        }
+        ConfigSlider {
+            visible: NightLight.schedule === "times"
+            label: "Fade"
+            configKey: "nightLight.fade"
+            sublabel: "How long the change from day to night (and back) takes"
+            from: 0; to: 120; stepSize: 5
+            value: NightLight.fade
+            onValueChanged: Config.setNestedValue("nightLight.fade", Math.round(value))
+            valueText: `${Math.round(value)} min`
+        }
+
+        ConfigRow {
+            visible: NightLight.schedule === "sun"
+            label: "Latitude"
+            configKey: "nightLight.latitude"
+            sublabel: "Decimal degrees, north positive (e.g. 51.5)"
+            ConfigTextInput {
+                Layout.preferredWidth: 110
+                text: String(NightLight.latitude)
+                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 90) ? "" : "-90 to 90"
+                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.latitude", Number(text))
+            }
+        }
+        ConfigRow {
+            visible: NightLight.schedule === "sun"
+            label: "Longitude"
+            configKey: "nightLight.longitude"
+            sublabel: "Decimal degrees, east positive (e.g. -0.1)"
+            ConfigTextInput {
+                Layout.preferredWidth: 110
+                text: String(NightLight.longitude)
+                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 180) ? "" : "-180 to 180"
+                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.longitude", Number(text))
             }
         }
 
@@ -499,41 +551,45 @@ ColumnLayout {
             configKey: "nightLight.nightTemp"
             sublabel: "Lower = warmer / more orange"
             from: 2500; to: 6500; stepSize: 100
-            enabled: nlEnable.checked
-            value: Config.options?.nightLight?.nightTemp ?? 4000
+            value: NightLight.nightTemp
             onValueChanged: Config.setNestedValue("nightLight.nightTemp", Math.round(value))
             valueText: `${Math.round(value)}K`
         }
 
         ConfigSlider {
+            visible: NightLight.scheduled
             label: "Day temperature"
             configKey: "nightLight.dayTemp"
-            sublabel: "Used in schedule mode at noon"
+            sublabel: "Outside the night hours (6500K is neutral)"
             from: 4000; to: 6500; stepSize: 100
-            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
-            value: Config.options?.nightLight?.dayTemp ?? 6500
+            value: NightLight.dayTemp
             onValueChanged: Config.setNestedValue("nightLight.dayTemp", Math.round(value))
             valueText: `${Math.round(value)}K`
         }
 
         ConfigSlider {
-            label: "Latitude"
-            configKey: "nightLight.latitude"
-            from: -90; to: 90; stepSize: 0.5
-            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
-            value: Config.options?.nightLight?.latitude ?? 0
-            onValueChanged: Config.setNestedValue("nightLight.latitude", value)
-            valueText: value.toFixed(1)
+            label: "Gamma"
+            configKey: "nightLight.gamma"
+            sublabel: "Brightness curve while it's on; 1.0 leaves it as is"
+            from: 0.5; to: 1.5; stepSize: 0.05
+            value: NightLight.gamma
+            onValueChanged: Config.setNestedValue("nightLight.gamma", Math.round(value * 100) / 100)
+            valueText: value.toFixed(2)
         }
 
-        ConfigSlider {
-            label: "Longitude"
-            configKey: "nightLight.longitude"
-            from: -180; to: 180; stepSize: 0.5
-            enabled: nlEnable.checked && (Config.options?.nightLight?.mode ?? "manual") === "schedule"
-            value: Config.options?.nightLight?.longitude ?? 0
-            onValueChanged: Config.setNestedValue("nightLight.longitude", value)
-            valueText: value.toFixed(1)
+        ConfigRow {
+            label: "Monitors"
+            configKey: "nightLight.outputs"
+            sublabel: NightLight.outputs.length ? "Only the ones picked" : "All of them (pick some to limit it)"
+            ChoiceRow {
+                model: Quickshell.screens.map(sc => ({ value: sc.name, label: sc.name, icon: "monitor" }))
+                current: NightLight.outputs
+                onChose: value => {
+                    const o = NightLight.outputs.slice(), i = o.indexOf(value)
+                    if (i >= 0) o.splice(i, 1); else o.push(value)
+                    Config.setNestedValue("nightLight.outputs", o)
+                }
+            }
         }
     }
 

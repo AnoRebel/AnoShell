@@ -71,7 +71,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Wallpapers` | The wallpaper folder for the picker, anod palette (hue, stills), favourites, apply via anod. |
 | `Wallhaven` | Wallhaven search + download for the picker; API key in `~/.local/share/anoshell/secrets/wallhaven` (0600). |
 | `AntiFlashbang` | Hyprland GLSL shader that darkens bright screens. IPC-controlled. |
-| `NightLight` | wlsunset wrapper. Cross-compositor warm-shift, manual or schedule mode. Opt-in. |
+| `NightLight` | wlsunset wrapper. Warm now (the toggle), or automatically from sunset to sunrise or between set times. Opt-in. |
 
 ### Media
 
@@ -153,7 +153,7 @@ You can edit the user file directly if you prefer JSON over the GUI. The shell w
   "appearance": {
     "theme": { "source": "static", "static": "tokyo-night-dark" }
   },
-  "nightLight": { "enable": true, "nightTemp": 3500 }
+  "nightLight": { "schedule": "times", "start": "21:00", "end": "07:00", "nightTemp": 3500 }
 }
 ```
 
@@ -374,7 +374,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `vpn` | Generic VPN status + connect/disconnect for tailscale/netbird/warp/wireguard/custom | `providers[]`, `notifyOnChange` |
 | `calendar` | KHal/CalDAV pull into the calendar panel | `upcomingDays`, `externalSync.{enable, refreshMinutes, sources[]}` |
 | `lyrics` | Synced lyric overlay in MediaControls + AnoSpot | `enable`, `backend`, `dir` |
-| `nightLight` | wlsunset-backed warm-shift, works on any wlroots compositor | `mode` (manual/schedule), `dayTemp`, `nightTemp`, `latitude`, `longitude` |
+| `nightLight` | wlsunset-backed warm-shift (Hyprland, niri, sway) | `enable` (on now), `schedule` (off/sun/times), `start`, `end`, `fade` (min), `dayTemp`, `nightTemp`, `latitude`, `longitude`, `gamma`, `outputs` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
 | `lock.osk` | On-screen keyboard for password entry | — |
 | `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
@@ -576,6 +576,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
 | Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
 | Removable drives (bar module `drives`) | `udisks2` (`udisksctl`), `util-linux` (`lsblk` ≥ 2.37 for `MOUNTPOINTS`), udev (`udevadm`: systemd-udev or eudev), `libnotify` (`notify-send`) | no drives listed / no notifications |
+| Night light (Settings → Services, bar/pill module `nightlight`, sidebar toggle) | `wlsunset`; a compositor with wlr-gamma-control (Hyprland, niri, sway) | the toggle does nothing |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

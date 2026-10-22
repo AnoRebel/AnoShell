@@ -41,6 +41,7 @@ var features = []feature{
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
 	{"game mode", "gameMode.enable", []string{"gamemoded"}},
+	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
 	{"anime reader playback", "reader.enable", []string{"mpv"}},

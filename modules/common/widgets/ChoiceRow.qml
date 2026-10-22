@@ -10,7 +10,8 @@ import QtQuick.Layouts
  * Contract:
  *   - model: array of { value, label, icon, enabled? }
  *   - current: bound value; the parent owns the binding
- *   - chose(value): emitted on click of a non-selected, enabled option
+ *   - chose(value): emitted on click of a non-selected, enabled option (any
+ *     enabled option when `current` is a list: the caller toggles it)
  *   - compact: when true, icon-only (no label below); default false
  *
  * Visual: selected option uses fill: 1 icon + colSecondaryContainer
@@ -20,7 +21,7 @@ Flow {
     id: root
 
     property var model: []
-    property var current: null
+    property var current: null // a value, or a list of the selected values
     property bool compact: false
     property real itemSpacing: 6
 
@@ -36,7 +37,7 @@ Flow {
             required property var modelData
 
             readonly property bool itemEnabled: modelData.enabled === undefined || modelData.enabled
-            readonly property bool selected: root.current === modelData.value
+            readonly property bool selected: Array.isArray(root.current) ? root.current.includes(modelData.value) : root.current === modelData.value
 
             implicitWidth: root.compact ? 36 : Math.max(56, contentCol.implicitWidth + 16)
             implicitHeight: root.compact ? 36 : Math.max(48, contentCol.implicitHeight + 12)
@@ -88,7 +89,7 @@ Flow {
                 cursorShape: cell.itemEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: {
                     if (!cell.itemEnabled) return;
-                    if (cell.selected) return;
+                    if (cell.selected && !Array.isArray(root.current)) return; // a list toggles
                     root.chose(cell.modelData.value);
                 }
             }

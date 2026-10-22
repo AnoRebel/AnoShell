@@ -113,7 +113,8 @@ between groups), or right-click a group on the bar for **Detach group** /
 Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`,
 `weather`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`,
 `keyboard` (also `keyboardLayout`), `notifications`, `idle`, `privacy`,
-`drives`, `gamemode`. Any of them can also sit on the pill
+`drives`, `gamemode`, `nightlight` (click toggles, scroll sets the
+temperature). Any of them can also sit on the pill
 (`anoSpot.modules`).
 
 `bar.workspaces.hoverWindows` (off by default): hovering a workspace button

@@ -6,69 +6,78 @@ import Quickshell.Io
 import qs.modules.common
 
 /**
- * Night light — warm-shift the display via wlsunset. Cross-compositor:
- * works on any wlroots-based session (Hyprland, Niri, sway, etc.).
+ * Night light: warms the display through wlsunset (any compositor with
+ * wlr-gamma-control: Hyprland, niri, sway).
  *
- * Two modes:
- *   "manual"    — single fixed temperature while active.
- *   "schedule"  — automatic transition between day and night temperatures
- *                 at sunrise/sunset for the configured latitude/longitude
- *                 (wlsunset's native -l/-L behaviour).
+ *   nightLight.enable    the quick toggle: warm now, at nightTemp, whatever
+ *                        the schedule says.
+ *   nightLight.schedule  runs on its own while set:
+ *                        "sun"   warm from sunset to sunrise at latitude/longitude
+ *                        "times" warm from `start` to `end` (HH:mm), fading
+ *                                over `fade` minutes
+ *                        "off"   only the toggle
  *
- * Service is dormant when Config.options.nightLight.enable is false (no
- * process spawned, no config writes). On enable, spawns one wlsunset
- * process with the requested args; toggling state restarts it.
- *
- * The active flag is purely process-state — we don't try to detect what
- * the compositor's current gamma actually is, since there's no
- * cross-compositor API for that.
+ * One wlsunset process, restarted when its arguments change. There's no
+ * cross-compositor way to read the gamma back, so `active` is process state.
  */
 Singleton {
     id: root
 
-    readonly property bool enabled: Config.options?.nightLight?.enable ?? false
-    readonly property string mode: Config.options?.nightLight?.mode ?? "manual"
-    readonly property int dayTemp: Config.options?.nightLight?.dayTemp ?? 6500
-    readonly property int nightTemp: Config.options?.nightLight?.nightTemp ?? 4000
-    readonly property real latitude: Config.options?.nightLight?.latitude ?? 0
-    readonly property real longitude: Config.options?.nightLight?.longitude ?? 0
+    readonly property var opts: Config.options?.nightLight
+    readonly property bool enabled: opts?.enable ?? false
+    readonly property string schedule: opts?.schedule ?? "off"
+    readonly property int dayTemp: opts?.dayTemp ?? 6500
+    readonly property int nightTemp: opts?.nightTemp ?? 4000
+    readonly property real latitude: opts?.latitude ?? 0
+    readonly property real longitude: opts?.longitude ?? 0
+    readonly property string start: opts?.start ?? "20:00"
+    readonly property string end: opts?.end ?? "07:00"
+    readonly property int fade: opts?.fade ?? 30
+    readonly property real gamma: opts?.gamma ?? 1.0
+    readonly property var outputs: Array.from(opts?.outputs ?? [])
 
-    property bool active: proc.running
+    readonly property bool scheduled: root.schedule === "sun" || root.schedule === "times"
+    readonly property bool active: proc.running
+    // For tooltips: "20:00–07:00" or "sunset–sunrise".
+    readonly property string scheduleText: root.schedule === "times" ? `${root.start}–${root.end}`
+        : root.schedule === "sun" ? "sunset–sunrise" : ""
 
     function toggle(): void {
-        Config.setNestedValue("nightLight.enable", !enabled)
+        Config.setNestedValue("nightLight.enable", !root.enabled)
     }
 
-    function _buildArgs() {
-        const args = ["wlsunset"]
-        if (mode === "schedule") {
-            args.push("-T", String(dayTemp))
-            args.push("-t", String(nightTemp))
-            args.push("-l", String(latitude))
-            args.push("-L", String(longitude))
-        } else {
-            // Manual: hold at nightTemp permanently (-d 0 disables fade).
-            // wlsunset still wants both -t and -T; we set them equal so
-            // it never transitions back during the day.
-            args.push("-T", String(nightTemp + 1))
-            args.push("-t", String(nightTemp))
-            args.push("-l", "0")
-            args.push("-L", "0")
-            args.push("-d", "0")
-        }
-        return args
+    // HH:mm, 00:00–23:59
+    function validTime(t: string): bool {
+        return /^([01]\d|2[0-3]):[0-5]\d$/.test(t)
+    }
+
+    // Options every mode shares: gamma, and the monitors (-o each; none = all).
+    readonly property var common: {
+        const a = ["-g", String(root.gamma)]
+        for (const o of root.outputs) a.push("-o", o)
+        return a
+    }
+    readonly property var args: {
+        const mode = root.modeArgs
+        return mode.length ? ["wlsunset"].concat(mode, root.common) : []
+    }
+    readonly property var modeArgs: {
+        if (root.enabled) // held at nightTemp: day and night 1 K apart, so the time doesn't matter
+            return ["-T", String(root.nightTemp + 1), "-t", String(root.nightTemp),
+                    "-l", "0", "-L", "0"]
+        if (root.schedule === "sun")
+            return ["-T", String(root.dayTemp), "-t", String(root.nightTemp),
+                    "-l", String(root.latitude), "-L", String(root.longitude)]
+        if (root.schedule === "times" && root.validTime(root.start) && root.validTime(root.end))
+            return ["-T", String(root.dayTemp), "-t", String(root.nightTemp),
+                    "-s", root.start, "-S", root.end, "-d", String(Math.max(0, root.fade) * 60)]
+        return []
     }
 
     Process {
         id: proc
-        command: root._buildArgs()
-        running: root.enabled && Config.ready
-        // Restart when temperature/mode/coords change while running
-        onCommandChanged: {
-            if (root.enabled && Config.ready) {
-                running = false
-                Qt.callLater(() => running = true)
-            }
-        }
+        command: root.args
+        running: Config.ready && root.args.length > 0
+        onCommandChanged: if (running) { running = false; Qt.callLater(() => running = Config.ready && root.args.length > 0) }
     }
 }

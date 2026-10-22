@@ -112,13 +112,14 @@ Rectangle {
 
         // Night light — tap pill to toggle, chevron to expand inline slider
         TogglePill {
-            iconName: NightLight.enabled ? "nightlight" : "wb_sunny"
-            label: NightLight.enabled
-                ? `${NightLight.nightTemp}K`
-                : "Day"
+            iconName: NightLight.enabled || NightLight.scheduled ? "nightlight" : "wb_sunny"
+            label: NightLight.enabled ? `${NightLight.nightTemp}K`
+                : NightLight.scheduled ? NightLight.scheduleText : "Day"
             active: NightLight.enabled
             activeColor: Appearance.colors.colWarning
-            tooltip: NightLight.enabled ? `Night light on (${NightLight.nightTemp}K) · tap to turn off, ▾ to adjust` : "Night light off · tap to warm the screen"
+            tooltip: NightLight.enabled ? `Night light on (${NightLight.nightTemp}K) · tap to turn off, ▾ to adjust`
+                : NightLight.scheduled ? `Night light automatic (${NightLight.scheduleText}) · tap to turn on now`
+                : "Night light off · tap to warm the screen"
             onClicked: NightLight.toggle()
             showChevron: true
             chevronRotation: root.nightLightExpanded ? 180 : 0

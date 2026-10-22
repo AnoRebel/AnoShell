@@ -10,6 +10,7 @@ IdleModule 1.0 IdleModule.qml
 KeyboardModule 1.0 KeyboardModule.qml
 MediaModule 1.0 MediaModule.qml
 NetworkModule 1.0 NetworkModule.qml
+NightLightModule 1.0 NightLightModule.qml
 NotificationsModule 1.0 NotificationsModule.qml
 PrivacyModule 1.0 PrivacyModule.qml
 ResourcesModule 1.0 ResourcesModule.qml
