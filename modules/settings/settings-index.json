@@ -2021,6 +2021,15 @@
  },
  {
   "page": 6,
+  "card": "",
+  "label": "Qt apps",
+  "sublabel": "kvantum",
+  "keys": [
+   "appearance.theme.qt"
+  ]
+ },
+ {
+  "page": 6,
   "card": "Wallpaper colours",
   "label": "Wallpaper colours",
   "sublabel": "How the palette is made from the wallpaper; picks can be remembered per wallpaper",

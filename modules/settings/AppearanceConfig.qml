@@ -357,6 +357,25 @@ ColumnLayout {
                 Wallpapers.refreshGtk()
             }
         }
+        ConfigRow {
+            label: "Qt apps"
+            configKey: "appearance.theme.qt"
+            visible: appearanceRoot.materialYou
+            sublabel: (Config.options?.appearance?.theme?.qt ?? "kvantum") === "palette"
+                ? "Fusion style on the palette: open apps change colour with the wallpaper (needs qt6ct)"
+                : (Config.options?.appearance?.theme?.qt ?? "kvantum") === "kvantum"
+                ? "A Kvantum theme in the palette: apps get new colours when they next start (needs qt6ct and Kvantum)"
+                : "Qt apps are left alone"
+            ChoiceRow {
+                model: [{ value: "kvantum", label: "Kvantum", icon: "palette" },
+                        { value: "palette", label: "Live palette", icon: "sync" },
+                        { value: "off", label: "Off", icon: "block" }]
+                current: Config.options?.appearance?.theme?.qt ?? "kvantum"
+                onChose: value => { Config.setNestedValue("appearance.theme.qt", value); qtSoon.restart() }
+            }
+            // after the config is on disk: the script reads it from there
+            Timer { id: qtSoon; interval: 1000; onTriggered: Wallpapers.refreshApps() }
+        }
 
         // ─── Theme grid (visible only when source = static or while previewing) ───
         Item {

@@ -75,7 +75,8 @@ rebuild; that's the name you'll see in gsettings.
 ## Icons
 
 The **Icons** card sets the desktop icon theme (GTK through gsettings, Qt
-through `icon_theme` in qt5ct/qt6ct); type to find one of the installed
+through `icon_theme` in qt5ct/qt6ct, which needs the qt6ct package and
+`QT_QPA_PLATFORMTHEME=qt6ct`); type to find one of the installed
 themes. **AnoShell** and **AnoShell Primary** draw folders and file types in
 the wallpaper's colours and inherit everything else (apps first) from the
 last other theme you picked (`icons.base`, default Papirus-Dark).
@@ -89,7 +90,8 @@ settings" sets `icons.theme` to `""`.
 your desktop had (that becomes `icons.base`), so folders follow the wallpaper
 from the start. That happens once (`icons.adopted`); whatever you pick
 afterwards, including "Leave icons to my desktop settings", is kept. GTK apps
-switch live; Qt apps read the icon theme when they start.
+switch live, and so do Qt apps through qt6ct/qt5ct (about 3 s later); the
+shell itself reads it when it starts.
 
 ## For scripts
 

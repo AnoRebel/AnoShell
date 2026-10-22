@@ -9,7 +9,7 @@ Sources:
   bundled  config.json
   written  Config.setNestedValue("…") / `prefix.${…}` / configKeys in the Settings UI
   read     Config.options?.a?.b chains in runtime code (everything outside modules/settings/),
-           plus config paths anod's Go code reads
+           plus config paths anod's Go code and the shell scripts (jq) read
 
 A read of an object path (chain ending at a JsonObject) counts as reading every key
 under it, because the code may then access the keys through a local alias.
@@ -148,6 +148,11 @@ def collect():
             reads.setdefault(m.group(1), set()).add(rel)
         for m in re.finditer(r'"([a-z][A-Za-z0-9.]*)\."\s*\+', src):
             reads.setdefault(m.group(1), set()).add(rel)
+    # Shell scripts read the user config with jq ('.appearance.theme.qt').
+    for p in (ROOT / "scripts").rglob("*.sh"):
+        rel = p.relative_to(ROOT).as_posix()
+        for m in re.finditer(r"'\.([a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+)\b", p.read_text(errors="replace")):
+            reads.setdefault(m.group(1), set()).add(rel)
     return reads, writes, write_prefixes, unresolved
 
 
@@ -167,9 +172,10 @@ def main(argv):
     declared = leaves | objects
     bundled = flatten_json(json.loads((ROOT / "config.json").read_text()))
     reads, writes, wprefix, unresolved = collect()
-    # Go string literals also name old keys (migration sources); they only
-    # count as reads of keys the schema declares.
-    for k in [k for k, srcs in reads.items() if all(r.startswith("anod/") for r in srcs)]:
+    # Go string literals also name old keys (migration sources), and jq paths
+    # in scripts name other files' keys; they only count as reads of keys the
+    # schema declares.
+    for k in [k for k, srcs in reads.items() if all(r.startswith(("anod/", "scripts/")) for r in srcs)]:
         if k not in declared:
             del reads[k]
     read_keys = set(reads)

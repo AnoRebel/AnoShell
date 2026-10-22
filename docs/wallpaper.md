@@ -62,9 +62,26 @@ rules outside the block are kept. GTK apps opened afterwards use it.
 - Turning the switch off removes the block, puts a link back as it was and
   restores a backed-up file.
 
-Folder icons are drawings in the icon theme, not CSS: pick **AnoShell Tint**
-in Settings → Displays → Icons to have your icon theme's folders follow the
-palette too.
+Folder icons are drawings in the icon theme, not CSS. AnoShell Tint, put on
+at the first start (Settings → Displays → Icons), recolours your icon theme's
+folders with the palette and switches GTK apps to it live.
+
+### Qt apps
+
+The `apps` step (`scripts/colors/applycolor.sh`) writes a palette colour
+scheme for qt6ct (and qt5ct when it's set up) and points them at it
+(`color_scheme_path`, `custom_palette`). **Qt apps** (Settings → Appearance →
+Theme source, `appearance.theme.qt`) picks the style:
+
+| Value | Style | When apps change colour |
+|---|---|---|
+| `"kvantum"` (default) | a Kvantum theme in the palette (`~/.config/Kvantum/AnoColors`, shapes from KvArcDark) | when they next start |
+| `"palette"` | Fusion on qt6ct's palette | live: qt6ct re-reads its config about 3 s after a change, palette and icon theme included |
+| `"off"` | left alone | never |
+
+It needs the qt6ct platform theme installed and `QT_QPA_PLATFORMTHEME=qt6ct`
+in the session; without it Qt apps ignore all of this. Changing the style
+takes effect when an app starts.
 
 In the **Fixed** colour mode (Settings → Appearance → Theme source) step 3 is
 skipped: the colours don't follow the wallpaper.

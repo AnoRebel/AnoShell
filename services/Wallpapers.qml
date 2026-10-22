@@ -146,6 +146,8 @@ Singleton {
             if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "GTK colours", err.message])
         })
     }
+    // Re-run the pipeline's app steps (Qt, terminals, …) for the current colours.
+    function refreshApps() { root._colors({ recolor: true }) }
     // Forget the current wallpaper's picks (back to the defaults).
     function resetColors() { root._colors({ reset: true }) }
     function setDefaultColors(pick) {

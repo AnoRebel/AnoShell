@@ -577,6 +577,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
 | Removable drives (bar module `drives`) | `udisks2` (`udisksctl`), `util-linux` (`lsblk` ≥ 2.37 for `MOUNTPOINTS`), udev (`udevadm`: systemd-udev or eudev), `libnotify` (`notify-send`) | no drives listed / no notifications |
 | Night light (Settings → Services, bar/pill module `nightlight`, sidebar toggle) | `wlsunset`; a compositor with wlr-gamma-control (Hyprland, niri, sway) | the toggle does nothing |
+| Qt apps in the palette (`appearance.theme.qt`) | `qt6ct` (and `QT_QPA_PLATFORMTHEME=qt6ct`); `qt5ct` for Qt 5 apps; `kvantum` for the default Kvantum mode | Qt apps keep Qt's default look |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

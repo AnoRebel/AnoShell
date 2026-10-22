@@ -42,6 +42,7 @@ var features = []feature{
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
 	{"game mode", "gameMode.enable", []string{"gamemoded"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
+	{"Qt apps in the palette (the qt6ct platform theme; kvantum for appearance.theme.qt \"kvantum\")", "", []string{"qt6ct"}},
 	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
 	{"anime reader playback", "reader.enable", []string{"mpv"}},

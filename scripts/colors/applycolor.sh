@@ -54,15 +54,33 @@ _col() { # $1 = colors.json jq path, $2 = pywal fallback jq path, $3 = literal f
     echo "${3:-#000000}"
 }
 
+# colors.json keys are snake_case (matugen's names).
 primary=$(_col '.primary' '.colors.color4' '#8ab4f8')
-onPrimary=$(_col '.onPrimary' '.special.background' '#000000')
+onPrimary=$(_col '.on_primary' '.special.background' '#000000')
 background=$(_col '.background' '.special.background' '#1c1b1f')
-onBackground=$(_col '.onBackground' '.special.foreground' '#e6e1e5')
+onBackground=$(_col '.on_background' '.special.foreground' '#e6e1e5')
 surface=$(_col '.surface' '.special.background' '#1c1b1f')
-onSurface=$(_col '.onSurface' '.special.foreground' '#e6e1e5')
-surfaceContainer=$(_col '.surfaceContainer' '.colors.color0' '#2b2930')
+onSurface=$(_col '.on_surface' '.special.foreground' '#e6e1e5')
+onSurfaceVariant=$(_col '.on_surface_variant' '.colors.color7' '#cac4d0')
+surfaceContainer=$(_col '.surface_container' '.colors.color0' '#2b2930')
+surfaceContainerLowest=$(_col '.surface_container_lowest' '.special.background' '#0f0d13')
+surfaceContainerLow=$(_col '.surface_container_low' '.colors.color0' '#1d1b20')
+surfaceContainerHigh=$(_col '.surface_container_high' '.colors.color8' '#36343b')
+surfaceContainerHighest=$(_col '.surface_container_highest' '.colors.color8' '#48464c')
+inverseSurface=$(_col '.inverse_surface' '.special.foreground' '#e6e1e5')
+inverseOnSurface=$(_col '.inverse_on_surface' '.special.background' '#313033')
+outline=$(_col '.outline' '.colors.color8' '#938f99')
+shadow=$(_col '.shadow' '.special.background' '#000000')
 secondary=$(_col '.secondary' '.colors.color2' '#ccc2dc')
+tertiary=$(_col '.tertiary' '.colors.color5' '#efb8c8')
 error=$(_col '.error' '.colors.color1' '#f2b8b5')
+
+# Qt: appearance.theme.qt in the shell config. "kvantum" (default): a
+# recoloured Kvantum theme, which apps read when they start; "palette": the
+# Fusion style on qt5ct/qt6ct's palette, which running apps pick up live;
+# "off": Qt is left alone.
+QT_MODE=$(jq -r '.appearance.theme.qt // empty' "$XDG_CONFIG_HOME/anoshell/config.json" 2>/dev/null || true)
+QT_MODE=${QT_MODE:-kvantum}
 
 # #RRGGBB → 0xFFRRGGBB (opaque) for hyprland/hyprtoolkit color syntax.
 _hexToHl() { local h="${1#\#}"; [[ "${#h}" -eq 6 ]] && echo "0xFF${h^^}" || echo "0xFF181818"; }
@@ -87,7 +105,7 @@ apply_kitty() {
 # ── Ghostty ──────────────────────────────────────────────────────────────
 apply_ghostty() {
     local config="$XDG_CONFIG_HOME/ghostty/config"
-    [[ -f "$config" ]] || return
+    [[ -f "$config" ]] || return 0 # (a bare return is 1 here and set -e ends the script)
 
     # Backup
     cp "$config" "$config.bak" 2>/dev/null || true
@@ -107,7 +125,7 @@ apply_ghostty() {
 # ── Foot ─────────────────────────────────────────────────────────────────
 apply_foot() {
     local config="$XDG_CONFIG_HOME/foot/foot.ini"
-    [[ -f "$config" ]] || return
+    [[ -f "$config" ]] || return 0 # (a bare return is 1 here and set -e ends the script)
 
     cp "$config" "$config.bak" 2>/dev/null || true
 
@@ -126,7 +144,7 @@ apply_foot() {
 # ── Cava (if pywal didn't already handle it) ─────────────────────────────
 apply_cava() {
     local config="$HOME/.config/cava/config"
-    [[ -f "$config" ]] || return
+    [[ -f "$config" ]] || return 0 # (a bare return is 1 here and set -e ends the script)
 
     # Only update if pywal didn't already
     if [[ -f "$HOME/.cache/wal/colors.sh" ]]; then return; fi
@@ -142,22 +160,47 @@ apply_cava() {
     log "Applied colors to cava"
 }
 
-# ── Qt (Kvantum + qt6ct + QuickControls2) ──────────────────────────────────
-# Recolours all Qt apps — notably the polkit auth dialog (hyprpolkitagent, which
-# uses Qt Widgets + QtQuick Controls) — to match the wallpaper. Approach:
-#   1. A generated Kvantum theme "AnoColors" that inherits shapes from a base
-#      dark theme (KvArcDark) and overrides only [GeneralColors].
-#   2. qt6ct set to style=kvantum so Kvantum drives Qt Widgets.
-#   3. A QtQuick Controls 2 Material config for the QML side.
-# Everything is written idempotently; nothing here breaks apps if a piece is
-# missing — each step guards on its dependency.
-apply_qt() {
+# ── Qt (qt5ct/qt6ct palette, Kvantum, QuickControls2) ───────────────────────
+# qt5ct/qt6ct get a colour scheme in the palette and are pointed at it
+# (color_scheme_path, custom_palette), as Bioma does. They watch their config
+# directory and, 3 s after a change, re-apply the palette and icon theme to
+# running apps; the style is only read at start. Kvantum draws with its own
+# colours, not the palette, so in "kvantum" mode a palette change reaches an
+# app when it next starts.
+
+# The 22 QPalette roles in qt5ct's order (WindowText, Button, Light, Midlight,
+# Dark, Mid, Text, BrightText, ButtonText, Base, Window, Shadow, Highlight,
+# HighlightedText, Link, LinkVisited, AlternateBase, NoRole, ToolTipBase,
+# ToolTipText, PlaceholderText, Accent); $1 is the text colour.
+_qt_roles() {
+    echo "$1, $surfaceContainerHigh, $surfaceContainerHighest, $surfaceContainerHigh, $surfaceContainerLowest, $surfaceContainer, $1, $onBackground, $1, $surfaceContainerLow, $surface, $shadow, $primary, $onPrimary, $primary, $tertiary, $surfaceContainer, $surface, $inverseSurface, $inverseOnSurface, $onSurfaceVariant, $primary"
+}
+
+# Points <tool>.conf at the scheme and sets the style, keeping every other
+# line; written beside it and renamed, so the tool's directory watch fires.
+_qt_point() {
+    local dir="$1" scheme="$2" style="$3" conf="$1/${1##*/}.conf"
+    local tmp
+    tmp=$(mktemp "$dir/.conf-XXXXXX")
+    awk -v scheme="$scheme" -v style="$style" '
+        function put() { print "color_scheme_path=" scheme; print "custom_palette=true"; if (style != "") print "style=" style; done = 1 }
+        /^\[/ { if (inside && !done) put(); inside = ($0 == "[Appearance]") }
+        inside && /^(color_scheme_path|custom_palette|style)=/ { next }
+        { print }
+        inside && !done { put() }
+        END { if (!seen && !done) { print "[Appearance]"; put() } }
+        $0 == "[Appearance]" { seen = 1 }
+    ' "$conf" 2>/dev/null > "$tmp" || true
+    mv "$tmp" "$conf"
+}
+
+# A Kvantum theme in the palette, shapes from KvArcDark.
+_qt_kvantum() {
     local kvdir="$XDG_CONFIG_HOME/Kvantum"
     local theme="AnoColors"
     local base="/usr/share/Kvantum/KvArcDark"
     local tdir="$kvdir/$theme"
 
-    # 1. Kvantum theme (needs the base theme present for its SVG shapes).
     if [[ -d "$base" ]]; then
         mkdir -p "$tdir"
         # Copy the base SVG once (widget shapes); we only recolour, not reshape.
@@ -219,31 +262,48 @@ EOF
     else
         log "Kvantum base $base not found — skipping Kvantum theme"
     fi
+}
 
-    # 2. qt6ct → use Kvantum as the widget style (create/patch the conf).
-    local qt6dir="$XDG_CONFIG_HOME/qt6ct"
-    mkdir -p "$qt6dir"
-    local qt6conf="$qt6dir/qt6ct.conf"
-    if [[ -f "$qt6conf" ]]; then
-        if grep -q '^style=' "$qt6conf"; then
-            sed -i 's/^style=.*/style=kvantum/' "$qt6conf"
-        else
-            # Insert under [Appearance] (or append a section).
-            grep -q '^\[Appearance\]' "$qt6conf" \
-                && sed -i '/^\[Appearance\]/a style=kvantum' "$qt6conf" \
-                || printf '\n[Appearance]\nstyle=kvantum\n' >> "$qt6conf"
+# Off: qt5ct/qt6ct stop pointing at our scheme (if they do) and it goes.
+_qt_unpoint() {
+    local tool dir conf tmp
+    for tool in qt5ct qt6ct; do
+        dir="$XDG_CONFIG_HOME/$tool" conf="$XDG_CONFIG_HOME/$tool/$tool.conf"
+        if [[ -f "$conf" ]] && grep -q '^color_scheme_path=.*/colors/anoshell\.conf$' "$conf"; then
+            tmp=$(mktemp "$dir/.conf-XXXXXX")
+            grep -v -e '^color_scheme_path=.*/colors/anoshell\.conf$' -e '^custom_palette=true$' "$conf" > "$tmp" || true
+            mv "$tmp" "$conf"
         fi
-    else
-        cat > "$qt6conf" <<EOF
-[Appearance]
-style=kvantum
-icon_theme=Papirus-Dark
-standard_dialogs=default
-EOF
-    fi
-    log "Set qt6ct style=kvantum"
+        rm -f "$dir/colors/anoshell.conf"
+    done
+}
 
-    # 3. QtQuick Controls 2 Material palette (QML side of hyprpolkitagent etc.).
+apply_qt() {
+    if [[ "$QT_MODE" == "off" ]]; then _qt_unpoint; return 0; fi
+    local style=""
+    case "$QT_MODE" in
+        palette) style="Fusion" ;;
+        kvantum) style="kvantum" ;;
+    esac
+
+    local active disabled tool dir
+    active=$(_qt_roles "$onSurface")
+    disabled=$(_qt_roles "$outline")
+    for tool in qt5ct qt6ct; do
+        dir="$XDG_CONFIG_HOME/$tool"
+        # qt6ct always (Qt 6 apps); qt5ct only when it's set up
+        [[ "$tool" == qt5ct && ! -d "$dir" ]] && continue
+        mkdir -p "$dir/colors"
+        printf '[ColorScheme]\nactive_colors=%s\ndisabled_colors=%s\ninactive_colors=%s\n' \
+            "$active" "$disabled" "$active" > "$dir/colors/anoshell.conf"
+        [[ -f "$dir/$tool.conf" ]] || printf '[Appearance]\nicon_theme=Papirus-Dark\nstandard_dialogs=default\n' > "$dir/$tool.conf"
+        _qt_point "$dir" "$dir/colors/anoshell.conf" "$style"
+    done
+    log "Wrote the qt5ct/qt6ct palette (Qt style: ${style})"
+
+    [[ "$QT_MODE" == "kvantum" ]] && _qt_kvantum
+
+    # QtQuick Controls 2 Material palette (QML side of hyprpolkitagent etc.).
     local qc2="$XDG_CONFIG_HOME/qtquickcontrols2.conf"
     cat > "$qc2" <<EOF
 [Controls]
@@ -257,10 +317,6 @@ Background=$background
 Foreground=$onBackground
 EOF
     log "Wrote QtQuick Controls 2 Material palette"
-
-    # 4. Restart hyprpolkitagent so it repaints with the new palette (harmless
-    #    if it isn't running / not managed by systemd).
-    systemctl --user restart hyprpolkitagent 2>/dev/null || true
 }
 
 # ── hyprtoolkit (hyprpolkitagent) ──────────────────────────────────────────
