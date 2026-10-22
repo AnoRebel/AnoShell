@@ -55,6 +55,17 @@ Settings → Sidebars → **Productivity**.
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
 
+## Privacy indicator
+
+The bar module `privacy` shows a red icon while the microphone, a camera or
+the screen is being captured, and its tooltip names who: microphone and
+camera use through PipeWire (by the app's stream, so virtual sources such as
+EasyEffects' count too), cameras opened directly (anod watches `/dev/video*`
+with inotify and reports a holder after 1.5 s, so an app only probing a
+camera doesn't show), and screen captures (Hyprland's screencast events,
+after 0.7 s so a screenshot doesn't show; portal casts also through
+PipeWire). `qs -c ano ipc call privacy uses` prints the same list.
+
 ## Password prompt (polkit)
 
 When an app needs permission (pkexec, mounting a disk, a system setting),

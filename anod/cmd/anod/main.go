@@ -19,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"ano/anod/internal/camera"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/hooks"
@@ -169,6 +170,19 @@ func main() {
 			"enable": rs.Enable, "dir": rs.Dir, "intervalSeconds": int(rs.Interval.Seconds())}}, nil
 	})
 	go rot.Run(ctx)
+
+	// Who holds a camera open (privacy indicator): inotify on /dev/video*,
+	// /proc looked at only on device activity.
+	cams := &camera.Watcher{Proc: "/proc", Dev: "/dev", Sys: "/sys/class/video4linux",
+		Settle: 1500 * time.Millisecond, Notify: srv.Broadcast}
+	go func() {
+		if err := cams.Run(ctx); err != nil {
+			log.Printf("camera watcher: %v", err)
+		}
+	}()
+	srv.Handle("camera.users", func(json.RawMessage) (any, error) {
+		return map[string]any{"holders": cams.Current()}, nil
+	})
 
 	// Palette cache for the wallpaper picker (hue sort) and glass (luminance).
 	cacheDir := filepath.Join(xdgCache(), "anoshell")
