@@ -83,7 +83,13 @@ last other theme you picked (`icons.base`, default Papirus-Dark).
 their colours to the palette's hue (greys and whites stay); colour variants
 such as Papirus's `folder-red-*` are left out. A first build takes a few
 seconds. They're rebuilt and slot-switched like the cursors. "Leave icons to my desktop
-settings" sets `icons.theme` to `""`; nothing is changed until you pick one.
+settings" sets `icons.theme` to `""`.
+
+**On the first start** the shell puts AnoShell Tint on, over the icon theme
+your desktop had (that becomes `icons.base`), so folders follow the wallpaper
+from the start. That happens once (`icons.adopted`); whatever you pick
+afterwards, including "Leave icons to my desktop settings", is kept. GTK apps
+switch live; Qt apps read the icon theme when they start.
 
 ## For scripts
 

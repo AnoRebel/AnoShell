@@ -230,6 +230,7 @@
   "hooks.wallpaperChanged": "string",
   "hooks.wifiChanged": "string",
   "hud.enable": "bool",
+  "icons.adopted": "bool",
   "icons.base": "string",
   "icons.theme": "string",
   "interactions.scrolling.fasterTouchpadScroll": "bool",

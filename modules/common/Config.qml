@@ -863,10 +863,13 @@ Singleton {
             // Desktop icon theme (GTK + qt5ct/qt6ct): "" leaves it alone. The
             // palette ones (anoshell-icons, anoshell-icons-primary) draw folders
             // and file types in the wallpaper's colours and inherit the rest
-            // from `base` (services/PaletteThemes.qml).
+            // from `base` (services/PaletteThemes.qml). On the first start
+            // the desktop's theme becomes `base` and anoshell-icons-tint goes
+            // on; `adopted` records that it happened, once.
             property JsonObject icons: JsonObject {
                 property string theme: ""
                 property string base: "Papirus-Dark"
+                property bool adopted: false
             }
 
             // ═══════════════════════════════════════════════════════════════

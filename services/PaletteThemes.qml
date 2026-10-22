@@ -19,6 +19,11 @@ import qs.services
  * what makes the new colours show. The cursor goes through anod (cursor.apply:
  * Hyprland, niri, GTK); the icon theme through scripts/themes/looks (GTK and
  * qt5ct/qt6ct).
+ *
+ * On the first start (as Bioma does) the desktop's icon theme becomes the
+ * base and AnoShell Tint goes on, so the folders follow the wallpaper without
+ * a trip to Settings. Once: icons.adopted is written either way, so a theme
+ * chosen afterwards, "" included, is never taken back.
  */
 Singleton {
     id: root
@@ -39,6 +44,8 @@ Singleton {
     property string iconsLive: ""
     // Installed icon themes, from scripts/themes/looks list: [{id, name, slotted}]
     property var iconThemes: []
+    // The desktop's icon theme when the shell started (null until listed).
+    property var desktopIcons: null
     signal cursorBuilt()
 
     // The slot `id` is not on now, so the toolkits load it afresh.
@@ -104,6 +111,19 @@ Singleton {
         if (!root.iconsWanted) root.applyIcons() // a palette theme applies once built
     }
 
+    readonly property bool adopted: Config.options?.icons?.adopted ?? true
+    readonly property bool canAdopt: Config.ready && !root.adopted && root.desktopIcons !== null
+    onCanAdoptChanged: if (root.canAdopt) Qt.callLater(root.adopt)
+    function adopt(): void {
+        if (!root.canAdopt) return
+        if (!root.iconTheme) {
+            const cur = root.desktopIcons
+            if (cur && !root.iconIds.includes(cur)) Config.setNestedValue("icons.base", cur)
+            Config.setNestedValue("icons.theme", "anoshell-icons-tint")
+        }
+        Config.setNestedValue("icons.adopted", true)
+    }
+
     function refresh(): void { if (!lister.running) lister.running = true }
     Process {
         id: lister
@@ -113,6 +133,7 @@ Singleton {
                 try {
                     const d = JSON.parse(text)
                     root.iconThemes = d.icons ?? []
+                    if (root.desktopIcons === null) root.desktopIcons = d.current?.icons ?? ""
                     if (!root.cursorLive) root.cursorLive = d.current?.live ?? ""
                     if (!root.iconsLive) root.iconsLive = d.current?.iconsLive ?? ""
                 } catch (e) {}
