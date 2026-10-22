@@ -159,6 +159,16 @@ video still, cached by path, size and mtime; saved as it goes) and
 connection's other requests, so their replies can arrive after later ones
 (match replies by `id`).
 
+Downloads: `downloads.list` returns `{"dir", "active": [{"path", "name",
+"size", "rate"}], "finished": [{"path", "name", "size", "at"}]}`, the
+browsers' partial files (`.part`, `.crdownload`) growing in the download
+folder (`XDG_DOWNLOAD_DIR` from `user-dirs.dirs`, else `~/Downloads`) and
+the last five renamed to their real name while anod watched;
+`downloads.clear` (`{"path"?}`) forgets finished ones (all without a path).
+The `downloads` event carries the same on every change. Sizes in bytes,
+rate in bytes a second; a partial that stops growing drops out after a
+minute.
+
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),
 written atomically; an empty value removes it. The shell reads the file

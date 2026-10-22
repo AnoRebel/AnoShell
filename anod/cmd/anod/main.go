@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"ano/anod/internal/camera"
+	"ano/anod/internal/downloads"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/hooks"
@@ -259,6 +260,28 @@ func main() {
 	srv.Handle("camera.users", func(json.RawMessage) (any, error) {
 		return map[string]any{"holders": cams.Current()}, nil
 	})
+
+	// Downloads in progress in the download folder (bar/pill module "downloads").
+	{
+		home, _ := os.UserHomeDir()
+		cfgHome := os.Getenv("XDG_CONFIG_HOME")
+		if cfgHome == "" {
+			cfgHome = filepath.Join(home, ".config")
+		}
+		dls := &downloads.Watcher{Dir: downloads.Dir(cfgHome, home), Notify: srv.Broadcast}
+		go func() {
+			if err := dls.Run(ctx); err != nil {
+				log.Printf("downloads watcher: %v", err)
+			}
+		}()
+		srv.Handle("downloads.list", func(json.RawMessage) (any, error) { return dls.State(), nil })
+		srv.Handle("downloads.clear", func(raw json.RawMessage) (any, error) {
+			var p struct{ Path string `json:"path"` }
+			json.Unmarshal(raw, &p)
+			dls.Clear(p.Path)
+			return dls.State(), nil
+		})
+	}
 
 	// Palette cache for the wallpaper picker (hue sort) and glass (luminance).
 	cacheDir := filepath.Join(xdgCache(), "anoshell")

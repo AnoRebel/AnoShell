@@ -114,7 +114,8 @@ Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`,
 `weather`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`,
 `keyboard` (also `keyboardLayout`), `notifications`, `idle`, `privacy`,
 `drives`, `gamemode`, `nightlight` (click toggles, scroll sets the
-temperature). Any of them can also sit on the pill
+temperature), `downloads` (shown while a browser downloads into your
+download folder: size and rate; finished ones open the file or folder). Any of them can also sit on the pill
 (`anoSpot.modules`).
 
 `bar.workspaces.hoverWindows` (off by default): hovering a workspace button
