@@ -194,3 +194,74 @@ func TestWriteAtomicKeepsLinkAndMode(t *testing.T) {
 		t.Fatalf("got %q mode %o", b, fi.Mode().Perm())
 	}
 }
+
+// A pick remembered for A comes back on A, not on B; the request's own
+// options win over it; reset forgets it.
+func TestPerWallpaperChoices(t *testing.T) {
+	bin, home, p := setup(t)
+	p.Choices = &Choices{Path: filepath.Join(home, "state/wallpaper-colors.json")}
+	a, b := image(t, home, "a.png"), image(t, home, "b.png")
+	s := Settings{Mode: "dark", SchemeType: "tonal-spot", PerWallpaper: true}
+	if _, err := p.Choices.Set(a, Choice{SchemeType: "vibrant", Mode: "light"}, false); err != nil {
+		t.Fatal(err)
+	}
+	scheme := func(img string, req Choice, s Settings) Result {
+		t.Helper()
+		res, err := p.Apply(context.Background(), Request{Image: img, Choice: req}, s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return res
+	}
+	if r := scheme(a, Choice{}, s); r.Scheme.SchemeType != "vibrant" || r.Scheme.Mode != "light" || !r.Custom {
+		t.Fatalf("A: %+v custom=%v", r.Scheme, r.Custom)
+	}
+	if r := scheme(b, Choice{}, s); r.Scheme.SchemeType != "tonal-spot" || r.Scheme.Mode != "dark" || r.Custom {
+		t.Fatalf("B: %+v", r.Scheme)
+	}
+	if r := scheme(a, Choice{Mode: "dark"}, s); r.Scheme.SchemeType != "vibrant" || r.Scheme.Mode != "dark" {
+		t.Fatalf("A with request: %+v", r.Scheme)
+	}
+	log, _ := os.ReadFile(filepath.Join(bin, "matugen.log"))
+	if !strings.Contains(string(log), "--mode light --type scheme-vibrant") {
+		t.Fatalf("matugen never ran vibrant/light:\n%s", log)
+	}
+	s.PerWallpaper = false
+	if r := scheme(a, Choice{}, s); r.Scheme.SchemeType != "tonal-spot" || r.Custom {
+		t.Fatalf("A with perWallpaper off: %+v", r.Scheme)
+	}
+	if ch, _ := p.Choices.Set(a, Choice{Prefer: "darkness"}, true); ch != (Choice{Prefer: "darkness"}) {
+		t.Fatalf("reset then pick: %+v", ch)
+	}
+	if ch, _ := p.Choices.Set(a, Choice{}, true); ch != (Choice{}) {
+		t.Fatalf("reset: %+v", ch)
+	}
+	if _, ok := p.Choices.Get(a); ok {
+		t.Fatal("reset left an entry")
+	}
+}
+
+// With a colour output, a wallpaper for another output leaves the colours;
+// the colour output's does, and a repeat comes from the palette cache.
+func TestColorOutputAndCache(t *testing.T) {
+	bin, home, p := setup(t)
+	p.ColorCache = filepath.Join(home, "cache")
+	a := image(t, home, "a.png")
+	s := Settings{Mode: "dark", ColorOutput: "HDMI-A-1"}
+	calls := func() int {
+		b, _ := os.ReadFile(filepath.Join(bin, "matugen.log"))
+		return strings.Count(string(b), "\n")
+	}
+	if r, _ := p.Apply(context.Background(), Request{Image: a, Outputs: []string{"eDP-1"}}, s); r.ColorImage != "" || calls() != 0 {
+		t.Fatalf("other output made colours: %+v", r)
+	}
+	if r, _ := p.Apply(context.Background(), Request{Image: a, Outputs: []string{"HDMI-A-1"}}, s); r.ColorImage != a || calls() != 1 {
+		t.Fatalf("colour output: %+v, %d calls", r, calls())
+	}
+	if p.ColorImage(s) != a || p.LoadState().Colors != a {
+		t.Fatal("colour image not recorded")
+	}
+	if r, _ := p.Apply(context.Background(), Request{Image: a, ColorsOnly: true}, s); r.ColorImage != a || calls() != 1 {
+		t.Fatalf("cache missed: %d calls", calls())
+	}
+}

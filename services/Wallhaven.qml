@@ -204,7 +204,7 @@ Singleton {
             if (exitCode === 0) {
                 root.downloadProgress = 1
                 // Saved either way; applied only if nobody cancelled meanwhile.
-                if (!root._cancelled) Wallpapers.apply(root._dest, Appearance.m3colors.darkmode, root._monitor, true)
+                if (!root._cancelled) Wallpapers.apply(root._dest, root._monitor, true)
             } else {
                 root.downloadError = "Couldn't save the download"
             }

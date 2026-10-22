@@ -166,7 +166,7 @@ Item {
     }
 
     // ── Schemes and variants ("scheme …") ─────────────────────────────
-    readonly property var variants: ["tonal-spot", "content", "expressive", "fidelity", "fruit-salad", "monochrome", "neutral", "rainbow"]
+    readonly property var variants: ["tonal-spot", "content", "expressive", "fidelity", "fruit-salad", "monochrome", "neutral", "rainbow", "vibrant"]
     readonly property var schemeResults: {
         if (!root.on("schemes") || !root.query.startsWith("scheme")) return []
         const q = root.query.slice(6).trim().toLowerCase()
@@ -175,8 +175,7 @@ Item {
             provider: "schemes", icon: "palette", title: `Variant: ${v}`, subtitle: "Material You colours from your wallpaper, this variant",
             run: () => {
                 Config.setNestedValue("appearance.theme.source", "materialYou")
-                Config.setNestedValue("appearance.colors.schemeType", v)
-                Wallpapers.recolor(Config.options?.background?.wallpaperPath ?? "", Config.options?.appearance?.colors?.darkMode ?? true)
+                Wallpapers.pickColors({ schemeType: v })
             }
         })
         for (let i = 0; i < ThemeRegistry.count; i++) {

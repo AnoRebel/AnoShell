@@ -12,6 +12,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,8 +48,15 @@ type Settings struct {
 	Prefer     string // matugen --prefer
 	FixedColor bool   // appearance.theme.colorMode fixed (or a static theme): skip colour hooks
 	SkipColors bool   // another output's image already set the colours this cycle
-	Engine     string // "awww" (default) or "shell": the shell draws it, awww is skipped
-	Hooks      []Hook
+	// ColorOutput: the output whose wallpaper sets the colours (a chosen or
+	// the focused monitor); a wallpaper applied only to other outputs leaves
+	// colours and hooks alone. "": every wallpaper set does.
+	ColorOutput string
+	Engine      string // "awww" (default) or "shell": the shell draws it, awww is skipped
+	// PerWallpaper: colour picks remembered for the image (Pipeline.Choices)
+	// replace the defaults above.
+	PerWallpaper bool
+	Hooks        []Hook
 }
 
 // Request is one wallpaper change.
@@ -57,15 +66,23 @@ type Request struct {
 	// ColorsOnly redoes colours and hooks for an image already shown (the
 	// light/dark switch): awww and the recorded state are left alone.
 	ColorsOnly bool `json:"colorsOnly"`
+	// Explicit colour options for this request, over the remembered ones.
+	Choice
 }
 
 // Result reports what happened, step by step.
 type Result struct {
-	Image   string       `json:"image"`
-	Outputs []string     `json:"outputs,omitempty"` // empty: every output
-	Resize  string       `json:"resize"`
-	Colors  string       `json:"colors"`
-	Steps   []StepResult `json:"steps"`
+	Image   string   `json:"image"`
+	Outputs []string `json:"outputs,omitempty"` // empty: every output
+	Resize  string   `json:"resize"`
+	Colors  string   `json:"colors"`
+	// The colour options used: defaults, then the image's remembered picks
+	// (Custom), then the request's.
+	Scheme Choice `json:"scheme"`
+	Custom bool   `json:"custom"`
+	// ColorImage: the image the colours were made from; "" when they weren't.
+	ColorImage string       `json:"colorImage,omitempty"`
+	Steps      []StepResult `json:"steps"`
 }
 
 type StepResult struct {
@@ -83,15 +100,20 @@ type Pipeline struct {
 	Logf       func(string, ...any)
 	// Still returns a frame of a video (the palette cache's); colours and
 	// hooks use it, since matugen and most hooks can't read a video.
-	Still func(ctx context.Context, path string) (string, error)
-	mu    sync.Mutex
+	Still   func(ctx context.Context, path string) (string, error)
+	Choices *Choices // per-wallpaper colour picks; nil: none
+	// ColorCache: a directory of generated palettes by image and options, so
+	// coming back to a wallpaper (the focused-monitor mode) skips matugen.
+	ColorCache string
+	mu         sync.Mutex
 }
 
 // State is what was applied last (read by the shell for glass alignment).
 type State struct {
 	Image   string            `json:"image"`
 	Resize  string            `json:"resize"`
-	Outputs map[string]string `json:"outputs"` // output -> image
+	Outputs map[string]string `json:"outputs"` // output -> image ("*": every output)
+	Colors  string            `json:"colors"`  // the image the colours came from
 	At      time.Time         `json:"at"`
 }
 
@@ -121,6 +143,13 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		s.Resize = "crop"
 	}
 	res := Result{Image: img, Outputs: req.Outputs, Resize: s.Resize, Colors: p.ColorsPath}
+	if s.PerWallpaper && p.Choices != nil {
+		if ch, ok := p.Choices.Get(img); ok {
+			s, res.Custom = ch.over(s), true
+		}
+	}
+	s = req.Choice.over(s)
+	res.Scheme = Choice{SchemeType: s.SchemeType, Prefer: s.Prefer, Mode: s.Mode}
 	src := img // what colours and hooks read
 	if palette.IsVideo(img) {
 		if s.Engine != "shell" && !req.ColorsOnly {
@@ -151,9 +180,20 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		p.saveState(img, req.Outputs, s.Resize)
 	}
 
+	// Another output's wallpaper sets the colours: this one only shows.
+	if s.ColorOutput != "" && !req.ColorsOnly && len(req.Outputs) > 0 && !contains(req.Outputs, s.ColorOutput) {
+		s.SkipColors, s.Hooks = true, nil
+		res.Steps = append(res.Steps, StepResult{Name: "matugen", Skipped: "colours come from " + s.ColorOutput})
+	}
+
 	// 2. colours (also in fixed mode: switching back then has them ready)
 	if !s.SkipColors {
-		res.Steps = append(res.Steps, p.matugen(ctx, src, s))
+		st := p.matugen(ctx, src, s)
+		res.Steps = append(res.Steps, st)
+		if st.OK {
+			res.ColorImage = img
+			p.saveColors(img)
+		}
 	}
 
 	// 3. hooks, in order
@@ -244,6 +284,14 @@ func (p *Pipeline) matugen(ctx context.Context, img string, s Settings) StepResu
 	if mode != "light" {
 		mode = "dark"
 	}
+	cached := p.cacheFile(img, scheme, prefer, mode)
+	if b, err := os.ReadFile(cached); cached != "" && err == nil {
+		if err := writeAtomic(p.ColorsPath, b); err == nil {
+			st.OK = true
+			st.Duration = int(time.Since(start).Milliseconds())
+			return st
+		}
+	}
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	out, err := exec.CommandContext(c, "matugen", "image", img, "--mode", mode, "--type", "scheme-"+scheme,
@@ -262,8 +310,60 @@ func (p *Pipeline) matugen(ctx context.Context, img string, s Settings) StepResu
 		st.Error = err.Error()
 		return st
 	}
+	if cached != "" {
+		_ = writeAtomic(cached, colors)
+	}
 	st.OK = true
 	return st
+}
+
+// cacheFile names img's palette for these options: path, size and mtime, so
+// an edited image is generated again. "" without a cache dir.
+// ponytail: never pruned; a few KB per wallpaper and option set.
+func (p *Pipeline) cacheFile(img, scheme, prefer, mode string) string {
+	fi, err := os.Stat(img)
+	if p.ColorCache == "" || err != nil {
+		return ""
+	}
+	h := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%d\x00%s\x00%s\x00%s", img, fi.Size(), fi.ModTime().UnixNano(), scheme, prefer, mode)))
+	return filepath.Join(p.ColorCache, hex.EncodeToString(h[:16])+".json")
+}
+
+func contains(list []string, v string) bool {
+	for _, x := range list {
+		if x == v {
+			return true
+		}
+	}
+	return false
+}
+
+// ColorImage is the image the colours follow: the colour output's wallpaper
+// when one is set and known, else the one they were last made from.
+func (p *Pipeline) ColorImage(s Settings) string {
+	st := p.LoadState()
+	if s.ColorOutput != "" {
+		if img := st.Outputs[s.ColorOutput]; img != "" {
+			return img
+		}
+		if img := st.Outputs["*"]; img != "" {
+			return img
+		}
+	}
+	if st.Colors != "" {
+		return st.Colors
+	}
+	return st.Image
+}
+
+func (p *Pipeline) saveColors(img string) {
+	if p.StatePath == "" {
+		return
+	}
+	s := p.LoadState()
+	s.Colors = img
+	b, _ := json.MarshalIndent(s, "", "  ")
+	_ = writeAtomic(p.StatePath, b)
 }
 
 // FlattenMatugen turns matugen 4's JSON dump into {role: hex, darkmode}.

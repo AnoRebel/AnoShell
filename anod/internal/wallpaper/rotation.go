@@ -169,7 +169,14 @@ func (r *Rotator) step(ctx context.Context, forced bool) {
 	if len(outs) == 0 {
 		outs = []string{""}
 	}
-	for i, o := range outs {
+	// One output's wallpaper sets the colours and runs the hooks: the colour
+	// output when it is among them, else the first.
+	driver := outs[0]
+	if contains(outs, s.ColorOutput) {
+		driver = s.ColorOutput
+	}
+	s.ColorOutput = ""
+	for _, o := range outs {
 		img := bag.Next(r.last)
 		if img == "" {
 			return
@@ -180,12 +187,12 @@ func (r *Rotator) step(ctx context.Context, forced bool) {
 			req.Outputs = []string{o}
 		}
 		ss := s
-		if i > 0 {
+		if o != driver {
 			ss.Hooks, ss.SkipColors = nil, true // colours and hooks once per cycle
 		}
 		res, err := r.Pipeline.Apply(ctx, req, ss)
 		if err == nil && r.OnApply != nil {
-			r.OnApply(res, i == 0)
+			r.OnApply(res, o == driver)
 		}
 	}
 }

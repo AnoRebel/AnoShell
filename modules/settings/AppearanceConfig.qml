@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -25,6 +26,22 @@ ColumnLayout {
     // once on entry into the picker, restored on cancel/exit.
     readonly property string committedSource: Config.options?.appearance?.theme?.source ?? "materialYou"
     readonly property string committedStatic: Config.options?.appearance?.theme?.name ?? ""
+    readonly property bool materialYou: committedSource === "materialYou"
+    // Colour picks (Wallpapers.pickColors): remembered per wallpaper, see appearance.colors.
+    readonly property var _colors: Config.options?.appearance?.colors
+    readonly property bool _separateDefaults: (_colors?.perWallpaper ?? true) && !(_colors?.pickSetsDefault ?? true)
+    readonly property var modeChoices: [{ value: "dark", label: "Dark", icon: "dark_mode" }, { value: "light", label: "Light", icon: "light_mode" }]
+    readonly property var schemeChoices: [
+        { value: "tonal-spot", label: "Tonal spot", icon: "palette" }, { value: "vibrant", label: "Vibrant", icon: "flare" },
+        { value: "expressive", label: "Expressive", icon: "brush" }, { value: "content", label: "Content", icon: "image" },
+        { value: "fidelity", label: "Fidelity", icon: "photo_filter" }, { value: "fruit-salad", label: "Fruit salad", icon: "nutrition" },
+        { value: "rainbow", label: "Rainbow", icon: "looks" }, { value: "neutral", label: "Neutral", icon: "tonality" },
+        { value: "monochrome", label: "Monochrome", icon: "contrast" }]
+    // Which wallpaper colour seeds the palette (matugen --prefer).
+    readonly property var preferChoices: [
+        { value: "saturation", label: "Vivid", icon: "water_drop" }, { value: "less-saturation", label: "Muted", icon: "blur_on" },
+        { value: "darkness", label: "Darkest", icon: "dark_mode" }, { value: "lightness", label: "Lightest", icon: "light_mode" },
+        { value: "value", label: "Brightest", icon: "brightness_high" }]
 
     // True while the user is hovering a non-selected theme card. Pinned
     // by mouse-enter, cleared on click (commits) or mouse-leave (reverts).
@@ -258,7 +275,7 @@ ColumnLayout {
         icon: "auto_awesome"
         title: "Theme source"
         subtitle: "Dynamic Material You (wallpaper-derived) or pick a static theme"
-        configKeys: ["appearance.theme", "appearance.colors"]
+        configKeys: ["appearance.theme", "appearance.colors.darkMode"]
 
         ConfigRow {
             label: "Source"
@@ -311,15 +328,11 @@ ColumnLayout {
         ConfigRow {
             label: "Shell mode"
             configKey: "appearance.colors.darkMode"
-            sublabel: "Dark or light shell; a wallpaper palette is regenerated in the new mode"
+            sublabel: appearanceRoot.materialYou ? "Dark or light shell; the wallpaper palette is regenerated in the new mode" : "Dark or light variant of the theme"
             ChoiceRow {
-                model: [{ value: true, label: "Dark", icon: "dark_mode" }, { value: false, label: "Light", icon: "light_mode" }]
-                current: Config.options?.appearance?.colors?.darkMode ?? true
-                onChose: value => {
-                    Config.setNestedValue("appearance.colors.darkMode", value)
-                    const wp = Config.options?.background?.wallpaperPath ?? ""
-                    if (appearanceRoot.committedSource === "materialYou" && wp.length > 0) Wallpapers.recolor(wp, value)
-                }
+                model: appearanceRoot.modeChoices
+                current: appearanceRoot.materialYou ? Wallpapers.scheme.mode : ((appearanceRoot._colors?.darkMode ?? true) ? "dark" : "light")
+                onChose: value => Wallpapers.pickColors({ mode: value })
             }
         }
 
@@ -480,6 +493,151 @@ ColumnLayout {
             visible: appearanceRoot.previewing
             text: `Previewing "${appearanceRoot.previewingName}". Click a card to apply, or move the cursor away to revert.`
             iconName: "preview"
+        }
+    }
+
+    // ═══ Wallpaper colours ═══
+    // One bordered box per option, so each reads as its own section.
+    component OptionGroup: Rectangle {
+        default property alias content: groupCol.data
+        Layout.fillWidth: true
+        implicitHeight: groupCol.implicitHeight + 24
+        radius: Appearance.rounding.small
+        color: Appearance.colors.colLayer2
+        border.width: 1
+        border.color: Appearance.colors.colOutlineVariant
+        ColumnLayout {
+            id: groupCol
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12 }
+            spacing: 10
+        }
+    }
+    SettingsCard {
+        icon: "colorize"
+        title: "Wallpaper colours"
+        subtitle: "How the palette is made from the wallpaper; picks can be remembered per wallpaper"
+        configKeys: ["appearance.colors"]
+        visible: appearanceRoot.materialYou
+
+        OptionGroup {
+            ConfigRow {
+                label: "Colours from"
+                configKey: "appearance.colors.from"
+                sublabel: ({ last: "The wallpaper you set last, on any monitor",
+                             monitor: "One monitor's wallpaper; the others don't change the colours",
+                             focused: "The focused monitor's wallpaper; colours change as focus moves (app themes are redone each time)" })[appearanceRoot._colors?.from ?? "last"] ?? ""
+            }
+            ChoiceRow {
+                Layout.fillWidth: true
+                model: [{ value: "last", label: "Last set", icon: "history" }, { value: "monitor", label: "One monitor", icon: "monitor" },
+                        { value: "focused", label: "Focused monitor", icon: "center_focus_strong" }]
+                current: appearanceRoot._colors?.from ?? "last"
+                onChose: value => {
+                    if (value === "monitor" && !(appearanceRoot._colors?.monitor ?? ""))
+                        Config.setNestedValue("appearance.colors.monitor", Quickshell.screens[0]?.name ?? "")
+                    Config.setNestedValue("appearance.colors.from", value)
+                }
+            }
+            ChoiceRow {
+                Layout.fillWidth: true
+                visible: (appearanceRoot._colors?.from ?? "last") === "monitor"
+                model: Quickshell.screens.map(sc => ({ value: sc.name, label: sc.name, icon: "desktop_windows" }))
+                current: appearanceRoot._colors?.monitor || (Quickshell.screens[0]?.name ?? "")
+                onChose: value => Config.setNestedValue("appearance.colors.monitor", value)
+            }
+        }
+        OptionGroup {
+            ConfigRow {
+                label: "Scheme"
+                configKey: "appearance.colors.schemeType"
+                sublabel: "How the wallpaper's colour is turned into a palette (Material You variant)"
+            }
+            ChoiceRow {
+                Layout.fillWidth: true
+                model: appearanceRoot.schemeChoices
+                current: Wallpapers.scheme.schemeType
+                onChose: value => Wallpapers.pickColors({ schemeType: value })
+            }
+        }
+        OptionGroup {
+            ConfigRow {
+                label: "Source colour"
+                configKey: "appearance.colors.prefer"
+                sublabel: "Which of the wallpaper's colours the palette starts from"
+            }
+            ChoiceRow {
+                Layout.fillWidth: true
+                model: appearanceRoot.preferChoices
+                current: Wallpapers.scheme.prefer
+                onChose: value => Wallpapers.pickColors({ prefer: value })
+            }
+        }
+        OptionGroup {
+            ConfigSwitch {
+                label: "Remember per wallpaper"
+                configKey: "appearance.colors.perWallpaper"
+                sublabel: "Mode, scheme and source colour picked for a wallpaper come back with it"
+                checked: appearanceRoot._colors?.perWallpaper ?? true
+                onCheckedChanged: Config.setNestedValue("appearance.colors.perWallpaper", checked)
+            }
+            ConfigRow {
+                label: "This wallpaper"
+                visible: appearanceRoot._colors?.perWallpaper ?? true
+                sublabel: (Wallpapers.scheme.image ? Wallpapers.scheme.image.split("/").pop() + " · " : "")
+                    + (Wallpapers.scheme.custom ? "uses its own picks" : "uses the defaults")
+                RippleButton {
+                    implicitHeight: 32
+                    buttonRadius: 8
+                    enabled: Wallpapers.scheme.custom
+                    opacity: enabled ? 1 : 0.4
+                    colBackground: Appearance.colors.colSecondaryContainer
+                    contentItem: StyledText {
+                        text: "Reset to defaults"
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        anchors.leftMargin: 12; anchors.rightMargin: 12
+                    }
+                    onClicked: Wallpapers.resetColors()
+                }
+            }
+            ConfigSwitch {
+                label: "Picks set the default"
+                configKey: "appearance.colors.pickSetsDefault"
+                visible: appearanceRoot._colors?.perWallpaper ?? true
+                sublabel: "Wallpapers without their own picks follow your last one"
+                checked: appearanceRoot._colors?.pickSetsDefault ?? true
+                onCheckedChanged: Config.setNestedValue("appearance.colors.pickSetsDefault", checked)
+            }
+        }
+        // Defaults on their own (picks no longer change them).
+        OptionGroup {
+            visible: appearanceRoot._separateDefaults
+            ConfigRow {
+                label: "Defaults for other wallpapers"
+                sublabel: "Used by wallpapers without picks of their own"
+            }
+            ConfigRow {
+                label: "Mode"
+                configKey: "appearance.colors.darkMode"
+                ChoiceRow {
+                    model: appearanceRoot.modeChoices
+                    current: (appearanceRoot._colors?.darkMode ?? true) ? "dark" : "light"
+                    onChose: value => Wallpapers.setDefaultColors({ mode: value })
+                }
+            }
+            ConfigRow { label: "Scheme"; configKey: "appearance.colors.schemeType" }
+            ChoiceRow {
+                Layout.fillWidth: true
+                model: appearanceRoot.schemeChoices
+                current: appearanceRoot._colors?.schemeType ?? "tonal-spot"
+                onChose: value => Wallpapers.setDefaultColors({ schemeType: value })
+            }
+            ConfigRow { label: "Source colour"; configKey: "appearance.colors.prefer" }
+            ChoiceRow {
+                Layout.fillWidth: true
+                model: appearanceRoot.preferChoices
+                current: appearanceRoot._colors?.prefer ?? "saturation"
+                onChose: value => Wallpapers.setDefaultColors({ prefer: value })
+            }
         }
     }
 

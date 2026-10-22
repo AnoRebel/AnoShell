@@ -681,8 +681,22 @@ Singleton {
                 property JsonObject colors: JsonObject {
                     property bool darkMode: true
                     // Material You variant matugen generates (anod): tonal-spot, content,
-                    // expressive, fidelity, fruit-salad, monochrome, neutral, rainbow.
+                    // expressive, fidelity, fruit-salad, monochrome, neutral, rainbow, vibrant.
                     property string schemeType: "tonal-spot"
+                    // Which of the wallpaper's colours seeds the palette (matugen --prefer):
+                    // saturation, less-saturation, darkness, lightness, value.
+                    property string prefer: "saturation"
+                    // Picks (variant, source colour, light/dark) remembered per wallpaper
+                    // by anod and restored when it comes back; the three above are the
+                    // defaults for wallpapers without picks of their own.
+                    property bool perWallpaper: true
+                    // A pick also becomes that default. Off: defaults are set on their own.
+                    property bool pickSetsDefault: true
+                    // Which wallpaper sets the colours when each monitor has its own:
+                    // "last" (the last one set), "monitor" (colors.monitor's) or
+                    // "focused" (the focused monitor's; recoloured as focus moves).
+                    property string from: "last"
+                    property string monitor: ""
                 }
 
                 // Theme source selector. When source === "materialYou", the

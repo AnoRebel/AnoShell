@@ -141,13 +141,20 @@ notification and checks again the next time anod restarts.
 Methods also include `shutdown`, which a new session's anod uses to retire a
 stale one.
 
-Wallpaper methods: `wallpaper.set` (`{"image", "outputs"?, "mode"?, "transition"?, "colorsOnly"?}`;
+Wallpaper methods: `wallpaper.set` (`{"image", "outputs"?, "mode"?, "schemeType"?, "prefer"?, "transition"?, "colorsOnly"?}`;
+the colour options given win over the ones remembered for the image, which win over the config's;
 `"transition": "none"` skips awww's transition, for the picker whose card grows into the wallpaper;
 `"colorsOnly": true` redoes colours and hooks for what's already shown, for the light/dark switch;
-a video needs `background.engine: "shell"`), `wallpaper.next`, `wallpaper.status`,
+a video needs `background.engine: "shell"`), `wallpaper.colors` (`{"image", "mode"?, "schemeType"?,
+"prefer"?, "remember"?, "reset"?, "recolor"?}`: for `image`, or by default the wallpaper the colours
+follow (`appearance.colors.from`), remembers the picks (`remember`) or forgets them (`reset`), redoes
+its colours and returns `{"scheme", "custom", "image"}`; with no pick, reset or recolor it only
+reports; kept in `~/.local/state/anoshell/wallpaper-colors.json`), `wallpaper.focus` (`{"output"}`:
+the shell's focused output; with `from: "focused"` the colours are redone from its wallpaper and a
+`wallpaper_colors` event says what they were made with), `wallpaper.next`, `wallpaper.status`,
 `palette.scan` (`{"dir"}`: per file its source colour, hue, luminance and a
 video still, cached by path, size and mtime; saved as it goes) and
-`palette.get` (`{"path"}`: the same for one file). `wallpaper.set`,
+`palette.get` (`{"path"}`: the same for one file). `wallpaper.set`, `wallpaper.colors`,
 `palette.scan` and `palette.get` are slow methods: they run beside the
 connection's other requests, so their replies can arrive after later ones
 (match replies by `id`).

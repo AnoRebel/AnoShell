@@ -14,6 +14,40 @@ one, in this order:
 4. The change is announced: the shell updates, and your `hooks.wallpaperChanged`
    command runs.
 
+### Colours per wallpaper
+
+Light/dark, the scheme (Tonal spot, Vibrant, Expressive …) and the source
+colour you pick in Settings → Appearance → Theme source (or with `scheme …` in
+search) are remembered for the wallpaper on screen and come back with it
+(`appearance.colors.perWallpaper`, on by default). Wallpapers without picks of
+their own use the defaults, `appearance.colors.darkMode`, `schemeType` and
+`prefer`:
+
+- **Picks set the default** (`appearance.colors.pickSetsDefault`, on): your
+  last pick is also the default, so new wallpapers look like the last one you
+  tuned.
+- Off: picks stay with their wallpaper, and the defaults get their own rows in
+  Settings.
+
+**Reset to defaults** in the same card forgets the current wallpaper's picks.
+The picks are kept in `~/.local/state/anoshell/wallpaper-colors.json`.
+
+With a different wallpaper on each monitor, **Colours from**
+(`appearance.colors.from`) says which one sets the colours:
+
+- **Last set** (`last`, default): the wallpaper you set most recently, on any
+  monitor.
+- **One monitor** (`monitor`): `appearance.colors.monitor`'s wallpaper; setting
+  one on another monitor leaves the colours (and the hooks) alone. Rotation
+  takes its colours from that monitor too.
+- **Focused monitor** (`focused`): the colours follow focus. Palettes are
+  cached per wallpaper and option set (`~/.cache/anoshell/colors/`), so a
+  switch back is instant, but your hooks (pywal, app themes) run on every
+  switch.
+
+Picks always go to the wallpaper the colours currently follow; the card
+names it.
+
 In the **Fixed** colour mode (Settings → Appearance → Theme source) step 3 is
 skipped: the colours don't follow the wallpaper.
 

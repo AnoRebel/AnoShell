@@ -1980,7 +1980,7 @@
   "sublabel": "Dynamic Material You (wallpaper-derived) or pick a static theme",
   "keys": [
    "appearance.theme",
-   "appearance.colors"
+   "appearance.colors.darkMode"
   ]
  },
  {
@@ -2004,19 +2004,37 @@
  {
   "page": 6,
   "card": "",
-  "label": "Shell mode",
-  "sublabel": "Dark or light shell; a wallpaper palette is regenerated in the new mode",
+  "label": "Apps",
+  "sublabel": "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell",
   "keys": [
-   "appearance.colors.darkMode"
+   "appearance.theme.appColorScheme"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "Wallpaper colours",
+  "label": "Wallpaper colours",
+  "sublabel": "How the palette is made from the wallpaper; picks can be remembered per wallpaper",
+  "keys": [
+   "appearance.colors"
   ]
  },
  {
   "page": 6,
   "card": "",
-  "label": "Apps",
-  "sublabel": "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell",
+  "label": "Remember per wallpaper",
+  "sublabel": "Mode, scheme and source colour picked for a wallpaper come back with it",
   "keys": [
-   "appearance.theme.appColorScheme"
+   "appearance.colors.perWallpaper"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Picks set the default",
+  "sublabel": "Wallpapers without their own picks follow your last one",
+  "keys": [
+   "appearance.colors.pickSetsDefault"
   ]
  },
  {

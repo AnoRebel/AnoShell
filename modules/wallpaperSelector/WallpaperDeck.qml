@@ -240,9 +240,9 @@ Item {
         const downloading = Wallhaven.downloadingId
         if (e.item && !isSaved(e) && downloading !== "" && downloading !== e.name) return // another one is downloading
         choose(e)
-        const dark = Appearance.m3colors.darkmode, monitor = GlobalStates.wallpaperSelectorTargetMonitor
-        if (!e.item) Wallpapers.apply(e.path, dark, monitor, true)
-        else if (isSaved(e)) Wallpapers.apply(savedPath(e), dark, monitor, true)
+        const monitor = GlobalStates.wallpaperSelectorTargetMonitor
+        if (!e.item) Wallpapers.apply(e.path, monitor, true)
+        else if (isSaved(e)) Wallpapers.apply(savedPath(e), monitor, true)
         else if (downloading === "") {
             lastDownload = e.name
             if (!Wallhaven.downloadAndApply(e.item)) returnCard()

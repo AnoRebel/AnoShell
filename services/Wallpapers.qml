@@ -66,7 +66,7 @@ Singleton {
                 getRandomWallpapersProc.running = true
             } else {
                 const randomIndex = Math.floor(Math.random() * root.randomWallpaperList.length)
-                root.apply(root.randomWallpaperList[randomIndex], Appearance.m3colors.darkmode)
+                root.apply(root.randomWallpaperList[randomIndex])
             }
         }
     }
@@ -82,7 +82,7 @@ Singleton {
                 if (output.length > 0) {
                     root.randomWallpaperList = output.split("\n")
                     const randomIndex = Math.floor(Math.random() * root.randomWallpaperList.length)
-                    root.apply(root.randomWallpaperList[randomIndex], Appearance.m3colors.darkmode)
+                    root.apply(root.randomWallpaperList[randomIndex])
                 } else {
                     console.log("[Wallpapers] No wallpapers found in:", getRandomWallpapersProc.expandedDir)
                 }
@@ -96,12 +96,13 @@ Singleton {
     }
 
     // instant: no awww transition (the picker's card grows into the wallpaper itself).
-    function apply(path, darkMode = Appearance.m3colors.darkmode, monitorName = "", instant = false) {
+    function apply(path, monitorName = "", instant = false) {
         if (!path || path.length === 0) return
-        // anod applies (awww), colours (matugen) and runs the hooks (pywal,
-        // apps, cava …); its announcement records the path (Anod.qml), so a
-        // failed apply doesn't leave config pointing at something not shown.
-        const req = { image: path, mode: darkMode ? "dark" : "light" }
+        // anod applies (awww), colours (matugen, with the picks remembered
+        // for this wallpaper) and runs the hooks (pywal, apps, cava …); its
+        // announcement records the path (Anod.qml), so a failed apply doesn't
+        // leave config pointing at something not shown.
+        const req = { image: path }
         if (monitorName !== "") req.outputs = [monitorName]
         if (instant) req.transition = "none"
         const sent = Anod.call("wallpaper.set", req, (res, err) => {
@@ -113,14 +114,67 @@ Singleton {
             .concat(instant ? ["--transition-type", "none"] : []).concat(monitorName !== "" ? ["--outputs", monitorName] : []).concat(["--", path]))
     }
 
-    // Light/dark switch: colours and hooks again for what's on screen (no
-    // re-apply, so per-screen wallpapers stay). Needs anod.
-    function recolor(path, darkMode) {
-        if (!path) return
-        Anod.call("wallpaper.set", { image: path, mode: darkMode ? "dark" : "light", colorsOnly: true }, (res, err) => {
+    // ── Colour picks (variant, source colour, light/dark) ───────────────────
+    // What the current colours were made with: { schemeType, prefer, mode,
+    // custom, image } — custom when the image has picks of its own; image is
+    // the wallpaper they follow (appearance.colors.from).
+    property var scheme: ({ schemeType: Config.options?.appearance?.colors?.schemeType ?? "tonal-spot",
+        prefer: Config.options?.appearance?.colors?.prefer ?? "saturation",
+        mode: (Config.options?.appearance?.colors?.darkMode ?? true) ? "dark" : "light", custom: false, image: "" })
+    function _takeScheme(sch, custom, image) {
+        if (sch && image) root.scheme = { schemeType: sch.schemeType, prefer: sch.prefer, mode: sch.mode, custom: !!custom, image: image }
+    }
+    // A pick from Settings or search, e.g. { schemeType: "vibrant" } or
+    // { mode: "light" }: remembered for the wallpaper on screen
+    // (appearance.colors.perWallpaper) and, with pickSetsDefault, the default
+    // for the rest; then its colours are redone. Static themes only take the mode.
+    function pickColors(pick) {
+        const c = Config.options?.appearance?.colors
+        const perWallpaper = c?.perWallpaper ?? true
+        if (!perWallpaper || (c?.pickSetsDefault ?? true) || (Config.options?.appearance?.theme?.source ?? "materialYou") === "static")
+            root.setDefaultColors(pick)
+        if ((Config.options?.appearance?.theme?.source ?? "materialYou") === "static") return
+        root._colors(Object.assign({ remember: perWallpaper }, pick))
+    }
+    // Forget the current wallpaper's picks (back to the defaults).
+    function resetColors() { root._colors({ reset: true }) }
+    function setDefaultColors(pick) {
+        if (pick.schemeType) Config.setNestedValue("appearance.colors.schemeType", pick.schemeType)
+        if (pick.prefer) Config.setNestedValue("appearance.colors.prefer", pick.prefer)
+        if (pick.mode) Config.setNestedValue("appearance.colors.darkMode", pick.mode === "dark")
+    }
+    // anod works out the wallpaper the colours follow.
+    function _colors(req) {
+        Anod.call("wallpaper.colors", req, (res, err) => {
             if (err && err.code !== "unavailable") Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Colours", `Couldn't regenerate: ${err.message}`])
+            if (!err) root._takeScheme(res.scheme, res.custom, res.image)
         })
     }
+    Connections {
+        target: Anod
+        function onEvent(name, data) {
+            if (name === "wallpaper_changed" || name === "wallpaper_colors") root._takeScheme(data?.scheme, data?.custom, data?.colorImage)
+        }
+        function onAvailableChanged() { if (Anod.available) { root._colors({}); root._reportFocus() } } // report only
+    }
+    // Colours from the focused monitor: anod hears where focus is.
+    readonly property string colorsFrom: Config.options?.appearance?.colors?.from ?? "last"
+    readonly property string _focusedOutput: CompositorService.focusedMonitorName
+    function _reportFocus() {
+        if (root.colorsFrom === "focused" && root._focusedOutput !== "") Anod.call("wallpaper.focus", { output: root._focusedOutput }, () => {})
+    }
+    on_FocusedOutputChanged: root._reportFocus()
+    // Where colours come from changed: redo them from that wallpaper once
+    // the config is on disk (anod reads it from there).
+    onColorsFromChanged: if (Config.ready) recolorSoon.restart()
+    readonly property string _colorMonitor: Config.options?.appearance?.colors?.monitor ?? ""
+    on_ColorMonitorChanged: if (Config.ready && root.colorsFrom === "monitor") recolorSoon.restart()
+    Timer {
+        id: recolorSoon
+        interval: 1000
+        onTriggered: { root._reportFocus(); if (root.colorsFrom !== "focused") root._colors({ recolor: true }) }
+    }
+    Component.onCompleted: if (Anod.available) root._colors({})
 
     // ── Favourites (background.favourites: absolute paths) ──────────────────
     readonly property var favourites: Array.from(Config.options?.background?.favourites ?? []) // a plain array (config lists are V4Sequences)

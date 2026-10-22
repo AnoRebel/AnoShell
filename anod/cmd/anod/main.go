@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -124,15 +125,18 @@ func main() {
 	wp := &wallpaper.Pipeline{
 		ColorsPath: filepath.Join(stateDir, "generated", "colors.json"),
 		StatePath:  filepath.Join(stateDir, "wallpaper.json"),
+		Choices:    &wallpaper.Choices{Path: filepath.Join(stateDir, "wallpaper-colors.json")},
+		ColorCache: filepath.Join(xdgCache(), "anoshell", "colors"),
 		Logf:       log.Printf,
 	}
 	// hook: run the user's wallpaper_changed hook (once per change/cycle).
 	announce := func(res wallpaper.Result, s wallpaper.Settings, hook bool) {
 		if hook {
-			runner.Fire("wallpaper_changed", map[string]string{"wallpaper": res.Image, "themeMode": s.Mode})
+			runner.Fire("wallpaper_changed", map[string]string{"wallpaper": res.Image, "themeMode": res.Scheme.Mode})
 		}
 		srv.Broadcast("wallpaper_changed", map[string]any{"wallpaper": res.Image, "outputs": res.Outputs,
-			"themeMode": s.Mode, "resize": res.Resize, "engine": s.Engine, "steps": res.Steps})
+			"themeMode": res.Scheme.Mode, "scheme": res.Scheme, "custom": res.Custom, "colorImage": res.ColorImage,
+			"resize": res.Resize, "engine": s.Engine, "steps": res.Steps})
 	}
 	rot := &wallpaper.Rotator{
 		Pipeline: wp,
@@ -143,16 +147,12 @@ func main() {
 	srv.HandleSlow("wallpaper.set", func(p json.RawMessage) (any, error) {
 		var req struct {
 			wallpaper.Request
-			Mode       string `json:"mode"`
 			Transition string `json:"transition"` // "none": the caller animates (the picker's card grows into it)
 		}
 		if err := json.Unmarshal(p, &req); err != nil || req.Image == "" {
-			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?, transition?, colorsOnly?}")
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image, outputs?, mode?, schemeType?, prefer?, transition?, colorsOnly?}")
 		}
 		_, s := wallpaperSettings()
-		if req.Mode == "dark" || req.Mode == "light" {
-			s.Mode = req.Mode
-		}
 		if req.Transition == "none" {
 			s.Transition = "none"
 		}
@@ -162,6 +162,70 @@ func main() {
 		}
 		announce(res, s, true)
 		return res, nil
+	})
+	// Colours redone without a new wallpaper: announced so the shell shows
+	// what they were made with.
+	recolor := func(r wallpaper.Request, s wallpaper.Settings) (wallpaper.Result, error) {
+		res, err := wp.Apply(ctx, r, s)
+		if err == nil && res.ColorImage != "" {
+			srv.Broadcast("wallpaper_colors", map[string]any{"scheme": res.Scheme, "custom": res.Custom, "colorImage": res.ColorImage})
+		}
+		return res, err
+	}
+	// Colour picks for the wallpaper the colours follow (or image):
+	// remembered (remember), forgotten (reset), then its colours redone. With
+	// no pick, reset or recolor it only reports.
+	srv.HandleSlow("wallpaper.colors", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Image string `json:"image"`
+			wallpaper.Choice
+			Remember bool `json:"remember"`
+			Reset    bool `json:"reset"`
+			Recolor  bool `json:"recolor"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {image?, schemeType?, prefer?, mode?, remember?, reset?, recolor?}")
+		}
+		_, s := wallpaperSettings()
+		img := wp.ColorImage(s)
+		if req.Image != "" {
+			img, _ = filepath.Abs(expandHome(req.Image))
+		}
+		if img == "" {
+			return map[string]any{"scheme": nil, "custom": false, "image": ""}, nil
+		}
+		picked := req.Choice != (wallpaper.Choice{})
+		if req.Reset || req.Remember && picked {
+			if _, err := wp.Choices.Set(img, req.Choice, req.Reset); err != nil {
+				return nil, err
+			}
+		}
+		r := wallpaper.Request{Image: img, ColorsOnly: true, Choice: req.Choice}
+		if !picked && !req.Reset && !req.Recolor {
+			s.SkipColors, s.Hooks = true, nil // report only
+			res, err := wp.Apply(ctx, r, s)
+			return map[string]any{"scheme": res.Scheme, "custom": res.Custom, "image": img}, err
+		}
+		res, err := recolor(r, s)
+		return map[string]any{"scheme": res.Scheme, "custom": res.Custom, "image": img}, err
+	})
+	// The focused output (from the shell): with appearance.colors.from
+	// "focused", the colours follow its wallpaper.
+	srv.HandleSlow("wallpaper.focus", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Output string `json:"output"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Output == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {output}")
+		}
+		focusedOutput.Store(req.Output)
+		_, s := wallpaperSettings()
+		img := wp.ColorImage(s)
+		if s.ColorOutput != req.Output || img == "" || img == wp.LoadState().Colors {
+			return false, nil
+		}
+		_, err := recolor(wallpaper.Request{Image: img, ColorsOnly: true}, s)
+		return err == nil, err
 	})
 	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
 	srv.Handle("wallpaper.status", func(json.RawMessage) (any, error) {
@@ -682,6 +746,9 @@ func awwwTransition(typ, dir string) string {
 }
 
 // wallpaperSettings reads background.* and the colour settings on every use.
+// focusedOutput is the shell's focused output (wallpaper.focus).
+var focusedOutput atomic.Value
+
 func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 	m, err := config.Effective()
 	if err != nil {
@@ -698,15 +765,24 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 		mode = "light"
 	}
 	s := wallpaper.Settings{
-		Resize:     config.String(m, "background.resize", "fit"),
-		Engine:     config.String(m, "background.engine", "awww"),
-		Transition: trans,
-		DurationMs: config.Int(m, "background.transition.duration", 800),
-		Mode:       mode,
-		SchemeType: config.String(m, "appearance.colors.schemeType", "tonal-spot"),
-		Prefer:     config.String(m, "appearance.colors.prefer", "saturation"),
+		Resize:       config.String(m, "background.resize", "fit"),
+		Engine:       config.String(m, "background.engine", "awww"),
+		Transition:   trans,
+		DurationMs:   config.Int(m, "background.transition.duration", 800),
+		Mode:         mode,
+		SchemeType:   config.String(m, "appearance.colors.schemeType", "tonal-spot"),
+		Prefer:       config.String(m, "appearance.colors.prefer", "saturation"),
+		PerWallpaper: config.Bool(m, "appearance.colors.perWallpaper", true),
 		FixedColor: config.String(m, "appearance.theme.colorMode", "dynamicAccent") == "fixed" ||
 			config.String(m, "appearance.theme.source", "materialYou") == "static",
+	}
+	// Which wallpaper sets the colours: the last one set ("last"), a chosen
+	// monitor's ("monitor") or the focused monitor's ("focused").
+	switch config.String(m, "appearance.colors.from", "last") {
+	case "monitor":
+		s.ColorOutput = config.String(m, "appearance.colors.monitor", "")
+	case "focused":
+		s.ColorOutput, _ = focusedOutput.Load().(string)
 	}
 	if raw, ok := config.Get(m, "background.hooks"); ok {
 		b, _ := json.Marshal(raw)
