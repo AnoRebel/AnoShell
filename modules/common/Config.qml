@@ -880,6 +880,17 @@ Singleton {
                 property int size: 24
                 property bool adopted: false // the AnoShell cursor went on at first start
             }
+            // Desktop widgets (modules/widgets, services/Widgets.qml): cards on a
+            // Bottom-layer surface under windows, on a snapping grid, in pages.
+            // Off by default: no surface and no widget code until enabled.
+            property JsonObject widgets: JsonObject {
+                property bool enable: false
+                property int cell: 96   // grid cell, logical px
+                property int gap: 12    // between cells
+                // Per screen name: { "page": index, "pages": [[{ uid, id, x, y, w, h, settings }]] }
+                // (x/y/w/h in cells). Written by the widget picker and edit mode.
+                property var screens: ({})
+            }
             // Keyboard layouts in order, [{ layout, variant }] from the XKB catalogue
             // (Settings → Keybinds). anod applies them live and in the managed
             // compositor file; empty leaves your compositor config's layouts.

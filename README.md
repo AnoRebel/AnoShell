@@ -71,6 +71,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Wallpapers` | The wallpaper folder for the picker, anod palette (hue, stills), favourites, apply via anod. |
 | `Wallhaven` | Wallhaven search + download for the picker; API key in `~/.local/share/anoshell/secrets/wallhaven` (0600). |
 | `AntiFlashbang` | Hyprland GLSL shader that darkens bright screens. IPC-controlled. |
+| `Widgets` | Desktop widget registry (bundled `widgets/` + `~/.config/anoshell/widgets/`, live, broken ones marked) and the per-screen layout; the layer is `modules/widgets` ([docs/widgets.md](docs/widgets.md)). Off by default. |
 | `NightLight` | wlsunset wrapper. Warm now (the toggle), or automatically from sunset to sunrise or between set times. Opt-in. |
 
 ### Media

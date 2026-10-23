@@ -84,10 +84,28 @@ def keys_written(body):
     return sorted({a or b.rstrip(".") for a, b in WRITE_RE.findall(body)} - {""})
 
 
+CARD_USE_RE = re.compile(r"\b([A-Z][A-Za-z0-9_]*Card)\s*\{")
+
+
+def page_source(name):
+    """A page's QML plus the card files it places (`IconsCard {}`), and theirs."""
+    seen, out, todo = set(), [], [name] + EXTRA.get(name, [])
+    while todo:
+        n = todo.pop(0)
+        f = SETTINGS / f"{n}.qml"
+        if n in seen or not f.exists():
+            continue
+        seen.add(n)
+        src = strip_comments(f.read_text())
+        out.append(src)
+        todo += [c for c in CARD_USE_RE.findall(src) if c != "SettingsCard"]
+    return "\n".join(out)
+
+
 def build():
     entries = []
     for idx, name in enumerate(PAGES):
-        src = "\n".join(strip_comments((SETTINGS / f"{n}.qml").read_text()) for n in [name] + EXTRA.get(name, []))
+        src = page_source(name)
         adv_keys = set()
         for typ, body in blocks(src):
             if typ == "SettingsCard" and ADVANCED_RE.search(own_body(body)):

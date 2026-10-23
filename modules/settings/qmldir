@@ -22,3 +22,4 @@ SettingsOverlay 1.0 SettingsOverlay.qml
 SettingsPageHeader 1.0 SettingsPageHeader.qml
 singleton SettingsRegistry 1.0 SettingsRegistry.qml
 SidebarsConfig 1.0 SidebarsConfig.qml
+WidgetsCard 1.0 WidgetsCard.qml

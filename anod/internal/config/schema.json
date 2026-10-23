@@ -384,7 +384,11 @@
   "user.avatarPath": "string",
   "vpn.enable": "bool",
   "vpn.notifyOnChange": "bool",
-  "vpn.providers": "var"
+  "vpn.providers": "var",
+  "widgets.cell": "int",
+  "widgets.enable": "bool",
+  "widgets.gap": "int",
+  "widgets.screens": "var"
  },
  "objects": [
   "ai",
@@ -502,6 +506,7 @@
   "todo",
   "tray",
   "user",
-  "vpn"
+  "vpn",
+  "widgets"
  ]
 }

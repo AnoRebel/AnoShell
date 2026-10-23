@@ -769,6 +769,42 @@
   "advanced": true
  },
  {
+  "page": 1,
+  "card": "Desktop widgets",
+  "label": "Desktop widgets",
+  "sublabel": "Cards on the desktop, under your windows, on pages · off by default",
+  "keys": [
+   "widgets"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Show desktop widgets",
+  "sublabel": "Clicks on a window never reach them; they pause while a maximised window covers the screen or it's locked",
+  "keys": [
+   "widgets.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Grid cell",
+  "sublabel": "Widgets snap to a grid of these squares",
+  "keys": [
+   "widgets.cell"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Gap",
+  "sublabel": "",
+  "keys": [
+   "widgets.gap"
+  ]
+ },
+ {
   "page": 2,
   "card": "Position & Style",
   "label": "Position & Style",
@@ -2977,6 +3013,15 @@
   ]
  },
  {
+  "page": 9,
+  "card": "Icons",
+  "label": "Icons",
+  "sublabel": "Icon theme for apps · the AnoShell ones follow the wallpaper",
+  "keys": [
+   "icons"
+  ]
+ },
+ {
   "page": 10,
   "card": "Keybinds",
   "label": "Keybinds",
@@ -2989,6 +3034,15 @@
   "label": "Reset",
   "sublabel": "Back to the shipped keybinds",
   "keys": []
+ },
+ {
+  "page": 10,
+  "card": "Keyboard layouts",
+  "label": "Keyboard layouts",
+  "sublabel": "The first is the default; the keyboard module in the bar switches between them",
+  "keys": [
+   "keyboard"
+  ]
  },
  {
   "page": 11,

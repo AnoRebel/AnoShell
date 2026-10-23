@@ -29,9 +29,11 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "widgets"
         ]
     }
+
+    WidgetsCard {}
 
     // ═══ Panel Modules Enable/Disable ═══
     SettingsCard {
