@@ -5,6 +5,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.services as AnoServices
 
 // The weather where the user is.
 //
@@ -97,8 +98,23 @@ Singleton {
             root.refresh();
     }
 
+    Connections {
+        target: AnoServices.Location
+        function onValidChanged() { if (root.active) root.refresh(); }
+        function onLatitudeChanged() { if (root.active && AnoServices.Location.valid) root.refresh(); }
+    }
+
     function refresh() {
         root.now = Date.now();
+        // AnoShell: where you are, when Settings → Services → Location knows.
+        if (AnoServices.Location.valid) {
+            root.latitude = AnoServices.Location.latitude;
+            root.longitude = AnoServices.Location.longitude;
+            root.locatedFor = root.city;
+            root.foundName = AnoServices.Location.city || root.city;
+            root.forecast(root.latitude, root.longitude);
+            return;
+        }
         if (root.city.length === 0) {
             root.problem = "No city is set.";
             return;

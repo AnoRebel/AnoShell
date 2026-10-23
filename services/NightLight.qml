@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.services
 
 /**
  * Night light: warms the display through wlsunset (any compositor with
@@ -12,7 +13,8 @@ import qs.modules.common
  *   nightLight.enable    the quick toggle: warm now, at nightTemp, whatever
  *                        the schedule says.
  *   nightLight.schedule  runs on its own while set:
- *                        "sun"   warm from sunset to sunrise at latitude/longitude
+ *                        "sun"   warm from sunset to sunrise where you are
+ *                                (services/Location; waits until it's known)
  *                        "times" warm from `start` to `end` (HH:mm), fading
  *                                over `fade` minutes
  *                        "off"   only the toggle
@@ -28,8 +30,9 @@ Singleton {
     readonly property string schedule: opts?.schedule ?? "off"
     readonly property int dayTemp: opts?.dayTemp ?? 6500
     readonly property int nightTemp: opts?.nightTemp ?? 4000
-    readonly property real latitude: opts?.latitude ?? 0
-    readonly property real longitude: opts?.longitude ?? 0
+    // From Settings → Services → Location (services/Location.qml).
+    readonly property real latitude: Location.latitude
+    readonly property real longitude: Location.longitude
     readonly property string start: opts?.start ?? "20:00"
     readonly property string end: opts?.end ?? "07:00"
     readonly property int fade: opts?.fade ?? 30
@@ -65,7 +68,7 @@ Singleton {
         if (root.enabled) // held at nightTemp: day and night 1 K apart, so the time doesn't matter
             return ["-T", String(root.nightTemp + 1), "-t", String(root.nightTemp),
                     "-l", "0", "-L", "0"]
-        if (root.schedule === "sun")
+        if (root.schedule === "sun" && Location.valid)
             return ["-T", String(root.dayTemp), "-t", String(root.nightTemp),
                     "-l", String(root.latitude), "-L", String(root.longitude)]
         if (root.schedule === "times" && root.validTime(root.start) && root.validTime(root.end))

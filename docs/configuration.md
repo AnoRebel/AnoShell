@@ -185,3 +185,21 @@ change.
 
 Event hooks for anod live under `hooks` in the same file. See
 [anod → Event hooks](anod.md#event-hooks).
+
+## Location
+
+`location` (Settings → Services → Location) is where you are, for the bar's
+weather, night light's sunset-to-sunrise schedule and the sun-and-moon
+widgets:
+
+- `enable` (on): off looks nothing up; the weather then uses
+  `bar.weather.city`, or wttr.in's guess from your IP address, and the
+  sunset schedule waits.
+- `mode` `"auto"` (default): GeoClue through Qt Positioning (needs the
+  `geoclue` service and `qt6-positioning`; Wi-Fi or GPS as GeoClue is set
+  up). If it gives nothing within 20 s or refuses, the IP address through
+  ip-api.com (`curl`; city-level, and it sends your IP address to them),
+  looked up again every 2 hours. `"manual"`: `city`, `latitude` and
+  `longitude` as you set them.
+
+`qs ipc call location get` prints what's known; `refresh` looks again.

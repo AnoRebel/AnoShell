@@ -16,7 +16,7 @@ Singleton {
         switch (key) {
         // No city set: the bar's weather finds one from the IP address; use what it found.
         case "weather.city": {
-            const city = (Ano.Config.options?.bar?.weather?.city ?? "").trim()
+            const city = AnoServices.Location.city || (Ano.Config.options?.bar?.weather?.city ?? "").trim()
             if (city) return city
             const found = AnoServices.Weather.data?.city
             return typeof found === "string" && found !== "City" ? found : fallback

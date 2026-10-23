@@ -23,7 +23,7 @@ ColumnLayout {
         subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
             "ai", "gameMode", "powerProfiles", "network", "vpn",
-            "nightLight", "lyrics", "calendar", "resources", "light",
+            "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
     }
@@ -438,6 +438,76 @@ ColumnLayout {
         }
     }
 
+    // ═══ Location ═══
+    SettingsCard {
+        icon: "location_on"
+        title: "Location"
+        subtitle: "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun-and-moon widgets"
+        configKeys: ["location"]
+
+        ConfigSwitch {
+            label: "Use my location"
+            configKey: "location.enable"
+            sublabel: "Off: nothing is looked up; the weather uses its own city setting"
+            checked: Config.options?.location?.enable ?? true
+            onCheckedChanged: if (checked !== (Config.options?.location?.enable ?? true)) Config.setNestedValue("location.enable", checked)
+        }
+        ConfigRow {
+            label: "Find it"
+            configKey: "location.mode"
+            enabled: Config.options?.location?.enable ?? true
+            sublabel: Location.valid ? `${Location.city ? Location.city + " · " : ""}${Location.latitude.toFixed(3)}, ${Location.longitude.toFixed(3)} · from ${({ geoclue: "GeoClue", ip: "your IP address", manual: "what you set" })[Location.source] ?? Location.source}`
+                : Location.problem
+            ChoiceRow {
+                model: [{ value: "auto", label: "Automatically", icon: "my_location" }, { value: "manual", label: "Set it myself", icon: "edit_location" }]
+                current: Config.options?.location?.mode ?? "auto"
+                onChose: value => Config.setNestedValue("location.mode", value)
+            }
+        }
+        StyledText {
+            visible: (Config.options?.location?.mode ?? "auto") === "auto"
+            Layout.fillWidth: true; wrapMode: Text.Wrap
+            text: "Automatically: GeoClue (Wi-Fi or GPS, needs the geoclue service), else your IP address through ip-api.com, which gives your city, roughly."
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.smaller
+        }
+        ConfigRow {
+            visible: (Config.options?.location?.mode ?? "auto") === "manual"
+            label: "City"
+            configKey: "location.city"
+            sublabel: "The name shown, and what the weather looks up if no coordinates are set"
+            ConfigTextInput {
+                Layout.preferredWidth: 180
+                text: Config.options?.location?.city ?? ""
+                onEditingFinished: Config.setNestedValue("location.city", text.trim())
+            }
+        }
+        ConfigRow {
+            visible: (Config.options?.location?.mode ?? "auto") === "manual"
+            label: "Latitude"
+            configKey: "location.latitude"
+            sublabel: "Decimal degrees, north positive (e.g. -6.8)"
+            ConfigTextInput {
+                Layout.preferredWidth: 110
+                text: String(Config.options?.location?.latitude ?? 0)
+                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 90) ? "" : "-90 to 90"
+                onEditingFinished: if (valid && text) Config.setNestedValue("location.latitude", Number(text))
+            }
+        }
+        ConfigRow {
+            visible: (Config.options?.location?.mode ?? "auto") === "manual"
+            label: "Longitude"
+            configKey: "location.longitude"
+            sublabel: "Decimal degrees, east positive (e.g. 39.3)"
+            ConfigTextInput {
+                Layout.preferredWidth: 110
+                text: String(Config.options?.location?.longitude ?? 0)
+                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 180) ? "" : "-180 to 180"
+                onEditingFinished: if (valid && text) Config.setNestedValue("location.longitude", Number(text))
+            }
+        }
+    }
+
     // ═══ Night Light ═══
     SettingsCard {
         icon: "nightlight"
@@ -521,29 +591,13 @@ ColumnLayout {
             valueText: `${Math.round(value)} min`
         }
 
-        ConfigRow {
+        StyledText {
             visible: NightLight.schedule === "sun"
-            label: "Latitude"
-            configKey: "nightLight.latitude"
-            sublabel: "Decimal degrees, north positive (e.g. 51.5)"
-            ConfigTextInput {
-                Layout.preferredWidth: 110
-                text: String(NightLight.latitude)
-                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 90) ? "" : "-90 to 90"
-                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.latitude", Number(text))
-            }
-        }
-        ConfigRow {
-            visible: NightLight.schedule === "sun"
-            label: "Longitude"
-            configKey: "nightLight.longitude"
-            sublabel: "Decimal degrees, east positive (e.g. -0.1)"
-            ConfigTextInput {
-                Layout.preferredWidth: 110
-                text: String(NightLight.longitude)
-                validator: t => (isFinite(Number(t)) && Math.abs(Number(t)) <= 180) ? "" : "-180 to 180"
-                onEditingFinished: if (valid && text) Config.setNestedValue("nightLight.longitude", Number(text))
-            }
+            Layout.fillWidth: true; wrapMode: Text.Wrap
+            text: Location.valid ? `Sunset and sunrise for ${Location.city || `${Location.latitude.toFixed(2)}, ${Location.longitude.toFixed(2)}`} (Location card above)`
+                : `${Location.problem}: set your location in the Location card above; until then the schedule waits`
+            color: Location.valid ? Appearance.colors.colSubtext : Appearance.colors.colWarning
+            font.pixelSize: Appearance.font.pixelSize.smaller
         }
 
         ConfigSlider {

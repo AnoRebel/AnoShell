@@ -130,7 +130,6 @@
       "enable": false,
       "city": "",
       "useUSCS": false,
-      "enableGPS": false,
       "fetchInterval": 15
     }
   },
@@ -415,8 +414,6 @@
     "schedule": "off",
     "dayTemp": 6500,
     "nightTemp": 4000,
-    "latitude": 0,
-    "longitude": 0,
     "start": "20:00",
     "end": "07:00",
     "fade": 30,

@@ -582,6 +582,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
 | Bioma organisms (widgets `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
+| Location (Settings → Services → Location: weather, night light's sunset schedule, sun/moon widgets) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

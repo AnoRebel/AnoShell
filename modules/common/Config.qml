@@ -494,6 +494,21 @@ Singleton {
             // bundle; the new key wins on read.
         }
 
+        // bar.weather.enableGPS and nightLight.latitude/longitude moved to
+        // location (mode auto, or manual coordinates).
+        const wBlock = root._userDelta?.bar?.weather;
+        if (wBlock && wBlock.enableGPS !== undefined) { delete wBlock.enableGPS; migrated = true; }
+        const nlOld = root._userDelta?.nightLight;
+        if (nlOld && (nlOld.latitude !== undefined || nlOld.longitude !== undefined)) {
+            if ((nlOld.latitude || nlOld.longitude) && root._userDelta?.location?.mode === undefined) {
+                root._userDelta.location = Object.assign(root._userDelta.location ?? {}, { mode: "manual", latitude: nlOld.latitude ?? 0, longitude: nlOld.longitude ?? 0 });
+                opts.location.mode = "manual"; opts.location.latitude = nlOld.latitude ?? 0; opts.location.longitude = nlOld.longitude ?? 0;
+                root._migratedKeys["location.mode"] = true;
+            }
+            delete nlOld.latitude; delete nlOld.longitude;
+            migrated = true;
+        }
+
         // nightLight.mode "schedule" (enable + sun times) -> nightLight.schedule "sun";
         // enable is now the "warm now" toggle.
         const nlBlock = root._userDelta?.nightLight;
@@ -813,7 +828,6 @@ Singleton {
                     property bool enable: false
                     property string city: ""
                     property bool useUSCS: false
-                    property bool enableGPS: false
                     property int fetchInterval: 15
                 }
             }
@@ -880,6 +894,17 @@ Singleton {
                 property int size: 24
                 property bool adopted: false // the AnoShell cursor went on at first start
             }
+            // Where you are (services/Location.qml), for the weather, night light's
+            // sunset-to-sunrise schedule and the sun/moon widgets. mode "auto":
+            // GeoClue, else the IP address; "manual": the values below.
+            property JsonObject location: JsonObject {
+                property bool enable: true
+                property string mode: "auto"
+                property string city: ""
+                property real latitude: 0
+                property real longitude: 0
+            }
+
             // Desktop widgets (modules/widgets, services/Widgets.qml): cards on a
             // Bottom-layer surface under windows, on a snapping grid, in pages.
             // Off by default: no surface and no widget code until enabled.
@@ -1174,8 +1199,6 @@ Singleton {
                 property string schedule: "off" // "off" | "sun" (latitude/longitude) | "times" (start–end)
                 property int dayTemp: 6500
                 property int nightTemp: 4000
-                property real latitude: 0
-                property real longitude: 0
                 property string start: "20:00"
                 property string end: "07:00"
                 property int fade: 30 // minutes

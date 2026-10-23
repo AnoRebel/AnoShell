@@ -4,7 +4,6 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import QtPositioning
 import qs.modules.common
 import qs.services
 
@@ -18,13 +17,18 @@ Singleton {
     readonly property string city: Config.options.bar.weather.city
     readonly property bool useUSCS: Config.options.bar.weather.useUSCS
     readonly property string timeFormat: Config.options.time.format
-    property bool gpsActive: Config.options.bar.weather.enableGPS
+    // Where: services/Location (Settings → Services → Location) when it
+    // knows, else its city (manual mode) or the city set here, else wttr.in's
+    // guess from the IP address.
+    readonly property bool located: Location.valid
+    readonly property string place: root.located ? `${Location.latitude.toFixed(3)},${Location.longitude.toFixed(3)}`
+        : root.formatCityName(Location.city || root.city)
+    onPlaceChanged: root.getData()
 
     onUseUSCSChanged: root.getData()
     onCityChanged: root.getData()
     onTimeFormatChanged: root.getData()
 
-    property var location: ({ valid: false, lat: 0, lon: 0 })
 
     property var data: ({
         uv: 0, humidity: 0, sunrise: 0, sunset: 0,
@@ -111,19 +115,13 @@ Singleton {
 
     function getData() {
         // The place goes into the URL as one argv item: no shell.
-        const where = (root.gpsActive && root.location.valid) ? `${root.location.lat},${root.location.lon}`
-            : root.formatCityName(root.city)
+        const where = root.place
         fetcher.command = ["curl", "-sf", "--max-time", "20", `https://wttr.in/${encodeURIComponent(where).replace(/%2B/g, "+").replace(/%2C/g, ",")}?format=j1`]
         fetcher.running = true
     }
 
     function formatCityName(cityName) {
         return cityName.trim().split(/\s+/).join('+')
-    }
-
-    Component.onCompleted: {
-        if (!root.gpsActive) return
-        positionSource.start()
     }
 
     Process {
@@ -143,36 +141,11 @@ Singleton {
         }
     }
 
-    PositionSource {
-        id: positionSource
-        updateInterval: root.fetchInterval
-        onPositionChanged: {
-            if (position.latitudeValid && position.longitudeValid) {
-                root.location.lat = position.coordinate.latitude
-                root.location.lon = position.coordinate.longitude
-                root.location.valid = true
-                root.getData()
-            } else {
-                root.gpsActive = root.location.valid
-                console.error("[Weather] Failed to get GPS location.")
-            }
-        }
-        onValidityChanged: {
-            if (!positionSource.valid) {
-                positionSource.stop()
-                root.location.valid = false
-                root.gpsActive = false
-                Quickshell.execDetached(["notify-send", "Weather Service",
-                    "Cannot find a GPS service. Using fallback method.", "-a", "Ano Shell"])
-            }
-        }
-    }
-
     Timer {
-        running: !root.gpsActive
+        running: true
         repeat: true
         interval: root.fetchInterval
-        triggeredOnStart: !root.gpsActive
+        triggeredOnStart: true
         onTriggered: root.getData()
     }
 }

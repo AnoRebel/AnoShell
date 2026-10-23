@@ -1156,15 +1156,6 @@
  {
   "page": 2,
   "card": "",
-  "label": "Enable GPS positioning",
-  "sublabel": "Auto-detect location for weather",
-  "keys": [
-   "bar.weather.enableGPS"
-  ]
- },
- {
-  "page": 2,
-  "card": "",
   "label": "Fetch interval",
   "sublabel": "How often weather data refreshes",
   "keys": [
@@ -2714,6 +2705,60 @@
  },
  {
   "page": 8,
+  "card": "Location",
+  "label": "Location",
+  "sublabel": "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun-and-moon widgets",
+  "keys": [
+   "location"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Use my location",
+  "sublabel": "Off: nothing is looked up; the weather uses its own city setting",
+  "keys": [
+   "location.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Find it",
+  "sublabel": " · ",
+  "keys": [
+   "location.mode"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "City",
+  "sublabel": "The name shown, and what the weather looks up if no coordinates are set",
+  "keys": [
+   "location.city"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Latitude",
+  "sublabel": "Decimal degrees, north positive (e.g. -6.8)",
+  "keys": [
+   "location.latitude"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Longitude",
+  "sublabel": "Decimal degrees, east positive (e.g. 39.3)",
+  "keys": [
+   "location.longitude"
+  ]
+ },
+ {
+  "page": 8,
   "card": "Night light",
   "label": "Night light",
   "sublabel": "Warms the screen at night through wlsunset (Hyprland, niri, sway): now, or on a schedule. Plus eye-care screen filters.",
@@ -2765,24 +2810,6 @@
   "sublabel": "How long the change from day to night (and back) takes",
   "keys": [
    "nightLight.fade"
-  ]
- },
- {
-  "page": 8,
-  "card": "",
-  "label": "Latitude",
-  "sublabel": "Decimal degrees, north positive (e.g. 51.5)",
-  "keys": [
-   "nightLight.latitude"
-  ]
- },
- {
-  "page": 8,
-  "card": "",
-  "label": "Longitude",
-  "sublabel": "Decimal degrees, east positive (e.g. -0.1)",
-  "keys": [
-   "nightLight.longitude"
   ]
  },
  {

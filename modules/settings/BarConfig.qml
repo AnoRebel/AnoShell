@@ -875,10 +875,9 @@ ColumnLayout {
         ConfigRow {
             label: "City name"
             configKey: "bar.weather.city"
-            sublabel: (Config.options?.bar?.weather?.enableGPS ?? false)
-                ? "GPS positioning is on — manual city is ignored"
-                : "Leave empty to disable, or specify a city for manual lookup"
-            enabled: !(Config.options?.bar?.weather?.enableGPS ?? false)
+            sublabel: Location.valid
+                ? `Using your location (${Location.city || Location.source}) from Settings → Services → Location; this city is used when location is off`
+                : "Used when location (Settings → Services → Location) is off or unknown; empty: guessed from your IP address"
             StyledTextInput {
                 text: Config.options?.bar?.weather?.city ?? ""
                 onEditingFinished: Config.setNestedValue("bar.weather.city", text)
@@ -892,14 +891,6 @@ ColumnLayout {
             sublabel: "Imperial units (°F, mph, inches)"
             checked: Config.options?.bar?.weather?.useUSCS ?? false
             onCheckedChanged: Config.setNestedValue("bar.weather.useUSCS", checked)
-        }
-
-        ConfigSwitch {
-            label: "Enable GPS positioning"
-            configKey: "bar.weather.enableGPS"
-            sublabel: "Auto-detect location for weather"
-            checked: Config.options?.bar?.weather?.enableGPS ?? false
-            onCheckedChanged: Config.setNestedValue("bar.weather.enableGPS", checked)
         }
 
         ConfigSlider {
