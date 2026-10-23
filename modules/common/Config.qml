@@ -887,7 +887,7 @@ Singleton {
                 property bool enable: false
                 property int cell: 96   // grid cell, logical px
                 property int gap: 12    // between cells
-                property int fps: 15    // animated widgets (Bioma organisms): frames a second
+                property int fps: 10    // animated widgets (Bioma organisms): frames a second
                 // Per screen name: { "page": index, "pages": [[{ uid, id, x, y, w, h, settings }]] }
                 // (x/y/w/h in cells). Written by the widget picker and edit mode.
                 property var screens: ({})

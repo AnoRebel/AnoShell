@@ -12,8 +12,12 @@ import qs.services
  * Desktop widget layer (spec desktop-widgets): per screen, a Bottom-layer
  * surface over the wallpaper and under every window, sized by the compositor
  * to the area the bars leave free. Widgets sit on a snapping grid
- * (widgets.cell + widgets.gap) on pages; only the shown page is instantiated
- * (the one leaving stays for its slide, then goes).
+ * (widgets.cell + widgets.gap) on pages; only the shown page is instantiated.
+ * At rest each widget is a small Bottom-layer window of its own at its cell,
+ * so a moving widget redraws only its card (a full-screen surface redrawn for
+ * it cost about twice the CPU); a page turn fades the new page's windows in.
+ * This full-screen surface draws only the page controls, and in edit mode
+ * the cards themselves (above windows, sliding between pages).
  *
  * Input: only the widgets and the page controls take it (the mask); a click
  * anywhere else reaches the desktop, and a window over the layer gets its
@@ -161,11 +165,12 @@ Scope {
                 width: pages.width; height: pages.height
                 x: (slot.front ? (1 - win.progress) : -win.progress) * win.dir * pages.width
                 opacity: slot.front ? win.progress : 1 - win.progress
-                visible: slot.page >= 0
+                visible: slot.page >= 0 && win.editing
                 // The page's widgets, kept in step with the Repeater (delegates
-                // can be created after `count` changes).
+                // can be created after `count` changes). Only in edit mode: at
+                // rest each widget has a window of its own (below).
                 property var hosts: []
-                readonly property var placedList: slot.page >= 0 ? (win.layout.pages[slot.page] ?? []) : []
+                readonly property var placedList: slot.page >= 0 && win.editing ? (win.layout.pages[slot.page] ?? []) : []
                 Repeater {
                     id: hostRepeater
                     // Keyed by uid: a layout write (move, setting, page turn)
@@ -180,6 +185,70 @@ Scope {
                         grid: win.grid
                         editing: win.editing
                         onOpenSettings: h => settingsPanel.host = h
+                    }
+                }
+            }
+
+            // ── At rest: a window per widget ──
+            // Each widget is its own small Bottom-layer surface at its cell, so
+            // a moving one redraws only its card: redrawing the full-screen layer
+            // for it cost about twice as much (measured).
+            readonly property var shownList: win.layout.pages[win.shownPage] ?? []
+            Instantiator {
+                active: !win.editing && win.shownPage >= 0
+                model: ScriptModel { values: win.shownList.map(o => o.uid) }
+                delegate: PanelWindow {
+                    id: card
+                    required property string modelData
+                    readonly property var placed: win.shownList.find(o => o.uid === card.modelData) ?? null
+                    screen: win.modelData
+                    visible: !!card.placed
+                    WlrLayershell.layer: WlrLayer.Bottom
+                    WlrLayershell.namespace: "quickshell:widget"
+                    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+                    exclusionMode: ExclusionMode.Normal
+                    exclusiveZone: 0
+                    anchors { top: true; left: true }
+                    margins {
+                        left: win.originX + (card.placed?.x ?? 0) * win.grid.step
+                        top: win.originY + (card.placed?.y ?? 0) * win.grid.step
+                    }
+                    implicitWidth: Math.max(1, (card.placed?.w ?? 1) * win.grid.step - win.gap)
+                    implicitHeight: Math.max(1, (card.placed?.h ?? 1) * win.grid.step - win.gap)
+                    color: "transparent"
+
+                    WidgetHost {
+                        id: cardHost
+                        // its own window: placed at the window's origin
+                        placed: card.placed ?? ({ uid: card.modelData, id: "", x: 0, y: 0, w: 1, h: 1 })
+                        grid: Object.assign({}, win.grid, { originX: -(card.placed?.x ?? 0) * win.grid.step,
+                                                            originY: -(card.placed?.y ?? 0) * win.grid.step })
+                        ctx: win.ctx
+                        editing: false
+                        opacity: 0
+                        Component.onCompleted: fadeIn.start()
+                        NumberAnimation on opacity { id: fadeIn; to: 1; running: false
+                            duration: Appearance.animation.elementMove.duration
+                            easing.type: Appearance.animation.elementMove.type; easing.bezierCurve: Appearance.animation.elementMove.bezierCurve }
+                    }
+                    // A drag across it or a touchpad swipe turns the page.
+                    DragHandler {
+                        target: null
+                        xAxis.enabled: true; yAxis.enabled: false
+                        enabled: win.pageCount > 1
+                        property real dx: 0
+                        onTranslationChanged: if (active) dx = translation.x
+                        onActiveChanged: if (!active) { if (Math.abs(dx) > 80) win.go(win.shownPage + (dx < 0 ? 1 : -1)); dx = 0 }
+                    }
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.TouchPad
+                        orientation: Qt.Horizontal
+                        enabled: win.pageCount > 1
+                        property real acc: 0
+                        onWheel: event => {
+                            acc += event.angleDelta.x
+                            if (Math.abs(acc) > 240) { win.go(win.shownPage + (acc < 0 ? 1 : -1)); acc = 0 }
+                        }
                     }
                 }
             }

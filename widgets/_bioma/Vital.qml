@@ -145,13 +145,18 @@ Item {
             height: width
         }
 
-        SequentialAnimation {
+        // AnoShell: the beat stepped at widgets.fps (Bioma animated it at the
+        // display's rate): up over 9% of the beat, back over 15%, then still,
+        // and a still pulse asks for no frame.
+        property real phase: 0
+        OrganismTicker {
             running: heart.visible
-            loops: Animation.Infinite
-
-            NumberAnimation { target: heart; property: "pulse"; to: 1.45; duration: Math.round(root.beatInterval * 0.09); easing.type: Easing.OutQuad }
-            NumberAnimation { target: heart; property: "pulse"; to: 1.0; duration: Math.round(root.beatInterval * 0.15); easing.type: Easing.InQuad }
-            PauseAnimation { duration: Math.round(root.beatInterval * 0.76) }
+            onTriggered: {
+                heart.phase = (heart.phase + frameTime * 1000 / Math.max(1, root.beatInterval)) % 1
+                const p = heart.phase
+                heart.pulse = p < 0.09 ? 1 + 0.45 * (1 - Math.pow(1 - p / 0.09, 2))
+                    : p < 0.24 ? 1.45 - 0.45 * Math.pow((p - 0.09) / 0.15, 2) : 1
+            }
         }
     }
 

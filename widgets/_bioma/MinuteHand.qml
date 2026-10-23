@@ -24,7 +24,9 @@ Item {
         root.value = (now.getSeconds() * 1000 + now.getMilliseconds()) / 60000;
     }
     property bool running: true
+    // once a second: a second hand
     OrganismTicker {
+        interval: 1000
         running: root.running
         onTriggered: root.sync()
     }

@@ -81,7 +81,9 @@ Item {
         }
 
         onTargetChanged: {
-            if (!follower.eased || follower.target < follower.value) {
+            // AnoShell: a step under a degree isn't seen; animating it cost a
+            // burst of frames every second (the clock's hour face).
+            if (!follower.eased || follower.target < follower.value || follower.target - follower.value < 1) {
                 follower.step.stop();
                 follower.value = follower.target;
             } else {

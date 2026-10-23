@@ -15,8 +15,8 @@ widget code runs.
   the bottom switch them; so do a horizontal drag across a widget, a
   two-finger touchpad swipe, and keys you bind to
   `qs ipc call widgets next` / `prev` / `page N` (the focused screen).
-  Only the shown page's widgets exist; the one you leave slides out and is
-  destroyed.
+  Only the shown page's widgets exist; the new page's fade in (in edit mode,
+  pages slide).
 - **Grid**: `widgets.cell` (the square, 96 px) and `widgets.gap` (12 px).
   The layer fills the area your bars leave free and centres whole cells in it.
 - The layout is kept per screen in `widgets.screens`:
@@ -63,14 +63,9 @@ the countdown, the spectrum). Weather uses the bar's city (or the one the
 bar's weather found) with Open-Meteo, in °F when the bar uses US units.
 Activity data is kept in `~/.local/state/anoshell/activity.json`.
 
-Cost: the organisms move (their motion encodes a live value), and every
-frame redraws the whole widget layer. Their motion is stepped at
-`widgets.fps` (15 by default, Settings → Modules → Desktop widgets), not
-at the display's rate. Measured on this laptop, a page with the system
-organisms still costs about 9–12% of a core and the media/network page
-about 7% (pages without them stay near 0%). Some of
-their animations still run at the display's rate and need the same
-treatment.
+Cost: the moving organisms are stepped at `widgets.fps` (10 by default,
+Settings → Modules → Desktop widgets), not at the display's rate, and each
+redraws only its own card; see Resource use below.
 
 Known limits: the media band is mono (both halves show the same spectrum);
 the vitals GPU ring needs an AMD card; cytoplasm groups processes by their
@@ -79,30 +74,30 @@ ancestor (window pids aren't exposed yet); the note's default file is
 
 ## Resource use
 
-Measured with `scripts/dev/budget.sh` (average CPU of one core over the
-window, after the shell has settled) on the reference laptop (i7, Intel
-graphics, 1920×1200 at 1.5 and 1920×1080), Liquid look, `widgets.fps` 15.
-The shell idles at about 0.1% with widgets off. Memory: the widget layer
-and registry add about 50 MB with a page of widgets; each widget adds a few MB.
+Measured with `scripts/dev/budget.sh` (average CPU of one core over 30 s,
+after 30 s settling, each widget alone) on the reference laptop (i7, Intel
+Iris Xe, HDMI 1920×1080), Liquid look, `widgets.fps` 15. The shell idles
+at about 0.1% with widgets off or with no moving widget. Memory: the layer
+and registry add about 50 MB; each widget a few MB.
 
-| What's shown | CPU |
-|---|---|
-| Widgets on, AnoShell's clock only | 0.0% |
-| AnoShell's clock + a user package | 0.1% |
-| Bioma page: clock, weather, lava, vitals, nucleus, photoperiod, adipose | ~12% (19% before the frame-rate cap) |
-| Bioma page: media, calendar, osmosis, cytoplasm | ~7% (21% before) |
-| Bioma page: agenda, vacuole | 0.25% |
-| Bioma page: sediment, rings | 0.0–0.07% |
-| Bioma note | 0.08% |
+| Widget | CPU | Moves? |
+|---|---|---|
+| AnoShell clock (seconds on) | 0.5% | once a second |
+| AnoShell clock, profile, weather, to-do, calendar, timer (stopped) | ~0% | no |
+| Bioma clock | 0.8% | second hand, once a second |
+| Bioma weather, photoperiod, agenda, calendar, adipose, sediment, rings, note | 0–1% | no |
+| Bioma nucleus | 0.4% (more while charging) | while the battery changes |
+| Bioma vacuole | ~0% (more with unread) | while there are unread notifications |
+| Bioma osmosis | 1.7% | while traffic flows |
+| Bioma lava | 4.5% | continuously (its speed is the CPU temperature) |
+| Bioma vitals | 6.8% | heartbeat (CPU), RAM wave |
+| Bioma cytoplasm | 8.0% | continuously (apps by memory) |
 
-Still (no motion of their own): AnoShell's clock, profile, weather, to-do,
-calendar, timer when stopped, and the Bioma agenda, sediment, rings, note,
-weather and photoperiod. Moving, so they cost CPU while the desktop is
-visible: the Bioma lava, osmosis, cytoplasm, nucleus, vacuole and vitals
-(their motion is the value), the Bioma clock's second hand, and the media
-band while something plays. Everything pauses under a maximised window or
-the lock screen. Per-widget figures for the moving ones aren't measured
-one by one yet: the measurement needs ~40 s per widget after a restart.
+Moving widgets cost in proportion to `widgets.fps` (about 0.4% of a core
+per frame a second each); the default is 10, which saves about a third
+against the 15 measured above. Everything pauses under a maximised window
+or the lock screen. At rest each widget is its own small surface, so only a
+moving widget's card is redrawn.
 
 ## Edit mode
 

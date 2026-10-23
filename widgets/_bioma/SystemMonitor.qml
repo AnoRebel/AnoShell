@@ -840,8 +840,19 @@ Singleton {
     // The session's roots besides init: the user's systemd and the compositor.
     readonly property var sessionRoots: ["systemd", "niri", "Hyprland", "sway", "river"]
 
+    // AnoShell: heuristicLookup is slow and was asked the same names for every
+    // group, open app and sample; cached (cleared when it grows).
+    property var _entries: ({})
+    property int _entryCount: 0
     function entryFor(name) {
-        return name ? DesktopEntries.heuristicLookup(name) : null;
+        if (!name)
+            return null;
+        if (name in root._entries)
+            return root._entries[name];
+        if (++root._entryCount > 400) { root._entries = {}; root._entryCount = 1; }
+        const entry = DesktopEntries.heuristicLookup(name);
+        root._entries[name] = entry;
+        return entry;
     }
 
     function digest(rows, self) {

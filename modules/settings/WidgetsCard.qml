@@ -66,7 +66,7 @@ SettingsCard {
         configKey: "widgets.fps"
         sublabel: "For animated widgets (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more"
         from: 5; to: 60; stepSize: 5
-        value: Config.options?.widgets?.fps ?? 15
+        value: Config.options?.widgets?.fps ?? 10
         onValueChanged: Config.setNestedValue("widgets.fps", Math.round(value))
         valueText: `${Math.round(value)} fps`
     }
