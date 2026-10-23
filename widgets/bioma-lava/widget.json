@@ -1,0 +1,46 @@
+{
+  "id": "bioma-lava",
+  "name": "Lava lamp",
+  "description": "A lava lamp heated by the processor temperature (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaLavaWidget.qml",
+  "size": {
+    "w": 2,
+    "h": 4
+  },
+  "minSize": {
+    "w": 2,
+    "h": 4
+  },
+  "settings": [
+    {
+      "key": "colour",
+      "type": "choice",
+      "label": "Colour",
+      "options": [
+        "state",
+        "theme"
+      ],
+      "default": "state"
+    },
+    {
+      "key": "cold",
+      "type": "real",
+      "label": "Cold at (\u00b0C)",
+      "default": 48
+    },
+    {
+      "key": "hot",
+      "type": "real",
+      "label": "Hot at (\u00b0C)",
+      "default": 90
+    },
+    {
+      "key": "figures",
+      "type": "bool",
+      "label": "Show figures",
+      "default": true
+    }
+  ]
+}

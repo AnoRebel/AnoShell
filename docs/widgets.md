@@ -46,6 +46,28 @@ tiled windows are); the window hides them, but their timers keep running.
 The to-do and timer widgets keep their service running while they're placed,
 even with the sidebar's to-do or Pomodoro turned off.
 
+## Bioma organisms
+
+The `bioma-*` widgets are Bioma's desktop "organisms" (GPL-3.0), ported:
+clock, weather, photoperiod (sun and moon), calendar, agenda, media (with
+the audio band), vitals, lava (CPU temperature), nucleus (battery),
+osmosis (network), cytoplasm (apps by memory), adipose (disks), vacuole
+(unread notifications), sediment (recent files), growth rings (active
+time) and note (a Markdown file). They draw as in Bioma, in AnoShell's
+colours, and only run while the desktop can be seen.
+
+Their support code is `widgets/_bioma`: Bioma's Metrics, Timing,
+Typography, Theme (roles from AnoShell's palette) and components, and its
+services as they were or adapted onto AnoShell's (notifications, calendar,
+the countdown, the spectrum). Weather uses the bar's city (or the one the
+bar's weather found) with Open-Meteo, in °F when the bar uses US units.
+Activity data is kept in `~/.local/state/anoshell/activity.json`.
+
+Known limits: the media band is mono (both halves show the same spectrum);
+the vitals GPU ring needs an AMD card; cytoplasm groups processes by their
+ancestor (window pids aren't exposed yet); the note's default file is
+`~/notes.md`.
+
 ## Edit mode
 
 Right-click a widget, press **Edit on the desktop** in Settings, or run

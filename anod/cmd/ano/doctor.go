@@ -42,6 +42,7 @@ var features = []feature{
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
 	{"game mode", "gameMode.enable", []string{"gamemoded"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
+	{"Bioma organism widgets (weather: curl; media band: cava; disks: df)", "widgets.enable", []string{"curl", "cava", "df"}},
 	{"opening files and folders (downloads, drives)", "", []string{"xdg-open"}},
 	{"Qt apps in the palette (the qt6ct platform theme; kvantum for appearance.theme.qt \"kvantum\")", "", []string{"qt6ct"}},
 	{"focus time", "focusTime.enable", []string{"python3"}},

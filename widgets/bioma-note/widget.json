@@ -1,0 +1,24 @@
+{
+  "id": "bioma-note",
+  "name": "Note",
+  "description": "A Markdown file, read live and never written (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaNoteWidget.qml",
+  "size": {
+    "w": 4,
+    "h": 4
+  },
+  "minSize": {
+    "w": 4,
+    "h": 2
+  },
+  "settings": [
+    {
+      "key": "file",
+      "type": "string",
+      "label": "Markdown file",
+      "default": "~/notes.md"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "bioma-media",
+  "name": "Organism media",
+  "description": "What is playing, its cover edge to edge and the sound rising out of it (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaMediaWidget.qml",
+  "size": {
+    "w": 4,
+    "h": 4
+  },
+  "minSize": {
+    "w": 4,
+    "h": 4
+  },
+  "settings": [
+    {
+      "key": "band",
+      "type": "bool",
+      "label": "Show the audio band",
+      "default": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "bioma-agenda",
+  "name": "Organism agenda",
+  "description": "What is coming: the next appointment large, then the days after it (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaAgendaWidget.qml",
+  "size": {
+    "w": 4,
+    "h": 4
+  },
+  "minSize": {
+    "w": 4,
+    "h": 4
+  },
+  "settings": []
+}
