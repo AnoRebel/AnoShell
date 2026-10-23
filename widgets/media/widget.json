@@ -1,0 +1,10 @@
+{
+  "id": "media",
+  "name": "Media",
+  "description": "Cover art, title and artist, with playback controls",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "MediaWidget.qml",
+  "size": { "w": 4, "h": 2 },
+  "minSize": { "w": 3, "h": 2 }
+}

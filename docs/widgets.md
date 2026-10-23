@@ -29,6 +29,25 @@ pause while the screen is locked or a maximised/fullscreen window covers it.
 A tiled window covering the desktop isn't detected (niri doesn't report where
 tiled windows are); the window hides them, but their timers keep running.
 
+## Built-in widgets
+
+| Widget | Shows | Settings |
+|---|---|---|
+| Clock | the time, large, with the date | seconds |
+| Profile | your picture (`~/.face`), name, uptime, a status line; lock, settings, power | status, picture |
+| Weather | current weather; today's hours and the next days when tall enough (wttr.in, the city from Settings → Bar → Weather) | hourly, daily |
+| Media | cover, title, artist, controls (the sidebar's media card) | |
+| Photo frame | a picture, or a folder's pictures in turn | path, interval, shuffle |
+| System | CPU, memory, battery; CPU temperature and disk use of `/` if you want them | temperature, disk |
+| Timer | focus (Pomodoro), stopwatch or countdown: the same timers as the sidebar's | mode |
+| To-do | your tasks: the sidebar's to-do and `todo.txt`, both ways | |
+| Calendar | the month with your events and holidays | |
+
+The to-do and timer widgets keep their service running while they're placed,
+even with the sidebar's to-do or Pomodoro turned off. Until edit mode lands,
+per-widget settings are set in `widgets.screens` (the `settings` of each
+placed widget).
+
 ## Making a widget
 
 A widget is a folder in `~/.config/anoshell/widgets/<id>/` with a manifest and

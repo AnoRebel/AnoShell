@@ -1,0 +1,14 @@
+{
+  "id": "weather",
+  "name": "Weather",
+  "description": "Current weather, with today's hours and the next days when there's room",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "WeatherWidget.qml",
+  "size": { "w": 4, "h": 3 },
+  "minSize": { "w": 2, "h": 2 },
+  "settings": [
+    { "key": "hourly", "type": "bool", "label": "Today's hours", "default": true },
+    { "key": "daily", "type": "bool", "label": "Next days", "default": true }
+  ]
+}

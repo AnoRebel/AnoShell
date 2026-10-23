@@ -12,7 +12,10 @@ import qs.modules.common
  */
 Singleton {
     id: root
-    readonly property bool enabled: Config.options?.todo?.enable ?? false
+    // todo.enable, or a desktop to-do widget holding it (hold(true/false)).
+    property int _holds: 0
+    function hold(on: bool): void { root._holds = Math.max(0, root._holds + (on ? 1 : -1)) }
+    readonly property bool enabled: (Config.options?.todo?.enable ?? false) || root._holds > 0
     readonly property string path: {
         let p = (Config.options?.todo?.file ?? "").trim()
         if (p.startsWith("~/")) p = Quickshell.env("HOME") + p.slice(1)

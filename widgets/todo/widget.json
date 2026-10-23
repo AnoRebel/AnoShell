@@ -1,0 +1,10 @@
+{
+  "id": "todo",
+  "name": "To-do",
+  "description": "Your to-do list: the same tasks as the sidebar and todo.txt",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "TodoWidget.qml",
+  "size": { "w": 4, "h": 4 },
+  "minSize": { "w": 3, "h": 2 }
+}

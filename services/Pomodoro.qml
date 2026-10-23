@@ -4,7 +4,8 @@ import Quickshell
 import qs.modules.common
 
 /**
- * Pomodoro and stopwatch (pomodoro.enable). Independent of focusTime: no DND,
+ * Pomodoro, stopwatch and countdown (pomodoro.enable, or a desktop timer
+ * widget holding it). Independent of focusTime: no DND,
  * no app tracking. The timer only ticks while something runs.
  */
 Singleton {
@@ -45,8 +46,25 @@ Singleton {
     }
     function swReset() { root.swRunning = false; root.swBanked = 0 }
 
-    // Off with pomodoro.enable: nothing ticks or notifies without the UI.
-    readonly property bool enabled: cfg.enable ?? false
+    // ── Countdown ─────────────────────────────────────────────────────
+    property int cdLength: 5 * 60       // s, what a reset goes back to
+    property bool cdRunning: false
+    property real cdEnd: 0              // ms epoch it ends at, while running
+    property real cdLeftMs: root.cdLength * 1000 // while paused
+    property real cdNow: 0
+    readonly property real cdLeft: root.cdRunning ? Math.max(0, root.cdEnd - root.cdNow) : root.cdLeftMs
+    function cdSet(seconds: int): void { root.cdRunning = false; root.cdLength = Math.max(1, seconds); root.cdLeftMs = root.cdLength * 1000 }
+    function cdToggle(): void {
+        if (root.cdRunning) { root.cdLeftMs = root.cdLeft; root.cdRunning = false }
+        else if (root.cdLeftMs > 0) { root.cdNow = Date.now(); root.cdEnd = root.cdNow + root.cdLeftMs; root.cdRunning = true }
+    }
+    function cdReset(): void { root.cdRunning = false; root.cdLeftMs = root.cdLength * 1000 }
+
+    // Off with pomodoro.enable (or no desktop timer widget holding it):
+    // nothing ticks or notifies without the UI.
+    property int _holds: 0
+    function hold(on: bool): void { root._holds = Math.max(0, root._holds + (on ? 1 : -1)) }
+    readonly property bool enabled: (cfg.enable ?? false) || root._holds > 0
     Timer {
         interval: 1000
         repeat: true
@@ -61,5 +79,17 @@ Singleton {
         repeat: true
         running: root.enabled && root.swRunning
         onTriggered: root.swNow = Date.now()
+    }
+    Timer {
+        interval: 250
+        repeat: true
+        running: root.enabled && root.cdRunning
+        onTriggered: {
+            root.cdNow = Date.now()
+            if (root.cdNow >= root.cdEnd) {
+                root.cdRunning = false; root.cdLeftMs = 0
+                Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Countdown", "Time's up"])
+            }
+        }
     }
 }

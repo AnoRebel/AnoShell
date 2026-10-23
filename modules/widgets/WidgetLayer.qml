@@ -95,7 +95,7 @@ Scope {
 
             // Front slot at 0, the other off to the side it leaves by.
             property real progress: 1
-            NumberAnimation on progress { id: slide; from: 0; to: 1; duration: Appearance.animation.elementMove.duration; easing.type: Easing.OutCubic; running: false
+            NumberAnimation on progress { id: slide; from: 0; to: 1; duration: Appearance.animation.elementMove.duration; easing.type: Appearance.animation.elementMove.type; easing.bezierCurve: Appearance.animation.elementMove.bezierCurve; running: false
                 onStarted: win.shownPage = (win.aFront ? slotA : slotB).page
                 onFinished: (win.aFront ? slotB : slotA).page = -1 }
 

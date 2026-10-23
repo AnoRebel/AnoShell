@@ -24,13 +24,14 @@ Item {
         return Object.assign(s, host.placed?.settings ?? {})
     }
 
-    Rectangle {
+    // The card, in the active look's material (fill or glass, stroke, texture).
+    SurfaceMaterial {
         anchors.fill: parent
         visible: !host.entry || host.entry.frame || loader.status !== Loader.Ready
+        surface: "widget"
         radius: Appearance.rounding.large
         color: Appearance.colors.colLayer1
-        border.width: 1
-        border.color: Appearance.colors.colOutlineVariant ?? "transparent"
+        textColor: Appearance.colors.colOnLayer1
     }
 
     Loader {

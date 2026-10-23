@@ -36,7 +36,7 @@ var features = []feature{
 	{"brightness", "", []string{"brightnessctl"}},
 	{"audio spectrum", "", []string{"cava"}},
 	{"battery sounds", "sounds.battery", []string{"ffplay"}},
-	{"weather", "bar.weather.enable", []string{"curl", "jq"}},
+	{"weather", "bar.weather.enable", []string{"curl"}},
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},

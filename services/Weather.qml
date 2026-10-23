@@ -33,6 +33,20 @@ Singleton {
         tempFeelsLike: 0, lastRefresh: 0,
     })
 
+    property var days: []   // [{ date, max, min, code }]
+    property var hours: []  // today: [{ time, temp, code }]
+    // A wttr.in weather code as a Material Symbol.
+    function iconFor(code) {
+        const c = +code
+        if (c === 113) return "clear_day"
+        if (c === 116) return "partly_cloudy_day"
+        if (c === 119 || c === 122) return "cloud"
+        if ([143, 248, 260].includes(c)) return "foggy"
+        if ([200, 386, 389, 392, 395].includes(c)) return "thunderstorm"
+        if ([179, 182, 185, 227, 230, 281, 284, 311, 314, 317, 320, 323, 326, 329, 332, 335, 338, 350, 362, 365, 368, 371, 374, 377].includes(c)) return "weather_snowy"
+        return "rainy"
+    }
+
     function convertTo24Hour(time12h) {
         if (!time12h || !time12h.includes(' ')) return "00:00"
         const [time, modifier] = time12h.split(' ')
@@ -85,17 +99,21 @@ Singleton {
             temp.tempFeelsLike = (raw?.current?.FeelsLikeC || 0) + "°C"
         }
         temp.lastRefresh = DateTime.time + " • " + DateTime.date
+        // The next days and today's 3-hourly forecast (wttr.in), for the
+        // desktop weather widget.
+        const unit = root.useUSCS ? "F" : "C"
+        root.days = (raw?.days ?? []).map(d => ({ date: d.date, max: `${d[`maxtemp${unit}`]}°`, min: `${d[`mintemp${unit}`]}°`,
+                                                  code: d.hourly?.[4]?.weatherCode ?? "113" }))
+        root.hours = (raw?.days?.[0]?.hourly ?? []).map(h => ({ time: `${String(Math.floor((+h.time) / 100)).padStart(2, "0")}:00`,
+                                                               temp: `${h[`temp${unit}`]}°`, code: h.weatherCode }))
         root.data = temp
     }
 
     function getData() {
-        let command = "curl -s wttr.in"
-        if (root.gpsActive && root.location.valid)
-            command += `/${root.location.lat},${root.location.lon}`
-        else
-            command += `/${formatCityName(root.city)}`
-        command += "?format=j1 | jq '{current: .current_condition[0], location: .nearest_area[0], astronomy: .weather[0].astronomy[0]}'"
-        fetcher.command[2] = command
+        // The place goes into the URL as one argv item: no shell.
+        const where = (root.gpsActive && root.location.valid) ? `${root.location.lat},${root.location.lon}`
+            : root.formatCityName(root.city)
+        fetcher.command = ["curl", "-sf", "--max-time", "20", `https://wttr.in/${encodeURIComponent(where).replace(/%2B/g, "+").replace(/%2C/g, ",")}?format=j1`]
         fetcher.running = true
     }
 
@@ -110,12 +128,14 @@ Singleton {
 
     Process {
         id: fetcher
-        command: ["bash", "-c", ""]
+        command: ["true"]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.length === 0) return
                 try {
-                    root.refineData(JSON.parse(text))
+                    const j = JSON.parse(text)
+                    root.refineData({ current: j.current_condition?.[0], location: j.nearest_area?.[0],
+                                      astronomy: j.weather?.[0]?.astronomy?.[0], days: j.weather ?? [] })
                 } catch (e) {
                     console.error(`[Weather] ${e.message}`)
                 }
