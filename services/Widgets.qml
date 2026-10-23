@@ -132,6 +132,7 @@ Singleton {
         // Only folders really inside the widget folders (a FolderListModel
         // lists the working directory until its folder is set).
         readonly property bool mine: filePath.startsWith((source === "user" ? root.userDir : root.bundledDir) + "/")
+            && !/^[_.]/.test(filePath.split("/").pop()) // _shared folders (widgets/_bioma) aren't widgets
         path: mf.mine ? `${filePath}/widget.json` : ""
         watchChanges: mf.mine
         onFileChanged: reload()

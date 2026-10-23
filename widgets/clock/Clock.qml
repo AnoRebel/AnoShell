@@ -34,7 +34,7 @@ Item {
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDate(root.now, "dddd d MMMM")
-            font.pixelSize: Math.max(12, root.height * 0.12)
+            font.pixelSize: Math.max(10, Math.min(root.height * 0.12, root.width / 11))
             color: Appearance.colors.colSubtext
         }
     }
