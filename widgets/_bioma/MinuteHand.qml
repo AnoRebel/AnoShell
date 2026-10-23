@@ -17,23 +17,16 @@ Item {
 
     property real value: 0
 
+    // AnoShell: where the second hand is, read from the clock at widgets.fps
+    // (Bioma swept it with an animation at the display's rate).
     function sync() {
         const now = new Date();
-        const into = now.getSeconds() * 1000 + now.getMilliseconds();
-        sweep.stop();
-        root.value = into / 60000;
-        sweep.from = root.value;
-        sweep.duration = Math.max(1, 60000 - into);
-        sweep.start();
+        root.value = (now.getSeconds() * 1000 + now.getMilliseconds()) / 60000;
     }
-
-    NumberAnimation {
-        id: sweep
-        target: root
-        property: "value"
-        to: 1
-        easing.type: Easing.Linear
-        onFinished: root.sync()
+    property bool running: true
+    OrganismTicker {
+        running: root.running
+        onTriggered: root.sync()
     }
 
     Component.onCompleted: root.sync()

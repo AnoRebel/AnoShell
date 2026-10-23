@@ -78,6 +78,6 @@ Singleton {
         id: proc
         command: root.args
         running: Config.ready && root.args.length > 0
-        onCommandChanged: if (running) { running = false; Qt.callLater(() => running = Config.ready && root.args.length > 0) }
+        onCommandChanged: if (running) { running = false; Qt.callLater(() => running = Qt.binding(() => Config.ready && root.args.length > 0)) }
     }
 }

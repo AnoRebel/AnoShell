@@ -387,6 +387,7 @@
   "vpn.providers": "var",
   "widgets.cell": "int",
   "widgets.enable": "bool",
+  "widgets.fps": "int",
   "widgets.gap": "int",
   "widgets.screens": "var"
  },

@@ -61,6 +61,15 @@ SettingsCard {
         valueText: `${Math.round(value)} px`
     }
 
+    ConfigSlider {
+        label: "Animation frame rate"
+        configKey: "widgets.fps"
+        sublabel: "For animated widgets (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more"
+        from: 5; to: 60; stepSize: 5
+        value: Config.options?.widgets?.fps ?? 15
+        onValueChanged: Config.setNestedValue("widgets.fps", Math.round(value))
+        valueText: `${Math.round(value)} fps`
+    }
     ConfigRow {
         label: "Arrange"
         sublabel: "Move, resize and remove widgets on the desktop, add pages, change a widget's settings · or right-click a widget · qs ipc call widgets edit"

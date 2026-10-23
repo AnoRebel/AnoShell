@@ -330,9 +330,9 @@ Item {
     // A body this small carries no name: it would be wider than the body.
     readonly property real labelled: 22 * root.factor
 
-    FrameAnimation {
+    OrganismTicker {
         running: root.moving && root.visible
-        onTriggered: root.step(Math.min(frameTime, 0.05))
+        onTriggered: root.step(Math.min(frameTime, 0.1))
     }
 
     // ---- The sac --------------------------------------------------------------------

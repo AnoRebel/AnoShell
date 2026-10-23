@@ -103,6 +103,8 @@ Singleton {
         const c = Qt.createComponent(e.url, Component.Asynchronous)
         const done = () => {
             if (c.status === Component.Loading) return
+            // a newer manifest started a newer check: this result is stale
+            if (root.entries[e.id]?.url !== e.url) { c.destroy(); return }
             const q = Object.assign({}, root.qmlErrors)
             // "file:///…/id/Main.qml?r=3:2:38: …" → "Main.qml:2:38: …"
             q[e.id] = c.status === Component.Error ? c.errorString().trim().split(`file://${e.dir}/`).join("").replace(/\?r=\d+/g, "") : ""

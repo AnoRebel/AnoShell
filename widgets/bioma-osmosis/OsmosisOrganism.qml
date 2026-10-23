@@ -200,9 +200,9 @@ Item {
 
     // At the monitor's rate, as the lava lamp, while anything is in flight or
     // about to bud.
-    FrameAnimation {
+    OrganismTicker {
         running: root.moving && root.visible && root.present
-        onTriggered: root.step(Math.min(frameTime, 0.05))
+        onTriggered: root.step(Math.min(frameTime, 0.1))
     }
 
     ShaderEffect {

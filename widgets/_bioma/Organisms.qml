@@ -9,7 +9,7 @@ import qs.modules.common as Ano
 Singleton {
     function cellOption(type, key, fallback) {
         if (type === "clock" && key === "format")
-            return /h/.test(Ano.Config.options?.time?.format ?? "hh:mm") && !/ap/i.test(Ano.Config.options?.time?.format ?? "") ? "24h" : "12h"
+            return /ap/i.test(Ano.Config.options?.time?.format ?? "hh:mm") ? "12h" : "24h"
         return fallback
     }
 }

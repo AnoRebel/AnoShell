@@ -805,6 +805,15 @@
   ]
  },
  {
+  "page": 1,
+  "card": "",
+  "label": "Animation frame rate",
+  "sublabel": "For animated widgets (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more",
+  "keys": [
+   "widgets.fps"
+  ]
+ },
+ {
   "page": 2,
   "card": "Position & Style",
   "label": "Position & Style",

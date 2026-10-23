@@ -558,8 +558,8 @@ func main() {
 			if err != nil {
 				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
 			}
-			if k == nil {
-				return false, nil // empty list: the compositor config's own layouts
+			if k == nil { // empty list: the compositor config's own layouts
+				return false, disp.ClearKeyboard()
 			}
 			if err := disp.SetKeyboard(*k); err != nil {
 				return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)

@@ -57,8 +57,10 @@ SurfaceMaterial {
                     Layout.fillWidth: true
                     text: field.value === undefined || field.value === null ? "" : String(field.value)
                     validator: t => field.modelData.type === "string" || t === "" || isFinite(Number(t)) ? "" : "A number"
+                    // an emptied number goes back to the manifest's default
                     onEditingFinished: if (valid) panel.set(field.modelData.key,
-                        field.modelData.type === "string" ? text : field.modelData.type === "int" ? Math.round(Number(text)) : Number(text))
+                        field.modelData.type === "string" ? text : text === "" ? field.modelData.default
+                        : field.modelData.type === "int" ? Math.round(Number(text)) : Number(text))
                 }
                 ChoiceRow {
                     visible: field.modelData.type === "choice"

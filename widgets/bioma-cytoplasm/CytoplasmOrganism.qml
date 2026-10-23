@@ -339,9 +339,9 @@ Item {
     // A cell this small carries no name: it would be wider than the cell.
     readonly property real labelled: 24 * root.factor
 
-    FrameAnimation {
+    OrganismTicker {
         running: root.moving && root.visible && root.present
-        onTriggered: root.step(Math.min(frameTime, 0.05))
+        onTriggered: root.step(Math.min(frameTime, 0.1))
     }
 
     onWidthChanged: root.ingest()

@@ -202,12 +202,11 @@ Item {
             x: -liquid.period
             preferredRendererType: Shape.CurveRenderer
 
-            NumberAnimation on x {
+            // AnoShell: stepped at widgets.fps rather than every frame.
+            OrganismTicker {
                 running: root.ramMoving
-                loops: Animation.Infinite
-                from: -liquid.period
-                to: 0
-                duration: 2400
+                onTriggered: wave.x = wave.x + liquid.period * frameTime / 2.4 >= 0
+                    ? -liquid.period : wave.x + liquid.period * frameTime / 2.4
             }
 
             ShapePath {
@@ -291,7 +290,7 @@ Item {
         // speed.
         readonly property real period: 6000 - root.rate * 4800
 
-        FrameAnimation {
+        OrganismTicker {
             running: orbit.visible
             onTriggered: orbit.angle = (orbit.angle + 360 * frameTime * 1000 / orbit.period) % 360
         }
@@ -467,9 +466,9 @@ Item {
         root.drops = next;
     }
 
-    FrameAnimation {
+    OrganismTicker {
         running: root.visible && (root.dropRate > 0 || root.drops.length > 0)
-        onTriggered: root.dropStep(Math.min(frameTime, 0.05))
+        onTriggered: root.dropStep(Math.min(frameTime, 0.1))
     }
 
     Repeater {

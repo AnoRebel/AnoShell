@@ -57,3 +57,22 @@ func (s *Service) SetKeyboard(k Keyboard) error {
 	}
 	return s.writeManaged(cur)
 }
+
+// ClearKeyboard drops the layouts from the managed file (keyboard.layouts
+// emptied): the compositor config's own apply again after its next reload.
+func (s *Service) ClearKeyboard() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.keyboard == nil && (s.Keyboard == nil || s.Keyboard() == nil) {
+		return nil
+	}
+	s.keyboard = nil
+	cur := s.previous
+	if s.timer == nil {
+		var err error
+		if cur, err = s.Backend.Current(); err != nil {
+			return err
+		}
+	}
+	return s.writeManaged(cur)
+}

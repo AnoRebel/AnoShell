@@ -162,14 +162,20 @@ Scope {
                 x: (slot.front ? (1 - win.progress) : -win.progress) * win.dir * pages.width
                 opacity: slot.front ? win.progress : 1 - win.progress
                 visible: slot.page >= 0
-                readonly property var hosts: slot.page >= 0 ? hostRepeater.hosts : []
+                // The page's widgets, kept in step with the Repeater (delegates
+                // can be created after `count` changes).
+                property var hosts: []
+                readonly property var placedList: slot.page >= 0 ? (win.layout.pages[slot.page] ?? []) : []
                 Repeater {
                     id: hostRepeater
-                    property var hosts: { hostRepeater.count; return Array.from({ length: hostRepeater.count }, (_, i) => hostRepeater.itemAt(i)).filter(h => !!h) }
-                    model: slot.page >= 0 ? (win.layout.pages[slot.page] ?? []) : []
+                    // Keyed by uid: a layout write (move, setting, page turn)
+                    // updates the widgets in place instead of re-creating them.
+                    model: ScriptModel { values: slot.placedList.map(o => o.uid) }
+                    onItemAdded: (i, item) => slot.hosts = slot.hosts.concat([item])
+                    onItemRemoved: (i, item) => slot.hosts = slot.hosts.filter(h => h !== item)
                     delegate: WidgetHost {
-                        required property var modelData
-                        placed: modelData
+                        required property string modelData
+                        placed: slot.placedList.find(o => o.uid === modelData) ?? ({ uid: modelData, id: "", x: 0, y: 0, w: 1, h: 1 })
                         ctx: win.ctx
                         grid: win.grid
                         editing: win.editing
@@ -334,15 +340,15 @@ Scope {
             // the controls; all of it while editing.
             mask: win.editing ? everything : someRegion
             Region { id: everything; item: pages }
+            Region { id: dotsRegion; item: dots }
+            Region { id: leftRegion; item: leftArrow }
+            Region { id: rightRegion; item: rightArrow }
             Region {
                 id: someRegion
-                regions: {
-                    const items = slotA.hosts.concat(slotB.hosts)
-                    if (win.pageCount > 1) items.push(dots, leftArrow, rightArrow)
-                    return items.map(it => regionComp.createObject(this, { "item": it }))
-                }
+                // each host owns its Region (made once, gone with the host)
+                regions: slotA.hosts.concat(slotB.hosts).map(h => h.region)
+                    .concat(win.pageCount > 1 ? [dotsRegion, leftRegion, rightRegion] : [])
             }
-            Component { id: regionComp; Region {} }
         }
     }
 }

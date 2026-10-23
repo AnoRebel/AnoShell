@@ -105,12 +105,12 @@ Item {
     // between frames would flicker rather than breathe. It runs at the
     // monitor's rate while a drop is still moving, and stops when all are
     // where the sound puts them.
-    FrameAnimation {
+    OrganismTicker {
         id: follow
 
         onTriggered: {
             const tau = Math.max(Timing.contentFade, 1) / 3000;
-            const k = 1 - Math.exp(-Math.min(frameTime, 0.05) / tau);
+            const k = 1 - Math.exp(-Math.min(frameTime, 0.1) / tau);
             const next = root.values.slice();
             let moving = false;
             let sounding = false;
@@ -127,7 +127,7 @@ Item {
             }
             root.values = next;
             if (root.eardrum && sounding)
-                root.time += Math.min(frameTime, 0.05);
+                root.time += Math.min(frameTime, 0.1);
             else if (!moving)
                 running = false;
         }

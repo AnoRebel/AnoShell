@@ -201,11 +201,11 @@ Item {
     // once, and a timer at sixty is not tied to the refresh, so on a 120 or
     // 165 Hz screen it would land unevenly (Akusen, 2026-10-05). Measured: the
     // moving wax costs about 5.6% of a core at 165 Hz, nothing at rest.
-    FrameAnimation {
+    OrganismTicker {
         running: root.moving && root.visible && root.present
         // A long frame — the lamp just came back on screen — is taken as a
         // short one, so the wax resumes rather than leaps.
-        onTriggered: root.step(Math.min(frameTime, 0.05))
+        onTriggered: root.step(Math.min(frameTime, 0.1))
     }
 
     Component.onCompleted: root.seed()

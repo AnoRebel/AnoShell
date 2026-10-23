@@ -29,17 +29,15 @@ Item {
         if (folder.count === 0) return ""
         return folder.get(root.index % folder.count, "filePath")
     }
-    property string shown: root.isFile ? root.path : root.pick()
+    readonly property string shown: { void root.index; void folder.count; return root.isFile ? root.path : root.pick() }
     Timer {
         running: (root.ctx?.live ?? false) && !root.isFile && folder.count > 1
         interval: Math.max(5, root.settings?.interval ?? 30) * 1000
         repeat: true
         onTriggered: {
             root.index = (root.settings?.shuffle ?? true) ? Math.floor(Math.random() * folder.count) : root.index + 1
-            root.shown = root.pick()
         }
     }
-    Connections { target: folder; function onCountChanged() { if (!root.isFile) root.shown = root.pick() } }
 
     ClippingRectangle {
         anchors.fill: parent

@@ -167,9 +167,9 @@ Item {
     onPresentChanged: root.draw()
     Component.onCompleted: root.draw()
 
-    FrameAnimation {
+    OrganismTicker {
         running: root.moving && root.visible
-        onTriggered: root.step(Math.min(frameTime, 0.05))
+        onTriggered: root.step(Math.min(frameTime, 0.1))
     }
 
     // ---- The nucleus ----------------------------------------------------------------

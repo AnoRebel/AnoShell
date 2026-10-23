@@ -63,6 +63,15 @@ the countdown, the spectrum). Weather uses the bar's city (or the one the
 bar's weather found) with Open-Meteo, in °F when the bar uses US units.
 Activity data is kept in `~/.local/state/anoshell/activity.json`.
 
+Cost: the organisms move (their motion encodes a live value), and every
+frame redraws the whole widget layer. Their motion is stepped at
+`widgets.fps` (15 by default, Settings → Modules → Desktop widgets), not
+at the display's rate. Measured on this laptop, a page with the system
+organisms still costs about 9–12% of a core and the media/network page
+about 7% (pages without them stay near 0%). Some of
+their animations still run at the display's rate and need the same
+treatment.
+
 Known limits: the media band is mono (both halves show the same spectrum);
 the vitals GPU ring needs an AMD card; cytoplasm groups processes by their
 ancestor (window pids aren't exposed yet); the note's default file is

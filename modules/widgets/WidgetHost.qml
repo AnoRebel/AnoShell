@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -24,6 +25,8 @@ Item {
     property var grid
     property bool editing: false
     signal openSettings(var host)
+    // Where it takes input (the layer's mask collects these).
+    readonly property Region region: Region { item: host }
 
     readonly property var entry: Widgets.entries[host.placed?.id ?? ""] ?? null
     readonly property var problems: Widgets.errorsOf(host.placed?.id ?? "")
