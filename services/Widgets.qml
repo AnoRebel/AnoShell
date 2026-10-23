@@ -197,6 +197,36 @@ Singleton {
         const l = root.layoutOf(screenName)
         root._save(screenName, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) })
     }
+    // Moves/resizes a placed widget if the spot is inside the grid and free
+    // (and the size within the manifest's minimum); false otherwise.
+    function place(screenName: string, uid: string, x: int, y: int, w: int, h: int, cols: int, rows: int): bool {
+        const l = root.layoutOf(screenName)
+        const page = l.pages[l.page]
+        const me = page.find(o => o.uid === uid)
+        if (!me) return false
+        const min = root.entries[me.id]?.minSize ?? { w: 1, h: 1 }
+        if (w < min.w || h < min.h || x < 0 || y < 0 || x + w > cols || y + h > rows) return false
+        const others = page.filter(o => o.uid !== uid)
+        if (others.some(o => x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y)) return false
+        if (me.x === x && me.y === y && me.w === w && me.h === h) return true
+        const pages = l.pages.slice()
+        pages[l.page] = page.map(o => o.uid === uid ? Object.assign({}, o, { x, y, w, h }) : o)
+        root._save(screenName, { page: l.page, pages })
+        return true
+    }
+    function setSetting(screenName: string, uid: string, key: string, value): void {
+        const l = root.layoutOf(screenName)
+        root._save(screenName, { page: l.page, pages: l.pages.map(p => p.map(o => {
+            if (o.uid !== uid) return o
+            const settings = Object.assign({}, o.settings ?? {}); settings[key] = value
+            return Object.assign({}, o, { settings })
+        })) })
+    }
+
+    // Edit mode (the layers go above windows and show handles): from IPC,
+    // Settings, or a widget's right-click menu.
+    property bool editing: false
+
     function freeSpot(page, w: int, h: int, cols: int, rows: int): var {
         const taken = (x, y) => page.some(o => x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y)
         for (let y = 0; y + h <= rows; y++)
@@ -217,5 +247,7 @@ Singleton {
         function next(): void { root.pageRequest(CompositorService.focusedMonitorName, 1) }
         function prev(): void { root.pageRequest(CompositorService.focusedMonitorName, -1) }
         function page(n: int): void { root.setPage(CompositorService.focusedMonitorName, n - 1) }
+        function edit(): void { if (Config.options?.widgets?.enable) root.editing = true }
+        function done(): void { root.editing = false }
     }
 }

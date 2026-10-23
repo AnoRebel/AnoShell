@@ -62,6 +62,16 @@ SettingsCard {
     }
 
     ConfigRow {
+        label: "Arrange"
+        sublabel: "Move, resize and remove widgets on the desktop, add pages, change a widget's settings · or right-click a widget · qs ipc call widgets edit"
+        enabled: card.on
+        RippleButton {
+            implicitHeight: 32
+            buttonText: "Edit on the desktop"
+            onClicked: { GlobalStates.settingsOpen = false; Widgets.editing = true }
+        }
+    }
+    ConfigRow {
         label: "Screen"
         visible: Quickshell.screens.length > 1
         ChoiceRow {

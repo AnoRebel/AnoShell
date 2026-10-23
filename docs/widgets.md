@@ -7,7 +7,7 @@ widget code runs.
 
 ## Using them
 
-- **Add**: the Desktop widgets card lists every widget (the bundled ones and
+- **Add**: in edit mode (below), or the Desktop widgets card, which lists every widget (the bundled ones and
   yours) with **Add**, which puts it on the shown page of the chosen screen at
   the first free spot. A widget that's broken is listed with its error and
   can't be added.
@@ -44,9 +44,22 @@ tiled windows are); the window hides them, but their timers keep running.
 | Calendar | the month with your events and holidays | |
 
 The to-do and timer widgets keep their service running while they're placed,
-even with the sidebar's to-do or Pomodoro turned off. Until edit mode lands,
-per-widget settings are set in `widgets.screens` (the `settings` of each
-placed widget).
+even with the sidebar's to-do or Pomodoro turned off.
+
+## Edit mode
+
+Right-click a widget, press **Edit on the desktop** in Settings, or run
+`qs ipc call widgets edit`. The layer comes above your windows and shows the
+grid:
+
+- drag a card to move it, its corner to resize it; it snaps to whole cells
+  when you let go, and springs back if the spot is outside the grid or taken
+  (or smaller than the widget's `minSize`);
+- **×** removes it, **⚙** opens its settings (from its manifest);
+- the toolbar adds a widget (at the first free spot), adds or removes a page,
+  and **Done** leaves; so does Escape (or `qs ipc call widgets done`).
+
+Everything is saved as you go, per screen, in `widgets.screens`.
 
 ## Making a widget
 

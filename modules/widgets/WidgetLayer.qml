@@ -38,9 +38,11 @@ Scope {
             screen: modelData
             readonly property string screenName: modelData.name
 
-            WlrLayershell.layer: WlrLayer.Bottom
+            // Edit mode: above windows, with the keyboard (Escape leaves).
+            readonly property bool editing: Widgets.editing
+            WlrLayershell.layer: win.editing ? WlrLayer.Top : WlrLayer.Bottom
             WlrLayershell.namespace: "quickshell:widgets"
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: win.editing ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Normal
             exclusiveZone: 0
             anchors { top: true; bottom: true; left: true; right: true }
@@ -63,6 +65,9 @@ Scope {
 
             Component.onCompleted: { Widgets.hold(true); Widgets.setGrid(win.screenName, win.cols, win.rows); slotA.page = win.configPage; win.shownPage = win.configPage }
             Component.onDestruction: Widgets.hold(false)
+
+            readonly property var grid: ({ originX: win.originX, originY: win.originY, step: win.cell + win.gap, gap: win.gap,
+                                           cols: win.cols, rows: win.rows, screenName: win.screenName })
 
             // What widgets get: whether to run, and where they are.
             readonly property QtObject ctx: QtObject {
@@ -107,7 +112,7 @@ Scope {
                 DragHandler {
                     target: null
                     xAxis.enabled: true; yAxis.enabled: false
-                    enabled: win.pageCount > 1
+                    enabled: win.pageCount > 1 && !win.editing
                     property real dx: 0
                     onTranslationChanged: if (active) dx = translation.x
                     onActiveChanged: if (!active) { if (Math.abs(dx) > 80) win.go(win.shownPage + (dx < 0 ? 1 : -1)); dx = 0 }
@@ -120,6 +125,28 @@ Scope {
                     onWheel: event => {
                         acc += event.angleDelta.x
                         if (Math.abs(acc) > 240) { win.go(win.shownPage + (acc < 0 ? 1 : -1)); acc = 0 }
+                    }
+                }
+
+                // Edit mode: the cells.
+                Loader {
+                    anchors.fill: parent
+                    active: win.editing
+                    sourceComponent: Item {
+                        Rectangle { anchors.fill: parent; color: Qt.rgba(0, 0, 0, 0.25) }
+                        Repeater {
+                            model: win.cols * win.rows
+                            Rectangle {
+                                required property int index
+                                x: win.originX + (index % win.cols) * win.grid.step
+                                y: win.originY + Math.floor(index / win.cols) * win.grid.step
+                                width: win.cell; height: win.cell
+                                radius: Appearance.rounding.small
+                                color: "transparent"
+                                border.width: 1
+                                border.color: Qt.rgba(1, 1, 1, 0.14)
+                            }
+                        }
                     }
                 }
 
@@ -144,10 +171,9 @@ Scope {
                         required property var modelData
                         placed: modelData
                         ctx: win.ctx
-                        x: win.originX + modelData.x * (win.cell + win.gap)
-                        y: win.originY + modelData.y * (win.cell + win.gap)
-                        width: modelData.w * (win.cell + win.gap) - win.gap
-                        height: modelData.h * (win.cell + win.gap) - win.gap
+                        grid: win.grid
+                        editing: win.editing
+                        onOpenSettings: h => settingsPanel.host = h
                     }
                 }
             }
@@ -185,8 +211,131 @@ Scope {
                 contentItem: MaterialSymbol { text: parent.glyph; iconSize: 24; horizontalAlignment: Text.AlignHCenter; color: Appearance.colors.colOnLayer1 }
             }
 
-            // Input only where something is: the widgets of the shown page and the controls.
-            mask: Region {
+            // ── Edit mode: toolbar, the widget list, a widget's settings ──
+            onEditingChanged: if (!win.editing) { settingsPanel.host = null; addList.open = false }
+            // Escape: the open panel first, then edit mode. A window-level
+            // shortcut, so it works wherever focus is inside the layer.
+            Shortcut {
+                sequence: "Escape"
+                enabled: win.editing
+                context: Qt.WindowShortcut
+                onActivated: {
+                    if (settingsPanel.host) settingsPanel.host = null
+                    else if (addList.open) addList.open = false
+                    else Widgets.editing = false
+                }
+            }
+            SurfaceMaterial {
+                id: toolbar
+                visible: win.editing
+                surface: "widget"
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: 8
+                radius: Appearance.rounding.full
+                color: Appearance.colors.colLayer1
+                textColor: Appearance.colors.colOnLayer1
+                width: tools.implicitWidth + 16; height: tools.implicitHeight + 12
+                Row {
+                    id: tools
+                    anchors.centerIn: parent
+                    spacing: 4
+                    ToolButton { glyph: "add"; label: "Add widget"; onClicked: addList.open = !addList.open }
+                    ToolButton { glyph: "note_add"; label: "Add page"; onClicked: Widgets.addPage(win.screenName) }
+                    ToolButton { glyph: "delete"; label: "Remove page"; onClicked: Widgets.removePage(win.screenName, win.shownPage) }
+                    ToolButton { glyph: "check"; label: "Done"; onClicked: Widgets.editing = false }
+                }
+            }
+            component ToolButton: RippleButton {
+                id: tbtn
+                property string glyph
+                property string label
+                implicitHeight: 34
+                implicitWidth: tb.implicitWidth + 24
+                buttonRadius: 17
+                contentItem: Item {
+                    Row {
+                        id: tb
+                        anchors.centerIn: parent
+                        spacing: 6
+                        MaterialSymbol { anchors.verticalCenter: parent.verticalCenter; text: tbtn.glyph; iconSize: 18; color: Appearance.colors.colOnLayer1 }
+                        StyledText { anchors.verticalCenter: parent.verticalCenter; text: tbtn.label }
+                    }
+                }
+            }
+            SurfaceMaterial {
+                id: addList
+                property bool open: false
+                property string message: ""
+                visible: win.editing && open
+                surface: "widget"
+                anchors.top: toolbar.bottom
+                anchors.topMargin: 8
+                anchors.horizontalCenter: parent.horizontalCenter
+                radius: Appearance.rounding.large
+                color: Appearance.colors.colLayer1
+                textColor: Appearance.colors.colOnLayer1
+                width: 360
+                height: Math.min(win.height - 140, addCol.implicitHeight + 16)
+                Flickable {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    contentHeight: addCol.implicitHeight
+                    clip: true
+                    Column {
+                        id: addCol
+                        width: parent.width
+                        spacing: 2
+                        Repeater {
+                            model: Widgets.list
+                            RippleButton {
+                                id: pick
+                                required property var modelData
+                                readonly property var problems: Widgets.errorsOf(modelData.id)
+                                width: addCol.width
+                                implicitHeight: pickCol.implicitHeight + 12
+                                enabled: pick.problems.length === 0
+                                onClicked: {
+                                    addList.message = Widgets.add(win.screenName, modelData.id, win.cols, win.rows) ? "" : `No room for ${modelData.name} on this page`
+                                    if (!addList.message) addList.open = false
+                                }
+                                contentItem: Column {
+                                    id: pickCol
+                                    leftPadding: 8; rightPadding: 8
+                                    StyledText { text: `${pick.modelData.name} · ${pick.modelData.size.w}×${pick.modelData.size.h}`; font.weight: Font.Medium }
+                                    StyledText {
+                                        width: addCol.width - 16; wrapMode: Text.Wrap
+                                        text: pick.problems.length ? pick.problems.join("; ") : pick.modelData.description
+                                        color: pick.problems.length ? Appearance.colors.colError : Appearance.colors.colSubtext
+                                        font.pixelSize: Appearance.font.pixelSize.smaller
+                                    }
+                                }
+                            }
+                        }
+                        StyledText {
+                            visible: addList.message.length > 0
+                            text: addList.message; color: Appearance.colors.colError
+                            leftPadding: 8; font.pixelSize: Appearance.font.pixelSize.smaller
+                        }
+                    }
+                }
+            }
+            WidgetSettings {
+                id: settingsPanel
+                host: null
+                visible: win.editing && !!host
+                // beside the widget, kept on screen
+                x: !host ? 0 : Math.max(8, Math.min(win.width - width - 8, host.x + host.width + 12 > win.width - width ? host.x - width - 12 : host.x + host.width + 12))
+                y: !host ? 0 : Math.max(8, Math.min(win.height - height - 8, host.y))
+                onClosed: settingsPanel.host = null
+            }
+
+            // Input only where something is: the widgets of the shown page and
+            // the controls; all of it while editing.
+            mask: win.editing ? everything : someRegion
+            Region { id: everything; item: pages }
+            Region {
+                id: someRegion
                 regions: {
                     const items = slotA.hosts.concat(slotB.hosts)
                     if (win.pageCount > 1) items.push(dots, leftArrow, rightArrow)
