@@ -9,6 +9,7 @@ Item {
     OrganismFrame {
         ctx: root.ctx
         settings: root.settings
+        design: Qt.size(2, 4)
         body: Component { OsmosisOrganism {} }
     }
 }

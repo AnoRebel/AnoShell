@@ -9,6 +9,7 @@ Item {
     OrganismFrame {
         ctx: root.ctx
         settings: root.settings
+        design: Qt.size(4, 2)
         body: Component { AdiposeOrganism {} }
     }
 }

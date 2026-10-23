@@ -9,6 +9,7 @@ Item {
     OrganismFrame {
         ctx: root.ctx
         settings: root.settings
+        design: Qt.size(4, 4)
         body: Component { CalendarOrganism {} }
     }
 }
