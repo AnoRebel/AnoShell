@@ -77,6 +77,33 @@ the vitals GPU ring needs an AMD card; cytoplasm groups processes by their
 ancestor (window pids aren't exposed yet); the note's default file is
 `~/notes.md`.
 
+## Resource use
+
+Measured with `scripts/dev/budget.sh` (average CPU of one core over the
+window, after the shell has settled) on the reference laptop (i7, Intel
+graphics, 1920×1200 at 1.5 and 1920×1080), Liquid look, `widgets.fps` 15.
+The shell idles at about 0.1% with widgets off. Memory: the widget layer
+and registry add about 50 MB with a page of widgets; each widget adds a few MB.
+
+| What's shown | CPU |
+|---|---|
+| Widgets on, AnoShell's clock only | 0.0% |
+| AnoShell's clock + a user package | 0.1% |
+| Bioma page: clock, weather, lava, vitals, nucleus, photoperiod, adipose | ~12% (19% before the frame-rate cap) |
+| Bioma page: media, calendar, osmosis, cytoplasm | ~7% (21% before) |
+| Bioma page: agenda, vacuole | 0.25% |
+| Bioma page: sediment, rings | 0.0–0.07% |
+| Bioma note | 0.08% |
+
+Still (no motion of their own): AnoShell's clock, profile, weather, to-do,
+calendar, timer when stopped, and the Bioma agenda, sediment, rings, note,
+weather and photoperiod. Moving, so they cost CPU while the desktop is
+visible: the Bioma lava, osmosis, cytoplasm, nucleus, vacuole and vitals
+(their motion is the value), the Bioma clock's second hand, and the media
+band while something plays. Everything pauses under a maximised window or
+the lock screen. Per-widget figures for the moving ones aren't measured
+one by one yet: the measurement needs ~40 s per widget after a restart.
+
 ## Edit mode
 
 Right-click a widget, press **Edit on the desktop** in Settings, or run
