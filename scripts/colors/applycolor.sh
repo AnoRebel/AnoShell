@@ -75,8 +75,8 @@ secondary=$(_col '.secondary' '.colors.color2' '#ccc2dc')
 tertiary=$(_col '.tertiary' '.colors.color5' '#efb8c8')
 error=$(_col '.error' '.colors.color1' '#f2b8b5')
 
-# Qt: appearance.theme.qt in the shell config. "palette" (default): the
-# Fusion style on qt5ct/qt6ct's palette, which running apps pick up live;
+# Qt: appearance.theme.qt in the shell config. "palette" (default): Breeze
+# (or Fusion without it) on qt5ct/qt6ct's palette, which running apps pick up live;
 # "kvantum": a recoloured Kvantum theme, which apps read when they start
 # (Kvantum draws from an SVG with its colours baked in, so it can't follow a
 # palette live); "off": Qt is left alone.
@@ -298,11 +298,19 @@ apply_qt() {
         printf '[ColorScheme]\nactive_colors=%s\ndisabled_colors=%s\ninactive_colors=%s\n' \
             "$active" "$disabled" "$active" > "$dir/colors/anoshell.conf"
         [[ -f "$dir/$tool.conf" ]] || printf '[Appearance]\nicon_theme=Papirus-Dark\nstandard_dialogs=default\n' > "$dir/$tool.conf"
-        # palette: a style you set that draws with the palette (Breeze, …) is
-        # kept; only Kvantum, which doesn't, or none becomes Fusion
+        # palette: a style you set that draws with the palette is kept; Kvantum,
+        # which doesn't, or none becomes Breeze when it's installed for this
+        # Qt (breeze6.so / breeze5.so), else Fusion
         local want="$style" cur
         cur=$(sed -n 's/^style=//p' "$dir/$tool.conf" | head -n1)
-        [[ "$QT_MODE" == palette && -n "$cur" && "${cur,,}" != kvantum ]] && want="$cur"
+        if [[ "$QT_MODE" == palette ]]; then
+            if [[ -n "$cur" && "${cur,,}" != kvantum ]]; then
+                want="$cur"
+            elif compgen -G "/usr/lib/qt${tool:2:1}/plugins/styles/breeze*.so" >/dev/null \
+                || compgen -G "/usr/lib/qt/plugins/styles/breeze${tool:2:1}.so" >/dev/null; then
+                want="Breeze"
+            fi
+        fi
         _qt_point "$dir" "$dir/colors/anoshell.conf" "$want"
         log "Wrote the $tool palette (style: $want)"
     done

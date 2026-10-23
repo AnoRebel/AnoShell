@@ -362,7 +362,7 @@ ColumnLayout {
             configKey: "appearance.theme.qt"
             visible: appearanceRoot.materialYou
             sublabel: (Config.options?.appearance?.theme?.qt ?? "palette") === "palette"
-                ? "Fusion style on the palette: open apps change colour with the wallpaper (needs qt6ct)"
+                ? "Breeze (or Fusion) on the palette: open apps change colour with the wallpaper (needs qt6ct)"
                 : (Config.options?.appearance?.theme?.qt ?? "palette") === "kvantum"
                 ? "Kvantum's shapes, palette colours for text and backgrounds: apps get them when they next start (needs qt6ct and Kvantum)"
                 : "Qt apps are left alone"

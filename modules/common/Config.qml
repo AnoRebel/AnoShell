@@ -735,7 +735,7 @@ Singleton {
                     // ~/.config/gtk-{3,4}.0/gtk.css (libadwaita colours); off removes it.
                     property bool gtk: true
                     // Qt apps (scripts/colors/applycolor.sh, via qt5ct/qt6ct): "palette"
-                    // (Fusion on qt6ct's palette: running apps follow live), "kvantum"
+                    // (Breeze, else Fusion, on qt6ct's palette: running apps follow live), "kvantum"
                     // (a recoloured Kvantum theme, read when an app starts) or "off".
                     property string qt: "palette"
                     // Light/dark for your apps (GTK color-scheme, portal-aware Qt apps):
