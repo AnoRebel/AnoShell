@@ -32,7 +32,14 @@ GenericBackend {
     fullscreenOutputs: root._tree ? SwayModel.fullscreen(root._tree) : ({})
     // Sway has no maximised state: only fullscreen covers an output.
     coveredOutputs: root.fullscreenOutputs
-    windows: root.windowLeases > 0 && root._tree ? SwayModel.windows(root._tree) : []
+    // A workspace without a leading number has num -1 in the tree: number
+    // the windows like the workspace list does (by name, from ext-workspace).
+    windows: {
+        if (root.windowLeases === 0 || !root._tree) return []
+        const numOf = {}
+        for (const e of root._sets) numOf[e.set.name] = e.number
+        return SwayModel.windows(root._tree).map(w => Object.assign({}, w, { workspace: numOf[w.workspaceName] ?? w.workspace }))
+    }
 
     property bool _treeAgain: false
     property var _treeProc: Process {
@@ -48,7 +55,9 @@ GenericBackend {
         }
         onExited: if (root._treeAgain) { root._treeAgain = false; running = true }
     }
-    // Bursts of events (a window opening sends several) make one request.
+    // Bursts of events (a window opening sends several) make one request,
+    // 50 ms after the first: a trailing debounce never fired while a title
+    // kept changing.
     property var _treeTimer: Timer {
         interval: 50
         onTriggered: { if (root._treeProc.running) root._treeAgain = true; else root._treeProc.running = true }
@@ -76,7 +85,15 @@ GenericBackend {
                 const l = SwayModel.layoutsFromEvent(data)
                 if (l) root._setLayouts(l)
                 else if (data?.change === "added" || data?.change === "removed") root._inputsProc.running = true
-            } else root._treeTimer.restart()
+            } else {
+                // Titles only matter to the window list.
+                if (event.type === "window" && root.windowLeases === 0) {
+                    let change = ""
+                    try { change = JSON.parse(event.data).change } catch (e) {}
+                    if (change === "title") return
+                }
+                if (!root._treeTimer.running) root._treeTimer.start()
+            }
         }
     }
     Component.onCompleted: { root._treeProc.running = true; root._inputsProc.running = true }
@@ -84,13 +101,26 @@ GenericBackend {
     // ── Actions ──────────────────────────────────────────────────────────
     function _run(cmd) { I3.dispatch(cmd); return true }
     // Sway numbers workspaces globally; `outputName` doesn't change the number.
-    function focusWorkspace(number, outputName) { return root._run(`workspace number ${Math.round(number)}`) }
+    // Through the workspace's ext-workspace handle (a named workspace has no
+    // number sway would know); `workspace number N` when there is none.
+    function focusWorkspace(number, outputName) {
+        const n = Math.round(number)
+        const e = root._sets.find(s => s.number === n && (!outputName || s.output === outputName)) ?? root._sets.find(s => s.number === n)
+        if (e) { e.set.activate(); return true }
+        return root._run(`workspace number ${n}`)
+    }
     function focusWorkspaceRelative(delta) { return root._run(delta < 0 ? "workspace prev_on_output" : "workspace next_on_output") }
     function exit() { return root._run("exit") }
     function powerOffMonitors() { return root._run("output * power off") }
     function powerOnMonitors() { return root._run("output * power on") }
     function setOuterGaps(px) { return root._run(`gaps outer all set ${Math.max(0, Math.round(px))}`) }
     function switchKeyboardLayout(delta) { return root._run(`input type:keyboard xkb_switch_layout ${delta < 0 ? "prev" : "next"}`) }
+    // From the last tree (refreshed on focus changes); layout coordinates.
+    function focusedWindowGeometry(cb) {
+        const w = root._tree ? SwayModel.windows(root._tree).find(w => w.focused) : null
+        cb(w ? { x: w.x, y: w.y, width: w.width, height: w.height } : null)
+        return true
+    }
     function focusWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] focus`) : false }
     function closeWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] kill`) : false }
 }

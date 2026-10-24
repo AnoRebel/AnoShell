@@ -97,6 +97,47 @@ func have(bin string) bool {
 	return false
 }
 
+// experimentalBackend picks sway, mango or labwc in CompositorService's
+// order: the desktop name, then the session's own variables, SWAYSOCK last
+// (sway exports it, and labwc LABWC_PID, to the activation environment, so a
+// later session of another compositor can inherit them).
+func experimentalBackend() (name, bin string) {
+	label := map[string][2]string{
+		"sway":  {"sway (experimental)", "swaymsg"}, // tree and keyboard layouts
+		"mango": {"mango (experimental)", ""},       // its socket; no binary needed
+		"labwc": {"labwc (experimental)", "labwc"},  // labwc --exit
+	}
+	pick := ""
+	for _, d := range []string{"sway", "mango", "labwc"} {
+		if desktopIs(d) {
+			pick = d
+			break
+		}
+	}
+	switch {
+	case pick != "":
+	case os.Getenv("MANGO_INSTANCE_SIGNATURE") != "":
+		pick = "mango"
+	case os.Getenv("LABWC_PID") != "":
+		pick = "labwc"
+	case os.Getenv("SWAYSOCK") != "":
+		pick = "sway"
+	default:
+		return "generic (experimental)", ""
+	}
+	return label[pick][0], label[pick][1]
+}
+
+// desktopIs reports whether XDG_CURRENT_DESKTOP (colon-separated) names d.
+func desktopIs(d string) bool {
+	for _, x := range strings.Split(strings.ToLower(os.Getenv("XDG_CURRENT_DESKTOP")), ":") {
+		if x == d {
+			return true
+		}
+	}
+	return false
+}
+
 func runChecks() []check {
 	var out []check
 	add := func(level, name, format string, a ...any) {
@@ -110,13 +151,8 @@ func runChecks() []check {
 		comp, compBin = "hyprland", "hyprctl"
 	case os.Getenv("NIRI_SOCKET") != "":
 		comp, compBin = "niri", "niri"
-	// Experimental backends (services/compositor/BackendContract.md).
-	case os.Getenv("SWAYSOCK") != "":
-		comp, compBin = "sway (experimental)", "swaymsg" // tree and keyboard layouts
-	case os.Getenv("MANGO_INSTANCE_SIGNATURE") != "":
-		comp = "mango (experimental)" // its socket; no binary needed
-	case os.Getenv("LABWC_PID") != "":
-		comp, compBin = "labwc (experimental)", "labwc" // labwc --exit
+	default:
+		comp, compBin = experimentalBackend()
 	}
 	add("info", "compositor", "%s", comp)
 	for _, b := range []string{"qs", compBin} {

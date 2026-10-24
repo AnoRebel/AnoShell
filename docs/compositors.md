@@ -14,6 +14,11 @@ backend from the session, or from `compositor.backend` when you force one
 | `labwc` | `LABWC_PID` | experimental |
 | `generic` | anything else | experimental |
 
+When several of the experimental backends' variables are set, a matching
+`XDG_CURRENT_DESKTOP` wins, then `MANGO_INSTANCE_SIGNATURE`, `LABWC_PID`
+and `SWAYSOCK` last (sway exports it, and labwc `LABWC_PID`, to the
+systemd/D-Bus activation environment, where a later session can inherit it).
+
 An experimental backend shows a badge in Settings and in `ano doctor`. It
 has workspaces, the focused output, fullscreen detection and window
 focus/close, but not everything Hyprland and niri have: no blur rules,
@@ -38,8 +43,11 @@ Written against sway 1.12 ([sway-ipc(7)](https://github.com/swaywm/sway/blob/1.1
   `swaymsg -t get_tree`, and keyboard layouts from `swaymsg -t get_inputs`,
   refreshed on window, workspace and input events. Needs `swaymsg` (part of
   sway).
-- Sway numbers workspaces across outputs, like Hyprland. It has no maximised
-  state, so only fullscreen hides the bar.
+- Sway numbers workspaces across outputs, like Hyprland. A workspace without
+  a leading number gets its place in the list; switching goes through its
+  ext-workspace handle, so it lands on the right one. Sway has no maximised
+  state, so only fullscreen (a window's, a container's, or a global one,
+  which covers every output) hides the bar.
 
 ## Mango
 
@@ -58,7 +66,8 @@ Written against mango 0.18.3 ([IPC](https://mangowm.github.io/docs/ipc/),
   `viewtoleft`/`viewtoright`, `quit`, `sleep_monitor`/`wakeup_monitor`
   per monitor, `switch_keyboard_layout` (forward only: mango's IPC doesn't
   list the layouts), `focusid` and `killclient` with `client,<id>`.
-- Fullscreen and maximised clients come from the client list.
+- Fullscreen and maximised clients come from the client list. With two tags
+  shown on a monitor, its windows count as on the first.
 
 ## labwc
 

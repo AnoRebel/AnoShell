@@ -37,13 +37,26 @@ function occupied(tree) {
     return out
 }
 
-// Output name → true when the workspace it shows has a fullscreen window
-// (fullscreen_mode 1, the workspace, or 2, global).
+// Every container under a node (split containers included), depth first.
+function _cons(node, out) {
+    for (const child of (node.nodes || []).concat(node.floating_nodes || [])) {
+        if (child.type === "con" || child.type === "floating_con") out.push(child)
+        _cons(child, out)
+    }
+    return out
+}
+
+// Output name → true when the workspace it shows has a fullscreen container
+// (fullscreen_mode 1, the workspace, on a window or a parent container); a
+// global one (mode 2) covers every output.
 function fullscreen(tree) {
     const out = {}
-    for (const e of _workspaces(tree)) {
+    const all = _workspaces(tree)
+    for (const e of all) {
         const shown = e.output.current_workspace === undefined || e.output.current_workspace === e.workspace.name
-        if (shown && _windows(e.workspace, []).some(w => (w.fullscreen_mode || 0) > 0)) out[e.output.name] = true
+        const modes = _cons(e.workspace, []).map(c => c.fullscreen_mode || 0)
+        if (modes.some(m => m === 2)) { for (const o of all) out[o.output.name] = true; continue }
+        if (shown && modes.some(m => m === 1)) out[e.output.name] = true
     }
     return out
 }
@@ -59,6 +72,7 @@ function windows(tree) {
                 key: String(w.id), id: w.id, title: w.name || "",
                 appId: w.app_id || (w.window_properties && w.window_properties.class) || "",
                 workspace: e.workspace.num !== undefined && e.workspace.num >= 0 ? e.workspace.num : 0,
+                workspaceName: e.workspace.name,
                 output: e.output.name, x: r.x || 0, y: r.y || 0, width: r.width || 0, height: r.height || 0,
                 focused: !!w.focused, floating: floating.has(w.id), fullscreen: (w.fullscreen_mode || 0) > 0
             })

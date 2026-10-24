@@ -31,7 +31,8 @@ function focusedOutput(monitors) {
     return m ? m.name : ""
 }
 
-// The active XKB layout as mango reports it (abbreviated).
+// The active XKB layout as mango reports it: its full name
+// (xkb_keymap_layout_get_name, e.g. "English (US)").
 function keyboardLayout(monitors) {
     const m = (monitors || []).find(m => m.active) || (monitors || [])[0]
     return m && m.keyboardlayout ? m.keyboardlayout : ""
@@ -52,10 +53,19 @@ function covered(clients) {
 }
 
 // The contract's window list; ids are mango client ids (`client,<id>`).
-function windows(clients) {
+// A window has one workspace in the contract: a shown one reports the tag
+// its monitor shows first (the one the shell treats as active there), so a
+// window on the second of two shown tags isn't left out of that output.
+function windows(clients, monitors) {
+    const shownTag = {}
+    for (const m of monitors || []) {
+        const t = (m.tags || []).find(t => t.is_active)
+        if (t) shownTag[m.name] = t.index
+    }
     return (clients || []).filter(c => !c.is_scratchpad || c.is_visible).map(c => ({
         key: String(c.id), id: c.id, title: c.title || "", appId: c.appid || "",
-        workspace: (c.tags || []).find(t => t > 0) || 0, output: c.monitor || "",
+        workspace: (c.is_visible && shownTag[c.monitor]) || (c.tags || []).find(t => t > 0) || 0,
+        output: c.monitor || "",
         x: c.x || 0, y: c.y || 0, width: c.width || 0, height: c.height || 0,
         focused: !!c.is_focused, floating: !!c.is_floating, fullscreen: !!c.is_fullscreen
     }))

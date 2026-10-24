@@ -10,8 +10,9 @@ import qs.services
  * Screenshots: region, window or screen, now or after a delay, written to a
  * temp file (the preview card copies, saves or edits it from there).
  *
- *   Hyprland (and other wlroots-likes): slurp + grim; the window comes from
- *     hyprctl activewindow.
+ *   Hyprland (and other wlroots-likes): slurp + grim; the window's geometry
+ *     comes from the compositor backend (Hyprland, sway, mango; not on the
+ *     generic and labwc backends).
  *   niri: its own actions (screenshot / screenshot-window / screenshot-screen
  *     --path); the region is niri's interactive screenshot UI.
  *
@@ -64,8 +65,14 @@ Singleton {
             shot.exec({ command: ["bash", "-c", root._mk + 'niri msg action "$ACT" --path "$OUT"'],
                 environment: ({ DIR: root.dir, ACT: act, OUT: root._out }) })
         } else if (root._mode === "window") {
-            if (CompositorService.compositor !== "hyprland") { root._finish(1); return } // the focused window comes from hyprctl
-            winQuery.running = true // geometry first, then grim
+            // Geometry first (the backend's focused window), then grim.
+            const asked = CompositorService.focusedWindowGeometry(w => {
+                if (!w || !(w.width > 0) || !(w.height > 0)) { root._finish(1); return }
+                const g = `${Math.round(w.x)},${Math.round(w.y)} ${Math.round(w.width)}x${Math.round(w.height)}`
+                shot.exec({ command: ["bash", "-c", root._mk + 'grim -g "$G" "$OUT"'],
+                    environment: ({ DIR: root.dir, OUT: root._out, G: g }) })
+            })
+            if (!asked) root._finish(1) // this backend can't say which window is focused
         } else if (root._mode === "region") {
             shot.exec({ command: ["bash", "-c", root._mk + 'g=$(slurp) && grim -g "$g" "$OUT"'],
                 environment: ({ DIR: root.dir, OUT: root._out }) })
@@ -73,25 +80,6 @@ Singleton {
             const output = CompositorService.focusedMonitorName
             shot.exec({ command: ["bash", "-c", root._mk + 'if [ -n "$MON" ]; then grim -o "$MON" "$OUT"; else grim "$OUT"; fi'],
                 environment: ({ DIR: root.dir, OUT: root._out, MON: output }) })
-        }
-    }
-
-    // Hyprland's focused window, in layout coordinates (what grim -g takes).
-    Process {
-        id: winQuery
-        command: ["hyprctl", "activewindow", "-j"]
-        onExited: code => { if (code !== 0) root._finish(code) } // never left busy
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let g = ""
-                try {
-                    const w = JSON.parse(text)
-                    if (w?.at && w?.size) g = `${Math.round(w.at[0])},${Math.round(w.at[1])} ${Math.round(w.size[0])}x${Math.round(w.size[1])}`
-                } catch (e) {}
-                if (!g) { root._finish(1); return }
-                shot.exec({ command: ["bash", "-c", root._mk + 'grim -g "$G" "$OUT"'],
-                    environment: ({ DIR: root.dir, OUT: root._out, G: g }) })
-            }
         }
     }
 

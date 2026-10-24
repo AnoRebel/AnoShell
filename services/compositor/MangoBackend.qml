@@ -33,7 +33,7 @@ GenericBackend {
     workspaces: MangoModel.workspaces(root._monitors)
     fullscreenOutputs: MangoModel.fullscreen(root._clients)
     coveredOutputs: MangoModel.covered(root._clients)
-    windows: root.windowLeases > 0 ? MangoModel.windows(root._clients) : []
+    windows: root.windowLeases > 0 ? MangoModel.windows(root._clients, root._monitors) : []
     keyboardLayout: MangoModel.keyboardLayout(root._monitors)
 
     // ── Watches ──────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ GenericBackend {
         // A connect that fails outright never changes `connected`.
         onError: retry.restart()
         // A watch that drops (mango restarted, the socket went away) comes back.
-        property var retry: Timer { interval: 2000; onTriggered: if (root._socketPath) { watch.connected = false; watch.connected = true } }
+        property var retry: Timer { interval: 2000; onTriggered: if (root._socketPath && !watch.connected) { watch.connected = false; watch.connected = true } }
     }
     property var _monitorWatch: Watch {
         topic: "all-monitors"
@@ -121,6 +121,11 @@ GenericBackend {
     // ponytail: mango only cycles forward (switch_keyboard_layout takes an
     // index, but its IPC doesn't list the layouts); both directions go next.
     function switchKeyboardLayout(delta) { return root._dispatch("switch_keyboard_layout", []) }
+    function focusedWindowGeometry(cb) {
+        const w = MangoModel.windows(root._clients, root._monitors).find(w => w.focused)
+        cb(w ? { x: w.x, y: w.y, width: w.width, height: w.height } : null)
+        return true
+    }
     function focusWindowById(id) { return root._dispatch("focusid", [], id) }
     function closeWindowById(id) { return root._dispatch("killclient", [], id) }
 }

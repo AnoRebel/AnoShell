@@ -14,12 +14,12 @@ a(e1.focused && e1.active && e1.occupied, 'eDP-1 tag 1: shown on the selected mo
 a(h2.active && !h2.focused && h2.occupied, 'HDMI-A-1 tag 2: shown, not focused (monitor not selected)')
 a(h5.active && h5.urgent && !h5.occupied, 'two tags shown at once on HDMI-A-1; tag 5 urgent and empty')
 a(ws.find(w => w.id === 'eDP-1:3').occupied && !ws.find(w => w.id === 'eDP-1:3').active, 'hidden tag with a window counts as occupied')
-a(M.focusedOutput(mons) === 'eDP-1' && M.keyboardLayout(mons) === 'us', 'selected monitor and layout')
+a(M.focusedOutput(mons) === 'eDP-1' && M.keyboardLayout(mons) === 'English (US)', 'selected monitor and layout (full name)')
 
 const cl = M.parse(line('all-clients')).clients
 a(JSON.stringify(M.fullscreen(cl)) === '{"HDMI-A-1":true}', 'visible fullscreen client → its monitor')
 a(JSON.stringify(M.covered(cl)) === '{"HDMI-A-1":true}', 'a hidden maximised client covers nothing')
-const w = M.windows(cl)
+const w = M.windows(cl, mons)
 a(w.length === 4 && w.find(x => x.id === 4).focused && w.find(x => x.id === 9).fullscreen && w.find(x => x.id === 11).workspace === 3, 'windows')
 
 a(M.dispatchLine('view', [3]) === 'dispatch view,3\n', 'view a tag')
@@ -28,4 +28,8 @@ a(M.dispatchLine('focusid', [], 7) === 'dispatch focusid client,7\n', 'focus by 
 a(M.dispatchLine('view', ['1\ndispatch quit']) === null && M.dispatchLine('view', ['1,2']) === null, 'separators refused')
 a(M.dispatchLine('killclient', [], -1) === null, 'bad client id refused')
 a(M.parse('{"monitors":[') === null, 'partial line → null')
+// A visible window on the second shown tag (HDMI-A-1 shows 2 and 5) reports
+// the monitor's first shown tag, so per-output lists keep it.
+const cl5 = cl.concat([{ id: 12, title: 'x', appid: 'x', monitor: 'HDMI-A-1', tags: [5], is_visible: true }])
+a(M.windows(cl5, mons).find(x => x.id === 12).workspace === 2, 'window on a second shown tag')
 console.log('mango model ok')

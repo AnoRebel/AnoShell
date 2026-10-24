@@ -573,7 +573,7 @@
   "page": 1,
   "card": "",
   "label": "Force backend",
-  "sublabel": "auto, hyprland, niri or generic — auto detects from the session",
+  "sublabel": "auto, hyprland, niri, sway, mango, labwc or generic — auto detects from the session; sway, mango and labwc are experimental",
   "keys": [
    "compositor.backend"
   ]

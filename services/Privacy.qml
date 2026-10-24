@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 
@@ -103,11 +102,10 @@ Singleton {
     readonly property bool _castLive: Object.values(root._casts).some(c => !c.closing && root._now - c.since >= root.castDelay)
     // The captured monitor's name, for the tooltip ("" for a region).
     readonly property string _castTarget: Object.values(root._casts).find(c => !c.closing && c.owner === "monitor")?.name ?? ""
-    function _castEvent(data) {
-        // NAME (a window title) may hold commas.
-        const parts = data.split(","), key = parts.slice(1).join(","), m = Object.assign({}, root._casts)
-        if (parts[0] === "1") {
-            m[key] = m[key] ? Object.assign({}, m[key], { closing: false }) : { since: Date.now(), closing: false, owner: parts[1], name: parts.slice(2).join(",") }
+    function _castEvent(open, owner, name) {
+        const key = `${owner},${name}`, m = Object.assign({}, root._casts)
+        if (open) {
+            m[key] = m[key] ? Object.assign({}, m[key], { closing: false }) : { since: Date.now(), closing: false, owner: owner, name: name }
             castCheck.restart()
         } else if (m[key]) {
             m[key] = Object.assign({}, m[key], { closing: true, closedAt: Date.now() })
@@ -128,12 +126,11 @@ Singleton {
         }
     }
     Connections {
-        target: Hyprland
-        enabled: CompositorService.compositor === "hyprland"
+        target: CompositorService
         // Window captures are left out: the shell's own live thumbnails (pill
         // and bar previews, AnoView, the switcher) are window captures, and an
         // app sharing a window goes through the portal, which PipeWire shows.
-        function onRawEvent(event) { if (event.name === "screencastv2" && !event.data.startsWith("1,window,") && !event.data.startsWith("0,window,")) root._castEvent(event.data) }
+        function onScreencast(open, owner, name) { if (owner !== "window") root._castEvent(open, owner, name) }
     }
 
     IpcHandler {

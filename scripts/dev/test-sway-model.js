@@ -33,4 +33,13 @@ a(M.layoutsFromEvent({ change: 'libinput_config', input: { type: 'pointer' } }) 
 a(fx('event_workspace').change === 'init' && fx('event_window').change === 'new', 'event fixtures as documented')
 const ws = fx('get_workspaces')
 a(ws[0].num === 1 && ws[0].output === 'eDP-1' && ws[0].focused, 'GET_WORKSPACES example')
+// A fullscreened parent container counts; global fullscreen covers every output.
+const t3 = JSON.parse(JSON.stringify(tree))
+t3.nodes[1].nodes[0].nodes = [{ id: 9, type: 'con', fullscreen_mode: 1, nodes: t3.nodes[1].nodes[0].nodes, floating_nodes: [] }]
+a(JSON.stringify(M.fullscreen(t3)) === '{"eDP-1":true}', 'fullscreen parent container')
+const t4 = JSON.parse(JSON.stringify(tree))
+t4.nodes.push({ type: 'output', name: 'HDMI-A-1', current_workspace: '2', nodes: [{ type: 'workspace', name: '2', num: 2, nodes: [], floating_nodes: [] }], floating_nodes: [] })
+t4.nodes[1].nodes[0].nodes[0].fullscreen_mode = 2
+a(JSON.stringify(M.fullscreen(t4)) === '{"eDP-1":true,"HDMI-A-1":true}', 'global fullscreen covers every output')
+a(w.every(x => x.workspaceName === '1'), 'windows carry their workspace name')
 console.log('sway model ok')

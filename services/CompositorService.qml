@@ -101,9 +101,14 @@ Singleton {
         if (forced && forced !== "auto") return forced
         if (root.hyprlandSignature) return "hyprland"
         if (root.niriSocket) return "niri"
-        if (root.swaySocket) return "sway"
+        // The desktop name first: sway exports SWAYSOCK (and labwc LABWC_PID)
+        // into the systemd/D-Bus activation environment, so either can be
+        // inherited by a later session of another compositor.
+        const desktop = (Quickshell.env("XDG_CURRENT_DESKTOP") ?? "").toLowerCase().split(":")
+        for (const d of ["sway", "mango", "labwc"]) if (desktop.includes(d)) return d
         if (root.mangoSocket) return "mango"
         if (root.labwcPid) return "labwc"
+        if (root.swaySocket) return "sway"
         return "generic"
     }
 
@@ -166,6 +171,20 @@ Singleton {
     function setScreenShader(path) { return root.backend?.setScreenShader(path) ?? false }
     function setCursorZoom(factor) { return root.backend?.setCursorZoom(factor) ?? false }
     function switchKeyboardLayout(delta) { return root.backend?.switchKeyboardLayout(delta) ?? false }
+    // Space other clients reserve on an output's edges ([left, top, right,
+    // bottom]), or null where the backend can't tell (all but Hyprland).
+    function reservedOf(outputName) { return root.backend && root.backend.reservedOf ? root.backend.reservedOf(outputName) : null }
+    // The focused window in layout coordinates: cb({x, y, width, height} | null).
+    // False where the backend can't tell (cb is not called).
+    function focusedWindowGeometry(cb) { return root.backend && root.backend.focusedWindowGeometry ? root.backend.focusedWindowGeometry(cb) : false }
+    // A screen capture opened or closed (owner "monitor", "window", or a
+    // region); Hyprland only.
+    signal screencast(bool open, string owner, string name)
+    Connections {
+        target: root.backend
+        ignoreUnknownSignals: true
+        function onScreencast(open, owner, name) { root.screencast(open, owner, name) }
+    }
     Timer { id: ipcLeaseTimer; interval: 10000; onTriggered: root.releaseWindows("ipc") }
 
     // Read-only snapshot for scripts, tests and `ano doctor`.

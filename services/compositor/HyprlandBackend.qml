@@ -176,6 +176,16 @@ QtObject {
     // Extra events that only matter while windows are leased.
     readonly property var _windowEvents: ["activewindow", "activewindowv2", "windowtitle", "windowtitlev2",
         "changefloatingmode", "pin", "minimized"]
+    property var _layerSettle: Timer { interval: 300; onTriggered: root._request("j/monitors", data => { root.monitors = data }) }
+    // A capture opened (true) or closed: owner "monitor", "window" or a region.
+    signal screencast(bool open, string owner, string name)
+    // Space other layer clients reserve on an output: [left, top, right, bottom].
+    function reservedOf(outputName) { return root.monitors.find(m => m.name === outputName)?.reserved ?? null }
+    // The focused window in layout coordinates ({x, y, width, height}), or null.
+    function focusedWindowGeometry(cb) {
+        root._request("j/activewindow", w => cb(w?.at && w?.size ? { x: w.at[0], y: w.at[1], width: w.size[0], height: w.size[1] } : null))
+        return true
+    }
     property var _refreshTimer: Timer {
         interval: 50 // coalesce bursts of events into one round of requests
         onTriggered: root.refresh()
@@ -210,6 +220,14 @@ QtObject {
                 || (root.windowLeases > 0 && root._windowEvents.includes(event.name))) root._refreshTimer.restart()
             else if (event.name === "activelayout")
                 root.keyboardLayout = event.data.substring(event.data.indexOf(",") + 1)
+            // A layer's exclusive zone lands a commit after openlayer: re-read
+            // the monitors' reserved edges a moment later.
+            else if (event.name === "openlayer" || event.name === "closelayer") root._layerSettle.restart()
+            // screencastv2>>STATE,OWNER,NAME (NAME, a window title, may hold commas).
+            else if (event.name === "screencastv2") {
+                const parts = event.data.split(",")
+                root.screencast(parts[0] === "1", parts[1] ?? "", parts.slice(2).join(","))
+            }
             else if (event.name === "configreloaded")
                 root._refreshKeyboard()
         }

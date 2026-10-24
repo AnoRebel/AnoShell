@@ -4,7 +4,6 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 
 /**
@@ -167,23 +166,17 @@ Singleton {
         return n
     }
     /// Space other clients reserve on an edge (waybar, another panel): what
-    /// the compositor reserves beyond our own inset. Hyprland only; its
-    /// monitor `reserved` is [left, top, right, bottom], re-read whenever a
-    /// layer surface opens or closes.
-    /// ponytail: 0 on niri (no reserved-area IPC); surfaces there assume no foreign panels.
+    /// the compositor reserves beyond our own inset. Where the backend can
+    /// report it (Hyprland: the monitor's `reserved`, re-read after a layer
+    /// opens or closes); 0 elsewhere.
+    /// ponytail: 0 on niri and the experimental backends (no reserved-area
+    /// IPC); surfaces there assume no foreign panels.
     function foreignInset(screenName, edge) {
-        const r = Hyprland.monitors.values.find(m => m.name === screenName)?.lastIpcObject?.reserved
+        const r = CompositorService.reservedOf(screenName)
         if (!r) return 0
         const v = r[["left", "top", "right", "bottom"].indexOf(edge)] ?? 0
         return Math.max(0, v - root.inset(screenName, edge))
     }
-    Connections {
-        target: Hyprland
-        enabled: CompositorService.compositor === "hyprland"
-        function onRawEvent(event) { if (event.name === "openlayer" || event.name === "closelayer") layerSettle.restart() }
-    }
-    // The exclusive zone lands a commit after openlayer.
-    Timer { id: layerSettle; interval: 300; onTriggered: Hyprland.refreshMonitors() }
 
     /// Screen-space origin of a layer-shell window (Qt.point), for surfaces
     /// that map items to their window and need screen coordinates. Models the

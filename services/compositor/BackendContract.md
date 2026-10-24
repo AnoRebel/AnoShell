@@ -59,6 +59,9 @@ lives in `SwayModel.js` / `MangoModel.js`, tested with node
 | `setScreenShader(path)` | full-screen GLSL shader; `""` clears |
 | `applyOutputs(configs)` | `[{ name, width, height, rate, scale, x, y }]`, x/y `null` = auto; reads `outputs` (backend-native monitor objects) |
 | `switchKeyboardLayout(delta)` | |
+| `focusedWindowGeometry(cb)` | optional: `cb({x, y, width, height} \| null)` in layout coordinates; Hyprland, sway, mango |
+| `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland |
+| `signal screencast(open, owner, name)` | optional: capture opened/closed (owner `monitor`, `window`, region); Hyprland |
 
 Unsupported operations return `false` and log once; they never throw.
 
