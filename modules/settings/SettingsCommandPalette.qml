@@ -253,6 +253,8 @@ Loader {
         // We use a one-shot Timer because activePageItem is bound through
         // the host shell, and the new page may not exist yet on this tick.
         scrollPendingTimer.targetKey = entry.key;
+        scrollPendingTimer.tries = 0;
+        scrollPendingTimer.lastY = -1;
         scrollPendingTimer.restart();
         root._close();
     }
@@ -277,15 +279,22 @@ Loader {
         interval: 80   // give the Loader time to materialise the new page
         repeat: false
         property string targetKey: ""
+        property int tries: 0
+        property real lastY: -1
+        // The page lays out over several turns (async loaders, cards
+        // growing), and a collapsed card hides its rows: open the card, then
+        // measure until its position holds before scrolling (a single early
+        // measurement scrolled to where the card wasn't yet).
         onTriggered: {
-            if (!root.flickable || !root.activePageItem || targetKey.length === 0) return;
-            const card = root._findCardForKey(root.activePageItem, targetKey);
-            if (!card) return;
-            // Compute card's y in the flickable's content coordinate space
-            const cardPos = card.mapToItem(root.flickable.contentItem, 0, 0);
+            if (!root.flickable || targetKey.length === 0) return;
+            const card = root.activePageItem ? root._findCardForKey(root.activePageItem, targetKey) : null;
+            if (!card) { if (++tries < 12) restart(); return; }
+            if (card.expanded === false) card.expanded = true;
+            const y = card.mapToItem(root.flickable.contentItem, 0, 0).y;
+            if (Math.abs(y - lastY) > 0.5 && ++tries < 12) { lastY = y; restart(); return; }
             const target = Math.max(0, Math.min(
                 root.flickable.contentHeight - root.flickable.height,
-                cardPos.y - 16));
+                y - 16));
             // Animate via direct property assignment (StyledFlickable
             // doesn't expose an animated scroll method).
             scrollAnim.from = root.flickable.contentY;
