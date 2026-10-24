@@ -34,4 +34,10 @@ const sb2=G.packSlot({side:'left',x:5,y:36,w:460,h:759,omitStartConnector:true,o
 a(!G.fillets([pill,sb2],fc).some(q=>Math.abs(q.x-465)<1&&q.y===36),'no fillet into open desktop');
 const pill2=G.packSlot({side:'top',x:400,y:0,w:300,h:36},fc);
 a(G.fillets([pill2,sb2],fc).some(q=>Math.abs(q.x-465)<1&&q.y===36),'fillet into the pill above');
+// A young OSD (shallower than its swollen fillet) uses one k per side, so the
+// meniscus has no terrace at mid-height; fully open, far corners go back to fc.
+const osdY=G.packSlot({side:'bottom',x:500,y:790,w:300,h:10,progress:0.3},fc);
+a(osdY.k[0]===osdY.k[3]&&osdY.k[1]===osdY.k[2]&&osdY.k[3]>18,'young body: same k top and bottom of each side');
+const osdF=G.packSlot({side:'bottom',x:500,y:740,w:300,h:60},fc);
+a(osdF.k[0]===12&&osdF.k[3]===18,'open body: far fc, near connectedRadius');
 console.log('geometry ok');

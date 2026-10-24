@@ -108,6 +108,7 @@ function packSlot(descriptor, ctx) {
 
     var bodyR = descriptor.surfaceRadius !== undefined ? descriptor.surfaceRadius : ctx.surfaceRadius;
     var radii = connectorRadii(descriptor, b, meniscusK(ctx.connectedRadius, descriptor.progress), bodyR);
+    var youngK = 0;
     if (descriptor.progress !== undefined && descriptor.progress < 1) {
         // The swell is wider than the young body is deep; don't clamp it to the
         // extent, or the meniscus collapses exactly when it should show.
@@ -115,6 +116,7 @@ function packSlot(descriptor, ctx) {
         var k = Math.min(meniscusK(ctx.connectedRadius, descriptor.progress), cross / 2);
         radii.startCr = descriptor.omitStartConnector ? 0 : k;
         radii.endCr = descriptor.omitEndConnector ? 0 : k;
+        youngK = k;
     }
     if (detached) {
         // Fully round island; k on every corner so the neck forms evenly.
@@ -145,20 +147,26 @@ function packSlot(descriptor, ctx) {
     var farE = radii.surfaceRadius;
     var kS = omitS ? fc : radii.startCr;
     var kE = omitE ? fc : radii.endCr;
+    // The shader picks a corner's k by the quadrant around the body's centre,
+    // so beside a young body (shallower than its swollen fillet) the k jumped
+    // at mid-height and the meniscus showed a terrace. While growing, the far
+    // corner of a joined end takes the same k: one smooth blend per side.
+    var fS = (youngK > 0 && !omitS && !descriptor.omitStartConnector) ? Math.max(fc, youngK) : fc;
+    var fE = (youngK > 0 && !omitE && !descriptor.omitEndConnector) ? Math.max(fc, youngK) : fc;
 
     var ks, cr;
     if (side === "top") {
         // near = top edge (TL, TR); far = bottom edge (BR, BL)
-        ks = [kS, kE, fc, fc];
+        ks = [kS, kE, fE, fS];
         cr = [nearS, nearE, farE, farS];
     } else if (side === "bottom") {
-        ks = [fc, fc, kE, kS];
+        ks = [fS, fE, kE, kS];
         cr = [farS, farE, nearE, nearS];
     } else if (side === "left") {
-        ks = [kS, fc, fc, kE];
+        ks = [kS, fS, fE, kE];
         cr = [nearS, farS, farE, nearE];
     } else { // right
-        ks = [fc, kS, kE, fc];
+        ks = [fS, kS, kE, fE];
         cr = [farS, nearS, nearE, farE];
     }
 
