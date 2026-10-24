@@ -158,8 +158,8 @@ Item {
 
             SequentialAnimation {
                 id: pop
-                NumberAnimation { target: currentTag; property: "scale"; from: 0.4; to: 1.12; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.OutCubic }
-                NumberAnimation { target: currentTag; property: "scale"; to: 1; duration: AnimationConfig.scaledDuration(160); easing.type: Easing.InOutQuad }
+                NumberAnimation { target: currentTag; property: "scale"; from: 0.4; to: 1.12; duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                NumberAnimation { target: currentTag; property: "scale"; to: 1; duration: AnimationConfig.scaledDuration(160); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
             }
         }
 

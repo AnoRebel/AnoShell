@@ -68,7 +68,7 @@ Item {
                     visible: false
                     border.color: searchField.activeFocus ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                     border.width: searchField.activeFocus ? 1.5 : 1
-                    Behavior on border.width { NumberAnimation { duration: 120 } }
+                    Behavior on border.width { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                     TextInput {
                         id: searchField
@@ -105,7 +105,7 @@ Item {
                         width: 22; height: 22
                         visible: searchField.text.length > 0
                         opacity: visible ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(100) } }
 
                         Rectangle {
                             anchors.centerIn: parent
@@ -141,13 +141,13 @@ Item {
                         anchors.centerIn: parent
                         width: 32; height: 32; radius: 16
                         color: searchBar.visible ? Appearance.m3colors.m3primaryContainer : "transparent"
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
                     StyledText {
                         anchors.centerIn: parent
                         text: "⌕"; font.pixelSize: 18
                         color: searchBar.visible ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -187,7 +187,7 @@ Item {
                                     anchors { fill: parent; margins: 3 }
                                     radius: 11
                                     color: active ? Appearance.m3colors.m3primary : "transparent"
-                                    Behavior on color { ColorAnimation { duration: 160 } }
+                                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(160) } }
                                 }
                                 StyledText {
                                     id: modeText
@@ -196,7 +196,7 @@ Item {
                                     font.family: browseView.fontBody
                                     font.pixelSize: 10; font.letterSpacing: 1; font.bold: true
                                     color: active ? Appearance.m3colors.m3onPrimary : Appearance.m3colors.m3onSurfaceVariant
-                                    Behavior on color { ColorAnimation { duration: 160 } }
+                                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(160) } }
                                 }
                                 MouseArea {
                                     anchors.fill: parent
@@ -252,7 +252,7 @@ Item {
                         color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3surfaceContainer
                         border.color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
                         StyledText {
                             id: chipLbl
@@ -261,7 +261,7 @@ Item {
                             font.family: browseView.fontBody
                             font.pixelSize: 11; font.letterSpacing: 0.5
                             color: active ? Appearance.m3colors.m3onPrimary : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                     }
 
@@ -372,7 +372,7 @@ Item {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true; cache: true
                             opacity: status === Image.Ready ? 1 : 0
-                            Behavior on opacity { NumberAnimation { duration: 300 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
 
                             // Score badge
                             Rectangle {
@@ -481,15 +481,15 @@ Item {
                         Rectangle {
                             anchors.fill: parent; radius: 12; color: Appearance.m3colors.m3primary
                             opacity: card.pressed ? 0.16 : (card.hovered ? 0.07 : 0)
-                            Behavior on opacity { NumberAnimation { duration: 130 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(130) } }
                         }
 
                         transform: Scale {
                             origin.x: card.width / 2; origin.y: card.height / 2
                             xScale: card.pressed ? 0.97 : 1.0
                             yScale: card.pressed ? 0.97 : 1.0
-                            Behavior on xScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-                            Behavior on yScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                            Behavior on xScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on yScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                         }
 
                         onClicked: browseView.animeSelected(modelData)

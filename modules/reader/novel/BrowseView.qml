@@ -74,7 +74,7 @@ Item {
                     visible: false
                     border.color: searchField.activeFocus ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                     border.width: searchField.activeFocus ? 1.5 : 1
-                    Behavior on border.width { NumberAnimation { duration: 120 } }
+                    Behavior on border.width { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                     TextInput {
                         id: searchField
@@ -108,7 +108,7 @@ Item {
                         width: 22; height: 22
                         visible: searchField.text.length > 0
                         opacity: visible ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: 100 } }
+                        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(100) } }
                         Rectangle {
                             anchors.centerIn: parent; width: 18; height: 18; radius: 9
                             color: Appearance.m3colors.m3surfaceContainerHighest
@@ -148,7 +148,7 @@ Item {
                             ? Appearance.m3colors.m3surfaceContainerHighest
                             : Appearance.m3colors.m3surfaceContainer
                         border.color: Appearance.m3colors.m3outlineVariant; border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                     }
 
                     Row {
@@ -168,7 +168,7 @@ Item {
                             font.letterSpacing: 0.3
                             color: ReaderNovel.isSwitchingProvider ? Appearance.m3colors.m3onSurfaceVariant : Appearance.m3colors.m3onSurface
                             anchors.verticalCenter: parent.verticalCenter
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                         }
 
                         // Tiny spinner shown while switching
@@ -177,7 +177,7 @@ Item {
                             width: 10
                             border.width: 1.5
                             anchors.verticalCenter: parent.verticalCenter
-                            duration: 700
+                            period: 700
                             running: ReaderNovel.isSwitchingProvider
                         }
 
@@ -240,7 +240,7 @@ Item {
                                                 ? Appearance.m3colors.m3surfaceContainerHighest
                                                 : "transparent"
                                         }
-                                        Behavior on color { ColorAnimation { duration: 120 } }
+                                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                                     }
 
                                     Row {
@@ -292,12 +292,12 @@ Item {
                     Rectangle {
                         anchors.centerIn: parent; width: 34; height: 34; radius: 17
                         color: searchBar.visible ? Appearance.m3colors.m3primaryContainer : "transparent"
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
                     StyledText {
                         anchors.centerIn: parent; text: "⌕"; font.pixelSize: 19
                         color: searchBar.visible ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -346,14 +346,14 @@ Item {
                         color: browseView.currentFilter === fid ? Appearance.m3colors.m3primary : Appearance.m3colors.m3surfaceContainer
                         border.color: browseView.currentFilter === fid ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
                         StyledText {
                             id: chipLbl; anchors.centerIn: parent; text: label
                             font.family: browseView.fontBody; font.pixelSize: 12
                             font.letterSpacing: 0.6
                             color: browseView.currentFilter === fid ? Appearance.m3colors.m3onPrimary : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                     }
 
@@ -457,7 +457,7 @@ Item {
                             sourceSize.width: Math.ceil(width * Screen.devicePixelRatio)
                             fillMode: Image.PreserveAspectCrop; asynchronous: true; cache: true
                             opacity: status === Image.Ready ? 1 : 0
-                            Behavior on opacity { NumberAnimation { duration: 300 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
 
                             Rectangle {
                                 visible: modelData.status && modelData.status.length > 0
@@ -519,15 +519,15 @@ Item {
                         Rectangle {
                             anchors.fill: parent; radius: 10; color: Appearance.m3colors.m3primary
                             opacity: nCard.pressed ? 0.16 : (nCard.hovered ? 0.07 : 0)
-                            Behavior on opacity { NumberAnimation { duration: 130 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(130) } }
                         }
 
                         transform: Scale {
                             origin.x: nCard.width / 2; origin.y: nCard.height / 2
                             xScale: nCard.pressed ? 0.97 : 1.0
                             yScale: nCard.pressed ? 0.97 : 1.0
-                            Behavior on xScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-                            Behavior on yScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                            Behavior on xScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                            Behavior on yScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                         }
 
                         onClicked: {

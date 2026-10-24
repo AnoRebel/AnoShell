@@ -55,7 +55,7 @@ Item {
                     Rectangle {
                         anchors.centerIn: parent; width: 34; height: 34; radius: 17
                         color: backArea.containsMouse ? Appearance.m3colors.m3surfaceContainer : "transparent"
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     Text {
                         anchors.centerIn: parent
@@ -85,7 +85,7 @@ Item {
                         color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.m3colors.m3surfaceContainer
                         border.color: detailView._inLibrary ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
                     Row {
                         anchors.centerIn: parent; spacing: 5
@@ -96,7 +96,7 @@ Item {
                             font.pixelSize: 11; font.bold: true
                             color: detailView._inLibrary
                                 ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                         StyledText {
                             id: libBtnLabel
@@ -106,7 +106,7 @@ Item {
                             font.pixelSize: 11; font.letterSpacing: 0.3
                             color: detailView._inLibrary
                                 ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                     }
                     MouseArea {
@@ -238,7 +238,7 @@ Item {
                         : (epRowAreaRect.pressed
                             ? Appearance.m3colors.m3surfaceContainerHigh
                             : (epRowAreaRect.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"))
-                    Behavior on color { ColorAnimation { duration: 110 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(110) } }
 
                     Rectangle {
                         anchors {
@@ -278,8 +278,8 @@ Item {
                             text: "▶"; font.pixelSize: 13
                             color: epRowAreaRect.hovered ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outline
                             opacity: epRowAreaRect.hovered ? 0.9 : 0.35
-                            Behavior on opacity { NumberAnimation { duration: 120 } }
-                            Behavior on color   { ColorAnimation  { duration: 120 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
+                            Behavior on color   { ColorAnimation  { duration: AnimationConfig.scaledDuration(120) } }
                         }
                     }
 

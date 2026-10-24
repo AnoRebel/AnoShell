@@ -138,7 +138,7 @@ Item {
                     Rectangle {
                         anchors.centerIn: parent; width: 34; height: 34; radius: 17
                         color: backArea.containsMouse ? Appearance.m3colors.m3surfaceContainer : "transparent"
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     Text { anchors.centerIn: parent; text: "←"; font.pixelSize: 18; color: Appearance.m3colors.m3onSurfaceVariant }
                     MouseArea {
@@ -164,7 +164,7 @@ Item {
                         color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.m3colors.m3surfaceContainer
                         border.color: detailView._inLibrary ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
 
                     Row {
@@ -174,14 +174,14 @@ Item {
                             text: detailView._inLibrary ? "✓" : "+"
                             font.pixelSize: 11; font.bold: true
                             color: detailView._inLibrary ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                         StyledText {
                             id: libBtnLabel; anchors.verticalCenter: parent.verticalCenter
                             text: "Library"; font.family: detailView.fontBody
                             font.pixelSize: 11; font.letterSpacing: 0.3
                             color: detailView._inLibrary ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                     }
 
@@ -207,7 +207,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: ReaderNovel.currentNovel !== null ? 160 : 0
             clip: true
-            Behavior on Layout.preferredHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on Layout.preferredHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             // Blurred cover background
             Image {
@@ -422,7 +422,7 @@ Item {
                     border.color: chapterSearch.activeFocus
                         ? Appearance.m3colors.m3primary
                         : ColorUtils.transparentize(Appearance.m3colors.m3outline, 0.2)
-                    Behavior on border.color { ColorAnimation { duration: 130 } }
+                    Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
 
                     RowLayout {
                         anchors { fill: parent; leftMargin: 12; rightMargin: 4 }
@@ -463,7 +463,7 @@ Item {
                                 color: clearArea.containsMouse
                                     ? ColorUtils.transparentize(Appearance.m3colors.m3onSurface, 0.12)
                                     : "transparent"
-                                Behavior on color { ColorAnimation { duration: 100 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
                             }
                             Text {
                                 anchors.centerIn: parent
@@ -490,7 +490,7 @@ Item {
                             ? Appearance.m3colors.m3primaryContainer
                             : ColorUtils.transparentize(Appearance.m3colors.m3primaryContainer, 0.6)
                         border.color: Appearance.m3colors.m3primary; border.width: 1
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     StyledText {
                         anchors.centerIn: parent
@@ -555,7 +555,7 @@ Item {
                         width: retryLabel.implicitWidth + 32; height: 32
                         radius: 16
                         color: retryArea.containsMouse ? Appearance.m3colors.m3primary : Appearance.m3colors.m3primaryContainer
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
 
                         Text {
                             id: retryLabel; anchors.centerIn: parent
@@ -597,7 +597,7 @@ Item {
                         ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.07)
                         : (rowAreaRect.pressed ? Appearance.m3colors.m3surfaceContainerHigh
                             : (rowAreaRect.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"))
-                    Behavior on color { ColorAnimation { duration: 110 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(110) } }
 
                     Rectangle {
                         anchors { bottom: parent.bottom; left: parent.left; right: parent.right; leftMargin: 72; rightMargin: 16 }
@@ -642,7 +642,7 @@ Item {
                         Text {
                             text: "›"; font.pixelSize: 20; color: Appearance.m3colors.m3outline
                             opacity: rowAreaRect.hovered ? 0.9 : 0.4
-                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
                         }
                     }
 

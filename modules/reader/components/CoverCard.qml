@@ -40,7 +40,7 @@ ClickableRect {
         asynchronous: true
         cache: true
         opacity: status === Image.Ready ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 300 } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(300) } }
 
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -87,7 +87,7 @@ ClickableRect {
         radius: root.radius
         color: Appearance.m3colors.m3primary
         opacity: root.pressed ? 0.16 : (root.hovered ? 0.07 : 0)
-        Behavior on opacity { NumberAnimation { duration: 130 } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(130) } }
     }
 
     transform: Scale {
@@ -95,7 +95,7 @@ ClickableRect {
         origin.y: root.height / 2
         xScale: root.pressed ? 0.97 : 1.0
         yScale: root.pressed ? 0.97 : 1.0
-        Behavior on xScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-        Behavior on yScale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+        Behavior on xScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on yScale { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
     }
 }

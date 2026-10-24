@@ -363,7 +363,7 @@ Item {
                     PropertyAction { target: shown; property: "slide"; value: 10 }
                     PropertyAction { target: shown; property: "opacity"; value: 0 }
                     ParallelAnimation {
-                        NumberAnimation { target: shown; property: "slide"; to: 0; duration: AnimationConfig.scaledDuration(260); easing.type: Easing.OutCubic }
+                        NumberAnimation { target: shown; property: "slide"; to: 0; duration: AnimationConfig.scaledDuration(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
                         NumberAnimation { target: shown; property: "opacity"; to: lyr.has ? 1 : 0.6; duration: AnimationConfig.scaledDuration(260) }
                     }
                 }

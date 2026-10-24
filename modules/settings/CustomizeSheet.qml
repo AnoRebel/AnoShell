@@ -67,7 +67,7 @@ Scope {
                 property bool shown: false
                 Component.onCompleted: shown = true
                 Behavior on scale { MotionSpring { token: "liquid" } }
-                Behavior on opacity { NumberAnimation { duration: 160 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
                 focus: true
                 Keys.onEscapePressed: GlobalStates.customizeSurface = ""
                 Keys.onPressed: e => { if (e.key === Qt.Key_Z && (e.modifiers & Qt.ControlModifier)) { Config.undo(); e.accepted = true } }

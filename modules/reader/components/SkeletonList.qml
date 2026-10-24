@@ -20,7 +20,7 @@ Rectangle {
     clip: true
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     Column {
         anchors { left: parent.left; right: parent.right }

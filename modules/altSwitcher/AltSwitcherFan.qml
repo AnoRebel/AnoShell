@@ -75,9 +75,9 @@ PanelWindow {
     }
     SequentialAnimation {
         id: flipAnim
-        NumberAnimation { target: root; property: "flip"; to: 1; duration: AnimationConfig.scaledDuration(150); easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "flip"; to: 1; duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
         ScriptAction { script: root.showingWs = root.switcher.wsMode }
-        NumberAnimation { target: root; property: "flip"; to: 0; duration: AnimationConfig.scaledDuration(190); easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "flip"; to: 0; duration: AnimationConfig.scaledDuration(190); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
     }
 
 
@@ -233,7 +233,7 @@ PanelWindow {
                 height: root.cardH
                 z: lift * 10 + (current ? 100 : 0)
                 scale: 0.72 + 0.28 * lift * lift + (current ? 0.06 : 0)
-                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.OutCubic } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                 opacity: 0.55 + 0.45 * lift
 
                 // Workspace card (flipped): number and its windows' icons.

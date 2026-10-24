@@ -103,8 +103,8 @@ Item {
 
     ParallelAnimation {
         id: fadeIn
-        NumberAnimation { target: backdrop.fading; property: "opacity"; to: 1; duration: AnimationConfig.scaledDuration(300); easing.type: Easing.OutCubic }
-        NumberAnimation { target: backdrop.fading; property: "scale"; to: 1; duration: AnimationConfig.scaledDuration(520); easing.type: Easing.OutCubic }
+        NumberAnimation { target: backdrop.fading; property: "opacity"; to: 1; duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: backdrop.fading; property: "scale"; to: 1; duration: AnimationConfig.scaledDuration(520); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
         onFinished: backdrop.settle()
     }
 
@@ -116,7 +116,7 @@ Item {
         anchors.fill: parent
         z: 3
         opacity: up ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(260); easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(260); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
         onOpacityChanged: if (opacity === 0 && backdrop.playing !== backdrop.motion) backdrop.swapMotion()
 
         Loader {

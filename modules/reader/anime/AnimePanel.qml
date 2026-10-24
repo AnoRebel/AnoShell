@@ -55,7 +55,7 @@ Item {
                     anchors.fill: parent
                     visible: root.browseStack === 0
                     opacity: visible ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     onAnimeSelected: function(show) {
                         ReaderAnime.fetchAnimeDetail(show)
@@ -67,7 +67,7 @@ Item {
                     anchors.fill: parent
                     visible: root.browseStack === 1
                     opacity: visible ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     onBackRequested: {
                         root.browseStack = 0
@@ -84,7 +84,7 @@ Item {
                     anchors.fill: parent
                     visible: root.libraryStack === 0
                     opacity: visible ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     onAnimeSelected: function(show) {
                         ReaderAnime.fetchAnimeDetail(show)
@@ -96,7 +96,7 @@ Item {
                     anchors.fill: parent
                     visible: root.libraryStack === 1
                     opacity: visible ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                     onBackRequested: {
                         root.libraryStack = 0
@@ -145,7 +145,7 @@ Item {
                             color: tabArea.containsMouse && !active
                                 ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.05)
                                 : "transparent"
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                         }
 
                         Column {
@@ -158,7 +158,7 @@ Item {
                                 font.pixelSize: 13
                                 color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3onSurfaceVariant
                                 opacity: active ? 1 : 0.5
-                                Behavior on color { ColorAnimation { duration: 180 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                             }
                             StyledText {
                                 anchors.horizontalCenter: parent.horizontalCenter
@@ -168,7 +168,7 @@ Item {
                                 font.letterSpacing: 0.6
                                 color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3onSurfaceVariant
                                 opacity: active ? 1 : 0.5
-                                Behavior on color { ColorAnimation { duration: 180 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                             }
                         }
 
@@ -181,7 +181,7 @@ Item {
                             width: active ? 28 : 0
                             height: 2; radius: 1
                             color: Appearance.m3colors.m3primary
-                            Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                         }
 
                         MouseArea {

@@ -100,7 +100,7 @@ PanelWindow {
                     GradientStop { position: 0; color: ColorUtils.transparentize(Appearance.colors.colPrimary, (zone.modelData === "top" || zone.modelData === "left") ? (zone.active ? 0.35 : 0.12) : 0) }
                     GradientStop { position: 1; color: ColorUtils.transparentize(Appearance.colors.colPrimary, (zone.modelData === "bottom" || zone.modelData === "right") ? (zone.active ? 0.35 : 0.12) : 0) }
                 }
-                Behavior on opacity { NumberAnimation { duration: 120 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
             }
             // Ghost of the pill at its landing spot.
             Rectangle {
@@ -115,8 +115,8 @@ PanelWindow {
                 border.color: Appearance.colors.colPrimary
                 opacity: zone.active ? 1 : (zone.modelData === root.current ? 0.35 : 0)
                 scale: zone.active ? 1 : 0.9
-                Behavior on opacity { NumberAnimation { duration: 140 } }
-                Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(140) } }
+                Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
             }
         }
     }

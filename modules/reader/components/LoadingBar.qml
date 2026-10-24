@@ -15,7 +15,7 @@ Item {
     clip: true
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 220 } }
+    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220) } }
 
     Rectangle {
         anchors.fill: parent
@@ -32,10 +32,10 @@ Item {
         XAnimator on x {
             from: -bar.width
             to: root.width
-            duration: 1100
+            duration: AnimationConfig.scaledDuration(1100) || 1100
             loops: Animation.Infinite
             running: root.visible
-            easing.type: Easing.InOutQuad
+            easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
         }
     }
 }

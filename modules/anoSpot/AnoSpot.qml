@@ -643,7 +643,7 @@ Scope {
                         Rectangle {
                             width: parent.width * Math.max(0, Math.min(1, PillTransient.value)); height: parent.height; radius: 3
                             color: PillTransient.muted ? Appearance.colors.colOutline : Appearance.colors.colPrimary
-                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.OutCubic } }
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(120); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
                         }
                     }
                     StyledText {

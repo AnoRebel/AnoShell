@@ -65,8 +65,8 @@ Item {
         width: area.pressed || area.containsMouse ? 48 : 36; height: 4; radius: 2
         color: Appearance.colors.colOutline
         opacity: area.pressed ? 0.9 : area.containsMouse ? 0.7 : 0.35
-        Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(150); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
     }
 
     MouseArea {

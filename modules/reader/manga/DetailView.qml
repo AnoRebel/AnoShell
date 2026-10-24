@@ -87,7 +87,7 @@ Item {
                         anchors.centerIn: parent
                         width: 34; height: 34; radius: 17
                         color: backArea.containsMouse ? Appearance.m3colors.m3surfaceContainer : "transparent"
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     Text {
                         anchors.centerIn: parent
@@ -118,7 +118,7 @@ Item {
                         color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.m3colors.m3surfaceContainer
                         border.color: detailView._inLibrary ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 180 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                     }
 
                     Row {
@@ -130,7 +130,7 @@ Item {
                             text: detailView._inLibrary ? "✓" : "+"
                             font.pixelSize: 11; font.bold: true
                             color: detailView._inLibrary ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                         StyledText {
                             id: libBtnLabel
@@ -139,7 +139,7 @@ Item {
                             font.family: detailView.fontBody
                             font.pixelSize: 11; font.letterSpacing: 0.3
                             color: detailView._inLibrary ? Appearance.m3colors.m3onPrimaryContainer : Appearance.m3colors.m3onSurfaceVariant
-                            Behavior on color { ColorAnimation { duration: 180 } }
+                            Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
                         }
                     }
 
@@ -165,7 +165,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: ReaderManga.currentManga !== null ? 160 : 0
             clip: true
-            Behavior on Layout.preferredHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on Layout.preferredHeight { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
             // Blurred cover background
             Image {
@@ -320,7 +320,7 @@ Item {
                     color: Appearance.m3colors.m3surfaceContainer
                     border.width: 1
                     border.color: chapterSearch.activeFocus ? Appearance.m3colors.m3primary : ColorUtils.transparentize(Appearance.m3colors.m3outline, 0.2)
-                    Behavior on border.color { ColorAnimation { duration: 130 } }
+                    Behavior on border.color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
 
                     RowLayout {
                         anchors { fill: parent; leftMargin: 12; rightMargin: 4 }
@@ -367,7 +367,7 @@ Item {
                                 color: clearArea.containsMouse
                                     ? ColorUtils.transparentize(Appearance.m3colors.m3onSurface, 0.12)
                                     : "transparent"
-                                Behavior on color { ColorAnimation { duration: 100 } }
+                                Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(100) } }
                             }
                             StyledText {
                                 anchors.centerIn: parent
@@ -395,7 +395,7 @@ Item {
                             ? Appearance.m3colors.m3primaryContainer
                             : ColorUtils.transparentize(Appearance.m3colors.m3primaryContainer, 0.6)
                         border.color: Appearance.m3colors.m3primary; border.width: 1
-                        Behavior on color { ColorAnimation { duration: 130 } }
+                        Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     StyledText {
                         anchors.centerIn: parent
@@ -457,7 +457,7 @@ Item {
                         : (chapterRowAreaRect.pressed
                             ? Appearance.m3colors.m3surfaceContainerHigh
                             : (chapterRowAreaRect.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"))
-                    Behavior on color { ColorAnimation { duration: 110 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(110) } }
 
                     Rectangle {
                         anchors {
@@ -509,7 +509,7 @@ Item {
                         Text {
                             text: "›"; font.pixelSize: 20; color: Appearance.m3colors.m3outline
                             opacity: chapterRowAreaRect.hovered ? 0.9 : 0.4
-                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
                         }
                     }
 

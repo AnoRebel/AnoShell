@@ -109,7 +109,7 @@ Item {
     NumberAnimation {
         id: revealAnim
         target: root; property: "_reveal"; from: 0; to: 1
-        duration: AnimationConfig.scaledDuration(560); easing.type: Easing.OutCubic
+        duration: AnimationConfig.scaledDuration(560); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel
     }
     layer.enabled: revealAnim.running
     layer.effect: ShaderEffect {

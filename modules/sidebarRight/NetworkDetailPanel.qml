@@ -287,7 +287,7 @@ Rectangle {
                     visible: VPN.netbirdNetworksBusy
                     text: "progress_activity"; iconSize: 16
                     color: Appearance.colors.colPrimary
-                    RotationAnimation on rotation { running: VPN.netbirdNetworksBusy; from: 0; to: 360; duration: 900; loops: Animation.Infinite }
+                    RotationAnimation on rotation { running: VPN.netbirdNetworksBusy; from: 0; to: 360; duration: AnimationConfig.scaledDuration(900) || 900; loops: Animation.Infinite }
                 }
               }
 

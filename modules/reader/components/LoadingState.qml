@@ -20,7 +20,7 @@ Rectangle {
     color: Appearance.m3colors.m3background
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+    Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     // Swallow clicks so nothing behind reacts while this is up.
     MouseArea { anchors.fill: parent; enabled: root.active }
@@ -34,7 +34,7 @@ Rectangle {
             width: root.spinnerSize
             border.width: 2.5
             arcColor: root.arcColor
-            duration: 1000
+            period: 1000
         }
 
         Column {

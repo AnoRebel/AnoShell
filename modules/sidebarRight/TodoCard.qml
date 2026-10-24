@@ -155,7 +155,7 @@ Rectangle {
             remove: Transition {
                 ParallelAnimation {
                     NumberAnimation { property: "opacity"; to: 0; duration: Appearance.animation.elementMoveFast.duration }
-                    NumberAnimation { property: "x"; to: 32; duration: Appearance.animation.elementMoveFast.duration; easing.type: Easing.InCubic }
+                    NumberAnimation { property: "x"; to: 32; duration: Appearance.animation.elementMoveFast.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
                 }
             }
             displaced: Transition { NumberAnimation { property: "y"; duration: Appearance.animation.elementMove.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard } }
@@ -163,7 +163,7 @@ Rectangle {
             move: Transition {
                 ParallelAnimation {
                     NumberAnimation { property: "y"; duration: Appearance.animation.elementMove.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
-                    NumberAnimation { property: "opacity"; from: 0.35; duration: Appearance.animation.elementMove.duration; easing.type: Easing.InQuad }
+                    NumberAnimation { property: "opacity"; from: 0.35; duration: Appearance.animation.elementMove.duration; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
                 }
             }
 
@@ -278,7 +278,7 @@ Rectangle {
                                 radius: 1
                                 color: Appearance.colors.colSubtext
                                 width: row.looksDone ? title.contentWidth : 0
-                                Behavior on width { Anim { duration: 300 } }
+                                Behavior on width { Anim { duration: AnimationConfig.scaledDuration(300) } }
                             }
                             MouseArea {
                                 anchors.fill: parent

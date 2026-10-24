@@ -37,7 +37,7 @@ Item {
         color: Qt.rgba(0.05, 0.05, 0.08, 0.95)
         z: 10
         opacity: readerView.headerVisible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         // Bottom hairline
         Rectangle {
@@ -60,7 +60,7 @@ Item {
                     color: readerBackArea.containsMouse
                         ? Qt.rgba(1, 1, 1, 0.1)
                         : "transparent"
-                    Behavior on color { ColorAnimation { duration: 130 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                 }
                 StyledText {
                     anchors.centerIn: parent
@@ -171,7 +171,7 @@ Item {
         spacing: 3
         // The page at the middle of the view (currentIndex doesn't follow scrolling).
         readonly property int visiblePage: Math.max(0, indexAt(width / 2, contentY + height / 2))
-        Behavior on anchors.topMargin { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        Behavior on anchors.topMargin { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         // Tap anywhere to toggle header
         MouseArea {
@@ -199,7 +199,7 @@ Item {
                 asynchronous: true
                 cache: false // pages scrolled away are released, not kept decoded
                 opacity: status === Image.Ready ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 350 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(350) } }
 
             }
 
@@ -222,7 +222,7 @@ Item {
                         border.width: 2
                         border.color: Qt.rgba(1, 1, 1, 0.08)
                         arcColor: Qt.rgba(1, 1, 1, 0.45)
-                        duration: 1200
+                        period: 1200
                     }
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -252,7 +252,7 @@ Item {
                             width: parent.width * pageImg.progress
                             height: parent.height; radius: 1
                             color: Appearance.m3colors.m3primary
-                            Behavior on width { NumberAnimation { duration: 160 } }
+                            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
                         }
                     }
                 }
@@ -286,7 +286,7 @@ Item {
                 : 0
             height: parent.height
             color: Appearance.m3colors.m3primary
-            Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
         }
     }
 }

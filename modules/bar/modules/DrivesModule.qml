@@ -29,7 +29,7 @@ Item {
         iconSize: Appearance?.font.pixelSize.larger ?? 20
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
         RotationAnimation on rotation {
-            running: root.anyWriting; from: 360; to: 0; duration: 1200; loops: Animation.Infinite
+            running: root.anyWriting; from: 360; to: 0; duration: AnimationConfig.scaledDuration(1200) || 1200; loops: Animation.Infinite
             onRunningChanged: if (!running) icon.rotation = 0
         }
     }

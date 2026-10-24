@@ -35,7 +35,7 @@ Item {
         anchors { top: parent.top; left: parent.left; right: parent.right }
         height: 54; color: Qt.rgba(0.08, 0.07, 0.06, 0.97); z: 10
         opacity: readerView.headerVisible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -51,7 +51,7 @@ Item {
                 Rectangle {
                     anchors.centerIn: parent; width: 34; height: 34; radius: 17
                     color: backHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
-                    Behavior on color { ColorAnimation { duration: 130 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                 }
                 Text { anchors.centerIn: parent; text: "←"; font.pixelSize: 18; color: Qt.rgba(1,1,1,0.7) }
                 MouseArea {
@@ -81,7 +81,7 @@ Item {
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
                     color: fsMinusHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
                 Text { anchors.centerIn: parent; text: "A−"; font.pixelSize: 10; color: Qt.rgba(1,1,1,0.55) }
                 MouseArea {
@@ -95,7 +95,7 @@ Item {
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
                     color: fsPlusHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
                 Text { anchors.centerIn: parent; text: "A+"; font.pixelSize: 11; color: Qt.rgba(1,1,1,0.55) }
                 MouseArea {
@@ -109,7 +109,7 @@ Item {
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
                     color: fullscreenHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
                 Text {
                     anchors.centerIn: parent
@@ -147,7 +147,7 @@ Item {
                 (textScroll.contentY + textScroll.height) / textScroll.contentHeight)
                 : parent.width
             height: parent.height; color: Appearance.m3colors.m3primary
-            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.OutCubic } }
+            Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
         }
     }
 
@@ -156,7 +156,7 @@ Item {
         anchors.fill: parent; color: "#1a1714"; z: 8
         opacity: ReaderNovel.isFetchingChapter ? 1 : 0
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         SkeletonText {
             anchors.fill: parent
@@ -201,7 +201,7 @@ Item {
         contentWidth: width
         contentHeight: textColumn.implicitHeight + 80
         clip: true; boundsBehavior: Flickable.StopAtBounds
-        Behavior on anchors.topMargin { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        Behavior on anchors.topMargin { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         MouseArea {
             anchors.fill: parent; propagateComposedEvents: true
@@ -273,7 +273,7 @@ Item {
             Item {
                 width: parent.width / 3; height: parent.height
                 opacity: readerView._hasPrev ? 1.0 : 0.25
-                Behavior on opacity { NumberAnimation { duration: 180 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
                 Rectangle {
                     id: prevBtn
@@ -281,7 +281,7 @@ Item {
                     width: prevBtnRow.implicitWidth + 28; height: 36; radius: 18
                     color: prevNavArea.containsMouse && readerView._hasPrev
                         ? Qt.rgba(1,1,1,0.12) : Qt.rgba(1,1,1,0.06)
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                     Row {
                         id: prevBtnRow; anchors.centerIn: parent; spacing: 5
@@ -312,7 +312,7 @@ Item {
             Item {
                 width: parent.width / 3; height: parent.height
                 opacity: readerView._hasNext ? 1.0 : 0.25
-                Behavior on opacity { NumberAnimation { duration: 180 } }
+                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
 
                 Rectangle {
                     id: nextBtn
@@ -321,7 +321,7 @@ Item {
                     color: nextNavArea.containsMouse && readerView._hasNext
                         ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.45)
                         : ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.22)
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                     Row {
                         id: nextBtnRow; anchors.centerIn: parent; spacing: 5

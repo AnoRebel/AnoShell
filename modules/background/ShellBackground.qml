@@ -94,7 +94,7 @@ Scope {
                 id: trans
                 target: win; property: "progress"; from: 0; to: 1
                 duration: root.transitionType === "none" ? 1 : root.transitionMs
-                easing.type: Easing.InOutCubic
+                easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
                 onFinished: {
                     win.aFront = !win.aFront
                     if (win.aFront) win.bPath = ""; else win.aPath = "" // the old front unloads

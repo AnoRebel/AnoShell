@@ -104,7 +104,7 @@ Item {
     property bool peekKept: false
     property real peekPressedAt: 0
     property real peek: peekHeld || peekKept ? 1 : 0
-    Behavior on peek { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.OutCubic } }
+    Behavior on peek { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     // ── Live preview ─────────────────────────────────────────────────────
     readonly property bool live: Config.options?.background?.picker?.livePreview ?? true
@@ -410,7 +410,7 @@ Item {
     SequentialAnimation {
         id: shuffleAnim
         property var change: null
-        NumberAnimation { target: root; property: "deal"; to: 0.1; duration: AnimationConfig.scaledDuration(170); easing.type: Easing.InQuad }
+        NumberAnimation { target: root; property: "deal"; to: 0.1; duration: AnimationConfig.scaledDuration(170); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
         ScriptAction {
             script: {
                 const c = shuffleAnim.change
@@ -418,17 +418,17 @@ Item {
                 if (c) c()
             }
         }
-        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(560); easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(560); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
     }
     ParallelAnimation {
         id: openAnim
-        NumberAnimation { target: root; property: "shown"; to: 1; duration: AnimationConfig.scaledDuration(380); easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(760); easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "shown"; to: 1; duration: AnimationConfig.scaledDuration(380); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(760); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
     }
     ParallelAnimation {
         id: closeAnim
-        NumberAnimation { target: root; property: "shown"; to: 0; duration: AnimationConfig.scaledDuration(root.choosing ? 340 : 240); easing.type: Easing.InCubic }
-        NumberAnimation { target: root; property: "deal"; to: 0; duration: AnimationConfig.scaledDuration(220); easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "shown"; to: 0; duration: AnimationConfig.scaledDuration(root.choosing ? 340 : 240); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
+        NumberAnimation { target: root; property: "deal"; to: 0; duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
         onFinished: root.closed()
     }
 
@@ -437,15 +437,15 @@ Item {
     // of the hand is put away and the deck steps back.
     ParallelAnimation {
         id: riseAnim
-        NumberAnimation { target: root; property: "shown"; to: 1; duration: AnimationConfig.scaledDuration(300); easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "deal"; to: 0; duration: AnimationConfig.scaledDuration(560); easing.type: Easing.InCubic }
-        NumberAnimation { target: root; property: "hush"; to: 1; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "spot"; to: 1; duration: AnimationConfig.scaledDuration(1000); easing.type: Easing.InOutQuad }
-        NumberAnimation { target: flight; property: "x"; to: root.width / 2 - root.cardW / 2; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.InOutCubic }
-        NumberAnimation { target: flight; property: "y"; to: root.height / 2 - root.cardH / 2; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.InOutCubic }
-        NumberAnimation { target: flight; property: "rotation"; to: 0; duration: AnimationConfig.scaledDuration(900); easing.type: Easing.OutCubic }
-        NumberAnimation { target: flight; property: "scale"; to: root.midScale; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.InOutCubic }
-        NumberAnimation { target: flight; property: "glow"; to: 1; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.InQuad }
+        NumberAnimation { target: root; property: "shown"; to: 1; duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: root; property: "deal"; to: 0; duration: AnimationConfig.scaledDuration(560); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
+        NumberAnimation { target: root; property: "hush"; to: 1; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: root; property: "spot"; to: 1; duration: AnimationConfig.scaledDuration(1000); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "x"; to: root.width / 2 - root.cardW / 2; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "y"; to: root.height / 2 - root.cardH / 2; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "rotation"; to: 0; duration: AnimationConfig.scaledDuration(900); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: flight; property: "scale"; to: root.midScale; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "glow"; to: 1; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedAccel }
         onFinished: root.arrived()
     }
     // 2. Set: the tag pops, a ring goes out and light crosses the picture;
@@ -454,18 +454,18 @@ Item {
         id: bloomAnim
         ScriptAction { script: { root.chosenSet = true; chosenCard.popTag() } }
         ParallelAnimation {
-            NumberAnimation { target: flight; property: "ring"; from: 0; to: 1; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.OutCubic }
-            NumberAnimation { target: flight; property: "shine"; from: -0.35; to: 1.35; duration: AnimationConfig.scaledDuration(820); easing.type: Easing.InOutSine }
+            NumberAnimation { target: flight; property: "ring"; from: 0; to: 1; duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+            NumberAnimation { target: flight; property: "shine"; from: -0.35; to: 1.35; duration: AnimationConfig.scaledDuration(820); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
             SequentialAnimation {
-                NumberAnimation { target: flight; property: "pulse"; to: 1; duration: AnimationConfig.scaledDuration(170); easing.type: Easing.OutCubic }
-                NumberAnimation { target: flight; property: "pulse"; to: 0; duration: AnimationConfig.scaledDuration(480); easing.type: Easing.InOutQuad }
+                NumberAnimation { target: flight; property: "pulse"; to: 1; duration: AnimationConfig.scaledDuration(170); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+                NumberAnimation { target: flight; property: "pulse"; to: 0; duration: AnimationConfig.scaledDuration(480); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
             }
         }
         PauseAnimation { duration: AnimationConfig.scaledDuration(100) }
         ParallelAnimation {
-            NumberAnimation { target: flight; property: "fade"; to: 1; duration: AnimationConfig.scaledDuration(320); easing.type: Easing.OutQuad }
-            NumberAnimation { target: flight; property: "glow"; to: 0; duration: AnimationConfig.scaledDuration(380); easing.type: Easing.OutQuad }
-            NumberAnimation { target: flight; property: "bloom"; to: 1; duration: AnimationConfig.scaledDuration(1000); easing.type: Easing.InOutCubic }
+            NumberAnimation { target: flight; property: "fade"; to: 1; duration: AnimationConfig.scaledDuration(320); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+            NumberAnimation { target: flight; property: "glow"; to: 0; duration: AnimationConfig.scaledDuration(380); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+            NumberAnimation { target: flight; property: "bloom"; to: 1; duration: AnimationConfig.scaledDuration(1000); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         }
         ScriptAction { script: { root.spot = 0; root.close() } }
     }
@@ -475,13 +475,13 @@ Item {
         property real toX: 0
         property real toY: 0
         property real toScale: 1
-        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "hush"; to: 0; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "spot"; to: 0; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic }
-        NumberAnimation { target: flight; property: "x"; to: backAnim.toX; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.InOutCubic }
-        NumberAnimation { target: flight; property: "y"; to: backAnim.toY; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.InOutCubic }
-        NumberAnimation { target: flight; property: "rotation"; to: 0; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.OutCubic }
-        NumberAnimation { target: flight; property: "scale"; to: backAnim.toScale; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.InOutCubic }
+        NumberAnimation { target: root; property: "deal"; to: 1; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: root; property: "hush"; to: 0; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: root; property: "spot"; to: 0; duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: flight; property: "x"; to: backAnim.toX; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "y"; to: backAnim.toY; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
+        NumberAnimation { target: flight; property: "rotation"; to: 0; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
+        NumberAnimation { target: flight; property: "scale"; to: backAnim.toScale; duration: AnimationConfig.scaledDuration(620); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
         NumberAnimation { target: flight; property: "glow"; to: 0; duration: AnimationConfig.scaledDuration(300) }
         onFinished: {
             root.chosen = null
@@ -540,11 +540,11 @@ Item {
         property color surface: dress ? dress.low : Appearance.colors.colSurfaceContainerLow
         property color ink: dress ? dress.ink : Appearance.colors.colOnSurface
         property color muted: dress ? dress.muted : Appearance.colors.colOnSurfaceVariant
-        Behavior on accent { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
-        Behavior on accentInk { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
-        Behavior on surface { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
-        Behavior on ink { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
-        Behavior on muted { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.OutCubic } }
+        Behavior on accent { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on accentInk { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on surface { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on ink { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+        Behavior on muted { ColorAnimation { duration: AnimationConfig.scaledDuration(420); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
     }
     readonly property Item tint: tintColors
 
@@ -955,7 +955,7 @@ Item {
                 : root.mode === "favourites" ? "heart_plus" : "hide_image"
             iconSize: 52 * root.u
             color: Qt.rgba(1, 1, 1, 0.85)
-            RotationAnimation on rotation { running: root.online && Wallhaven.fetching; from: 0; to: 360; duration: 1000; loops: Animation.Infinite }
+            RotationAnimation on rotation { running: root.online && Wallhaven.fetching; from: 0; to: 360; duration: AnimationConfig.scaledDuration(1000) || 1000; loops: Animation.Infinite }
         }
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter

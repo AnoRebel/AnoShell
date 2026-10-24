@@ -11,7 +11,7 @@ Rectangle {
     id: root
 
     // One full turn of the ring.
-    property int duration: 800
+    property int period: 800
     property alias running: spin.running
     property color arcColor: Appearance.m3colors.m3primary
 
@@ -54,7 +54,7 @@ Rectangle {
         id: spin
         from: 0
         to: 360
-        duration: root.duration
+        duration: root.period
         loops: Animation.Infinite
         running: root.visible
         easing.type: Easing.Linear
@@ -68,22 +68,22 @@ Rectangle {
         NumberAnimation {
             target: arc; property: "sweepAngle"
             from: 30; to: 250
-            duration: root.duration * 0.9
-            easing.type: Easing.InOutCubic
+            duration: root.period * 0.9
+            easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
         }
         // …then shrink: the tail catches up with a fixed head.
         ParallelAnimation {
             NumberAnimation {
                 target: arc; property: "startAngle"
                 from: -90; to: 130
-                duration: root.duration * 0.9
-                easing.type: Easing.InOutCubic
+                duration: root.period * 0.9
+                easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
             }
             NumberAnimation {
                 target: arc; property: "sweepAngle"
                 from: 250; to: 30
-                duration: root.duration * 0.9
-                easing.type: Easing.InOutCubic
+                duration: root.period * 0.9
+                easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
             }
         }
         ScriptAction {

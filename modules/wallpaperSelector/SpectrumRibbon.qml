@@ -38,7 +38,7 @@ Item {
         width: parent.width
         height: (ribbon.active ? 12 : 8) * ribbon.u
         anchors.verticalCenter: parent.verticalCenter
-        Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.OutCubic } }
+        Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(160); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
         onHeightChanged: requestPaint()
         onWidthChanged: requestPaint()
         Connections {

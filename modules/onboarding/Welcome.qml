@@ -110,7 +110,7 @@ Scope {
                                 required property int index
                                 width: index === root.step ? 22 : 8; height: 8; radius: 4
                                 color: index <= root.step ? Appearance.colors.colPrimary : Appearance.colors.colLayer3
-                                Behavior on width { NumberAnimation { duration: 180 } }
+                                Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
                             }
                         }
                         Item { Layout.fillWidth: true }
