@@ -18,6 +18,10 @@ Singleton {
     // Backend selection ─────────────────────────────────────────────────────
     readonly property string hyprlandSignature: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
     readonly property string niriSocket: Quickshell.env("NIRI_SOCKET")
+    // Experimental backends (BackendContract.md).
+    readonly property string swaySocket: Quickshell.env("SWAYSOCK")
+    readonly property string mangoSocket: Quickshell.env("MANGO_INSTANCE_SIGNATURE")
+    readonly property string labwcPid: Quickshell.env("LABWC_PID")
 
     property QtObject backend: null
     readonly property string backendName: backend?.name ?? "generic"
@@ -87,6 +91,9 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     Component { id: hyprlandBackend; HyprlandBackend {} }
     Component { id: niriBackend; NiriBackend {} }
+    Component { id: swayBackend; SwayBackend {} }
+    Component { id: mangoBackend; MangoBackend {} }
+    Component { id: labwcBackend; LabwcBackend {} }
     Component { id: genericBackend; GenericBackend {} }
 
     function _pickBackend(): string {
@@ -94,6 +101,9 @@ Singleton {
         if (forced && forced !== "auto") return forced
         if (root.hyprlandSignature) return "hyprland"
         if (root.niriSocket) return "niri"
+        if (root.swaySocket) return "sway"
+        if (root.mangoSocket) return "mango"
+        if (root.labwcPid) return "labwc"
         return "generic"
     }
 
@@ -109,7 +119,8 @@ Singleton {
 
     function detectCompositor() {
         const name = root._pickBackend()
-        const comp = { "hyprland": hyprlandBackend, "niri": niriBackend }[name] ?? genericBackend
+        const comp = { "hyprland": hyprlandBackend, "niri": niriBackend, "sway": swayBackend,
+            "mango": mangoBackend, "labwc": labwcBackend }[name] ?? genericBackend
         root.backend?.destroy()
         root.backend = comp.createObject(root, { windowLeases: root._leaseTotal() })
         if (!root.backend) {

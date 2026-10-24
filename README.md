@@ -28,7 +28,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 
 | Service | What it provides |
 |---------|------------------|
-| `CompositorService` | One API over the compositor backends in `services/compositor/` (Hyprland, niri, generic): workspaces, windows (leased), outputs, fullscreen, keyboard layout, actions. |
+| `CompositorService` | One API over the compositor backends in `services/compositor/` (Hyprland, niri; experimental: sway, mango, labwc, generic): workspaces, windows (leased), outputs, fullscreen, keyboard layout, actions. |
 | `NiriService` | Full Niri IPC over its UNIX socket — events, window list, workspace list, focus changes. |
 | `HyprlandKeybinds` / `NiriKeybinds` | Parsers for the live keybinds files. Power the cheatsheet. |
 | `AnoSocket` | Auto-reconnecting socket helper used by NiriService. |
@@ -532,6 +532,8 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 | `libnotify` | Notifications, AnoSpot LocalSend status messages |
 | `python3` | Scripts (general + AnoSpot LocalSend discovery/send) |
 | `xdg-utils` (`xdg-open`) | AnoSpot Open / Reveal actions |
+
+Sway (1.12+), Mango (0.18) and labwc (0.20) sessions run on experimental backends; see [docs/compositors.md](docs/compositors.md). Sway needs `swaymsg` (part of sway); Mango and labwc need nothing extra (labwc users with a `<privilegedInterfaces>` block must allow the protocols listed there).
 
 For the Niri session specifically, **niri ≥ 26.04** is required — `~/.config/niri/ano.kdl` uses the `background-effect { blur }` and window-rule `popups { … }` blocks introduced in 26.04 for visual parity with Hyprland-Ano.
 

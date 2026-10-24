@@ -1,0 +1,15 @@
+[
+ {
+  "num": 1,
+  "name": "1",
+  "visible": true,
+  "focused": true,
+  "rect": {
+   "x": 0,
+   "y": 23,
+   "width": 1920,
+   "height": 1057
+  },
+  "output": "eDP-1"
+ }
+]

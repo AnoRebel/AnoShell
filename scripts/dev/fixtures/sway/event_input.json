@@ -1,0 +1,19 @@
+{
+ "change": "xkb_layout",
+ "input": {
+  "identifier": "1:1:AT_Translated_Set_2_keyboard",
+  "name": "AT Translated Set 2 keyboard",
+  "vendor": 1,
+  "product": 1,
+  "type": "keyboard",
+  "xkb_layout_names": [
+   "English (US)",
+   "English (Dvorak)"
+  ],
+  "xkb_active_layout_index": 1,
+  "xkb_active_layout_name": "English (Dvorak)",
+  "libinput": {
+   "send_events": "enabled"
+  }
+ }
+}

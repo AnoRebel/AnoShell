@@ -1,0 +1,46 @@
+{
+ "change": "init",
+ "old": null,
+ "current": {
+  "id": 10,
+  "name": "2",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "focused": false,
+  "focus": [],
+  "border": "none",
+  "current_border_width": 0,
+  "layout": "splith",
+  "percent": null,
+  "window_rect": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "deco_rect": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "geometry": {
+   "x": 0,
+   "y": 0,
+   "width": 0,
+   "height": 0
+  },
+  "window": null,
+  "urgent": false,
+  "floating_nodes": [],
+  "num": 2,
+  "output": "eDP-1",
+  "type": "workspace",
+  "representation": null,
+  "nodes": []
+ }
+}

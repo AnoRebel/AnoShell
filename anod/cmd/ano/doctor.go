@@ -110,6 +110,13 @@ func runChecks() []check {
 		comp, compBin = "hyprland", "hyprctl"
 	case os.Getenv("NIRI_SOCKET") != "":
 		comp, compBin = "niri", "niri"
+	// Experimental backends (services/compositor/BackendContract.md).
+	case os.Getenv("SWAYSOCK") != "":
+		comp, compBin = "sway (experimental)", "swaymsg" // tree and keyboard layouts
+	case os.Getenv("MANGO_INSTANCE_SIGNATURE") != "":
+		comp = "mango (experimental)" // its socket; no binary needed
+	case os.Getenv("LABWC_PID") != "":
+		comp, compBin = "labwc (experimental)", "labwc" // labwc --exit
 	}
 	add("info", "compositor", "%s", comp)
 	for _, b := range []string{"qs", compBin} {
@@ -125,9 +132,16 @@ func runChecks() []check {
 
 	// Shell and daemon.
 	if res, err := shellCall("compositor", "status"); err == nil {
-		var cs struct{ Backend string }
+		var cs struct {
+			Backend      string
+			Experimental bool
+		}
 		json.Unmarshal([]byte(res), &cs)
-		add("ok", "shell", "running, backend %s", cs.Backend)
+		if cs.Experimental {
+			add("ok", "shell", "running, backend %s (experimental: some features may be missing)", cs.Backend)
+		} else {
+			add("ok", "shell", "running, backend %s", cs.Backend)
+		}
 	} else {
 		add("warn", "shell", "not running (%v)", err)
 	}

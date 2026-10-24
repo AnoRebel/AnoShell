@@ -13,21 +13,22 @@ import Quickshell.WindowManager
 QtObject {
     id: root
 
-    readonly property string name: "generic"
-    readonly property bool experimental: true
-    readonly property var supports: ({
+    // Overridable by the backends built on this one (sway, mango, labwc).
+    property string name: "generic"
+    property bool experimental: true
+    property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: false, outputConfig: false, exit: false,
         keyboardLayouts: false
     })
 
-    readonly property string focusedOutput: Quickshell.screens[0]?.name ?? ""
+    property string focusedOutput: Quickshell.screens[0]?.name ?? ""
     readonly property var _focusedWs: root.workspaces.find(w => w.output === root.focusedOutput && w.active) ?? null
     readonly property int activeWorkspaceNumber: root._focusedWs?.number ?? 0
     readonly property string activeWorkspaceName: root._focusedWs?.name ?? ""
     property int revision: 0
     property int windowLeases: 0
-    readonly property var windows: {
+    property var windows: {
         void root.revision
         return Array.from(ToplevelManager.toplevels?.values ?? []).map((t, i) => ({
             key: `${i}:${t.appId}`, id: i, title: t.title ?? "", appId: t.appId ?? "",
@@ -53,24 +54,25 @@ QtObject {
         }
         return out.sort((x, y) => x.number - y.number)
     }
-    readonly property var workspaces: root._sets.map(e => ({
+    property var workspaces: root._sets.map(e => ({
         id: `${e.output}:${e.number}`, number: e.number, name: e.set.name ?? String(e.number),
         output: e.output, focused: !!e.set.active && e.output === root.focusedOutput,
-        active: !!e.set.active, occupied: !!e.set.active, urgent: !!e.set.urgent
+        active: !!e.set.active, occupied: root.occupiedOf(e), urgent: !!e.set.urgent
     }))
-    property var _wsChanges: Connections {
-        target: WindowManager
-        function onWindowsetsChanged() { root.revision++ }
-    }
+    // ext-workspace doesn't say which workspaces hold windows: only the
+    // shown ones count, unless a backend knows better.
+    function occupiedOf(e) { return !!e.set.active }
+    // No change signal on WindowManager itself: the bindings above follow each
+    // projection's windowsetsChanged and each windowset's own properties.
 
-    readonly property var fullscreenOutputs: {
+    property var fullscreenOutputs: {
         void root.revision
         const out = {}
         for (const t of Array.from(ToplevelManager.toplevels?.values ?? []))
             if (t?.fullscreen) for (const s of (t.screens ?? [])) out[s.name] = true
         return out
     }
-    readonly property var coveredOutputs: {
+    property var coveredOutputs: {
         void root.revision
         const out = {}
         for (const t of Array.from(ToplevelManager.toplevels?.values ?? []))
@@ -87,8 +89,8 @@ QtObject {
         }
     }
 
-    readonly property string keyboardLayout: ""
-    readonly property var keyboardLayouts: []
+    property string keyboardLayout: ""
+    property var keyboardLayouts: []
 
     function _unsupported(what) { console.warn(`[compositor:generic] ${what} unsupported`); return false }
     function focusWorkspace(number, outputName) {

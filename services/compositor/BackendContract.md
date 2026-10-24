@@ -15,7 +15,16 @@ otherwise from the environment:
 |---|---|
 | `HYPRLAND_INSTANCE_SIGNATURE` | `hyprland` |
 | `NIRI_SOCKET` | `niri` |
+| `SWAYSOCK` | `sway` (experimental) |
+| `MANGO_INSTANCE_SIGNATURE` | `mango` (experimental) |
+| `LABWC_PID` | `labwc` (experimental) |
 | anything else | `generic` |
+
+`SwayBackend`, `MangoBackend` and `LabwcBackend` extend `GenericBackend`
+(ext-workspace, foreign-toplevel) and override what their compositor's IPC
+does better; per-backend notes in `docs/compositors.md`. Their reply parsing
+lives in `SwayModel.js` / `MangoModel.js`, tested with node
+(`scripts/dev/test-sway-model.js`, `scripts/dev/test-mango-model.js`).
 
 ## Properties every backend provides
 
