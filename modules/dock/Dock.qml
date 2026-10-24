@@ -99,6 +99,13 @@ Scope {
 
             color: "transparent"
             exclusiveZone: root.pinned ? dockHeight : 0
+            // Connected and hover-revealed, the window reaches the screen edge
+            // itself (not pushed in by the frame band or a bar there), so the
+            // pointer pushed against the edge finds the hover strip; the dock
+            // still rests inside the band (edgeInset).
+            readonly property bool edgeHover: PanelRegistry.enabled && !root.pinned && hoverToReveal
+            WlrLayershell.exclusionMode: edgeHover ? ExclusionMode.Ignore : ExclusionMode.Normal
+            readonly property real edgeInset: edgeHover ? PanelRegistry.inset(modelData?.name ?? "", root.position) + PanelRegistry.foreignInset(modelData?.name ?? "", root.position) : 0
             WlrLayershell.namespace: "quickshell:dock"
             // Overlay, like the bar: on Top it races the connected frame (also
             // Top) and the frame can paint over the dock's icons.
@@ -113,12 +120,29 @@ Scope {
 
             // Vertical bar fixes width, horizontal bar fixes height. 0 = let the
             // layout system pick the natural axis size.
-            implicitWidth: root.isVertical ? (dockHeight + 16) : 0
-            implicitHeight: root.isVertical ? 0 : (dockHeight + 16)
+            implicitWidth: root.isVertical ? (dockHeight + 16 + edgeInset) : 0
+            implicitHeight: root.isVertical ? 0 : (dockHeight + 16 + edgeInset)
 
             // The hidden dock keeps an input area only when hovering is what
             // reveals it; otherwise it is click-through until shown.
-            mask: Region { item: (dockWindow.reveal || dockWindow.hoverToReveal) ? dockBg : null }
+            // Hidden, the dock has slid out of its window, so the hover target
+            // is a thin strip on the edge where it rests (plus the dock itself
+            // while it slides back, so the pointer doesn't drop off mid-way).
+            mask: Region {
+                item: (dockWindow.reveal || dockWindow.hoverToReveal) ? dockBg : null
+                Region {
+                    intersection: Intersection.Combine
+                    item: dockWindow.hoverToReveal ? dockHotzone : null
+                }
+            }
+            Item {
+                id: dockHotzone
+                readonly property real thick: 3
+                x: root.isVertical ? (root.isLeft ? 0 : dockWindow.width - thick) : dockBg.x
+                y: root.isVertical ? dockBg.y : (root.isTop ? 0 : dockWindow.height - thick)
+                width: root.isVertical ? thick : dockBg.width
+                height: root.isVertical ? dockBg.height : thick
+            }
 
             MouseArea {
                 id: dockHover
@@ -133,9 +157,9 @@ Scope {
                     id: dockBg
                     surface: "dock"
                     readonly property bool connected: PanelRegistry.enabled
-                    readonly property real gap: connected ? 0 : 8
                     property real shown: dockWindow.reveal ? 1 : 0
                     Behavior on shown { MotionSpring { token: dockWindow.reveal ? "liquid" : "settle" } }
+                    readonly property real gap: (connected ? 0 : 8) + dockWindow.edgeInset
                     readonly property real hideShift: (1 - shown) * (root.dockHeight + gap)
                     width: root.isVertical ? root.dockHeight : dockLayout.implicitWidth + 24
                     height: root.isVertical ? dockLayout.implicitHeight + 24 : root.dockHeight

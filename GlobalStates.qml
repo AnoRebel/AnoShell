@@ -28,6 +28,13 @@ Singleton {
     // Bumped each time a connected-frame window maps: Top-layer surfaces stack in
     // map order, so a sidebar mapped before it would sit under the frame.
     property int frameGeneration: 0
+    // Windows with a StyledPopup open from them (its anchor's window), so the
+    // pill doesn't morph into a transient out from under its own drawer.
+    property var popoutWindows: []
+    function setPopoutOpen(win, open) {
+        if (!win || root.popoutWindows.includes(win) === open) return
+        root.popoutWindows = open ? root.popoutWindows.concat([win]) : root.popoutWindows.filter(w => w !== win)
+    }
     property bool mediaControlsOpen: false
     property bool osdBrightnessOpen: false
     property bool osdVolumeOpen: false

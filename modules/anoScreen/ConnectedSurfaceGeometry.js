@@ -135,10 +135,14 @@ function packSlot(descriptor, ctx) {
 
     // A corner is either a concave junction (k > 0, radius 0) or a convex body
     // corner (radius = bodyR, k = the fillet that blends it into the ring).
+    // An omitted end keeps its far corner round too: k = fc smooth-unions it
+    // into whatever it butts against (a fillet), and where nothing is there
+    // (a sidebar sliding beside a pill, under open desktop) it stays round
+    // instead of showing a square corner.
     var nearS = omitS ? radii.surfaceRadius : 0;
     var nearE = omitE ? radii.surfaceRadius : 0;
-    var farS = omitS ? 0 : radii.surfaceRadius;
-    var farE = omitE ? 0 : radii.surfaceRadius;
+    var farS = radii.surfaceRadius;
+    var farE = radii.surfaceRadius;
     var kS = omitS ? fc : radii.startCr;
     var kE = omitE ? fc : radii.endCr;
 
@@ -216,13 +220,24 @@ function fillets(packed, ctx) {
         var a = _screen(s.j.side, u, v, W, H), b = _screen(s.j.side, u + du * k, v + k, W, H);
         out.push({ x: Math.min(a[0], b[0]), y: Math.min(a[1], b[1]), w: k, h: k, cx: b[0], cy: b[1], r: k });
     }
+    // Is the screen point under another active slot? (An omitted end only
+    // fillets into a surface that is actually there.)
+    function covered(s, u, v) {
+        var q = _screen(s.j.side, u, v, W, H);
+        for (var n = 0; n < packed.length; n++) {
+            var r = packed[n].rect;
+            if (packed[n].active && packed[n].junction !== s.j && q[0] >= r[0] - 0.5 && q[0] <= r[0] + r[2] + 0.5
+                    && q[1] >= r[1] - 0.5 && q[1] <= r[1] + r[3] + 0.5) return true;
+        }
+        return false;
+    }
     for (var m = 0; m < slots.length; m++) {
         var s = slots[m], side = s.j.side, horiz = isHorizontal(side);
         var c0 = horiz ? ctx.cutL : ctx.cutT, c1 = horiz ? ctx.cutR : ctx.cutB;
-        if (s.j.omitS || s.u0 <= c0 + 0.5) push(s, Math.max(s.u0, c0), s.v1, 1, s.j.fc);
-        else { var d0 = depth(s, s.u0 - 0.5); if (d0 < s.v1 - 0.5) push(s, s.u0, d0, -1, s.j.kS); }
-        if (s.j.omitE || s.u1 >= c1 - 0.5) push(s, Math.min(s.u1, c1), s.v1, -1, s.j.fc);
-        else { var d1 = depth(s, s.u1 + 0.5); if (d1 < s.v1 - 0.5) push(s, s.u1, d1, 1, s.j.kE); }
+        if (s.u0 <= c0 + 0.5 || (s.j.omitS && covered(s, s.u0 - 1, s.v1 - 1))) push(s, Math.max(s.u0, c0), s.v1, 1, s.j.fc);
+        else if (!s.j.omitS) { var d0 = depth(s, s.u0 - 0.5); if (d0 < s.v1 - 0.5) push(s, s.u0, d0, -1, s.j.kS); }
+        if (s.u1 >= c1 - 0.5 || (s.j.omitE && covered(s, s.u1 + 1, s.v1 - 1))) push(s, Math.min(s.u1, c1), s.v1, -1, s.j.fc);
+        else if (!s.j.omitE) { var d1 = depth(s, s.u1 + 0.5); if (d1 < s.v1 - 0.5) push(s, s.u1, d1, 1, s.j.kE); }
     }
     return out;
 }

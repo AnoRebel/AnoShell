@@ -192,10 +192,10 @@ Scope {
             readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
             // Springs between resting and grown geometry.
             // Transient (volume, notification, …): on the focused screen only.
-            readonly property bool canHostTransient: visible && _revealed && !grown && !tucked && !picking
+            readonly property bool canHostTransient: visible && _revealed && !grown && !tucked && !picking && !GlobalStates.popoutWindows.includes(spotWindow)
             onCanHostTransientChanged: PillTransient.setHost(modelData?.name ?? "", canHostTransient)
             Component.onDestruction: PillTransient.setHost(modelData?.name ?? "", false)
-            readonly property bool transientShown: !grown && PillTransient.active
+            readonly property bool transientShown: !grown && PillTransient.active && canHostTransient
                 && (CompositorService.focusedMonitorName === "" || CompositorService.focusedMonitorName === (modelData?.name ?? ""))
             readonly property real transientLen: Math.max(root.heightPx * 4, (transientView.implicitWidth ?? 0) + 28)
             property real _w: grown ? grownW : root.isVertical ? root.heightPx : (transientShown ? transientLen : length)
@@ -372,7 +372,15 @@ Scope {
                 property real angle: 0
 
                 Rectangle {
+                    // Connected, the pill's edge side is fused into the band:
+                    // run the ring past the window there so it traces only the
+                    // exposed sides, not a line along the band.
+                    readonly property real _off: spotWindow.connected ? spotWindow.cornerRadius * 2 : 0
                     anchors.fill: parent
+                    anchors.topMargin: root.position === "top" ? -_off : 0
+                    anchors.bottomMargin: root.position === "bottom" ? -_off : 0
+                    anchors.leftMargin: root.position === "left" ? -_off : 0
+                    anchors.rightMargin: root.position === "right" ? -_off : 0
                     radius: spotWindow.cornerRadius
                     layer.enabled: true
                     layer.effect: ConicalGradient {

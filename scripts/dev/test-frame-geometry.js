@@ -26,4 +26,12 @@ const sb=G.packSlot({side:'left',x:5,y:42,w:460,h:753,omitStartConnector:true,om
 f=G.fillets([bar,sb],fc);
 a(f.some(q=>Math.abs(q.x-465)<1&&q.y===42&&Math.abs(q.cx-477)<1&&q.cy===54),'sidebar fillets into the bar');
 a(f.some(q=>Math.abs(q.x-465)<1&&Math.abs(q.y-(795-12))<1),'sidebar fillets into the bottom band');
+a(sb.corner[1]===12&&sb.k[1]===12,'omitted far corner stays round, k fillets it');
+// Beside a pill (nothing above most of its top), the sidebar's top end gets no
+// fillet in open air; with the pill over its corner, it does.
+const pill=G.packSlot({side:'top',x:600,y:0,w:300,h:36},fc);
+const sb2=G.packSlot({side:'left',x:5,y:36,w:460,h:759,omitStartConnector:true,omitEndConnector:true},fc);
+a(!G.fillets([pill,sb2],fc).some(q=>Math.abs(q.x-465)<1&&q.y===36),'no fillet into open desktop');
+const pill2=G.packSlot({side:'top',x:400,y:0,w:300,h:36},fc);
+a(G.fillets([pill2,sb2],fc).some(q=>Math.abs(q.x-465)<1&&q.y===36),'fillet into the pill above');
 console.log('geometry ok');

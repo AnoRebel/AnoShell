@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import qs
 import qs.modules.common
 import qs.services
 
@@ -71,6 +72,10 @@ Item {
     property real reveal: root.shown && root._surfaceUp ? 1 : 0
     Behavior on reveal { MotionSpring { token: root.shown ? "liquid" : "settle" } }
     readonly property bool _open: root.shown || root.reveal > 0.005
+    readonly property var _anchorWindow: root.anchorItem?.QsWindow?.window ?? null
+    on_OpenChanged: GlobalStates.setPopoutOpen(root._anchorWindow, root._open)
+    on_AnchorWindowChanged: if (root._open) GlobalStates.setPopoutOpen(root._anchorWindow, true)
+    Component.onDestruction: GlobalStates.setPopoutOpen(root._anchorWindow, false)
 
     // While open, publish the card's SCREEN rect so the frame fuses it into the
     // bar with concave joins. The card lives in its own PopupWindow, whose item
