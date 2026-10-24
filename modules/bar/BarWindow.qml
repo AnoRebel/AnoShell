@@ -35,7 +35,11 @@ PanelWindow {
 
     // Bar form (BarContent/BarLayout): floating forms (fit, islands) sit off
     // the edge by formMargin, which springs so switching forms is continuous.
-    readonly property real _formMarginTarget: barContentLoader.item?.edgeMargin ?? 0
+    // Connected, islands (no neck to the frame) keep their margin past the
+    // band: from the screen edge it left a 1 px hairline between band and
+    // island. Fit joins the band through its neck, which fills that gap.
+    readonly property real _formMarginTarget: (barContentLoader.item?.edgeMargin ?? 0)
+        + (barContentLoader.item?.form === "islands" ? PanelRegistry.frameThickness : 0)
     property real formMargin: _formMarginTarget
     Behavior on formMargin { MotionSpring { token: "liquid" } }
     readonly property string form: barContentLoader.item?.form ?? "full"

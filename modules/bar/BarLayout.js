@@ -47,7 +47,9 @@ function place(opts, groups) {
         packed.forEach(function (g) { out[g.id] = x; x += g.len + s; });
         return out;
     }
-    var inset = form === "fit" ? opts.margin || 0 : 0;
+    // Floating forms keep their margin from the ends too (islands sat 2 px
+    // from the frame band).
+    var inset = form === "fit" || form === "islands" ? opts.margin || 0 : 0;
     var x0 = inset + p;
     live.forEach(function (g) { if (g.zone === "start") { out[g.id] = x0; x0 += g.len + s; } });
     var x1 = L - inset - p;
