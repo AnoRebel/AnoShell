@@ -209,8 +209,8 @@ Scope {
             // Always animated (after the first appearance): gating on _growing lost
             // the race with the new size in the same turn, so the morph jumped.
             // Grow on the expressive curve, shrink on the accelerate one.
-            Behavior on _w { enabled: spotWindow._animated; MotionSpring { token: spotWindow.grown || spotWindow.transientShown ? "liquid" : "settle" } }
-            Behavior on _h { enabled: spotWindow._animated; MotionSpring { token: spotWindow.grown || spotWindow.transientShown ? "liquid" : "settle" } }
+            Behavior on _w { id: wMotion; enabled: spotWindow._animated; MotionSpring { token: Math.abs(wMotion.targetValue - (root.isVertical ? root.heightPx : spotWindow.length)) < 0.5 ? "settle" : "liquid" } }
+            Behavior on _h { id: hMotion; enabled: spotWindow._animated; MotionSpring { token: Math.abs(hMotion.targetValue - (root.isVertical ? spotWindow.length : root.heightPx)) < 0.5 ? "settle" : "liquid" } }
             readonly property real cornerRadius: grown ? Appearance.rounding.windowRounding : Math.min(_w, _h) / 2
 
             // ── Envelope ────────────────────────────────────────────────────
@@ -282,8 +282,13 @@ Scope {
 
             // Connected mode: flush on its edge, painted by the frame.
             // The frame retracts in fullscreen, so the pill paints itself then.
-            readonly property bool connected: PanelRegistry.enabled && !(Config.options?.anoSpot?.floating ?? false) && !screenFullscreen
-            readonly property int gap: _hostBar ? _inBarInset : connected ? 0 : 6
+            readonly property bool connected: fusedLook && !screenFullscreen
+            // Connected mode's look (flush, no outline), kept in fullscreen too:
+            // the frame retracts under the fullscreen window at once, and the
+            // pill switching to its floating look there dropped a bare outlined
+            // capsule. It paints its own body (frame colour) instead.
+            readonly property bool fusedLook: PanelRegistry.enabled && !(Config.options?.anoSpot?.floating ?? false)
+            readonly property int gap: _hostBar ? _inBarInset : fusedLook ? 0 : 6
             margins {
                 top: root.position === "top" ? gap : 0
                 bottom: root.position === "bottom" ? gap : 0
@@ -313,7 +318,7 @@ Scope {
             }
             // 0 = shown, 1 = fully inside the edge.
             property real tuck: tucked ? 1 : 0
-            Behavior on tuck { MotionSpring { token: spotWindow.tucked ? "settle" : "liquid" } }
+            Behavior on tuck { id: tuckMotion; MotionSpring { token: tuckMotion.targetValue > 0.5 ? "settle" : "liquid" } }
             readonly property real _depth: (root.isVertical ? _w : _h) + gap
             readonly property real _shift: Math.max(0, tuck) * _depth
             // The whole content slides; the window itself stays put.
@@ -430,6 +435,12 @@ Scope {
                 x: root.position === "right" ? parent.width - width : root.position === "left" ? 0 : Math.round((parent.width - width) / 2)
                 y: root.position === "bottom" ? parent.height - height : root.position === "top" ? 0 : Math.round((parent.height - height) / 2)
                 radius: spotWindow.cornerRadius
+                // Fused but without the frame (fullscreen): square on its edge.
+                readonly property real _edgeR: spotWindow.fusedLook && !spotWindow.connected ? 0 : spotWindow.cornerRadius
+                topLeftRadius: root.position === "top" || root.position === "left" ? _edgeR : spotWindow.cornerRadius
+                topRightRadius: root.position === "top" || root.position === "right" ? _edgeR : spotWindow.cornerRadius
+                bottomLeftRadius: root.position === "bottom" || root.position === "left" ? _edgeR : spotWindow.cornerRadius
+                bottomRightRadius: root.position === "bottom" || root.position === "right" ? _edgeR : spotWindow.cornerRadius
                 // Connected: the frame paints the body, but from another window
                 // that learns the new size a frame or more later, so while the
                 // pill moves the content led its background. While moving, the
@@ -437,12 +448,15 @@ Scope {
                 // content); at rest it hands back to the frame (texture, joins).
                 color: spotWindow.connected
                     ? (spotWindow._paintBody ? Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g, Appearance.colors.colLayer0.b, 1) : "transparent")
+                    : spotWindow.fusedLook
+                    ? Qt.rgba(Appearance.colors.colLayer0.r, Appearance.colors.colLayer0.g, Appearance.colors.colLayer0.b,
+                        Config.options?.appearance?.connectedCorners?.opacity ?? 1)
                     : (Appearance?.colors?.colLayer0 ?? "#1e1e2e")
                 // Glass-token-driven border + opacity so static themes
                 // (aurora, angel, etc.) can dial the pill's translucency.
                 // Material You and "neutral" static themes leave the
                 // tokens at sensible defaults and look unchanged.
-                border.width: spotWindow.connected ? 0 : (Appearance?.glassTokens?.borderWidth ?? 1)
+                border.width: spotWindow.fusedLook ? 0 : (Appearance?.glassTokens?.borderWidth ?? 1)
                 border.color: Appearance?.glassTokens?.borderColor
                             ?? Appearance?.colors?.colOutlineVariant
                             ?? "#444"

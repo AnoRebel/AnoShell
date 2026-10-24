@@ -144,8 +144,9 @@ Scope {
                     id: slide
                     x: sidebarRoot.shouldShow ? 0 : -sidebarRoot._slideAway // per screen (see keyboardFocus)
                     Behavior on x {
+                        id: slideMotion
                         enabled: !root.instantOpen
-                        MotionSpring { token: GlobalStates.sidebarLeftOpen ? "liquid" : "settle" }
+                        MotionSpring { token: Math.abs(slideMotion.targetValue) < 0.5 ? "liquid" : "settle" }
                     }
                 }
 

@@ -30,7 +30,7 @@ Item {
     implicitHeight: item?.implicitHeight ?? 0
     implicitWidth: Math.round(_w)
     property real _w: expanded ? openWidth : Math.min(collapsedWidth, fullWidth)
-    Behavior on _w { MotionSpring { token: root.expanded ? "liquid" : "settle" } }
+    Behavior on _w { id: wMotion; MotionSpring { token: wMotion.targetValue > root._w ? "liquid" : "settle" } }
     Layout.preferredWidth: implicitWidth
     clip: true
 

@@ -32,7 +32,7 @@ PanelWindow {
 
     // Mapped from the moment it opens until the close animation ends.
     property real shown: open ? 1 : 0
-    Behavior on shown { MotionSpring { token: root.open ? "liquid" : "settle" } }
+    Behavior on shown { id: shownMotion; MotionSpring { token: shownMotion.targetValue > 0.5 ? "liquid" : "settle" } }
     visible: open || shown > 0.01
     // On the monitor you're using (it opened on the first one).
     screen: Quickshell.screens.find(sc => sc.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]

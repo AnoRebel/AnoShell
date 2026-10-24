@@ -124,7 +124,7 @@ Scope {
             // Kept up until the pill has retracted, so the exit animates too.
             readonly property bool wanted: root.currentIndicator.length > 0
             property real shown: wanted ? 1 : 0
-            Behavior on shown { MotionSpring { token: osdWindow.wanted ? "liquid" : "settle" } }
+            Behavior on shown { id: shownMotion; MotionSpring { token: shownMotion.targetValue > 0.5 ? "liquid" : "settle" } }
             visible: wanted || shown > 0.001
             readonly property bool connected: PanelRegistry.enabled
             color: "transparent"

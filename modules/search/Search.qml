@@ -149,7 +149,7 @@ Scope {
         // One spring drives the open/close; the window stays mapped until the
         // card has retracted, and reversing mid-flight retargets smoothly.
         property real shown: GlobalStates.searchOpen ? 1 : 0
-        Behavior on shown { MotionSpring { token: GlobalStates.searchOpen ? "liquid" : "settle" } }
+        Behavior on shown { id: shownMotion; MotionSpring { token: shownMotion.targetValue > 0.5 ? "liquid" : "settle" } }
         visible: GlobalStates.searchOpen || shown > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

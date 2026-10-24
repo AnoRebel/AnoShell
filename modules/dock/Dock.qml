@@ -158,7 +158,7 @@ Scope {
                     surface: "dock"
                     readonly property bool connected: PanelRegistry.enabled
                     property real shown: dockWindow.reveal ? 1 : 0
-                    Behavior on shown { MotionSpring { token: dockWindow.reveal ? "liquid" : "settle" } }
+                    Behavior on shown { id: shownMotion; MotionSpring { token: shownMotion.targetValue > 0.5 ? "liquid" : "settle" } }
                     readonly property real gap: (connected ? 0 : 8) + dockWindow.edgeInset
                     readonly property real hideShift: (1 - shown) * (root.dockHeight + gap)
                     width: root.isVertical ? root.dockHeight : dockLayout.implicitWidth + 24

@@ -200,7 +200,7 @@ Scope {
             // The band and corners retract on a spring rather than vanishing;
             // the window unmaps once fully retracted.
             property real shown: screenFullscreen ? 0 : 1
-            Behavior on shown { MotionSpring { token: win.screenFullscreen ? "settle" : "liquid" } }
+            Behavior on shown { id: shownMotion; MotionSpring { token: shownMotion.targetValue > 0.5 ? "liquid" : "settle" } }
             visible: GlobalStates.shellSettled && root.enabled && (!screenFullscreen || shown > 0.001)
 
             readonly property real sw: width

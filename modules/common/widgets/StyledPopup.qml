@@ -70,7 +70,7 @@ Item {
     // used to start at once, and creating the window ate most of the motion.
     property bool _surfaceUp: false
     property real reveal: root.shown && root._surfaceUp ? 1 : 0
-    Behavior on reveal { MotionSpring { token: root.shown ? "liquid" : "settle" } }
+    Behavior on reveal { id: revealMotion; MotionSpring { token: revealMotion.targetValue > 0.5 ? "liquid" : "settle" } }
     readonly property bool _open: root.shown || root.reveal > 0.005
     readonly property var _anchorWindow: root.anchorItem?.QsWindow?.window ?? null
     on_OpenChanged: GlobalStates.setPopoutOpen(root._anchorWindow, root._open)

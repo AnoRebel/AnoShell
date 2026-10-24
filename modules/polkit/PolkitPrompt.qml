@@ -235,7 +235,7 @@ Scope {
                         Layout.fillWidth: true
                         clip: true
                         implicitHeight: win.showDetails ? detailsGrid.implicitHeight : 0
-                        Behavior on implicitHeight { MotionSpring { token: win.showDetails ? "liquid" : "settle" } }
+                        Behavior on implicitHeight { id: detailsMotion; MotionSpring { token: detailsMotion.targetValue > 0 ? "liquid" : "settle" } }
                         // Shown as soon as asked for: a hidden box's layout reports
                         // no height, so waiting for one never showed it.
                         visible: win.showDetails || implicitHeight > 0.5

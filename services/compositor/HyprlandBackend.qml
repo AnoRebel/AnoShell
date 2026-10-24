@@ -190,7 +190,21 @@ QtObject {
     property var _events: Connections {
         target: Hyprland
         function onRawEvent(event) {
-            if (root._refreshEvents.includes(event.name)
+            if (event.name === "fullscreen") {
+                // `fullscreen>>0`: the focused window left fullscreen (or
+                // maximise). Clear its monitor now: the debounced refresh
+                // answered 100+ ms later, so the bar and pill came back well
+                // after the window had. Entering ("1") can't be told from
+                // maximise, so that waits for the refresh, sent straight away.
+                const mon = Hyprland.focusedMonitor?.name ?? ""
+                if (event.data === "0" && mon && (root.fullscreenOutputs[mon] || root.coveredOutputs[mon])) {
+                    const f = Object.assign({}, root.fullscreenOutputs), c = Object.assign({}, root.coveredOutputs)
+                    delete f[mon]; delete c[mon]
+                    root.fullscreenOutputs = f; root.coveredOutputs = c; root.revision++
+                }
+                root._refreshTimer.stop()
+                root.refresh()
+            } else if (root._refreshEvents.includes(event.name)
                 || (root.windowLeases > 0 && root._windowEvents.includes(event.name))) root._refreshTimer.restart()
             else if (event.name === "activelayout")
                 root.keyboardLayout = event.data.substring(event.data.indexOf(",") + 1)

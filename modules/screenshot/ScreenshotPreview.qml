@@ -146,7 +146,7 @@ Scope {
             opacity: root.shown && !Screenshot.preparing ? 1 : 0
             transform: Translate {
                 x: root.shown ? 0 : (root.onLeft ? -40 : 40)
-                Behavior on x { MotionSpring { token: root.shown ? "liquid" : "settle" } }
+                Behavior on x { id: slideMotion; MotionSpring { token: Math.abs(slideMotion.targetValue) < 0.5 ? "liquid" : "settle" } }
             }
             Behavior on opacity { enabled: !Screenshot.preparing; NumberAnimation { duration: AnimationConfig.scaledDuration(root.shown ? 220 : 160); easing.type: Easing.BezierSpline; easing.bezierCurve: root.shown ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel } }
             HoverHandler { id: hover }

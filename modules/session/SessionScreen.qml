@@ -140,7 +140,7 @@ Scope {
                     anchors.centerIn: parent
                     spacing: 6
                     scale: GlobalStates.sessionOpen ? 1 : 0.8
-                    Behavior on scale { MotionSpring { token: GlobalStates.sessionOpen ? "liquid" : "settle" } }
+                    Behavior on scale { id: scaleMotion; MotionSpring { token: scaleMotion.targetValue > 0.9 ? "liquid" : "settle" } }
                     Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 96; height: 96; radius: 48
@@ -190,9 +190,9 @@ Scope {
                         // On a circle, starting at the top; flies out from the avatar.
                         readonly property real angle: -Math.PI / 2 + index * 2 * Math.PI / root.actions.length
                         property real reach: GlobalStates.sessionOpen ? 172 : 0
-                        Behavior on reach { SequentialAnimation {
-                            PauseAnimation { duration: GlobalStates.sessionOpen ? AnimationConfig.scaledDuration(35 * index) : 0 }
-                            MotionSpring { token: GlobalStates.sessionOpen ? "liquid" : "settle" }
+                        Behavior on reach { id: reachMotion; SequentialAnimation {
+                            PauseAnimation { duration: reachMotion.targetValue > 0 ? AnimationConfig.scaledDuration(35 * index) : 0 }
+                            MotionSpring { token: reachMotion.targetValue > 0 ? "liquid" : "settle" }
                         } }
                         x: sessionCard.width / 2 + Math.cos(angle) * reach - width / 2
                         y: sessionCard.height / 2 + Math.sin(angle) * reach - height / 2

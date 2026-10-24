@@ -99,7 +99,7 @@ Scope {
         // 0 → 1 as the panel grows out of its edge (pinned there, never slid off-screen).
         property real reveal: 0
         Binding on reveal { value: slot.isShown && loader.status === Loader.Ready ? 1 : 0 }
-        Behavior on reveal { MotionSpring { token: slot.isShown ? "liquid" : "settle" } }
+        Behavior on reveal { id: revealMotion; MotionSpring { token: revealMotion.targetValue > 0.5 ? "liquid" : "settle" } }
         onFullWidthChanged: if (fullWidth > 0) root.widths = root._with(root.widths, kind, fullWidth)
         onRevealChanged: {
             if (reveal > 0.001 || slot.isShown) return
