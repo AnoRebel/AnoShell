@@ -28,7 +28,7 @@ Item {
     readonly property bool _hasPrev: ReaderNovel.hasPrevChapter
     readonly property bool _hasNext: ReaderNovel.hasNextChapter
 
-    Rectangle { anchors.fill: parent; color: "#1a1714" }
+    Rectangle { anchors.fill: parent; color: "#1a1714" } // look-coverage: fixed (always-dark reading surface)
 
     Rectangle {
         id: readerHeader
@@ -153,7 +153,7 @@ Item {
 
     // Loading: a ghost page in the reader's own measure and type size
     Rectangle {
-        anchors.fill: parent; color: "#1a1714"; z: 8
+        anchors.fill: parent; color: "#1a1714"; z: 8 // look-coverage: fixed (always-dark reading surface)
         opacity: ReaderNovel.isFetchingChapter ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
@@ -174,7 +174,7 @@ Item {
     }
 
     Rectangle {
-        anchors.fill: parent; color: "#1a1714"; z: 7
+        anchors.fill: parent; color: "#1a1714"; z: 7 // look-coverage: fixed (always-dark reading surface)
         visible: ReaderNovel.chapterError.length > 0 && !ReaderNovel.isFetchingChapter
         Column {
             anchors.centerIn: parent; spacing: 10

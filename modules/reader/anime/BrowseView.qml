@@ -388,7 +388,7 @@ Item {
                                         ? "★ " + (modelData.score || 0).toFixed(1) : ""
                                     font.family: browseView.fontBody
                                     font.pixelSize: 8; font.bold: true; font.letterSpacing: 0.5
-                                    color: "#f5c518"
+                                    color: Appearance.colors.colWarning
                                 }
                             }
 

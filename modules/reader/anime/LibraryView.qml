@@ -128,7 +128,7 @@ Item {
                             text: entry.score ? "★ " + (entry.score).toFixed(1) : ""
                             font.family: libraryView.fontBody
                             font.pixelSize: 8; font.bold: true
-                            color: "#f5c518"
+                            color: Appearance.colors.colWarning
                         }
                     }
 

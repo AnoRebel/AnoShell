@@ -27,7 +27,7 @@ Item {
     }
 
     // ── Ink-black background ─────────────────────────────────────────────────
-    Rectangle { anchors.fill: parent; color: "#08080a" }
+    Rectangle { anchors.fill: parent; color: "#08080a" } // look-coverage: fixed (always-dark reading surface)
 
     // ── Reader header ────────────────────────────────────────────────────────
     Rectangle {
@@ -117,7 +117,7 @@ Item {
         anchors.fill: parent
         z: 8
         active: ReaderManga.isFetchingPages
-        color: "#08080a"
+        color: "#08080a" // look-coverage: fixed (always-dark reading surface)
         textColor: "white"
         spinnerSize: 40
         label: "loading pages"
@@ -128,7 +128,7 @@ Item {
     // ── Pages error overlay ──────────────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
-        color: "#08080a"
+        color: "#08080a" // look-coverage: fixed (always-dark reading surface)
         visible: ReaderManga.pagesError.length > 0 && !ReaderManga.isFetchingPages
         z: 7
 
@@ -208,7 +208,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 z: -1
-                color: "#111115"
+                color: "#111115" // look-coverage: fixed (always-dark reading surface)
                 visible: pageImg.status !== Image.Ready
 
                 Column {
