@@ -92,7 +92,7 @@ function place(opts, groups) {
 }
 
 // Bodies from live geometry.
-//   opts: { length, padding, form, gap, islandPad, margin, minLen }
+//   opts: { length, padding, form, gap, islandPad, margin, minLen, open }
 //   live: [{ id, pos, len, sep }]
 // Returns [{ pos, len, island, id, sep }]: the attached bar body (possibly split
 // into segments around islands) followed by the islands. Separation opens a
@@ -108,12 +108,16 @@ function bodies(opts, live) {
     items.forEach(function (it) { (it.sep > 0.02 ? islands : attached).push(it); });
 
     var span = null;
-    if (form === "full") span = [0, L];
-    else if (form === "fit") span = [opts.margin || 0, L - (opts.margin || 0)];
-    else if (form === "notch" && items.length) {
-        var lo = items[0].pos, hi = items[items.length - 1].pos + items[items.length - 1].len;
-        span = [lo - opts.padding, hi + opts.padding];
-    }
+    var lo = items.length ? items[0].pos - opts.padding : 0;
+    var hi = items.length ? items[items.length - 1].pos + items[items.length - 1].len + opts.padding : L;
+    // opts.open (0..1, default 1): how far a full or fit body has spread from
+    // the groups' own extent to its span, so switching from notch or islands
+    // grows the body with the groups instead of snapping it edge to edge.
+    var t = opts.open === undefined ? 1 : Math.max(0, Math.min(1, opts.open));
+    var blend = function (a, b) { return items.length ? a + (b - a) * t : b; };
+    if (form === "full") span = [blend(lo, 0), blend(hi, L)];
+    else if (form === "fit") span = [blend(lo, opts.margin || 0), blend(hi, L - (opts.margin || 0))];
+    else if (form === "notch" && items.length) span = [lo, hi];
     // islands form: no body, only islands (span stays null).
 
     var out = [];

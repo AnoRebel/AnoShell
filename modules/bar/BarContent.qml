@@ -144,6 +144,12 @@ Item {
     readonly property real groupSpacing: barConfig?.groupSpacing ?? Config.options?.bar?.layout?.groupSpacing ?? 8
     readonly property real edgeMargin: (form === "fit" || form === "islands") ? (barConfig?.formMargin ?? Config.options?.bar?.layout?.formMargin ?? 6) : 0
     readonly property real islandPad: 6
+    // A full or fit body spreads from the groups' extent to its span on the
+    // groups' own motion (BarLayout.bodies opts.open), so switching from
+    // notch or islands grows it instead of snapping it edge to edge.
+    property real spanOpen: (root.form === "full" || root.form === "fit") ? 1 : 0
+    Behavior on spanOpen { enabled: root._ready; MotionNumber { curve: "emphasizedDecel"; baseDuration: 350 } }
+    onSpanOpenChanged: _relayout()
     readonly property real along: isVertical ? height : width
     readonly property real thickness: isVertical ? width : height
 
@@ -179,7 +185,7 @@ Item {
             form: root.form, margin: root.edgeMargin, hole: root.pillHole },
             items.map(it => ({ id: it.gid, zone: it.zone, len: it.contentLen + Math.min(it.squeeze, it.flex), flex: it.flex })))
         const bodies = BarLayout.bodies({ length: root.along, padding: root.edgePadding, form: root.form,
-            gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin },
+            gap: root.groupGap, islandPad: root.islandPad, margin: root.edgeMargin, open: root.spanOpen },
             items.map(it => ({ id: it.gid, pos: it.pos, len: it.len, sep: Math.max(0, Math.min(1, it.sep)) })))
         root.bodyRects = bodies.map(b => root.isVertical
             ? { x: 0, y: b.pos, w: root.thickness, h: b.len, island: b.island, id: b.id ?? "", sep: b.sep ?? 0 }
@@ -225,7 +231,8 @@ Item {
 
             // Along-axis position and separation (0 attached … 1 island).
             property real pos: root._targets[gid] ?? 0
-            Behavior on pos { enabled: root._ready; MotionSpring { token: "snappy" } }
+            // No overshoot: a group at an end would slide past the bar's end.
+            Behavior on pos { enabled: root._ready; MotionNumber { curve: "emphasizedDecel"; baseDuration: 350 } }
             property real sep: BarLayout.sepTarget(root.form, modelData)
             Behavior on sep { enabled: root._ready; MotionSpring { token: grp.sep < 0.5 ? "liquid" : "settle" } }
             onPosChanged: root._relayout()
