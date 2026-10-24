@@ -59,13 +59,13 @@ Scope {
             // The grid: whole cells, centred in the free area.
             readonly property int cell: Math.max(32, Config.options?.widgets?.cell ?? 96)
             readonly property int gap: Math.max(0, Config.options?.widgets?.gap ?? 12)
-            readonly property int margin: 24
-            readonly property int cols: Math.max(1, Math.floor((win.width - 2 * win.margin + win.gap) / (win.cell + win.gap)))
-            readonly property int rows: Math.max(1, Math.floor((win.height - 2 * win.margin - 28 + win.gap) / (win.cell + win.gap)))
+            readonly property var _size: Widgets.gridSize(win.width, win.height)
+            readonly property int cols: win._size.cols
+            readonly property int rows: win._size.rows
             onColsChanged: Widgets.setGrid(win.screenName, win.cols, win.rows)
             onRowsChanged: Widgets.setGrid(win.screenName, win.cols, win.rows)
             readonly property real originX: Math.round((win.width - (win.cols * (win.cell + win.gap) - win.gap)) / 2)
-            readonly property real originY: Math.round((win.height - 28 - (win.rows * (win.cell + win.gap) - win.gap)) / 2)
+            readonly property real originY: Math.round((win.height - Widgets.pagerHeight - (win.rows * (win.cell + win.gap) - win.gap)) / 2)
 
             Component.onCompleted: { Widgets.hold(true); Widgets.setGrid(win.screenName, win.cols, win.rows); slotA.page = win.configPage; win.shownPage = win.configPage }
             Component.onDestruction: Widgets.hold(false)

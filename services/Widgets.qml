@@ -148,6 +148,15 @@ Singleton {
     Instantiator { model: root._userReady ? userFolder : null; delegate: Manifest { source: "user" } }
 
     // ── Layout (widgets.screens) ────────────────────────────────────────
+    // The grid of whole cells that fits a free area of w × h: the layer's
+    // window, or (Settings, while no layer runs) the screen's work area.
+    readonly property int gridMargin: 24
+    readonly property int pagerHeight: 28   // the page dots under the grid
+    function gridSize(w: real, h: real): var {
+        const cell = Math.max(32, Config.options?.widgets?.cell ?? 96), gap = Math.max(0, Config.options?.widgets?.gap ?? 12)
+        return { cols: Math.max(1, Math.floor((w - 2 * root.gridMargin + gap) / (cell + gap))),
+                 rows: Math.max(1, Math.floor((h - 2 * root.gridMargin - root.pagerHeight + gap) / (cell + gap))) }
+    }
     // Each running layer's grid, by screen name: { cols, rows }.
     property var grids: ({})
     function setGrid(screenName: string, cols: int, rows: int): void {

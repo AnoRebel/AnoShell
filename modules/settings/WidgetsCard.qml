@@ -25,10 +25,10 @@ SettingsCard {
     readonly property var grid: {
         const g = Widgets.grids[card.screenName]
         if (g) return g
-        const sc = Quickshell.screens.find(s => s.name === card.screenName)
-        const cell = Config.options?.widgets?.cell ?? 96, gap = Config.options?.widgets?.gap ?? 12
-        return { cols: Math.max(1, Math.floor(((sc?.width ?? 1280) - 48 + gap) / (cell + gap))),
-                 rows: Math.max(1, Math.floor(((sc?.height ?? 800) - 140 + gap) / (cell + gap))) }
+        // The screen less what panels reserve on each edge (the layer's window).
+        const sc = Quickshell.screens.find(s => s.name === card.screenName), n = card.screenName
+        const r = e => PanelRegistry.inset(n, e) + PanelRegistry.foreignInset(n, e)
+        return Widgets.gridSize((sc?.width ?? 1280) - r("left") - r("right"), (sc?.height ?? 800) - r("top") - r("bottom"))
     }
     property string message: ""
 
