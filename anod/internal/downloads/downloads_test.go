@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
@@ -74,4 +75,60 @@ func TestDir(t *testing.T) {
 	if got := Dir(cfg, "/home/u"); got != "/home/u/Stuff" {
 		t.Fatal(got)
 	}
+}
+
+// Cancelling returns promptly (closing the raw fd didn't wake a blocked read).
+func TestCancel(t *testing.T) {
+	w := &Watcher{Dir: t.TempDir()}
+	ctx, cancel := context.WithCancel(context.Background())
+	ret := make(chan error, 1)
+	go func() { ret <- w.Run(ctx) }()
+	time.Sleep(100 * time.Millisecond)
+	cancel()
+	select {
+	case err := <-ret:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Run did not return after cancel")
+	}
+}
+
+// A folder that appears later is picked up, and renames in its parent (the
+// fallback watch) don't count as finished downloads.
+func TestLateDir(t *testing.T) {
+	parent := t.TempDir()
+	dir := filepath.Join(parent, "Downloads")
+	var mu sync.Mutex
+	var last map[string]any
+	w := &Watcher{Dir: dir, Notify: func(_ string, d any) { mu.Lock(); last = d.(map[string]any); mu.Unlock() }}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go w.Run(ctx)
+	time.Sleep(100 * time.Millisecond)
+	os.Mkdir(dir, 0o755)
+	time.Sleep(100 * time.Millisecond)
+	stray := filepath.Join(parent, "y.part")
+	os.WriteFile(stray, []byte("x"), 0o644)
+	os.Rename(stray, filepath.Join(parent, "y"))
+	part := filepath.Join(dir, "z.part")
+	os.WriteFile(part, []byte("abc"), 0o644)
+	os.Rename(part, filepath.Join(dir, "z"))
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		mu.Lock()
+		l := last
+		mu.Unlock()
+		if l != nil {
+			if fs := l["finished"].([]Finished); len(fs) > 0 {
+				if len(fs) != 1 || fs[0].Name != "z" {
+					t.Fatalf("finished: %+v", fs)
+				}
+				return
+			}
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	t.Fatal("timed out")
 }

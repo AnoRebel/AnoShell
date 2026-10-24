@@ -178,19 +178,30 @@ func (w *Watcher) Run(ctx context.Context) error {
 	if w.Stale == 0 {
 		w.Stale = time.Minute
 	}
-	fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC)
+	// Non-blocking, read through an *os.File: the runtime poller lets Close
+	// interrupt a pending Read (closing the raw fd doesn't wake a blocked
+	// read(2), so cancelling never returned).
+	fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC | syscall.IN_NONBLOCK)
 	if err != nil {
 		return err
 	}
-	go func() { <-ctx.Done(); syscall.Close(fd) }()
+	f := os.NewFile(uintptr(fd), "inotify")
+	go func() { <-ctx.Done(); f.Close() }()
 
-	// A folder that isn't there yet: watch the one it would appear in.
-	watched := false
+	// A folder that isn't there yet: watch the one it would appear in, and
+	// drop that watch once the folder is watched (only its events count).
+	dirWd, parentWd := -1, -1
 	watch := func() {
-		if _, err := syscall.InotifyAddWatch(fd, w.Dir, dirEvents); err == nil {
-			watched = true
-		} else {
-			syscall.InotifyAddWatch(fd, filepath.Dir(w.Dir), syscall.IN_CREATE|syscall.IN_MOVED_TO)
+		if wd, err := syscall.InotifyAddWatch(fd, w.Dir, dirEvents); err == nil {
+			dirWd = wd
+			if parentWd >= 0 {
+				syscall.InotifyRmWatch(fd, uint32(parentWd))
+				parentWd = -1
+			}
+		} else if parentWd < 0 {
+			if wd, err := syscall.InotifyAddWatch(fd, filepath.Dir(w.Dir), syscall.IN_CREATE|syscall.IN_MOVED_TO); err == nil {
+				parentWd = wd
+			}
 		}
 	}
 	watch()
@@ -203,13 +214,10 @@ func (w *Watcher) Run(ctx context.Context) error {
 	from := map[uint32]bool{} // rename cookie → a partial left
 	buf := make([]byte, 64*(syscall.SizeofInotifyEvent+syscall.NAME_MAX+1))
 	for {
-		n, err := syscall.Read(fd, buf)
+		n, err := f.Read(buf)
 		if err != nil || n <= 0 {
 			if ctx.Err() != nil {
 				return nil
-			}
-			if err == syscall.EINTR {
-				continue
 			}
 			return err
 		}
@@ -217,8 +225,8 @@ func (w *Watcher) Run(ctx context.Context) error {
 			ev := (*syscall.InotifyEvent)(unsafe.Pointer(&buf[off]))
 			name := strings.TrimRight(string(buf[off+syscall.SizeofInotifyEvent:off+syscall.SizeofInotifyEvent+int(ev.Len)]), "\x00")
 			off += syscall.SizeofInotifyEvent + int(ev.Len)
-			if !watched {
-				if name == filepath.Base(w.Dir) {
+			if int(ev.Wd) != dirWd {
+				if int(ev.Wd) == parentWd && name == filepath.Base(w.Dir) {
 					watch()
 				}
 				continue
@@ -229,7 +237,11 @@ func (w *Watcher) Run(ctx context.Context) error {
 				from[ev.Cookie] = true
 			case ev.Mask&syscall.IN_MOVED_TO != 0 && !partial && from[ev.Cookie]:
 				delete(from, ev.Cookie)
-				done <- filepath.Join(w.Dir, name)
+				select {
+				case done <- filepath.Join(w.Dir, name):
+				case <-ctx.Done():
+					return nil
+				}
 			}
 		}
 		if len(from) > 64 { // pairs that never completed
