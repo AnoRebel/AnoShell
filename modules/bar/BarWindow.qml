@@ -151,7 +151,9 @@ PanelWindow {
     Region {
         id: hoverRegion
         item: hoverMask
-        Region { intersection: Intersection.Combine; item: barRoot.effectiveHidden ? edgeStrip : null }
+        // Auto-hide only: over a fullscreen window the strip would take its
+        // clicks along that edge.
+        Region { intersection: Intersection.Combine; item: barRoot.effectiveHidden && barRoot.autoHide && !barRoot.screenFullscreen ? edgeStrip : null }
     }
     Region {
         id: bodyRegion

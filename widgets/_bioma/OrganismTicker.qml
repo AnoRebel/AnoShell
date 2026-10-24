@@ -15,9 +15,17 @@ QtObject {
     signal triggered()
 
     readonly property bool _onClock: root.running && root.interval <= 0
-    on_OnClockChanged: OrganismClock.users += root._onClock ? 1 : -1
-    Component.onCompleted: if (root._onClock) OrganismClock.users++
-    Component.onDestruction: if (root._onClock) OrganismClock.users--
+    // Counted once, wherever the change shows up first (the changed handler
+    // can also fire while initial bindings evaluate, before onCompleted).
+    property bool _counted: false
+    function _count(on) {
+        if (on === root._counted) return
+        OrganismClock.users += on ? 1 : -1
+        root._counted = on
+    }
+    on_OnClockChanged: root._count(root._onClock)
+    Component.onCompleted: root._count(root._onClock)
+    Component.onDestruction: root._count(false)
 
     readonly property Connections _clock: Connections {
         target: OrganismClock

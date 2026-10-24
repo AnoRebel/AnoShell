@@ -197,10 +197,12 @@ QtObject {
                 // after the window had. Entering ("1") can't be told from
                 // maximise, so that waits for the refresh, sent straight away.
                 const mon = Hyprland.focusedMonitor?.name ?? ""
-                if (event.data === "0" && mon && (root.fullscreenOutputs[mon] || root.coveredOutputs[mon])) {
-                    const f = Object.assign({}, root.fullscreenOutputs), c = Object.assign({}, root.coveredOutputs)
-                    delete f[mon]; delete c[mon]
-                    root.fullscreenOutputs = f; root.coveredOutputs = c; root.revision++
+                // Coverage (a maximised window may still be there) waits for
+                // the refresh.
+                if (event.data === "0" && mon && root.fullscreenOutputs[mon]) {
+                    const f = Object.assign({}, root.fullscreenOutputs)
+                    delete f[mon]
+                    root.fullscreenOutputs = f; root.revision++
                 }
                 root._refreshTimer.stop()
                 root.refresh()

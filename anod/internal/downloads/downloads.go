@@ -178,15 +178,26 @@ func (w *Watcher) Run(ctx context.Context) error {
 	if w.Stale == 0 {
 		w.Stale = time.Minute
 	}
-	// Non-blocking, read through an *os.File: the runtime poller lets Close
-	// interrupt a pending Read (closing the raw fd doesn't wake a blocked
-	// read(2), so cancelling never returned).
+	// Non-blocking, read through an *os.File: the runtime poller lets a read
+	// deadline interrupt a pending Read (closing the raw fd doesn't wake a
+	// blocked read(2), so cancelling never returned). Cancel only sets the
+	// deadline; this goroutine closes the file, so the raw fd used for the
+	// watches is never touched after it is closed.
 	fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC | syscall.IN_NONBLOCK)
 	if err != nil {
 		return err
 	}
 	f := os.NewFile(uintptr(fd), "inotify")
-	go func() { <-ctx.Done(); f.Close() }()
+	defer f.Close()
+	stop := make(chan struct{})
+	defer close(stop)
+	go func() {
+		select {
+		case <-ctx.Done():
+			f.SetReadDeadline(time.Now())
+		case <-stop:
+		}
+	}()
 
 	// A folder that isn't there yet: watch the one it would appear in, and
 	// drop that watch once the folder is watched (only its events count).

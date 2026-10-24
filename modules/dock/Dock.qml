@@ -93,6 +93,10 @@ Scope {
             visible: GlobalStates.shellSettled && !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? true)
 
             readonly property bool hoverToReveal: Config.options?.dock?.hoverToReveal ?? true
+            readonly property bool screenFullscreen: {
+                void CompositorService.fullscreenRevision
+                return CompositorService.hasFullscreenOnScreen(modelData?.name ?? "")
+            }
             property bool reveal: root.pinned
                 || (hoverToReveal && dockHover.containsMouse)
                 || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated)
@@ -132,7 +136,8 @@ Scope {
                 item: (dockWindow.reveal || dockWindow.hoverToReveal) ? dockBg : null
                 Region {
                     intersection: Intersection.Combine
-                    item: dockWindow.hoverToReveal ? dockHotzone : null
+                    // Not over a fullscreen window: it would take its clicks.
+                    item: dockWindow.hoverToReveal && !dockWindow.screenFullscreen ? dockHotzone : null
                 }
             }
             Item {

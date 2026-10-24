@@ -72,10 +72,21 @@ Item {
     property real reveal: root.shown && root._surfaceUp ? 1 : 0
     Behavior on reveal { id: revealMotion; MotionSpring { token: revealMotion.targetValue > 0.5 ? "liquid" : "settle" } }
     readonly property bool _open: root.shown || root.reveal > 0.005
+    // The window registered as having this popout open (GlobalStates), kept
+    // apart from the live anchor so a vanished or moved anchor can't leave a
+    // stale entry behind.
     readonly property var _anchorWindow: root.anchorItem?.QsWindow?.window ?? null
-    on_OpenChanged: GlobalStates.setPopoutOpen(root._anchorWindow, root._open)
-    on_AnchorWindowChanged: if (root._open) GlobalStates.setPopoutOpen(root._anchorWindow, true)
-    Component.onDestruction: GlobalStates.setPopoutOpen(root._anchorWindow, false)
+    property var _regWin: null
+    function _register() {
+        const want = root._open ? root._anchorWindow : null
+        if (want === root._regWin) return
+        if (root._regWin) GlobalStates.setPopoutOpen(root._regWin, false)
+        if (want) GlobalStates.setPopoutOpen(want, true)
+        root._regWin = want
+    }
+    on_OpenChanged: root._register()
+    on_AnchorWindowChanged: root._register()
+    Component.onDestruction: { if (root._regWin) GlobalStates.setPopoutOpen(root._regWin, false) }
 
     // While open, publish the card's SCREEN rect so the frame fuses it into the
     // bar with concave joins. The card lives in its own PopupWindow, whose item

@@ -121,14 +121,18 @@ Item {
         const ring = [root._cutL, root._cutT, root._cutR, root._cutB, root._cutRadius]
         const same = (a, b) => !!a && !!b && a.every((v, j) => Math.abs(v - b[j]) < 0.5)
         let pending = false
+        const progress = root._packed.map((p, i) => src[i]?.progress ?? 1)
         const still = root._packed.map((p, i) => {
-            const ok = p.active && prev && same(p.rect, prev.packed[i]?.rect) && (src[i]?.progress ?? 1) >= 1
-            if (p.active && !ok) pending = true
+            const held = prev && same(p.rect, prev.packed[i]?.rect) && progress[i] === prev.progress[i]
+            const ok = p.active && held && progress[i] >= 1
+            // Wait for it only while it changes: a surface parked part-way
+            // (an auto-hidden bar keeps its slot) stays out without polling.
+            if (p.active && !held) pending = true
             return ok ? p : SurfaceGeometry.emptySlot()
         })
         const ringStill = prev && same(ring, prev.ring)
         if (!ringStill) pending = true
-        root._prev = { packed: root._packed, ring: ring }
+        root._prev = { packed: root._packed, ring: ring, progress: progress }
         root._blurPending = pending
         root._b = ringStill
             ? { cutL: ring[0], cutT: ring[1], cutR: ring[2], cutB: ring[3], cutRadius: ring[4], packed: still,

@@ -30,10 +30,14 @@ Singleton {
     property int frameGeneration: 0
     // Windows with a StyledPopup open from them (its anchor's window), so the
     // pill doesn't morph into a transient out from under its own drawer.
+    // One entry per open popout (a window can have two open).
     property var popoutWindows: []
     function setPopoutOpen(win, open) {
-        if (!win || root.popoutWindows.includes(win) === open) return
-        root.popoutWindows = open ? root.popoutWindows.concat([win]) : root.popoutWindows.filter(w => w !== win)
+        if (!win) return
+        const list = root.popoutWindows.slice()
+        if (open) list.push(win)
+        else { const i = list.indexOf(win); if (i < 0) return; list.splice(i, 1) }
+        root.popoutWindows = list
     }
     property bool mediaControlsOpen: false
     property bool osdBrightnessOpen: false
