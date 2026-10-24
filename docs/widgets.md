@@ -76,28 +76,37 @@ ancestor (window pids aren't exposed yet); the note's default file is
 
 Measured with `scripts/dev/budget.sh` (average CPU of one core over 30 s,
 after 30 s settling, each widget alone) on the reference laptop (i7, Intel
-Iris Xe, HDMI 1920×1080), Liquid look, `widgets.fps` 15. The shell idles
-at about 0.1% with widgets off or with no moving widget. Memory: the layer
-and registry add about 50 MB; each widget a few MB.
+Iris Xe, its own 1920×1200 panel at scale 1.5), Liquid look, `widgets.fps` 10
+(the default). The shell idles at 0.0% with widgets off or with no moving
+widget. Memory: the layer and registry add about 50 MB; each widget a few MB.
 
 | Widget | CPU | Moves? |
 |---|---|---|
 | AnoShell clock (seconds on) | 0.5% | once a second |
 | AnoShell clock, profile, weather, to-do, calendar, timer (stopped) | ~0% | no |
-| Bioma clock | 0.8% | second hand, once a second |
+| Bioma clock | 0.6% | second hand, once a second |
 | Bioma weather, photoperiod, agenda, calendar, adipose, sediment, rings, note | 0–1% | no |
 | Bioma nucleus | 0.4% (more while charging) | while the battery changes |
 | Bioma vacuole | ~0% (more with unread) | while there are unread notifications |
-| Bioma osmosis | 1.7% | while traffic flows |
-| Bioma lava | 4.5% | continuously (its speed is the CPU temperature) |
-| Bioma vitals | 6.8% | heartbeat (CPU), RAM wave |
-| Bioma cytoplasm | 8.0% | continuously (apps by memory) |
+| Bioma osmosis | 1.0–1.3% | while traffic flows |
+| Bioma lava | 2.1–2.3% | continuously (its speed is the CPU temperature) |
+| Bioma vitals | 3.1% | heartbeat (CPU), RAM wave |
+| Bioma cytoplasm | 3.1–3.3% | continuously (apps by memory) |
 
-Moving widgets cost in proportion to `widgets.fps` (about 0.4% of a core
-per frame a second each); the default is 10, which saves about a third
-against the 15 measured above. Everything pauses under a maximised window
-or the lock screen. At rest each widget is its own small surface, so only a
-moving widget's card is redrawn.
+What a moving widget costs is mostly per frame, and the same for any widget:
+about 0.25–0.3% of a core per frame a second (2.5–3 ms a frame: the
+surface's commit and the GL driver; Qt's own render is under 1 ms). So the
+cost follows `widgets.fps`: at 20 fps vitals and cytoplasm took about 6%, at
+1 fps 0.5% and 1.1%. On top of that cytoplasm reads every process every 3 s
+(about 0.9% on its own; that is its data). Every organism ticks on one
+shared clock (one redraw per tick however many parts move), cytoplasm works
+out each cell's shape once a frame, and the app grouping looks names up once
+per sample; together these moved the totals by less than the measurement
+noise, since the per-frame cost sits below the shell. The three that move all
+the time are over the shell's 1% idle budget by design: their motion is the
+reading. For a quieter desktop, lower `widgets.fps` or leave them off.
+Everything pauses under a maximised window or the lock screen. At rest each
+widget is its own small surface, so only a moving widget's card is redrawn.
 
 ## Edit mode
 

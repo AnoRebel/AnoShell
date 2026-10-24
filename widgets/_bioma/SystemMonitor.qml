@@ -907,10 +907,11 @@ Singleton {
         }
 
         // A group that holds a process named after an open application joins it.
+        const owners = root.ownerIndex(openApps);
         for (const key in groups) {
             if (key.indexOf("root:") !== 0)
                 continue;
-            const joined = root.ownerOf(groups[key].processes, openApps);
+            const joined = root.ownerOf(groups[key].processes, openApps, owners);
             if (joined === null)
                 continue;
             const target = "app:" + joined;
@@ -954,19 +955,33 @@ Singleton {
     }
 
     // The open application a set of processes belongs to, by name: the last
-    // part of an app id, or the same desktop entry.
-    function ownerOf(processes, openApps) {
-        for (const appId of openApps) {
+    // part of an app id, or the same desktop entry. The first open app (in
+    // openApps order) that any process matches wins.
+    // AnoShell: ownerIndex() builds the lookups once per sample; this ran the
+    // names and entries of every open app against every process of every
+    // group, each sample.
+    function ownerIndex(openApps) {
+        const byName = {};
+        const byEntry = new Map();
+        openApps.forEach((appId, i) => {
+            const lower = appId.toLowerCase();
             const short = appId.split(".").pop().toLowerCase();
+            if (!(lower in byName)) byName[lower] = i;
+            if (short.length >= 4 && !(short in byName)) byName[short] = i;
             const entry = root.entryFor(appId);
-            for (const p of processes) {
-                const comm = p.comm.toLowerCase();
-                if (comm === appId.toLowerCase() || (short.length >= 4 && comm === short))
-                    return appId;
-                if (entry && root.entryFor(p.comm) === entry)
-                    return appId;
-            }
+            if (entry && !byEntry.has(entry)) byEntry.set(entry, i);
+        });
+        return { "byName": byName, "byEntry": byEntry };
+    }
+    function ownerOf(processes, openApps, owners) {
+        let best = -1;
+        for (const p of processes) {
+            const n = owners.byName[p.comm.toLowerCase()];
+            if (n !== undefined && (best < 0 || n < best)) best = n;
+            const entry = owners.byEntry.size > 0 ? root.entryFor(p.comm) : null;
+            const e = entry ? owners.byEntry.get(entry) : undefined;
+            if (e !== undefined && (best < 0 || e < best)) best = e;
         }
-        return null;
+        return best < 0 ? null : openApps[best];
     }
 }

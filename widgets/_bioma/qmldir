@@ -26,4 +26,5 @@ singleton Notifications 1.0 Notifications.qml
 singleton Recent 1.0 Recent.qml
 singleton Storage 1.0 Storage.qml
 singleton Activity 1.0 Activity.qml
+singleton OrganismClock 1.0 OrganismClock.qml
 OrganismTicker 1.0 OrganismTicker.qml

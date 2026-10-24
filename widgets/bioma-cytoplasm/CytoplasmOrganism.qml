@@ -202,19 +202,20 @@ Item {
     property bool moving: false
 
     // Where a cell's lobes are: the first at its centre, the others around it.
-    function lobesOf(slot) {
+    // AnoShell: as offsets from the centre, worked out once a frame (they
+    // depend only on radii and angle) and placed where the cell is.
+    function offsetsOf(slot) {
         const r = slot.radii;
-        const out = [{ "x": slot.x, "y": slot.y, "r": r[0] }];
+        const out = [[0, 0, r[0]]];
         for (let i = 1; i < 4; i++) {
             const angle = slot.angle + (i - 1) * Math.PI * 2 / 3;
             const distance = root.physics.nesting * (r[0] + r[i]);
-            out.push({
-                "x": slot.x + Math.cos(angle) * distance,
-                "y": slot.y + Math.sin(angle) * distance,
-                "r": r[i]
-            });
+            out.push([Math.cos(angle) * distance, Math.sin(angle) * distance, r[i]]);
         }
         return out;
+    }
+    function lobesOf(slot, offsets) {
+        return (offsets ?? root.offsetsOf(slot)).map(o => ({ "x": slot.x + o[0], "y": slot.y + o[1], "r": o[2] }));
     }
 
     function step(dt) {
@@ -237,14 +238,16 @@ Item {
                 slot.angle += spin * dt;
                 moving = true;
             }
-            slot.extent = slot.radii[0] > 0
-                ? Math.max(...root.lobesOf(slot).map(l => Math.hypot(l.x - slot.x, l.y - slot.y) + l.r))
-                : 0;
         }
+        const offsets = root.slots.map(slot => root.offsetsOf(slot));
+        root.slots.forEach((slot, i) => {
+            slot.extent = slot.radii[0] > 0 ? Math.max(...offsets[i].map(o => Math.hypot(o[0], o[1]) + o[2])) : 0;
+        });
 
         // Cells pressed together: each pulled to the centre, pushed apart
         // where two would overlap, held inside the glass.
-        const live = root.slots.filter(s => s.extent > 0.5);
+        const liveIdx = root.slots.map((s, i) => i).filter(i => root.slots[i].extent > 0.5);
+        const live = liveIdx.map(i => root.slots[i]);
         for (const slot of live) {
             const dx = (root.width / 2 - slot.x) * p.pull * dt;
             const dy = (root.height / 2 - slot.y) * p.pull * dt;
@@ -253,7 +256,7 @@ Item {
         }
         // Lobe against lobe, not cell against cell: a cell is lobed, and a
         // circle around it would hold its neighbours off its narrow sides.
-        const shapes = live.map(slot => root.lobesOf(slot).filter(l => l.r > 0.5));
+        const shapes = liveIdx.map(i => root.lobesOf(root.slots[i], offsets[i]).filter(l => l.r > 0.5));
         for (let a = 0; a < live.length; a++) {
             for (let b = a + 1; b < live.length; b++) {
                 let px = 0;
@@ -292,15 +295,16 @@ Item {
         }
 
         root.moving = moving;
-        root.draw();
+        root.draw(offsets);
     }
 
-    function draw() {
+    function draw(offsets) {
         root.ensureSlots();
         const lobes = [];
-        for (const slot of root.slots)
-            for (const lobe of root.lobesOf(slot))
-                lobes.push(Qt.vector4d(lobe.x, lobe.y, root.present ? lobe.r : 0, 0));
+        root.slots.forEach((slot, i) => {
+            for (const o of (offsets ? offsets[i] : root.offsetsOf(slot)))
+                lobes.push(Qt.vector4d(slot.x + o[0], slot.y + o[1], root.present ? o[2] : 0, 0));
+        });
         tissue.l0 = lobes[0]; tissue.l1 = lobes[1]; tissue.l2 = lobes[2]; tissue.l3 = lobes[3];
         tissue.l4 = lobes[4]; tissue.l5 = lobes[5]; tissue.l6 = lobes[6]; tissue.l7 = lobes[7];
         tissue.l8 = lobes[8]; tissue.l9 = lobes[9]; tissue.l10 = lobes[10]; tissue.l11 = lobes[11];
