@@ -99,11 +99,6 @@ Item {
                             r[3], c[3], k[3], 0)
     })
 
-    // The concave fillets drawn outside the slot rects (at most 2 per slot).
-    readonly property var _fillets: SurfaceGeometry.fillets(root._packed, {
-        cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
-        width: root.width, height: root.height })
-
     /// Blur that follows the drawn silhouette (ext-background-effect-v1): the
     /// ring (window minus the rounded cutout), every active slot with its own
     /// corner radii, and the concave fillets joining them, so the whole
@@ -111,17 +106,41 @@ Item {
     // The blur region follows the silhouette at most every 100 ms (and once
     // exactly when it settles): rebuilt every frame, the compositor re-blurs a
     // new region per frame and every sliding panel stutters.
-    property var _b: ({ cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
-        cutRadius: root._cutRadius, packed: root._packed, fillets: root._fillets })
+    // A throttled region is stale while things move, and a stale one blurs
+    // where the silhouette no longer is (a dark, stair-stepped patch trailing
+    // a closing panel or a settling meniscus). So the region only takes what
+    // has held still since the previous snapshot: a moving or still-growing
+    // surface, or a ring that is retracting, joins once it settles.
+    property var _b: ({ cutL: 0, cutT: 0, cutR: width, cutB: height, cutRadius: 0,
+        packed: [0, 1, 2, 3, 4, 5, 6, 7].map(() => SurfaceGeometry.emptySlot()), fillets: [] })
     property bool _blurDirty: false
+    property bool _blurPending: true    // something is left out until it settles
+    property var _prev: null
     function _snapshotBlur() {
-        root._b = { cutL: root._cutL, cutT: root._cutT, cutR: root._cutR, cutB: root._cutB,
-            cutRadius: root._cutRadius, packed: root._packed, fillets: root._fillets }
+        const prev = root._prev, src = root.surfaces ?? []
+        const ring = [root._cutL, root._cutT, root._cutR, root._cutB, root._cutRadius]
+        const same = (a, b) => !!a && !!b && a.every((v, j) => Math.abs(v - b[j]) < 0.5)
+        let pending = false
+        const still = root._packed.map((p, i) => {
+            const ok = p.active && prev && same(p.rect, prev.packed[i]?.rect) && (src[i]?.progress ?? 1) >= 1
+            if (p.active && !ok) pending = true
+            return ok ? p : SurfaceGeometry.emptySlot()
+        })
+        const ringStill = prev && same(ring, prev.ring)
+        if (!ringStill) pending = true
+        root._prev = { packed: root._packed, ring: ring }
+        root._blurPending = pending
+        root._b = ringStill
+            ? { cutL: ring[0], cutT: ring[1], cutR: ring[2], cutB: ring[3], cutRadius: ring[4], packed: still,
+                fillets: SurfaceGeometry.fillets(still, { cutL: ring[0], cutT: ring[1], cutR: ring[2], cutB: ring[3],
+                    width: root.width, height: root.height }) }
+            : { cutL: 0, cutT: 0, cutR: root.width, cutB: root.height, cutRadius: 0, packed: still,
+                fillets: SurfaceGeometry.fillets(still, { cutL: 0, cutT: 0, cutR: root.width, cutB: root.height,
+                    width: root.width, height: root.height }) }
     }
-    Component.onCompleted: root._snapshotBlur() // a plain value from here on, not a live binding
+    Component.onCompleted: blurThrottle.start()
     function _blurChanged() { root._blurDirty = true; if (!blurThrottle.running) blurThrottle.start() }
     on_PackedChanged: _blurChanged()
-    on_FilletsChanged: _blurChanged()
     on_CutRadiusChanged: _blurChanged()
     on_CutLChanged: _blurChanged()
     on_CutTChanged: _blurChanged()
@@ -131,10 +150,10 @@ Item {
         id: blurThrottle
         interval: 100
         onTriggered: {
-            if (!root._blurDirty) return
+            if (!root._blurDirty && !root._blurPending) return
             root._blurDirty = false
             root._snapshotBlur()
-            restart() // one more look: changes that came after this snapshot
+            restart() // one more look: changes since, or what is waiting to settle
         }
     }
     readonly property Region blurShape: Region {

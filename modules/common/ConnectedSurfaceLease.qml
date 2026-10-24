@@ -77,7 +77,7 @@ QtObject {
     readonly property Timer _pending: Timer { interval: 0; onTriggered: root._publish() }
     // Immediate: at the end of this turn (x, y, w and h changing together
     // publish once), still before the frame is drawn.
-    function _schedule() { if (root.immediate) Qt.callLater(root._publish); else root._pending.restart() }
+    function _schedule() { if (root.immediate) PanelRegistry.queueLease(root); else root._pending.restart() }
 
     onActiveChanged: _schedule()
     onXChanged: _schedule()
@@ -99,5 +99,5 @@ QtObject {
         function onEnabledChanged() { root._owner = ""; root._schedule() }
     }
     Component.onCompleted: _schedule()
-    Component.onDestruction: _release()
+    Component.onDestruction: { PanelRegistry.dropLease(root); _release() }
 }

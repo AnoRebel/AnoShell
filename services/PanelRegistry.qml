@@ -100,6 +100,21 @@ Singleton {
         return true
     }
 
+    // Leases publishing at the end of this turn. Queued here rather than with
+    // Qt.callLater on the lease itself, which still fires after the lease is
+    // destroyed (a Variants rebuild at start) and throws.
+    property var _dirtyLeases: []
+    function queueLease(lease) {
+        if (!root._dirtyLeases.includes(lease)) root._dirtyLeases.push(lease)
+        Qt.callLater(root._flushLeases)
+    }
+    function dropLease(lease) { root._dirtyLeases = root._dirtyLeases.filter(l => l !== lease) }
+    function _flushLeases() {
+        const ls = root._dirtyLeases
+        root._dirtyLeases = []
+        for (const l of ls) l._publish()
+    }
+
     /// Drop `key` if `owner` still owns it.
     function release(key, owner) {
         if (root._owner[key] !== owner) return false
