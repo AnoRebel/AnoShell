@@ -15,6 +15,11 @@ import qs.modules.common
  *   snappy  small elements       300 ms, expressive fast spatial
  *
  * Scaled by the animation speed; 0 (a jump) with animations off.
+ *
+ * Pick the token from the Behavior's targetValue, not from the state that
+ * drives the value: the Behavior starts before a state binding updates, so
+ * that runs every move on the previous direction's curve.
+ *   Behavior on shown { id: m; MotionSpring { token: m.targetValue > 0.5 ? "liquid" : "settle" } }
  */
 NumberAnimation {
     id: root
