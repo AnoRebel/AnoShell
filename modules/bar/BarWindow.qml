@@ -102,7 +102,13 @@ PanelWindow {
     // frame; a zone of 0 under Ignore placed the bar full-width until its
     // content loaded and the zone switched it over (a visible side jump).
     // Hidden, it overlaps them as before.
-    exclusionMode: barRoot.effectiveHidden ? ExclusionMode.Ignore : ExclusionMode.Normal
+    exclusionMode: barRoot._slidOut ? ExclusionMode.Ignore : ExclusionMode.Normal
+    // Hidden AND fully slid out. Switching the exclusion mode moves the window
+    // past the frame's side bands, so it waits until the content is gone (and
+    // switches back as a reveal starts, before it shows): mid-slide the
+    // content jumped sideways.
+    readonly property bool _slidOut: barRoot.effectiveHidden
+        && barContentLoader.hideOffset <= -(barRoot.barThickness + barRoot.formMargin) + 0.5
     // Reserve the top space only once the (async) bar content has actually
     // loaded — otherwise the exclusion zone appears a frame or two before the
     // bar visuals, so the desktop reflows to make room while the strip is still
@@ -114,7 +120,7 @@ PanelWindow {
     readonly property bool laidOut: barContentLoader.item?._ready ?? false
     // The target margin, not the spring: an animating zone would make the
     // compositor re-lay out every tiled window on each frame.
-    exclusiveZone: effectiveHidden || !contentLoaded ? 0 : barThickness + globalMargin + _formMarginTarget
+    exclusiveZone: _slidOut || !contentLoaded ? 0 : barThickness + globalMargin + _formMarginTarget
 
     // Anchoring based on edge
     anchors {
@@ -140,7 +146,13 @@ PanelWindow {
     // Input only where the bar is drawn: gaps between islands click through.
     // While hidden, the slid-out content keeps the old hover strip behaviour.
     mask: barRoot.effectiveHidden || barRoot.plainBody ? hoverRegion : bodyRegion
-    Region { id: hoverRegion; item: hoverMask }
+    // Hidden, the content has slid out of the window: a strip on the edge
+    // takes the hover that brings it back.
+    Region {
+        id: hoverRegion
+        item: hoverMask
+        Region { intersection: Intersection.Combine; item: barRoot.effectiveHidden ? edgeStrip : null }
+    }
     Region {
         id: bodyRegion
         BodyRegion { b: barRoot.bodies[0] }
@@ -243,6 +255,14 @@ PanelWindow {
             id: hoverMask
             anchors.fill: barContentLoader
         }
+        Item {
+            id: edgeStrip
+            readonly property real thick: 3
+            x: barRoot.edge === "right" ? parent.width - thick : 0
+            y: barRoot.edge === "bottom" ? parent.height - thick : 0
+            width: barRoot.isVertical ? thick : parent.width
+            height: barRoot.isVertical ? parent.height : thick
+        }
 
         // Material 3 elevation shadow behind the bar (SDF shader; no-op when
         // appearance.shadows.enable is false). Declared BEFORE the background so
@@ -306,12 +326,15 @@ PanelWindow {
             // Auto-hide / fullscreen-hide slide
             property real hideOffset: barRoot.effectiveHidden ? -(barRoot.barThickness + barRoot.formMargin) : 0
             Behavior on hideOffset {
+                id: hideMotion
                 // Hiding accelerates away; showing decelerates in (decel both ways
-                // made the hide start sluggish).
+                // made the hide start sluggish). From the target, not
+                // effectiveHidden: the Behavior starts before that binding moves.
+                readonly property bool hiding: hideMotion.targetValue < -0.5
                 NumberAnimation {
-                    duration: barRoot.effectiveHidden ? (Appearance?.animation.elementMoveExit.duration ?? 200) : (Appearance?.animation.elementMoveEnter.duration ?? 400)
+                    duration: hideMotion.hiding ? (Appearance?.animation.elementMoveExit.duration ?? 200) : (Appearance?.animation.elementMoveEnter.duration ?? 400)
                     easing.type: Easing.BezierSpline
-                    easing.bezierCurve: barRoot.effectiveHidden ? Appearance.animationCurves.emphasizedAccel : Appearance.animationCurves.emphasizedDecel
+                    easing.bezierCurve: hideMotion.hiding ? Appearance.animationCurves.emphasizedAccel : Appearance.animationCurves.emphasizedDecel
                 }
             }
 
