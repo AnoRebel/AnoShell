@@ -64,9 +64,9 @@ Scope {
             opacity: GlobalStates.controlPanelOpen ? 1 : 0
             transform: Translate {
                 y: GlobalStates.controlPanelOpen ? 0 : -20
-                Behavior on y { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: GlobalStates.controlPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel } }
+                Behavior on y { id: yMotion; NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Math.abs(yMotion.targetValue) < 0.5 ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel } }
             }
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.controlPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on opacity { id: opacityMotion; NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: (opacityMotion.targetValue > 0.5 ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             StyledFlickable {
                 anchors { fill: parent; margins: 16 }

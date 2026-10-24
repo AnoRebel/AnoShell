@@ -55,8 +55,8 @@ Scope {
 
             opacity: GlobalStates.weatherPanelOpen ? 1 : 0
             scale: GlobalStates.weatherPanelOpen ? 1 : 0.9
-            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.weatherPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
-            Behavior on scale { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.weatherPanelOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on opacity { id: opacityMotion; NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (opacityMotion.targetValue > 0.5 ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+            Behavior on scale { id: scaleMotion; NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: (scaleMotion.targetValue > 0.96 ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
             ColumnLayout {
                 id: weatherContent

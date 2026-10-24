@@ -123,7 +123,7 @@ Scope {
                 width: 460; height: 460
                 focus: GlobalStates.sessionOpen
                 opacity: GlobalStates.sessionOpen ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(GlobalStates.sessionOpen ? 250 : 180); easing.type: Easing.BezierSpline; easing.bezierCurve: (GlobalStates.sessionOpen ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
+                Behavior on opacity { id: opacityMotion; NumberAnimation { duration: AnimationConfig.scaledDuration(opacityMotion.targetValue > 0.5 ? 250 : 180); easing.type: Easing.BezierSpline; easing.bezierCurve: (opacityMotion.targetValue > 0.5 ? Appearance.animationCurves.emphasizedDecel : Appearance.animationCurves.emphasizedAccel) } }
 
                 Keys.onPressed: event => {
                     if (event.isAutoRepeat) { event.accepted = true; return } // holding a key never confirms
