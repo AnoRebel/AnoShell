@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.WindowManager
+import "GenericModel.js" as GenericModel
 
 /**
  * Generic Wayland backend (see BackendContract.md) for compositors without a
@@ -44,21 +45,10 @@ QtObject {
     // One entry per (screen, windowset); `set` keeps the handle for activate().
     readonly property var _sets: {
         void root.revision
-        const out = []
-        for (const screen of Quickshell.screens) {
-            const sets = Array.from(WindowManager.screenProjection(screen)?.windowsets ?? []).filter(ws => ws.shouldDisplay !== false)
-            // Coordinates are compositor-defined (Hyprland uses the workspace id),
-            // so prefer a numeric name, then the first coordinate, then the order.
-            sets.forEach((ws, i) => out.push({ set: ws, output: screen.name,
-                number: parseInt(ws.name) || ws.coordinates?.[0] || i + 1 }))
-        }
-        return out.sort((x, y) => x.number - y.number)
+        return GenericModel.sets(Quickshell.screens.map(screen => ({ name: screen.name,
+            windowsets: Array.from(WindowManager.screenProjection(screen)?.windowsets ?? []) })))
     }
-    property var workspaces: root._sets.map(e => ({
-        id: `${e.output}:${e.number}`, number: e.number, name: e.set.name ?? String(e.number),
-        output: e.output, focused: !!e.set.active && e.output === root.focusedOutput,
-        active: !!e.set.active, occupied: root.occupiedOf(e), urgent: !!e.set.urgent
-    }))
+    property var workspaces: GenericModel.workspaces(root._sets, root.focusedOutput, e => root.occupiedOf(e))
     // ext-workspace doesn't say which workspaces hold windows: only the
     // shown ones count, unless a backend knows better.
     function occupiedOf(e) { return !!e.set.active }
@@ -67,17 +57,11 @@ QtObject {
 
     property var fullscreenOutputs: {
         void root.revision
-        const out = {}
-        for (const t of Array.from(ToplevelManager.toplevels?.values ?? []))
-            if (t?.fullscreen) for (const s of (t.screens ?? [])) out[s.name] = true
-        return out
+        return GenericModel.outputsWhere(Array.from(ToplevelManager.toplevels?.values ?? []), t => t.fullscreen)
     }
     property var coveredOutputs: {
         void root.revision
-        const out = {}
-        for (const t of Array.from(ToplevelManager.toplevels?.values ?? []))
-            if (t?.fullscreen || t?.maximized) for (const s of (t.screens ?? [])) out[s.name] = true
-        return out
+        return GenericModel.outputsWhere(Array.from(ToplevelManager.toplevels?.values ?? []), t => t.fullscreen || t.maximized)
     }
     property var _fullscreenWatch: Instantiator {
         model: ToplevelManager.toplevels
