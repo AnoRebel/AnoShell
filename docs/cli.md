@@ -124,6 +124,10 @@ Before a restore replaces anything, it saves the files it will replace to
 writes outside your home, never overwrites a symlink, and follows a symlinked
 folder (stow-style dotfiles) only if it stays inside your home.
 
+Settings → About → Backup & restore does the same through anod: pick the
+categories, back up, choose a backup, pick what to restore, and Preview lists
+the files a restore would replace before you run it.
+
 ```sh
 ano backup create --add secrets,compositor
 ano backup restore ~/.local/share/anoshell/backups/anoshell-<time>.tar.gz --only config --dry-run

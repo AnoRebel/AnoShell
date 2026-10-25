@@ -178,7 +178,7 @@ You can edit the user file directly if you prefer JSON over the GUI. The shell w
 
 ### Settings pages
 
-The Settings UI has 10 pages, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
+The Settings UI has 12 pages, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
@@ -191,7 +191,9 @@ The Settings UI has 10 pages, each owning a set of top-level config keys. The "R
 | Appearance   | `appearance`, `background`, `animations`                                                 | Theme source (Material You / static) with hover-preview, font picker, bezel preview, animation speed, wallpaper rotation |
 | Overview     | `overview`                                                                               | AnoView layout selector (11 cards) |
 | Services     | `ai`, `gameMode`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` | Toggle and configure every optional service (see Optional services below) |
-| About        | `user`                                                                                   | Avatar picker, system info, credits, global "Reset every setting" card |
+| Displays     | `cursor`, `icons`                                                                        | Monitor arrangement, mode, scale, rotation, VRR and profiles (through anod), cursor and icon themes |
+| Keybinds     | `keyboard`                                                                               | Search, record, add, change or remove binds; keyboard layouts |
+| About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, credits, global "Reset every setting" card |
 
 Settings opens via `qs -c ano ipc call settings toggle`, the standalone window via `qs -n -p ~/.config/quickshell/ano/settings.qml`, or `Super+,` (Hyprland default).
 
