@@ -21,10 +21,9 @@ import (
 	"time"
 
 	"ano/anod/internal/camera"
-	"ano/anod/internal/downloads"
-	"ano/anod/internal/xkb"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
+	"ano/anod/internal/downloads"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/keybinds"
@@ -35,6 +34,7 @@ import (
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
 	"ano/anod/internal/wallpaper"
+	"ano/anod/internal/xkb"
 )
 
 func main() {
@@ -69,6 +69,7 @@ func main() {
 	}
 
 	srv.Handle("ping", func(json.RawMessage) (any, error) { return "pong", nil })
+	registerBackup(srv)
 	srv.Handle("version", func(json.RawMessage) (any, error) {
 		return map[string]any{"version": version.Version, "api": version.API}, nil
 	})
@@ -277,7 +278,9 @@ func main() {
 		}()
 		srv.Handle("downloads.list", func(json.RawMessage) (any, error) { return dls.State(), nil })
 		srv.Handle("downloads.clear", func(raw json.RawMessage) (any, error) {
-			var p struct{ Path string `json:"path"` }
+			var p struct {
+				Path string `json:"path"`
+			}
 			json.Unmarshal(raw, &p)
 			dls.Clear(p.Path)
 			return dls.State(), nil
