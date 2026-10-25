@@ -1,7 +1,10 @@
-# Ano Shell
+# AnoShell
 
-A comprehensive QuickShell (v0.2.1+) desktop shell for Wayland compositors.
-Supports **Hyprland** and **Niri** with runtime auto-detection.
+A Quickshell desktop shell for Wayland compositors (developed and tested on
+Quickshell 0.3.2 / Qt 6.11). **Hyprland** and **niri** are supported;
+**sway**, **mango** and **labwc** run on experimental backends, and any other
+compositor on a generic one ([docs/compositors.md](docs/compositors.md)). The
+backend is picked from the session at start.
 
 **Documentation:** [anoshell.anorebel.net](https://anoshell.anorebel.net) (stable) · [dev.anoshell.anorebel.net](https://dev.anoshell.anorebel.net) (development) · source in [`docs/`](docs/overview.md)
 
@@ -10,15 +13,23 @@ Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writ
 ## Quick Start
 
 ```bash
-# Launch with QuickShell
+# Get the shell where Quickshell finds it, then the daemon and CLI
+git clone https://github.com/AnoRebel/AnoShell.git ~/.config/quickshell/ano
+~/.config/quickshell/ano/anod/install.sh     # anod + ano into ~/.local/bin
+
+# Launch it
 qs -c ano
 
-# Launch standalone settings
-qs -n -p ~/.config/quickshell/ano/settings.qml
+# Check what's installed and what's missing
+ano doctor
 
-# Or from Hyprland companion config (auto-launches)
-# Source ~/.config/hypr/Ano/hyprland.conf
+# Settings on their own
+qs -n -p ~/.config/quickshell/ano/settings.qml
 ```
+
+To start it with your session, use the bundled compositor configs
+(`external/hyprland/hyprland.lua`, `external/niri/ano.kdl`); see
+[docs/installation.md](docs/installation.md).
 
 ## Services
 
@@ -519,7 +530,7 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 ### Required
 | Package | Purpose |
 |---------|---------|
-| `quickshell` ≥0.2.1 | Shell framework |
+| `quickshell` (tested with 0.3.2) | Shell framework |
 | `awww` + `awww-daemon` | Wallpaper engine |
 | `matugen` ≥4.0 | Material You color generation |
 | `jq` | JSON parsing in scripts |
