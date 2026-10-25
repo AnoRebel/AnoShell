@@ -65,14 +65,19 @@ Singleton {
             shot.exec({ command: ["bash", "-c", root._mk + 'niri msg action "$ACT" --path "$OUT"'],
                 environment: ({ DIR: root.dir, ACT: act, OUT: root._out }) })
         } else if (root._mode === "window") {
-            // Geometry first (the backend's focused window), then grim.
+            // Geometry first (the backend's focused window), then grim. A
+            // request the backend drops (socket gone, bad reply) never calls
+            // back: the guard finishes it so the service isn't left busy.
+            geometryGuard.restart()
             const asked = CompositorService.focusedWindowGeometry(w => {
+                if (!geometryGuard.running) return // already given up
+                geometryGuard.stop()
                 if (!w || !(w.width > 0) || !(w.height > 0)) { root._finish(1); return }
                 const g = `${Math.round(w.x)},${Math.round(w.y)} ${Math.round(w.width)}x${Math.round(w.height)}`
                 shot.exec({ command: ["bash", "-c", root._mk + 'grim -g "$G" "$OUT"'],
                     environment: ({ DIR: root.dir, OUT: root._out, G: g }) })
             })
-            if (!asked) root._finish(1) // this backend can't say which window is focused
+            if (!asked) { geometryGuard.stop(); root._finish(1) } // this backend can't say which window is focused
         } else if (root._mode === "region") {
             shot.exec({ command: ["bash", "-c", root._mk + 'g=$(slurp) && grim -g "$g" "$OUT"'],
                 environment: ({ DIR: root.dir, OUT: root._out }) })
@@ -82,6 +87,8 @@ Singleton {
                 environment: ({ DIR: root.dir, OUT: root._out, MON: output }) })
         }
     }
+
+    Timer { id: geometryGuard; interval: 3000; onTriggered: root._finish(1) }
 
     Process {
         id: shot

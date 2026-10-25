@@ -44,7 +44,8 @@ Written against sway 1.12 ([sway-ipc(7)](https://github.com/swaywm/sway/blob/1.1
   refreshed on window, workspace and input events. Needs `swaymsg` (part of
   sway).
 - Sway numbers workspaces across outputs, like Hyprland. A workspace without
-  a leading number gets its place in the list; switching goes through its
+  a leading number gets the smallest number no other workspace on its output
+  has; switching goes through its
   ext-workspace handle, so it lands on the right one. Sway has no maximised
   state, so only fullscreen (a window's, a container's, or a global one,
   which covers every output) hides the bar.

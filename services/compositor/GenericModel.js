@@ -7,13 +7,21 @@
 // screens: [{ name, windowsets: [Windowset-like {name, coordinates, shouldDisplay, …}] }]
 // → [{ set, output, number }], sorted by number. Coordinates are
 // compositor-defined (Hyprland uses the workspace id), so a numeric name
-// comes first, then the first coordinate, then the order on its screen.
+// comes first, then the first coordinate; the rest take, in order, the
+// smallest numbers no other workspace on that screen has (a positional
+// number equal to a real one sent clicks to the wrong workspace).
 function sets(screens) {
     const out = []
     for (const screen of screens || []) {
         const shown = (screen.windowsets || []).filter(ws => ws.shouldDisplay !== false)
-        shown.forEach((ws, i) => out.push({ set: ws, output: screen.name,
-            number: parseInt(ws.name) || (ws.coordinates && ws.coordinates[0]) || i + 1 }))
+        const own = shown.map(ws => parseInt(ws.name) || (ws.coordinates && ws.coordinates[0]) || 0)
+        const taken = new Set(own.filter(n => n > 0))
+        let next = 1
+        shown.forEach((ws, i) => {
+            let n = own[i]
+            if (!(n > 0)) { while (taken.has(next)) next++; n = next; taken.add(n) }
+            out.push({ set: ws, output: screen.name, number: n })
+        })
     }
     return out.sort((x, y) => x.number - y.number)
 }

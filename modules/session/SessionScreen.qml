@@ -47,7 +47,11 @@ Scope {
     property string armed: ""          // the action waiting for its second press
     property real armLeft: 0           // 1 → 0 over the countdown
     property real _armedAt: 0          // a confirm needs a deliberate second press
-    NumberAnimation { id: armCountdown; target: root; property: "armLeft"; from: 1; to: 0; duration: AnimationConfig.scaledDuration(4000); onFinished: root.armed = "" }
+    // The confirm window is a timeout, not motion: it keeps its length with
+    // animations off or slowed (scaled, it closed at once and nothing that
+    // needs confirming could run).
+    readonly property int armWindow: 4000
+    NumberAnimation { id: armCountdown; target: root; property: "armLeft"; from: 1; to: 0; duration: root.armWindow; onFinished: root.armed = "" }
     onArmedChanged: if (armed === "") { armCountdown.stop(); root.armLeft = 0 }
     Connections {
         target: GlobalStates
