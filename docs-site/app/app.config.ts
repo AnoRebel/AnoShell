@@ -36,6 +36,7 @@ export default defineAppConfig({
       { slug: "cli", group: "guide", title: "The ano CLI", description: "status, doctor, config, setup, backup and looks from a terminal." },
       { slug: "compositors", group: "guide", title: "Compositors", description: "Hyprland, niri, and the experimental sway, mango, labwc and generic backends." },
       { slug: "anod", group: "internals", title: "anod", description: "The companion daemon: supervision, event hooks, socket protocol." },
+      { slug: "contributing", group: "internals", title: "Contributing", description: "Checks, tests, running a test shell safely, and the conventions." },
       { slug: "architecture", group: "internals", title: "Architecture", description: "How the shell is put together and the constraints that shaped it." },
     ],
   },
