@@ -1,6 +1,6 @@
 -- ╔═══════════════════════════════════════════════════════════════════════════╗
 -- ║                                ANO CONFIG                                ║
--- ║     A standalone Hyprland config with Ano QuickShell UI                  ║
+-- ║     A standalone Hyprland config with AnoShell                           ║
 -- ║                                                                          ║
 -- ║   Lua rewrite of the previous hyprlang setup (hyprlang deprecated as of  ║
 -- ║   Hyprland 0.55). All Ano-specific keybinds and the QuickShell IPC       ║

@@ -1,12 +1,12 @@
 // =============================================================================
-// Ano QuickShell — Niri companion configuration
+// AnoShell — niri configuration (niri >= 26.04)
 //
-// Usage: Copy or symlink this to ~/.config/niri/config.kdl
-//   cp ~/.config/niri/ano.kdl ~/.config/niri/config.kdl
+// Usage: copy or symlink this to ~/.config/niri/config.kdl
+//   cp ~/.config/quickshell/ano/external/niri/ano.kdl ~/.config/niri/config.kdl
 //   — or —
-//   ln -sf ~/.config/niri/ano.kdl ~/.config/niri/config.kdl
+//   ln -sf ~/.config/quickshell/ano/external/niri/ano.kdl ~/.config/niri/config.kdl
 //
-// This config replaces waybar/swaync/swayosd with Ano QuickShell.
+// This config replaces waybar/swaync/swayosd with AnoShell.
 // All UI interactions (sidebars, overview, settings, OSD, notifications)
 // go through QuickShell IPC: qs -c ano ipc call <target> <method>
 // =============================================================================
