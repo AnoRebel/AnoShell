@@ -211,6 +211,8 @@ func runChecks() []check {
 			add("fail", "config", "%s", strings.Join(errs, "; "))
 		case len(unknown) > 0:
 			add("warn", "config", "unknown keys: %s (ano config migrate --prune-unknown)", strings.Join(unknown, ", "))
+		case !fileExists(config.UserPath()):
+			add("ok", "config", "%s not written yet (defaults)", config.UserPath())
 		default:
 			add("ok", "config", "%s valid", config.UserPath())
 		}
@@ -327,3 +329,5 @@ func runningMatching(names []string) []string {
 }
 
 func sortStrings(s []string) { sort.Strings(s) }
+
+func fileExists(p string) bool { _, err := os.Stat(p); return err == nil }
