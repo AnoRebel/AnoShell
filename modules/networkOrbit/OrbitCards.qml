@@ -190,7 +190,7 @@ Item {
                     }
                 }
 
-                CardRow { anchors.fill: parent; icon: card.model.icon ?? ""; label: card.model.name ?? ""; tint: card.tint }
+                CardRow { anchors.fill: parent; icon: card.isFailed ? "error" : (card.model.icon ?? ""); label: card.isFailed ? `${card.view.failReason}: ${card.model.name ?? ""}` : (card.model.name ?? ""); tint: card.tint }
 
                 // The hold fill, with the label redrawn on top in the accent's
                 // "on" colour.

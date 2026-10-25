@@ -156,7 +156,10 @@ Singleton {
             }
 
             if (code !== 0 || fetchProc._rawData.trim() === "") {
-                const errMsg = code !== 0 ? `curl exited with code ${code}` : "Empty response"
+                const errMsg = code === 6 || code === 7 ? "couldn't reach it (offline?)"
+                    : code === 22 ? "the server refused it (check the URL)"
+                    : code === 28 ? "it didn't answer in time"
+                    : code !== 0 ? `the download failed (curl exit ${code})` : "the feed was empty"
                 _log("Error fetching", source.name, ":", errMsg)
                 root._updateSourceStatus(source.id, { error: errMsg, lastFetch: new Date().toISOString() })
                 root.sourceError(source.id, errMsg)

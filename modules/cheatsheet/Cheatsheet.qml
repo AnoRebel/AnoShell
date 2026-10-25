@@ -35,11 +35,15 @@ Scope {
     }
     onCheatsheetOpenChanged: if (cheatsheetOpen) root.fetch()
 
+    property string loadError: "" // why anod's keybinds didn't load
+    property bool loading: false
     function fetch() {
         if (!Anod.available) return
+        root.loadError = ""; root.loading = true
         Anod.call("keybinds.catalogue", {}, (r) => { if (r) root.catalogue = r })
         Anod.call("keybinds.active", { compositor: CompositorService.compositor }, (r, e) => {
-            if (e || !r) { console.warn(`[Cheatsheet] keybinds.active: ${e?.message}`); return }
+            root.loading = false
+            if (e || !r) { root.loadError = e?.message ?? "no answer"; console.warn(`[Cheatsheet] keybinds.active: ${root.loadError}`); return }
             root.anodData = root.sections(r.binds ?? [], r.unbound ?? [])
         })
     }
@@ -179,9 +183,18 @@ Scope {
                         ColumnLayout {
                             visible: keybindData.children.length === 0
                             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 60; spacing: 8
-                            MaterialSymbol { text: "info"; iconSize: 48; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
-                            StyledText { text: "No keybinds loaded"; font.pixelSize: Appearance.font.pixelSize.normal; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
-                            StyledText { text: "Keybinds are loaded from your compositor config"; font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+                            MaterialSymbol { text: root.loading ? "progress_activity" : "info"; iconSize: 48; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }
+                            StyledText { text: root.loading ? "Loading keybinds…" : "No keybinds loaded"; font.pixelSize: Appearance.font.pixelSize.normal; opacity: 0.5; Layout.alignment: Qt.AlignHCenter }
+                            StyledText {
+                                visible: !root.loading
+                                text: root.loadError ? `anod couldn't read them: ${root.loadError}`
+                                    : !Anod.available && !["hyprland", "niri"].includes(CompositorService.compositor)
+                                        ? "Needs anod (see ano doctor) on this compositor"
+                                        : "Keybinds are loaded from your compositor config"
+                                font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.4
+                                Layout.alignment: Qt.AlignHCenter; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap
+                                Layout.maximumWidth: 520
+                            }
                         }
 
                         Repeater {

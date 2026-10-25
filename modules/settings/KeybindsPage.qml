@@ -153,6 +153,12 @@ ColumnLayout {
         level: "error"
         text: root.message
     }
+    NoticeBox {
+        Layout.fillWidth: true
+        visible: Anod.available && !root.loaded && root.message === ""
+        iconName: "progress_activity"
+        text: "Reading your keybinds…"
+    }
 
     SettingsCard {
         icon: "keyboard"

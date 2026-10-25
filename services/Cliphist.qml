@@ -16,6 +16,7 @@ Singleton {
     property string cliphistBinary: "cliphist"
     property real pasteDelay: 0.05
     property string pressPasteCommand: "ydotool key -d 1 29:1 47:1 47:0 29:0"
+    property string error: "" // why the last refresh failed ("" when fine)
     property list<string> entries: []
 
     /**
@@ -241,12 +242,16 @@ Singleton {
         // exits 1 with "please store something first". An empty history.
         stderr: StdioCollector { id: readErr }
         onExited: (exitCode, exitStatus) => {
+            root.error = ""
             if (exitCode === 0) {
                 root.entries = readProc.buffer
                 root._prune()
             } else if (readErr.text.indexOf("store something first") >= 0) {
                 root.entries = []
-            } else console.error("[Cliphist] Failed to refresh with code", exitCode, readErr.text.trim())
+            } else {
+                console.error("[Cliphist] Failed to refresh with code", exitCode, readErr.text.trim())
+                root.error = readErr.text.trim() || `cliphist list failed (exit ${exitCode})`
+            }
         }
     }
 

@@ -67,7 +67,7 @@ Scope {
                 ColumnLayout {
                     Layout.alignment: Qt.AlignHCenter; spacing: 4
                     StyledText {
-                        text: Weather.data.city || "Loading..."
+                        text: Weather.data.city || (Weather.problem ? "Weather unavailable" : "Loading…")
                         font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
                         opacity: 0.6; Layout.alignment: Qt.AlignHCenter
                     }
@@ -141,11 +141,18 @@ Scope {
                     }
                 }
 
+                NoticeBox {
+                    visible: Weather.problem.length > 0
+                    level: Weather.data.city ? "warning" : "error"
+                    iconName: "cloud_off"
+                    text: Weather.problem + (Weather.data.city ? "; showing the last forecast" : "")
+                }
+
                 // Last refresh + refresh button
                 RowLayout {
                     Layout.fillWidth: true; spacing: 8
                     StyledText { text: `Last: ${Weather.data.lastRefresh || "never"}`; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.fillWidth: true }
-                    ToolbarButton { iconName: "refresh"; iconSize: 18; onClicked: Weather.getData(); toolTipText: "Refresh weather" }
+                    ToolbarButton { iconName: Weather.fetching ? "progress_activity" : "refresh"; enabled: !Weather.fetching; iconSize: 18; onClicked: Weather.getData(); toolTipText: Weather.fetching ? "Refreshing…" : "Refresh weather" }
                 }
             }
         }

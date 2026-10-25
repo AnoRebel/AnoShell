@@ -385,15 +385,18 @@ Singleton {
     Process {
         id: openaiProc
         property string assistantId: ""
+        property string raw: "" // what wasn't a stream event: an API error body
+        onRunningChanged: if (running) raw = ""
         command: ["bash", "-c", `curl -sN -K <(printf 'header = "Authorization: Bearer %s"\\n' "$API_KEY") -H "Content-Type: application/json" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
-                if (!line.startsWith("data: ")) return
+                if (!line.startsWith("data: ")) { if (line.trim() && !line.startsWith("event:") && !line.startsWith(":")) openaiProc.raw += line + "\n"; return }
                 const json = line.substring(6).trim()
                 if (json === "[DONE]") return
                 try {
                     const data = JSON.parse(json)
+                    if (data.error || data[0]?.error) { openaiProc.raw = json; return }
                     const delta = data.choices?.[0]?.delta?.content ?? ""
                     const msg = root.messageByID[openaiProc.assistantId]
                     if (msg) msg.content += delta
@@ -407,6 +410,7 @@ Singleton {
         }
         onExited: (exitCode, exitStatus) => {
             const msg = root.messageByID[openaiProc.assistantId]
+            if (msg && !msg.content.trim()) msg.content = "**Error:** " + root._failText(openaiProc.raw, exitCode)
             if (msg) msg.done = true
             root.pendingRequest = false
         }
@@ -434,14 +438,17 @@ Singleton {
     Process {
         id: geminiProc
         property string assistantId: ""
+        property string raw: "" // what wasn't a stream event: an API error body
+        onRunningChanged: if (running) raw = ""
         command: ["bash", "-c", `curl -sN -K <(printf 'header = "x-goog-api-key: %s"\\n' "$API_KEY") -H "Content-Type: application/json" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
-                if (!line.startsWith("data: ")) return
+                if (!line.startsWith("data: ")) { if (line.trim() && !line.startsWith("event:") && !line.startsWith(":")) geminiProc.raw += line + "\n"; return }
                 const json = line.substring(6).trim()
                 try {
                     const data = JSON.parse(json)
+                    if (data.error || data[0]?.error) { geminiProc.raw = json; return }
                     const parts = data.candidates?.[0]?.content?.parts ?? []
                     const text = parts.map(p => p.text ?? "").join("")
                     const msg = root.messageByID[geminiProc.assistantId]
@@ -456,6 +463,7 @@ Singleton {
         }
         onExited: (exitCode, exitStatus) => {
             const msg = root.messageByID[geminiProc.assistantId]
+            if (msg && !msg.content.trim()) msg.content = "**Error:** " + root._failText(geminiProc.raw, exitCode)
             if (msg) msg.done = true
             root.pendingRequest = false
         }
@@ -487,15 +495,18 @@ Singleton {
     Process {
         id: anthropicProc
         property string assistantId: ""
+        property string raw: "" // what wasn't a stream event: an API error body
+        onRunningChanged: if (running) raw = ""
         command: ["bash", "-c", `curl -sN -K <(printf 'header = "x-api-key: %s"\\n' "$API_KEY") -H "Content-Type: application/json" -H "anthropic-version: 2023-06-01" --data-binary @- "$ENDPOINT" <<< "$BODY"`]
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
-                if (!line.startsWith("data: ")) return
+                if (!line.startsWith("data: ")) { if (line.trim() && !line.startsWith("event:") && !line.startsWith(":")) anthropicProc.raw += line + "\n"; return }
                 const json = line.substring(6).trim()
                 if (json === "[DONE]") return
                 try {
                     const data = JSON.parse(json)
+                    if (data.error || data[0]?.error) { anthropicProc.raw = json; return }
                     // Anthropic streaming events:
                     // content_block_delta: { delta: { type: "text_delta", text: "..." } }
                     // message_delta: { usage: { output_tokens } }
@@ -526,9 +537,22 @@ Singleton {
         }
         onExited: (exitCode, exitStatus) => {
             const msg = root.messageByID[anthropicProc.assistantId]
+            if (msg && !msg.content.trim()) msg.content = "**Error:** " + root._failText(anthropicProc.raw, exitCode)
             if (msg) msg.done = true
             root.pendingRequest = false
         }
+    }
+
+    // Why a request produced no reply: the API's error message, else curl's.
+    function _failText(raw, code) {
+        try {
+            const j = JSON.parse(raw.trim())
+            const m = j.error?.message ?? j[0]?.error?.message ?? j.message
+            if (m) return m
+        } catch (e) {}
+        if (code === 6 || code === 7) return "Couldn't reach the API (offline?)"
+        if (raw.trim()) return raw.trim().slice(0, 300)
+        return code !== 0 ? `The request failed (curl exit ${code})` : "The model sent an empty reply"
     }
 
     // Load API keys from file on startup

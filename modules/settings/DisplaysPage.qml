@@ -26,9 +26,12 @@ ColumnLayout {
     readonly property var sel: root.edited[root.selected] ?? null
     readonly property bool dirty: JSON.stringify(root.edited) !== JSON.stringify(root.outputs)
 
+    property bool loading: false
     function reload() {
         if (!Anod.available) return
+        root.loading = true
         Anod.call("display.get", {}, (r, e) => {
+            root.loading = false
             if (e) { root.message = e.message; return }
             root.outputs = r.outputs ?? []
             root.edited = JSON.parse(JSON.stringify(root.outputs))
@@ -91,6 +94,12 @@ ColumnLayout {
         visible: root.message !== ""
         level: "error"
         text: root.message
+    }
+    NoticeBox {
+        Layout.fillWidth: true
+        visible: Anod.available && root.edited.length === 0 && root.message === ""
+        iconName: root.loading ? "progress_activity" : "info"
+        text: root.loading ? "Reading your monitors…" : "anod reported no monitors."
     }
 
     SettingsCard {

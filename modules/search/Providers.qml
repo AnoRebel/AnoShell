@@ -105,6 +105,8 @@ Item {
     readonly property string helper: root.p?.packages?.helper || (root.have.paru ? "paru" : root.have.yay ? "yay" : "")
     readonly property string pkgQuery: root.query.startsWith("pkg ") ? root.query.slice(4).trim() : ""
     property var pkgList: []
+    readonly property bool searchingPackages: root.on("packages") && root.pkgQuery.length >= 2 && !!root.helper
+        && (pkg.running || pkgDebounce.running)
     Timer {
         id: pkgDebounce
         interval: 450

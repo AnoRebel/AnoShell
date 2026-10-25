@@ -27,12 +27,22 @@ Singleton {
     property string error: ""     // last version/protocol problem ("" when fine)
     signal event(string name, var data)
 
-    // call(method, params, cb(result, error)) — false when anod is unavailable.
-    function call(method, params, cb) {
+    // call(method, params, cb(result, error), timeoutMs = 15000) — false when
+    // anod is unavailable. A reply that doesn't come in time calls back with
+    // { code: "timeout" } (a late reply is then dropped); 0 waits forever.
+    function call(method, params, cb, timeoutMs) {
         if (!root.available) { if (cb) cb(null, { code: "unavailable", message: "anod is not running" }); return false }
-        root._send(method, params, cb)
+        root._send(method, params, cb, timeoutMs ?? root._slowMethods[method] ?? 15000)
         return true
     }
+    // anod's slow handlers (HandleSlow): image work, scans and archives.
+    // Backups of a wallpaper folder can take minutes, so they wait for good.
+    readonly property var _slowMethods: ({
+        "backup.create": 0, "backup.restore": 0,
+        "wallpaper.set": 120000, "wallpaper.colors": 120000, "wallpaper.focus": 120000,
+        "palette.get": 120000, "palette.scan": 120000, "scan": 120000, "scanned": 120000,
+        "reader.open": 60000, "cursor.themes": 60000, "keybinds.active": 30000
+    })
     // Fire-and-forget shell event (dropped while anod is unavailable).
     function emit(name, data) { root.call("event.emit", { event: name, data: data ?? {} }) }
 
@@ -43,9 +53,11 @@ Singleton {
     property int _retries: 0
     property bool _startedSent: false
 
-    function _send(method, params, cb) {
+    property var _deadlines: ({}) // id → ms since epoch
+    function _send(method, params, cb, timeoutMs) {
         const id = ++root._nextId
         if (cb) root._pending[id] = cb
+        if (cb && timeoutMs > 0) { root._deadlines[id] = Date.now() + timeoutMs; deadlineTimer.start() }
         sock.write(JSON.stringify({ v: root.apiVersion, id, method, params: params ?? {} }) + "\n")
         sock.flush()
     }
@@ -56,6 +68,7 @@ Singleton {
         if (msg.event) { root.event(msg.event, msg.data ?? {}); return }
         const cb = root._pending[msg.id]
         delete root._pending[msg.id]
+        delete root._deadlines[msg.id]
         if (cb) cb(msg.result ?? null, msg.error ?? null)
     }
 
@@ -80,6 +93,24 @@ Singleton {
         })
     }
 
+    Timer {
+        id: deadlineTimer
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            const now = Date.now()
+            let left = 0
+            for (const id in root._deadlines) {
+                if (root._deadlines[id] > now) { left++; continue }
+                const cb = root._pending[id]
+                delete root._pending[id]
+                delete root._deadlines[id]
+                if (cb) cb(null, { code: "timeout", message: "anod didn't answer in time" })
+            }
+            if (!left) stop()
+        }
+    }
+
     Socket {
         id: sock
         path: root.socketPath
@@ -90,6 +121,7 @@ Singleton {
             root.version = ""
             const pending = root._pending
             root._pending = {}
+            root._deadlines = {}
             for (const id in pending) pending[id](null, { code: "unavailable", message: "anod disconnected" })
         }
     }

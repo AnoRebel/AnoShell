@@ -43,6 +43,23 @@ ColumnLayout {
         }
     }
 
+    // Feeds whose last fetch failed (their old events stay shown).
+    readonly property var failedFeeds: CalendarSync.sources
+        .filter(src => src.enabled && CalendarSync.sourceStatuses[src.id]?.error)
+        .map(src => `${src.name || src.url}: ${CalendarSync.sourceStatuses[src.id].error}`)
+    NoticeBox {
+        visible: root.failedFeeds.length > 0 && !CalendarSync.fetching
+        level: "warning"
+        iconName: "sync_problem"
+        text: root.failedFeeds.join("\n")
+        ToolbarButton {
+            anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 4 }
+            iconName: "refresh"; iconSize: 16
+            toolTipText: "Sync again"
+            onClicked: CalendarSync.forceRefreshAll()
+        }
+    }
+
     // ─── Month grid ─────────────────────────────────
     CalendarView {
         id: grid
@@ -189,7 +206,8 @@ ColumnLayout {
         }
         StyledText {
             text: root.showingUpcoming
-                ? (CalendarSync.events.length === 0
+                ? (CalendarSync.events.length === 0 && root.failedFeeds.length === 0
+                    && !CalendarSync.sources.some(src => src.enabled)
                     ? "No calendar feeds configured. Add one in Settings → Services → Calendar sync."
                     : `No upcoming events in the next ${Config.options?.calendar?.upcomingDays ?? 7} days`)
                 : "No events on this day"

@@ -38,6 +38,8 @@ Singleton {
     })
 
     property var days: []   // [{ date, max, min, code }]
+    property string problem: ""  // why the last fetch failed ("" when it worked)
+    readonly property bool fetching: fetcher.running
     property var hours: []  // today: [{ time, temp, code }]
     // A wttr.in weather code as a Material Symbol.
     function iconFor(code) {
@@ -127,6 +129,11 @@ Singleton {
     Process {
         id: fetcher
         command: ["true"]
+        onExited: code => {
+            if (code === 6 || code === 7) root.problem = "Couldn't reach wttr.in (offline?)"
+            else if (code === 28) root.problem = "wttr.in didn't answer in time"
+            else if (code !== 0) root.problem = `wttr.in failed (curl exit ${code})`
+        }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.length === 0) return
@@ -134,8 +141,10 @@ Singleton {
                     const j = JSON.parse(text)
                     root.refineData({ current: j.current_condition?.[0], location: j.nearest_area?.[0],
                                       astronomy: j.weather?.[0]?.astronomy?.[0], days: j.weather ?? [] })
+                    root.problem = ""
                 } catch (e) {
                     console.error(`[Weather] ${e.message}`)
+                    root.problem = "wttr.in sent something that isn't a forecast"
                 }
             }
         }

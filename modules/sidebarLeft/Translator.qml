@@ -24,6 +24,7 @@ Item {
     property string sourceLanguage: Config.options?.language?.translator?.sourceLanguage ?? "auto"
     property bool showLanguageSelector: false
     property bool useAiFallback: false
+    property string errorText: "" // why the last translation failed
 
     onFocusChanged: focus => { if (focus) Qt.callLater(() => inputArea.forceActiveFocus()) }
 
@@ -32,6 +33,7 @@ Item {
         id: translateTimer
         interval: Config.options?.sidebar?.translator?.delay ?? 600
         onTriggered: {
+            root.errorText = ""
             if (inputArea.text.trim().length > 0) {
                 if (root.useAiFallback) aiTranslate()
                 else transProcess.running = true
@@ -60,12 +62,17 @@ Item {
     function aiTranslate() {
         const text = inputArea.text.trim()
         if (text.length === 0) return
+        if (!(Ai.apiKeys?.google_gemini ?? "")) {
+            root.translatedText = ""
+            root.errorText = "Install translate-shell (trans), or add a Gemini key in AI chat (/key) for translations."
+            return
+        }
         const prompt = `Translate the following text to ${root.targetLanguage}. Only output the translation, nothing else:\n\n${text}`
         // User text and the key travel via the environment; the script is a
         // constant, so nothing typed here can reach the shell parser.
         aiTranslateProcess.exec({
             // Key and text stay out of curl's argv (ps): header via config fd, body on stdin.
-            command: ["bash", "-c", 'curl -s -K <(printf \'header = "x-goog-api-key: %s"\\n\' "$KEY") -H "Content-Type: application/json" --data-binary @- "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" <<< "$BODY" | jq -r \'.candidates[0].content.parts[0].text // "Translation unavailable"\''],
+            command: ["bash", "-c", 'curl -s -K <(printf \'header = "x-goog-api-key: %s"\\n\' "$KEY") -H "Content-Type: application/json" --data-binary @- "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" <<< "$BODY" | jq -r \'.candidates[0].content.parts[0].text // ("ERROR: " + (.error.message // "no translation in the reply"))\''],
             environment: ({
                 KEY: Ai.apiKeys?.google_gemini ?? "",
                 BODY: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -77,7 +84,12 @@ Item {
         id: aiTranslateProcess
         stdout: StdioCollector {
             id: aiCollector
-            onStreamFinished: root.translatedText = aiCollector.text.trim()
+            onStreamFinished: {
+                const t = aiCollector.text.trim()
+                if (!t) { root.translatedText = ""; root.errorText = "Couldn't reach Gemini (offline?)"; return }
+                if (t.startsWith("ERROR: ")) { root.translatedText = ""; root.errorText = `Gemini: ${t.slice(7)}`; return }
+                root.translatedText = t
+            }
         }
     }
 
@@ -191,10 +203,24 @@ Item {
                 StyledText {
                     id: outputText
                     width: parent.width
-                    text: root.translatedText || (transProcess.running || aiTranslateProcess.running ? "Translating..." : "")
+                    text: root.translatedText || (transProcess.running || aiTranslateProcess.running ? "Translating…" : "")
                     font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                     wrapMode: Text.Wrap
                     opacity: root.translatedText.length > 0 ? 1 : 0.4
+                }
+            }
+
+            NoticeBox {
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 8 }
+                visible: root.errorText.length > 0 && !aiTranslateProcess.running
+                level: "error"
+                iconName: "translate"
+                text: root.errorText
+                ToolbarButton {
+                    anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 4 }
+                    iconName: "refresh"; iconSize: 16
+                    toolTipText: "Try again"
+                    onClicked: translateTimer.restart()
                 }
             }
 

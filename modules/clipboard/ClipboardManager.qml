@@ -174,8 +174,15 @@ Scope {
                     boundsBehavior: Flickable.StopAtBounds
                     model: root.filteredEntries
 
+                    NoticeBox {
+                        visible: Cliphist.error.length > 0
+                        anchors { left: parent.left; right: parent.right; top: parent.top }
+                        level: "error"
+                        iconName: "content_paste_off"
+                        text: `Couldn't read the clipboard history: ${Cliphist.error}`
+                    }
                     StyledText {
-                        visible: root.filteredEntries.length === 0
+                        visible: root.filteredEntries.length === 0 && Cliphist.error.length === 0
                         text: root.searchQuery.length > 0 ? "No matching entries" : "Clipboard is empty"
                         font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
                         anchors.horizontalCenter: parent.horizontalCenter

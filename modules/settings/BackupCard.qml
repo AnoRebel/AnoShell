@@ -31,7 +31,8 @@ SettingsCard {
     function load() {
         if (!Anod.available) return
         Anod.call("backup.categories", {}, (r, e) => {
-            if (!r) return
+            if (!card) return
+            if (!r) { card._say(`Couldn't list what can be backed up: ${e?.message ?? "no answer"}`, true); return }
             card.categories = r
             const p = {}
             for (const c of r) p[c.name] = c.default
@@ -39,7 +40,13 @@ SettingsCard {
         })
         card.refresh()
     }
-    function refresh() { Anod.call("backup.list", {}, (r, e) => { if (r) card.backups = r }) }
+    function refresh() {
+        Anod.call("backup.list", {}, (r, e) => {
+            if (!card) return
+            if (r) card.backups = r
+            else card._say(`Couldn't list the backups: ${e?.message ?? "no answer"}`, true)
+        })
+    }
     Component.onCompleted: load()
     Connections { target: Anod; function onAvailableChanged() { card.load() } }
 

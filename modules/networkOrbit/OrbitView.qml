@@ -310,8 +310,9 @@ Item {
 
     // ── Busy / failure state ──────────────────────────────────────────────
     property string failedId: ""
-    Timer { id: failClear; interval: 4000; onTriggered: root.failedId = "" }
-    function fail(id) { root.failedId = id; failClear.restart() }
+    property string failReason: ""  // shown on the failed card in place of its name
+    Timer { id: failClear; interval: 8000; onTriggered: root.failedId = "" }
+    function fail(id, reason) { root.failedId = id; root.failReason = reason ?? "Failed"; failClear.restart() }
 
     function findAp(ssid) { return Network.wifiNetworks.find(n => n.ssid === ssid) ?? null }
     function findBt(addr) { return (root.adapter?.devices.values ?? []).find(d => d.address === addr) ?? null }
@@ -346,7 +347,7 @@ Item {
             const ap = root._connectTarget
             if (!ap || !ap.askingPassword) return
             if (ap.isSecure) root.pendingWifiSsid = ap.ssid
-            else root.fail(ap.ssid)
+            else root.fail(ap.ssid, "Couldn't connect")
             root._connectTarget = null
         }
         function onActiveChanged() { if (root._connectTarget?.active) root._connectTarget = null }
@@ -369,7 +370,7 @@ Item {
         }
         function onPairingChanged() {
             const d = root._pairTarget
-            if (d && !d.pairing && !d.paired) { root._pairTarget = null; root.fail(d.address) }
+            if (d && !d.pairing && !d.paired) { root._pairTarget = null; root.fail(d.address, "Pairing failed") }
         }
     }
 
@@ -382,7 +383,7 @@ Item {
             Network.connectToWifiNetwork(ap)
         } else if (root.activeMode === "bt") {
             const d = root.findBt(id)
-            if (!d) { root.fail(id); return }
+            if (!d) { root.fail(id, "Device gone"); return }
             if (root.adapter?.discovering) root.adapter.discovering = false
             if (!d.paired && !d.bonded) { d.trusted = true; root._pairTarget = d; d.pair() }
             else d.connect()

@@ -9,8 +9,8 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     property string text: ""
-    property string iconName: "info"
     property string level: "info" // "info", "warning", "error"
+    property string iconName: level === "error" ? "error" : level === "warning" ? "warning" : "info"
     property color levelColor: level === "error" ? Appearance?.m3colors.m3error ?? "#BA1A1A"
         : level === "warning" ? Appearance.colors.colWarning
         : Appearance?.colors.colPrimary ?? "#65558F"

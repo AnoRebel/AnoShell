@@ -328,7 +328,9 @@ Scope {
 
                         StyledText {
                             visible: root.totalCount === 0
-                            text: root.query.length > 0 ? "No apps found" : "No applications"
+                            text: providers.searchingPackages ? "Searching packages…"
+                                : providers.pkgQuery.length > 0 ? "No packages found"
+                                : root.query.length > 0 ? "No apps found" : "No applications"
                             font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
                             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 20
                         }

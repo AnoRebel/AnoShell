@@ -23,10 +23,12 @@ SettingsCard {
             cursorCard.apply(Config.options?.cursor?.theme ?? "", cursorCard.pendingSize)
     }
     // The palette cursors are listed before they're first built (choosing one builds it).
+    property string loadError: ""
     function load() {
         if (!Anod.available) return
-        Anod.call("cursor.themes", {}, r => {
-            if (!r) return
+        cursorCard.loadError = ""
+        Anod.call("cursor.themes", {}, (r, e) => {
+            if (!r) { cursorCard.loadError = e?.message ?? "no answer"; return }
             const missing = PaletteThemes.cursorIds.filter(id => !r.some(t => t.name === id))
                 .map(id => ({ name: id, title: id === "anoshell-cursor" ? "AnoShell" : "AnoShell Cell", preview: "" }))
             cursorCard.themes = missing.concat(r)
@@ -46,6 +48,12 @@ SettingsCard {
         Layout.fillWidth: true
         visible: !Anod.available
         text: "The cursor is applied by anod, which isn't running."
+    }
+    NoticeBox {
+        Layout.fillWidth: true
+        visible: Anod.available && cursorCard.loadError.length > 0
+        level: "error"
+        text: `Couldn't list the cursor themes: ${cursorCard.loadError}`
     }
     Flow {
         Layout.fillWidth: true
