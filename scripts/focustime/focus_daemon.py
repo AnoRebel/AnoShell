@@ -5,7 +5,7 @@ Compositor-agnostic: supports Hyprland (IPC) and Niri (niri msg).
 Adapted from ilyamiro's focustime for Ano Shell.
 
 Usage: python3 focus_daemon.py
-Data: ~/.local/share/focustime/focustime.db
+Data: $XDG_DATA_HOME/focustime/focustime.db (~/.local/share when unset)
 State: $XDG_RUNTIME_DIR/focustime_state.json (live, polled by QML)
 """
 import subprocess
@@ -22,7 +22,8 @@ from datetime import date, datetime, timedelta
 current_app_class = "Desktop"
 current_app_title = "Desktop"
 
-DB_DIR = os.path.expanduser("~/.local/share/focustime")
+# $XDG_DATA_HOME/focustime (~/.local/share/focustime when unset).
+DB_DIR = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "focustime")
 os.makedirs(DB_DIR, exist_ok=True)
 DB_PATH = os.path.join(DB_DIR, "focustime.db")
 

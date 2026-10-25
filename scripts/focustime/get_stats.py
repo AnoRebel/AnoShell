@@ -13,7 +13,7 @@ import calendar
 import re
 from datetime import date, timedelta
 
-DB_PATH = os.path.expanduser("~/.local/share/focustime/focustime.db")
+DB_PATH = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "focustime", "focustime.db")
 
 DESKTOP_CACHE_NAME = {}
 DESKTOP_CACHE_ICON = {}

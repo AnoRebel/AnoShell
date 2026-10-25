@@ -237,11 +237,16 @@ Singleton {
         stdout: SplitParser {
             onRead: line => { readProc.buffer.push(line) }
         }
+        // No database yet (nothing copied since cliphist was set up): cliphist
+        // exits 1 with "please store something first". An empty history.
+        stderr: StdioCollector { id: readErr }
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
                 root.entries = readProc.buffer
                 root._prune()
-            } else console.error("[Cliphist] Failed to refresh with code", exitCode)
+            } else if (readErr.text.indexOf("store something first") >= 0) {
+                root.entries = []
+            } else console.error("[Cliphist] Failed to refresh with code", exitCode, readErr.text.trim())
         }
     }
 

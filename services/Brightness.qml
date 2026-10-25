@@ -54,7 +54,8 @@ Singleton {
 
     Process {
         id: ddcProc
-        command: ["ddcutil", "detect", "--brief"]
+        // Only when ddcutil is installed (it's optional: external monitors).
+        command: ["sh", "-c", "command -v ddcutil >/dev/null && exec ddcutil detect --brief"]
         stdout: SplitParser {
             splitMarker: "\n\n"
             onRead: data => {

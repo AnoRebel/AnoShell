@@ -125,5 +125,11 @@ Button {
         }
     }
 
-    contentItem: StyledText { text: root.buttonText }
+    // On the primary fill (toggled, default colours) the label takes its
+    // on-colour: the default text colour was near-white on a light primary.
+    contentItem: StyledText {
+        text: root.buttonText
+        color: root.toggled && root.enabled && Qt.colorEqual(root.colBackgroundToggled, Appearance?.colors.colPrimary ?? "#65558F")
+            ? (Appearance?.colors.colOnPrimary ?? "white") : (Appearance?.m3colors.m3onBackground ?? "black")
+    }
 }
