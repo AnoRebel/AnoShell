@@ -286,10 +286,11 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 		}
 		return nil
 	})
-	if err != nil || dryRun || len(picked) == 0 {
+	if err != nil || len(picked) == 0 {
 		return picked, err
 	}
-	// Check every destination before writing anything, so a refused path
+	// Check every destination before writing anything (a dry run too, so a
+	// preview never lists a restore that would be refused), so a refused path
 	// can't leave the restore half-done.
 	for _, rel := range picked {
 		dst := filepath.Join(home, rel)
@@ -299,6 +300,9 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 		if fi, err := os.Lstat(dst); err == nil && fi.Mode()&os.ModeSymlink != 0 {
 			return nil, fmt.Errorf("refusing to overwrite symlink %s (nothing was restored)", dst)
 		}
+	}
+	if dryRun {
+		return picked, nil
 	}
 	if snapshot != "" {
 		if _, err := Create(home, snapshot, cats, now); err != nil {

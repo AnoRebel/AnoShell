@@ -49,6 +49,7 @@ SettingsCard {
         if (!only.length) { card._say("Pick at least one thing to back up.", true); return }
         card.busy = true; card._say("Backing up…")
         Anod.call("backup.create", { only: only }, (r, e) => {
+            if (!card) return // Settings closed meanwhile
             card.busy = false
             if (e) { card._say(e.message, true); return }
             card._say(`Backed up ${r.files} file(s) to ${r.path}`)
@@ -67,9 +68,14 @@ SettingsCard {
         if (!card.chosen || !only.length) { card._say("Pick at least one thing to restore.", true); return }
         card.busy = true; card._say(dryRun ? "Checking…" : "Restoring…")
         Anod.call("backup.restore", { path: card.chosen.path, only: only, dryRun: dryRun }, (r, e) => {
+            if (!card) return // Settings closed meanwhile
             card.busy = false
             if (e) { card._say(e.message, true); return }
-            if (dryRun) { card.preview = r; card._say(""); return }
+            if (dryRun) {
+                // A preview of an earlier pick doesn't count for this one.
+                if (card.names(card.restorePick).join() === only.join()) card.preview = r
+                card._say(""); return
+            }
             if (r.error) { card._say(`Stopped: ${r.error}. Restored before that: ${r.files.length} file(s)` + (r.snapshot ? `; the previous versions are in ${r.snapshot}` : ""), true); return }
             card._say(`Restored ${r.files.length} file(s)` + (r.snapshot ? `; the files it replaced are in ${r.snapshot}` : "") + ". Settings apply as the shell reloads them; reload your compositor for its configs.")
             card.chosen = null; card.preview = null
@@ -166,6 +172,7 @@ SettingsCard {
                 id: rcat
                 required property var modelData
                 Layout.fillWidth: true
+                enabled: !card.busy
                 label: rcat.modelData.charAt(0).toUpperCase() + rcat.modelData.slice(1)
                 checked: !!card.restorePick[rcat.modelData]
                 onCheckedChanged: if (!!card.restorePick[rcat.modelData] !== checked) {

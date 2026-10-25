@@ -99,6 +99,9 @@ func TestRestoreRejectsUnsafePaths(t *testing.T) {
 	f.Close()
 
 	all := Categories
+	if _, err := Restore(home, arc, all, "", true, time.Now()); err == nil {
+		t.Fatal("a dry run must refuse what the restore would refuse")
+	}
 	_, err := Restore(home, arc, all, "", false, time.Now())
 	if err == nil {
 		t.Fatal("want an error restoring through a symlink")

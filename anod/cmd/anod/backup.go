@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -37,7 +38,6 @@ func registerBackup(srv *ipc.Server) {
 
 	srv.Handle("backup.list", func(json.RawMessage) (any, error) {
 		files, _ := filepath.Glob(filepath.Join(dir, "*.tar.gz"))
-		sort.Sort(sort.Reverse(sort.StringSlice(files)))
 		out := []map[string]any{}
 		for _, f := range files {
 			m, err := backup.ReadManifest(f)
@@ -47,6 +47,7 @@ func registerBackup(srv *ipc.Server) {
 			preRestore := strings.HasPrefix(filepath.Base(f), "pre-restore-") // what a restore replaced
 			out = append(out, map[string]any{"path": f, "created": m.Created.Unix(), "files": m.Files, "categories": m.Categories, "preRestore": preRestore})
 		}
+		sort.SliceStable(out, func(i, j int) bool { return out[i]["created"].(int64) > out[j]["created"].(int64) })
 		return out, nil
 	})
 
@@ -74,7 +75,7 @@ func registerBackup(srv *ipc.Server) {
 			return nil, ipc.Errorf(ipc.CodeBadInput, "%v", err)
 		}
 		now := time.Now()
-		dest := filepath.Join(dir, "anoshell-"+now.Format("20060102-150405")+".tar.gz")
+		dest := freeName(dir, "anoshell-", now)
 		m, err := backup.Create(home, dest, cats, now)
 		if err != nil {
 			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
@@ -119,11 +120,14 @@ func registerBackup(srv *ipc.Server) {
 		now := time.Now()
 		snap := ""
 		if !p.DryRun {
-			snap = filepath.Join(dir, "pre-restore-"+now.Format("20060102-150405")+".tar.gz")
+			snap = freeName(dir, "pre-restore-", now)
 		}
 		files, err := backup.Restore(home, abs, cats, snap, p.DryRun, now)
 		if files == nil {
 			files = []string{}
+		}
+		if _, statErr := os.Stat(snap); snap != "" && statErr != nil {
+			snap = "" // refused before the snapshot was written
 		}
 		if err != nil {
 			return map[string]any{"files": files, "snapshot": snap, "error": err.Error()}, nil
@@ -133,4 +137,17 @@ func registerBackup(srv *ipc.Server) {
 		}
 		return map[string]any{"files": files, "snapshot": snap}, nil
 	})
+}
+
+// freeName is dir/<prefix><time>.tar.gz, with -2, -3… when a backup was
+// already made in that second (archives are created O_EXCL).
+func freeName(dir, prefix string, now time.Time) string {
+	base := filepath.Join(dir, prefix+now.Format("20060102-150405"))
+	p := base + ".tar.gz"
+	for i := 2; ; i++ {
+		if _, err := os.Lstat(p); os.IsNotExist(err) {
+			return p
+		}
+		p = fmt.Sprintf("%s-%d.tar.gz", base, i)
+	}
 }
