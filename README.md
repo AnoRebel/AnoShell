@@ -589,6 +589,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Privacy: microphone, PipeWire cameras | PipeWire + WirePlumber | not shown |
 | Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
 | Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
+| Long-running helpers (`nmcli monitor`, `wlsunset`, `cava`, `udevadm monitor`) | `setpriv` (util-linux): started with `--pdeathsig TERM` so they end with the shell, even a killed one | the helper fails to start |
 | Removable drives (bar module `drives`) | `udisks2` (`udisksctl`), `util-linux` (`lsblk` ≥ 2.37 for `MOUNTPOINTS`), udev (`udevadm`: systemd-udev or eudev), `libnotify` (`notify-send`) | no drives listed / no notifications |
 | Night light (Settings → Services, bar/pill module `nightlight`, sidebar toggle) | `wlsunset`; a compositor with wlr-gamma-control (Hyprland, niri, sway) | the toggle does nothing |
 | Qt apps in the palette (`appearance.theme.qt`) | `qt6ct` (and `QT_QPA_PLATFORMTHEME=qt6ct`); `qt5ct` for Qt 5 apps; `kvantum` for the default Kvantum mode | Qt apps keep Qt's default look |

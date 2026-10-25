@@ -61,7 +61,7 @@ Singleton {
     // udev reports disks and partitions coming, going and changing.
     Process {
         running: true
-        command: ["udevadm", "monitor", "--udev", "--subsystem-match=block"]
+        command: ["setpriv", "--pdeathsig", "TERM", "--", "udevadm", "monitor", "--udev", "--subsystem-match=block"]
         stdout: SplitParser { onRead: line => { if (/\b(add|remove|change)\b/.test(line)) settle.restart() } }
     }
     Timer { id: settle; interval: 400; onTriggered: root.refresh() }

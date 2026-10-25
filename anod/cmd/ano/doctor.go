@@ -27,6 +27,7 @@ type feature struct {
 var features = []feature{
 	{"notifications from scripts", "", []string{"notify-send"}},
 	{"network panel", "", []string{"nmcli"}},
+	{"watchers (nmcli monitor, wlsunset, cava, udevadm) end with the shell", "", []string{"setpriv"}},
 	{"clipboard history", "", []string{"cliphist", "wl-copy"}},
 	{"wallpaper + dynamic colours", "", []string{"awww", "matugen"}},
 	{"launcher calculator", "search.plugins.calculator.enable", []string{"qalc"}},

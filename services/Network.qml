@@ -208,7 +208,7 @@ Singleton {
     Process {
         id: subscriber
         running: true
-        command: ["nmcli", "monitor"]
+        command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         stdout: SplitParser { onRead: updateDebounce.restart() }
     }
 

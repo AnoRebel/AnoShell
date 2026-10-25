@@ -62,7 +62,7 @@ Singleton {
     }
     readonly property var args: {
         const mode = root.modeArgs
-        return mode.length ? ["wlsunset"].concat(mode, root.common) : []
+        return mode.length ? ["setpriv", "--pdeathsig", "TERM", "--", "wlsunset"].concat(mode, root.common) : []
     }
     readonly property var modeArgs: {
         if (root.enabled) // held at nightTemp: day and night 1 K apart, so the time doesn't matter

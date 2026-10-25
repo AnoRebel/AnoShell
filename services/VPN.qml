@@ -308,7 +308,7 @@ Singleton {
     Process {
         id: nmMonitor
         running: root.enabled
-        command: ["nmcli", "monitor"]
+        command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         stdout: SplitParser {
             onRead: statusCheckTimer.restart()
         }

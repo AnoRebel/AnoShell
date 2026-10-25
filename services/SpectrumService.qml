@@ -96,7 +96,7 @@ Singleton {
     Process {
         id: cavaProcess
         stdinEnabled: true
-        command: ["cava", "-p", "/dev/stdin"]
+        command: ["setpriv", "--pdeathsig", "TERM", "--", "cava", "-p", "/dev/stdin"]
 
         onExited: {
             stdinEnabled = true
