@@ -1256,6 +1256,9 @@ Singleton {
             // Preferred shell selector
             property JsonObject shell: JsonObject {
                 property string preferred: ""
+                // Transparent huge pages for a qs that anod --supervise starts
+                // (off: ~100 MB less RSS, no CPU cost; read by anod at start).
+                property bool hugePages: false
             }
 
             // Multi-bar definitions (array of bar configs). Free-form — consumed

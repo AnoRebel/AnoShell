@@ -117,3 +117,13 @@ func TestQuickshellCrashReportIgnoresOldReports(t *testing.T) {
 		t.Errorf("report = %q", got)
 	}
 }
+
+// The shell starts with transparent huge pages off.
+func TestNoHugePagesReachesChild(t *testing.T) {
+	s := fast("sh", "-c", `grep -Eq '^THP_enabled:[[:space:]]+0$' /proc/self/status`)
+	s.NoHugePages = true
+	s.MaxCrashes = 1
+	if got := s.Run(context.Background()); got != Stopped {
+		t.Fatalf("state = %s: the child still has huge pages on", got)
+	}
+}

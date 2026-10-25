@@ -353,6 +353,7 @@
   "session.confirmLogout": "bool",
   "session.confirmShutdown": "bool",
   "settings.showAdvanced": "bool",
+  "shell.hugePages": "bool",
   "shell.preferred": "string",
   "sidebar.instantOpen": "bool",
   "sidebar.keepLeftSidebarLoaded": "bool",

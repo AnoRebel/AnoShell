@@ -4,6 +4,7 @@ package supervisor
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,6 +36,10 @@ type Supervisor struct {
 	// Alive reports whether the session the shell draws on still exists. A
 	// crash is not restarted once it's gone (the compositor exited: logout).
 	Alive func() bool
+	// NoHugePages turns transparent huge pages off for the shell
+	// (PR_SET_THP_DISABLE on anod, which the child inherits through fork and
+	// exec): about 100 MB less RSS for qs, no CPU cost (baselines.md, 13.1).
+	NoHugePages bool
 
 	mu        sync.Mutex
 	started   time.Time // first child start; crash reports older than this aren't ours
@@ -85,6 +90,12 @@ func (s *Supervisor) set(f func()) { s.mu.Lock(); f(); s.mu.Unlock() }
 func (s *Supervisor) Run(ctx context.Context) State {
 	s.defaults()
 	s.set(func() { s.started = time.Now() })
+	if s.NoHugePages {
+		const prSetTHPDisable = 41
+		if _, _, errno := syscall.RawSyscall6(syscall.SYS_PRCTL, prSetTHPDisable, 1, 0, 0, 0, 0); errno != 0 {
+			log.Printf("supervisor: huge pages stay on: %v", errno)
+		}
+	}
 	for {
 		cmd := exec.Command(s.Cmd[0], s.Cmd[1:]...)
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr

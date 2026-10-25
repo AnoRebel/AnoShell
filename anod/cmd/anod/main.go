@@ -66,6 +66,9 @@ func main() {
 			CrashReport: supervisor.QuickshellCrashReport,
 			Alive:       alive,
 		}
+		if m, err := config.Effective(); err == nil {
+			sup.NoHugePages = !config.Bool(m, "shell.hugePages", false)
+		}
 	}
 
 	srv.Handle("ping", func(json.RawMessage) (any, error) { return "pong", nil })

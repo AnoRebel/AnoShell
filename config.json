@@ -421,7 +421,8 @@
     "outputs": []
   },
   "shell": {
-    "preferred": ""
+    "preferred": "",
+    "hugePages": false
   },
   "calendar": {
     "upcomingDays": 7,
