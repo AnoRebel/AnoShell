@@ -202,7 +202,7 @@ Loader {
                                         Layout.fillWidth: true
                                     }
                                     StyledText {
-                                        text: (paletteDelegate.modelData.label ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
+                                        text: (paletteDelegate.modelData.label && !paletteDelegate.modelData.card ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
                                             + ({ "user": " · changed in your config", "migrated": " · migrated" }[Config.originOf(paletteDelegate.modelData.key)] ?? "")
                                             + (paletteDelegate.modelData.advanced ? " · Advanced" : "")
                                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 11
@@ -317,6 +317,7 @@ Loader {
     function _findCardForKey(pageItem, key) {
         if (!pageItem) return null;
         const top = key.split(".")[0];
+        const title = key.startsWith("card:") ? key.slice(5) : null;
         const stack = [pageItem];
         while (stack.length > 0) {
             const cur = stack.shift();
@@ -324,6 +325,7 @@ Loader {
             // Detect SettingsCard: it has a `configKeys` property (added
             // by us) and a `title` property. Cheap duck-type check.
             if (cur.configKeys !== undefined && Array.isArray(cur.configKeys)) {
+                if (title !== null && cur.title === title) return cur;
                 for (const ck of cur.configKeys) {
                     if (ck === key || ck === top || key.startsWith(ck + ".")) {
                         return cur;

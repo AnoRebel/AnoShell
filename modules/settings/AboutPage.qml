@@ -356,6 +356,9 @@ ColumnLayout {
         }
     }
 
+    // ═══ Backup & restore ═══
+    BackupCard {}
+
     // ═══ Shell Info ═══
     SettingsCard {
         icon: "terminal"
@@ -397,7 +400,7 @@ ColumnLayout {
                 { label: "Daemon (anod)", value: Anod.available ? `connected · ${Anod.version}`
                     : Anod.error || "not running: wallpaper pipeline and hooks unavailable (see docs/anod.md)" },
                 { label: "Shell root", value: Directories.shellRoot },
-                { label: "Config file", value: Directories.shellConfigPath },
+                { label: "Config file", value: Directories.userConfigPath },
                 { label: "Uptime", value: DateTime.uptime },
                 { label: "User", value: Quickshell.env("USER") || "unknown" },
                 { label: "Hostname", value: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "localhost" },
@@ -413,7 +416,7 @@ ColumnLayout {
                     text: modelData.label
                     font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                     opacity: 0.5
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 140 // fits "Daemon (anod)"
                 }
                 StyledText {
                     text: modelData.value

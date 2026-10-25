@@ -123,6 +123,13 @@ Singleton {
         for (const entry of out) byKey[entry.key] = entry;
         for (const item of index) {
             const words = [item.card, item.label, item.sublabel].join(" ").toLowerCase();
+            // A card that writes no setting (Backup, Presets) is found by its title.
+            if (!(item.keys || []).length && item.card && item.label === item.card) {
+                const page = root.pages[item.page];
+                if (page) out.push({ key: "card:" + item.card, label: item.card, card: true, pageIndex: item.page,
+                                     pageName: page.name, pageIcon: page.icon, haystack: words + " " + page.name.toLowerCase() });
+                continue;
+            }
             for (const key of (item.keys || [])) {
                 let entry = byKey[key];
                 if (!entry) {

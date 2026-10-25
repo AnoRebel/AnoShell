@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"ano/anod/internal/backup"
@@ -15,7 +16,7 @@ import (
 // (the same internal/backup implementation as the CLI).
 //
 //	backup.categories                       → [{name, desc, default}]
-//	backup.list                             → [{path, created, files, categories}], newest first
+//	backup.list                             → [{path, created, files, categories, preRestore}], newest first
 //	backup.create  {only?, add?}            → {path, files, categories}
 //	backup.restore {path, only?, dryRun?}   → {files, snapshot}
 //
@@ -43,7 +44,8 @@ func registerBackup(srv *ipc.Server) {
 			if err != nil {
 				continue
 			}
-			out = append(out, map[string]any{"path": f, "created": m.Created.Unix(), "files": m.Files, "categories": m.Categories})
+			preRestore := strings.HasPrefix(filepath.Base(f), "pre-restore-") // what a restore replaced
+			out = append(out, map[string]any{"path": f, "created": m.Created.Unix(), "files": m.Files, "categories": m.Categories, "preRestore": preRestore})
 		}
 		return out, nil
 	})

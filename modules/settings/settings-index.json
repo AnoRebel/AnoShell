@@ -3132,5 +3132,12 @@
   "label": "Presets",
   "sublabel": "Try a whole setup live, then keep it or go back",
   "keys": []
+ },
+ {
+  "page": 11,
+  "card": "Backup & restore",
+  "label": "Backup & restore",
+  "sublabel": "Your settings, themes, widgets and data in an archive; restore all of it or some",
+  "keys": []
  }
 ]
