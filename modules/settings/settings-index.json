@@ -11,6 +11,15 @@
  {
   "page": 0,
   "card": "",
+  "label": "EasyEffects quick toggle",
+  "sublabel": "",
+  "keys": [
+   "audio.easyEffects.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
   "label": "Volume protection (Earbang guard)",
   "sublabel": "Blocks sudden volume jumps that could damage hearing",
   "keys": [

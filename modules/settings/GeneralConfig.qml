@@ -58,6 +58,16 @@ ColumnLayout {
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"; opacity: 0.2 }
 
         ConfigSwitch {
+            label: "EasyEffects quick toggle"
+            configKey: "audio.easyEffects.enable"
+            sublabel: EasyEffects.enabled && !EasyEffects.available
+                ? "EasyEffects isn't running: start it (e.g. its service mode) and the toggle appears"
+                : "Bypass and output presets in the quick toggles, through EasyEffects' own command line. Needs `easyeffects`"
+            checked: Config.options?.audio?.easyEffects?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("audio.easyEffects.enable", checked)
+        }
+
+        ConfigSwitch {
             label: "Volume protection (Earbang guard)"
             configKey: "audio.protection.enable"
             sublabel: "Blocks sudden volume jumps that could damage hearing"

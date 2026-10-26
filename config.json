@@ -167,6 +167,9 @@
     "spectrum": {
       "bars": 32,
       "frameRate": 60
+    },
+    "easyEffects": {
+      "enable": false
     }
   },
   "battery": {

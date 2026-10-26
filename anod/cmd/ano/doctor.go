@@ -41,6 +41,7 @@ var features = []feature{
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
+	{"EasyEffects quick toggle and presets", "audio.easyEffects.enable", []string{"easyeffects"}},
 	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "gdbus"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},

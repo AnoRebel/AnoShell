@@ -17,6 +17,7 @@ Rectangle {
     property bool nightLightExpanded: false
     property bool networkExpanded: false
     property bool bluetoothExpanded: false
+    property bool easyEffectsExpanded: false
 
     implicitHeight: contentCol.implicitHeight + 16
     radius: Appearance?.rounding.normal ?? 12
@@ -107,6 +108,22 @@ Rectangle {
             active: Idle.inhibit
             activeColor: Appearance.colors.colInfo
             onClicked: Idle.toggleInhibit()
+            Layout.fillWidth: true
+        }
+
+        // EasyEffects: tap toggles the global bypass, chevron picks a preset
+        TogglePill {
+            visible: EasyEffects.enabled && EasyEffects.available
+            iconName: "graphic_eq"
+            label: EasyEffects.bypassed ? "Bypass" : (EasyEffects.currentPreset || "Effects")
+            tooltip: EasyEffects.bypassed ? "EasyEffects bypassed · tap to turn effects back on, ▾ for presets"
+                : `EasyEffects: ${EasyEffects.currentPreset || "on"} · tap to bypass, ▾ for presets`
+            active: !EasyEffects.bypassed
+            activeColor: Appearance.colors.colTertiary
+            onClicked: EasyEffects.toggleBypass()
+            showChevron: true
+            chevronRotation: root.easyEffectsExpanded ? 180 : 0
+            onChevronClicked: root.easyEffectsExpanded = !root.easyEffectsExpanded
             Layout.fillWidth: true
         }
 
@@ -210,6 +227,39 @@ Rectangle {
             BluetoothDevicePicker {
                 id: btPicker
                 anchors { left: parent.left; right: parent.right; top: parent.top; topMargin: 4 }
+            }
+        }
+
+        // ── EasyEffects output presets (inline expander) ──
+        Item {
+            Layout.fillWidth: true
+            clip: true
+            readonly property bool open: root.easyEffectsExpanded && EasyEffects.available
+            implicitHeight: open ? Math.min(presetCol.implicitHeight, 220) + 8 : 0
+            opacity: open ? 1 : 0
+            Behavior on implicitHeight { MotionSpring { token: "settle" } }
+            Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(180) } }
+
+            StyledFlickable {
+                anchors { fill: parent; topMargin: 4 }
+                contentHeight: presetCol.implicitHeight
+                clip: true
+                ColumnLayout {
+                    id: presetCol
+                    width: parent.width
+                    spacing: 2
+                    Repeater {
+                        model: EasyEffects.presets
+                        delegate: RippleButton {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            implicitHeight: 32
+                            toggled: modelData === EasyEffects.currentPreset
+                            buttonText: modelData
+                            onClicked: EasyEffects.loadPreset(modelData)
+                        }
+                    }
+                }
             }
         }
 

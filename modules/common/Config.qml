@@ -1183,6 +1183,10 @@ Singleton {
                     property int bars: 32
                     property int frameRate: 60
                 }
+                // EasyEffects quick toggle + presets (services/EasyEffects.qml)
+                property JsonObject easyEffects: JsonObject {
+                    property bool enable: false
+                }
             }
 
             // ═══════════════════════════════════════════════════════════════
