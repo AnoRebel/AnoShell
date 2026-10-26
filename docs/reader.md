@@ -54,6 +54,15 @@ Episodes play in **mpv**, which anod starts. Playback keeps going when you
 close the panel or leave the episode list, and the backend waits for it to
 end before its idle stop.
 
+anod follows mpv over a private IPC socket (`$XDG_RUNTIME_DIR/anoshell/`)
+and saves the position of each episode in
+`~/.local/share/anoshell/reader/anime-progress.json`: playing it again starts
+where you stopped (`reader.anime.resume`), and past `reader.anime.finishedRatio`
+(90%) the episode list marks it watched; partly watched episodes show how far
+you got. With `reader.anime.skipIntro`, openings and endings are skipped once
+each, with community-submitted times from [AniSkip](https://api.aniskip.com)
+looked up by the show's MyAnimeList id (no times: nothing is skipped).
+
 ### Library and progress
 
 Each reader's library (with the chapter or episode you reached) is kept in
@@ -99,6 +108,9 @@ system-wide. Changes apply the next time the backend starts.
 | `reader.enable` | `false` | the readers at all |
 | `reader.<novel\|manga\|anime>.enable` | `true` | each reader |
 | `reader.<kind>.edge` | novel `right`, others `left` | where it opens |
+| `reader.anime.resume` | `true` | start episodes where you stopped |
+| `reader.anime.skipIntro` | `false` | skip openings/endings (AniSkip) |
+| `reader.anime.finishedRatio` | `0.9` | from what fraction an episode is watched |
 | `reader.idleTimeout` | `120` | seconds before the backend stops |
 | `reader.cacheMB` | `64` | image cache size |
 | `reader.metaCacheEntries` | `512` | lists, details and chapters kept in memory |

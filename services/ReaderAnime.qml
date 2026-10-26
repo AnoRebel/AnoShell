@@ -28,6 +28,17 @@ Singleton {
     property bool isFetchingLinks: false
     property string linksError: ""
     property string currentEpisode: ""
+    // episode number → { pos, dur, watched } for currentAnime (anod)
+    property var progress: ({})
+    function refreshProgress() {
+        const id = root.currentAnime?.id
+        if (!id || !Reader.base) return
+        Reader.get(Reader.base + "anime/progress?show=" + encodeURIComponent(id), function(err, body) {
+            if (err || root.currentAnime?.id !== id) return
+            try { root.progress = JSON.parse(body) || {} } catch (e) {}
+        })
+    }
+    onCurrentAnimeChanged: { root.progress = ({}); root.refreshProgress() }
 
     // ── Library ───────────────────────────────────────────────────────────────
     // Each entry: { id, name, englishName, thumbnail, score,

@@ -319,6 +319,8 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveLibrary(w, r, endpoint)
 	case kind == "anime" && endpoint == "play":
 		s.servePlay(w, r)
+	case kind == "anime" && endpoint == "progress":
+		writeJSON(w, http.StatusOK, s.Progress(r.URL.Query().Get("show")))
 	case kind == "anime" && endpoint == "stop":
 		s.StopPlayback()
 		writeJSON(w, http.StatusOK, map[string]any{"ok": true})
@@ -663,6 +665,14 @@ type PlayRequest struct {
 	Referer  string `json:"referer"`
 	Subtitle string `json:"subtitle"`
 	Title    string `json:"title"`
+	// Optional, for progress (progress.go): the show id and episode number,
+	// whether to start where it was left, skip openings/endings (AniSkip),
+	// and from what fraction an episode counts as watched (default 0.9).
+	Show          string  `json:"show"`
+	Episode       string  `json:"episode"`
+	Resume        bool    `json:"resume"`
+	SkipIntro     bool    `json:"skipIntro"`
+	FinishedRatio float64 `json:"finishedRatio"`
 }
 
 func httpURL(s string) bool {
@@ -688,6 +698,22 @@ func (s *Service) Play(req PlayRequest) error {
 	if req.Subtitle != "" {
 		args = append(args, "--sub-file="+req.Subtitle)
 	}
+	track := req.Show != "" && req.Episode != ""
+	sock := ""
+	if track {
+		if req.Resume {
+			if at := resumeAt(s.Progress(req.Show)[req.Episode]); at > 0 {
+				args = append(args, fmt.Sprintf("--start=%.1f", at))
+			}
+		}
+		var err error
+		if sock, err = mpvSocket(); err != nil {
+			s.logf("mpv IPC socket: %v; progress not saved", err)
+			sock = ""
+		} else {
+			args = append(args, "--input-ipc-server="+sock)
+		}
+	}
 	args = append(args, "--", req.URL)
 
 	s.mu.Lock()
@@ -702,8 +728,13 @@ func (s *Service) Play(req PlayRequest) error {
 	if s.idle != nil {
 		s.idle.Stop()
 	}
+	done := make(chan struct{})
+	if sock != "" {
+		go s.watchMPV(sock, req, done)
+	}
 	go func() {
 		cmd.Wait()
+		close(done)
 		s.mu.Lock()
 		defer s.mu.Unlock()
 		if s.mpv == cmd {

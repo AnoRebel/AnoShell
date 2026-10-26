@@ -25,7 +25,8 @@ Item {
             console.warn("[AnimeDetail] _playWithMpv called with empty URL, aborting")
             return
         }
-        Reader.play({ url: url, referer: referer, subtitle: subtitle }, title || "Anime")
+        Reader.play({ url: url, referer: referer, subtitle: subtitle }, title || "Anime",
+            ReaderAnime.currentAnime?.id ?? "", ReaderAnime.currentEpisode)
     }
     // (no backdrop of its own: the panel's SurfaceMaterial shows through)
 
@@ -232,6 +233,8 @@ Item {
                     readonly property bool isLastWatched:
                         _libEntry !== null && _libEntry !== undefined
                         && _libEntry.lastWatchedEpNum === String(modelData.number)
+                    // anod's saved position for this episode (resume, watched)
+                    readonly property var _prog: ReaderAnime.progress[String(modelData.number)] ?? null
 
                     color: isLastWatched
                         ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.07)
@@ -271,6 +274,16 @@ Item {
                             text: "Episode " + (modelData.number || "")
                             font.family: detailView.fontBody
                             font.pixelSize: 12; color: Appearance.m3colors.m3onSurface; elide: Text.ElideRight
+                        }
+
+                        // Watched, or how far it got (resumes there)
+                        StyledText {
+                            visible: !!epRowAreaRect._prog
+                            text: !epRowAreaRect._prog ? "" : epRowAreaRect._prog.watched ? "✓ watched"
+                                : epRowAreaRect._prog.dur > 0 ? `${Math.round(100 * epRowAreaRect._prog.pos / epRowAreaRect._prog.dur)}%`
+                                : ""
+                            font.pixelSize: 10
+                            color: epRowAreaRect._prog?.watched ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outline
                         }
 
                         // Play icon

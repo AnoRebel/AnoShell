@@ -136,9 +136,14 @@ Singleton {
     }
 
     // ── Playback (mpv owned by anod, so it outlives the panel) ───────────
-    function play(link, title) {
+    // show/episode (optional) let anod save the position: resume, watched,
+    // AniSkip (reader.anime.resume/skipIntro/finishedRatio).
+    function play(link, title, show, episode) {
+        const a = Config.options?.reader?.anime ?? {}
         root.post(root.base + "anime/play", {
-            url: link.url, referer: link.referer ?? "", subtitle: link.subtitle ?? "", title: title ?? ""
+            url: link.url, referer: link.referer ?? "", subtitle: link.subtitle ?? "", title: title ?? "",
+            show: show ?? "", episode: episode !== undefined ? String(episode) : "",
+            resume: a.resume ?? true, skipIntro: a.skipIntro ?? false, finishedRatio: a.finishedRatio ?? 0.9
         }, err => { if (err) console.warn(`[Reader] mpv: ${err}`) })
     }
 }

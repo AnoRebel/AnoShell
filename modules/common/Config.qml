@@ -960,6 +960,10 @@ Singleton {
                 property JsonObject anime: JsonObject {
                     property bool enable: true
                     property string edge: "left"
+                    // anod saves mpv's position per episode (progress.go)
+                    property bool resume: true
+                    property bool skipIntro: false        // AniSkip
+                    property real finishedRatio: 0.9      // watched past this fraction
                 }
                 // Per source: "go" (anod) or "python" (the legacy servers in scripts/reader).
                 property JsonObject providers: JsonObject {

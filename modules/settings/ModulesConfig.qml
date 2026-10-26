@@ -891,6 +891,29 @@ ColumnLayout {
             }
         }
 
+        ConfigSwitch {
+            label: "Anime: resume where you stopped"
+            configKey: "reader.anime.resume"
+            sublabel: "anod follows mpv's position per episode (also marks episodes watched)"
+            checked: Config.options?.reader?.anime?.resume ?? true
+            onCheckedChanged: Config.setNestedValue("reader.anime.resume", checked)
+        }
+        ConfigSwitch {
+            label: "Anime: skip openings and endings"
+            configKey: "reader.anime.skipIntro"
+            sublabel: "Times from AniSkip (api.aniskip.com, community-submitted), looked up by the show's MyAnimeList id"
+            checked: Config.options?.reader?.anime?.skipIntro ?? false
+            onCheckedChanged: Config.setNestedValue("reader.anime.skipIntro", checked)
+        }
+        ConfigSlider {
+            label: "Anime: watched after"
+            configKey: "reader.anime.finishedRatio"
+            from: 0.5; to: 1; stepSize: 0.05
+            value: Config.options?.reader?.anime?.finishedRatio ?? 0.9
+            onValueChanged: Config.setNestedValue("reader.anime.finishedRatio", Math.round(value * 100) / 100)
+            valueText: `${Math.round(value * 100)}%`
+        }
+
         ConfigSlider {
             label: "Stop the backend after"
             configKey: "reader.idleTimeout"

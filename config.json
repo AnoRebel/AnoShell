@@ -281,7 +281,10 @@
     },
     "anime": {
       "enable": true,
-      "edge": "left"
+      "edge": "left",
+      "resume": true,
+      "skipIntro": false,
+      "finishedRatio": 0.9
     },
     "providers": {
       "freewebnovel": {

@@ -699,6 +699,33 @@
  {
   "page": 1,
   "card": "",
+  "label": "Anime: resume where you stopped",
+  "sublabel": "anod follows mpv's position per episode (also marks episodes watched)",
+  "keys": [
+   "reader.anime.resume"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Anime: skip openings and endings",
+  "sublabel": "Times from AniSkip (api.aniskip.com, community-submitted), looked up by the show's MyAnimeList id",
+  "keys": [
+   "reader.anime.skipIntro"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Anime: watched after",
+  "sublabel": "",
+  "keys": [
+   "reader.anime.finishedRatio"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
   "label": "Stop the backend after",
   "sublabel": "Seconds with every reader closed (and nothing playing)",
   "keys": [
