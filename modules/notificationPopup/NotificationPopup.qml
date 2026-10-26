@@ -102,8 +102,11 @@ Scope {
         BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol && !root.connected && !GameMode.stopBlur ? cardsRegion : null
         Region {
             id: cardsRegion
-            regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r) }
+            // Clipped to the window last: cards sliding in or out leave it,
+            // and an offscreen region can blur the whole surface on Hyprland.
+            regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r).concat([cardsClip]) }
         }
+        property Region cardsClip: Region { intersection: Intersection.Intersect; width: popupWindow.width; height: popupWindow.height }
 
         // The stack grows out of its edge (pinned there) on a spring as cards
         // arrive and retracts as they leave; the frame follows this body.

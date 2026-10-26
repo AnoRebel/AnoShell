@@ -192,6 +192,10 @@ Item {
         FilletRegion { f: root._b.fillets[13] }
         FilletRegion { f: root._b.fillets[14] }
         FilletRegion { f: root._b.fillets[15] }
+        // Last: clip the union to the window. A slot moving out of the window
+        // leaves a region partly or wholly offscreen, which Hyprland can treat
+        // as unrestricted blur over the whole surface (tide-island 81c67bd).
+        Region { intersection: Intersection.Intersect; width: root.width; height: root.height }
     }
     // k×k square minus the circle the fillet is tangent to.
     component FilletRegion: Region {
