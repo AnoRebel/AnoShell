@@ -78,6 +78,16 @@ QtObject {
     }
     // Replies are snapshots, so a request already waiting for the same command
     // just takes the newer callback (the queue can't grow while unreachable).
+    // Caps/Num Lock of the main keyboard (right with keyd and other virtual
+    // keyboards): cb({ capsLock, numLock }).
+    function lockKeys(cb) {
+        root._request("j/devices", d => {
+            const kb = (d?.keyboards ?? []).find(k => k.main)
+            if (kb) cb({ capsLock: !!kb.capsLock, numLock: !!kb.numLock })
+        })
+        return true
+    }
+
     function _request(cmd, cb) {
         const pending = root._queue.find(j => j.cmd === cmd)
         if (pending) pending.cb = cb

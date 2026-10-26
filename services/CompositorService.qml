@@ -151,6 +151,9 @@ Singleton {
         return root.backend?.focusWorkspaceRelative(delta) ?? false
     }
     function exit() { return root.backend?.exit() ?? false }
+    // Lock-key state where the compositor knows it (cb({ capsLock, numLock }));
+    // false: ask the keyboard LEDs instead (LockKeys).
+    function lockKeys(cb) { return root.backend?.lockKeys?.(cb) ?? false }
     function powerOffMonitors() { return root.backend?.powerOffMonitors() ?? false }
     function powerOnMonitors() { return root.backend?.powerOnMonitors() ?? false }
     // Runtime only: the outer gap (windows ↔ screen edge); connected mode sets 0.

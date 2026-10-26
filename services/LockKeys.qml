@@ -14,8 +14,8 @@ import qs.services
  *
  * Hyprland: the bundled config binds Caps_Lock and Num_Lock (non-consuming,
  * on release, also while locked) to the `lockKeys` global shortcut; the state
- * comes from the main keyboard in `hyprctl devices`, which is right even
- * with keyd or other virtual keyboards. Elsewhere there is no key event to
+ * comes from the compositor backend (the main keyboard in Hyprland's
+ * devices), which is right even with keyd or other virtual keyboards. Elsewhere there is no key event to
  * hang on, and the keyboard LEDs (/sys/class/leds/*::capslock) send no file
  * events, so while the screen is locked (for the lock screen's Caps Lock
  * warning) their files are found once and re-read every 500 ms through
@@ -35,7 +35,10 @@ Singleton {
     // A press during a read reads again when it ends (running = true on a
     // running Process would do nothing and the press would be lost).
     property bool _again: false
-    function refresh() { if (reader.running) root._again = true; else reader.running = true }
+    function refresh() {
+        if (CompositorService.lockKeys(st => root._apply(st.capsLock, st.numLock))) return
+        if (reader.running) root._again = true; else reader.running = true
+    }
 
     function _apply(caps, num) {
         const first = !root.known
@@ -50,20 +53,12 @@ Singleton {
 
     Process {
         id: reader
-        command: CompositorService.isHyprland
-            ? ["hyprctl", "devices", "-j"]
-            : ["sh", "-c", "for f in /sys/class/leds/*::capslock/brightness /sys/class/leds/*::numlock/brightness; do [ -r \"$f\" ] && echo \"$f\"; done"]
+        // Finds the LED files (compositors without lock-key state).
+        command: ["sh", "-c", "for f in /sys/class/leds/*::capslock/brightness /sys/class/leds/*::numlock/brightness; do [ -r \"$f\" ] && echo \"$f\"; done"]
         onRunningChanged: if (!running && root._again) { root._again = false; running = true }
         stdout: StdioCollector {
             onStreamFinished: {
                 const t = this.text || ""
-                if (CompositorService.isHyprland) {
-                    try {
-                        const kb = (JSON.parse(t).keyboards ?? []).find(k => k.main)
-                        if (kb) root._apply(!!kb.capsLock, !!kb.numLock)
-                    } catch (e) {}
-                    return
-                }
                 // LED files: every keyboard has its own; any lit one counts.
                 const files = t.split("\n").filter(l => l)
                 root._capsFiles = files.filter(f => f.includes("::capslock/"))
@@ -99,7 +94,7 @@ Singleton {
     }
     Timer {
         interval: 500; repeat: true
-        running: GlobalStates.screenLocked && !CompositorService.isHyprland && root._ledViews.length > 0
+        running: GlobalStates.screenLocked && root._ledViews.length > 0
         onTriggered: { for (const v of root._ledViews) v.reload(); root._readLeds() }
     }
 
