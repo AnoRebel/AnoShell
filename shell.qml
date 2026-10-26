@@ -55,6 +55,9 @@ ShellRoot {
         void ScreenTime;  // counts focused time (screenTime.enable)
         void Screenshot;  // `screenshot` IPC target the Print keybinds call
         void PaletteThemes; // palette cursor/icon themes follow the wallpaper once chosen
+        void LockKeys;    // lockKeys shortcut + IPC (the Caps/Num Lock binds call it)
+        void Updates;     // updates IPC; checks only with updates.enable
+        void EasyEffects; // easyEffects IPC; reads only with audio.easyEffects.enable
     }
 
     // ═══════════════════════════════════════════════════════════════════════

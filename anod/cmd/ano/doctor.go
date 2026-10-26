@@ -41,6 +41,7 @@ var features = []feature{
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
+	{"package updates (bar module updates)", "updates.enable", []string{"checkupdates"}},
 	{"EasyEffects quick toggle and presets", "audio.easyEffects.enable", []string{"easyeffects"}},
 	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "gdbus"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},

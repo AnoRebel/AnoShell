@@ -5,6 +5,7 @@ BatteryModule 1.0 BatteryModule.qml
 BluetoothModule 1.0 BluetoothModule.qml
 DrivesModule 1.0 DrivesModule.qml
 DownloadsModule 1.0 DownloadsModule.qml
+UpdatesModule 1.0 UpdatesModule.qml
 ClockModule 1.0 ClockModule.qml
 GameModeModule 1.0 GameModeModule.qml
 IdleModule 1.0 IdleModule.qml

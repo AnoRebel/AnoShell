@@ -20,9 +20,9 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, GameMode, Performance mode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
+        subtitle: "AI, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
-            "ai", "gameMode", "performance", "powerProfiles", "network", "vpn",
+            "ai", "gameMode", "performance", "updates", "powerProfiles", "network", "vpn",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
@@ -418,6 +418,55 @@ ColumnLayout {
             configKey: "performance.holdPopups"
             checked: Config.options?.performance?.holdPopups ?? true
             onCheckedChanged: Config.setNestedValue("performance.holdPopups", checked)
+        }
+    }
+
+    // ═══ Package updates ═══
+    SettingsCard {
+        icon: "system_update_alt"
+        title: "Package updates"
+        subtitle: "Counts pending updates (checkupdates, plus paru/yay -Qua for the AUR) and shows them in the bar module \"updates\". The shell never updates by itself: clicking opens the update in your terminal. Needs `pacman-contrib`."
+        configKeys: ["updates"]
+
+        ConfigSwitch {
+            label: "Check for updates"
+            configKey: "updates.enable"
+            checked: Config.options?.updates?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("updates.enable", checked)
+        }
+        ConfigSlider {
+            label: "Check every"
+            configKey: "updates.intervalMin"
+            from: 15; to: 720; stepSize: 15
+            enabled: Config.options?.updates?.enable ?? false
+            value: Config.options?.updates?.intervalMin ?? 120
+            onValueChanged: Config.setNestedValue("updates.intervalMin", Math.round(value))
+            valueText: Math.round(value) >= 60 ? `${(Math.round(value) / 60).toFixed(Math.round(value) % 60 ? 1 : 0)} h` : `${Math.round(value)} min`
+        }
+        ConfigRow {
+            label: "Update command"
+            configKey: "updates.command"
+            sublabel: "Runs in your terminal. Empty: paru/yay -Syu, else sudo pacman -Syu"
+            ConfigTextInput {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 240
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                placeholderText: DefaultApps.aurHelper ? `${DefaultApps.aurHelper} -Syu` : "sudo pacman -Syu"
+                text: Config.options?.updates?.command ?? ""
+                onEditingFinished: Config.setNestedValue("updates.command", text.trim())
+            }
+        }
+        ConfigRow {
+            label: "Now"
+            sublabel: !(Config.options?.updates?.enable ?? false) ? "Not checking"
+                : Updates.checking ? "Checking…"
+                : Updates.error ? `Couldn't check: ${Updates.error}`
+                : Updates.lastChecked ? `${Updates.count} pending (${Updates.aurCount} AUR)` : "First check a minute after start"
+            RippleButton {
+                buttonText: "Check now"
+                enabled: (Config.options?.updates?.enable ?? false) && !Updates.checking
+                onClicked: Updates.check()
+            }
         }
     }
 

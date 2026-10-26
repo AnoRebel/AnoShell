@@ -2750,6 +2750,42 @@
  },
  {
   "page": 8,
+  "card": "Package updates",
+  "label": "Package updates",
+  "sublabel": "Counts pending updates (checkupdates, plus paru/yay -Qua for the AUR) and shows them in the bar module \\\"updates\\\". The shell never updates by itself: clicking opens the update in your terminal. Needs `pacman-contrib`.",
+  "keys": [
+   "updates"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Check for updates",
+  "sublabel": "",
+  "keys": [
+   "updates.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Check every",
+  "sublabel": "",
+  "keys": [
+   "updates.intervalMin"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Update command",
+  "sublabel": "Runs in your terminal. Empty: paru/yay -Syu, else sudo pacman -Syu",
+  "keys": [
+   "updates.command"
+  ]
+ },
+ {
+  "page": 8,
   "card": "Power profiles",
   "label": "Power profiles",
   "sublabel": "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`.",

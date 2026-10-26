@@ -1436,6 +1436,13 @@ Singleton {
                 property bool enable: false
             }
 
+            // Pending package updates (services/Updates.qml, bar module "updates")
+            property JsonObject updates: JsonObject {
+                property bool enable: false
+                property int intervalMin: 120
+                property string command: ""      // "" = AUR helper -Syu, else sudo pacman -Syu
+            }
+
             // Performance mode (services/GameMode.qml): what turns it on and
             // what it stops while it lasts.
             property JsonObject performance: JsonObject {

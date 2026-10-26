@@ -391,6 +391,9 @@
   "tray.invertPinnedItems": "bool",
   "tray.pinnedItems": "var",
   "tray.showItemId": "bool",
+  "updates.command": "string",
+  "updates.enable": "bool",
+  "updates.intervalMin": "int",
   "user.avatarPath": "string",
   "vpn.enable": "bool",
   "vpn.notifyOnChange": "bool",
@@ -519,6 +522,7 @@
   "time",
   "todo",
   "tray",
+  "updates",
   "user",
   "vpn",
   "widgets"

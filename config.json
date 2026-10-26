@@ -391,6 +391,11 @@
   "gameMode": {
     "enable": false
   },
+  "updates": {
+    "enable": false,
+    "intervalMin": 120,
+    "command": ""
+  },
   "performance": {
     "onGameMode": true,
     "onFullscreen": false,
