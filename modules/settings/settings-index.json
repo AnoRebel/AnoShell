@@ -2849,6 +2849,42 @@
  },
  {
   "page": 8,
+  "card": "Music recognition",
+  "label": "Music recognition",
+  "sublabel": "\\\"What's playing?\\\" from the quick toggles or `qs -c ano ipc call musicRecognition recognize`: records a few seconds, asks songrec (which uses Shazam's unofficial service), then deletes the recording. Needs `songrec` and PipeWire (pw-record).",
+  "keys": [
+   "musicRecognition"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable",
+  "sublabel": "",
+  "keys": [
+   "musicRecognition.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Listen to",
+  "sublabel": "",
+  "keys": [
+   "musicRecognition.source"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Listen for",
+  "sublabel": "",
+  "keys": [
+   "musicRecognition.seconds"
+  ]
+ },
+ {
+  "page": 8,
   "card": "Power profiles",
   "label": "Power profiles",
   "sublabel": "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`.",

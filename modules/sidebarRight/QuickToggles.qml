@@ -127,6 +127,19 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // What's playing? (songrec, musicRecognition.enable)
+        TogglePill {
+            visible: MusicRecognition.enabled
+            iconName: "music_note"
+            label: MusicRecognition.listening ? "Listening…" : "Song?"
+            tooltip: MusicRecognition.listening ? `Listening for ${MusicRecognition.seconds} s…`
+                : "Identify the song playing (songrec, Shazam's unofficial service)"
+            active: MusicRecognition.listening
+            activeColor: Appearance.colors.colTertiary
+            onClicked: MusicRecognition.recognize()
+            Layout.fillWidth: true
+        }
+
         // Performance mode (GameMode.qml)
         TogglePill {
             iconName: "speed"

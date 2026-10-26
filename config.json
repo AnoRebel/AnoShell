@@ -395,6 +395,11 @@
   "gameMode": {
     "enable": false
   },
+  "musicRecognition": {
+    "enable": false,
+    "seconds": 8,
+    "source": "output"
+  },
   "deviceEvents": {
     "enable": true,
     "bluetooth": true,

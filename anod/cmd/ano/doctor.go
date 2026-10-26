@@ -42,6 +42,7 @@ var features = []feature{
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
 	{"device event pills: USB", "deviceEvents.usb", []string{"udevadm", "setpriv"}},
+	{"music recognition", "musicRecognition.enable", []string{"songrec", "pw-record", "notify-send", "wl-copy"}},
 	{"package updates (bar module updates)", "updates.enable", []string{"checkupdates"}},
 	{"EasyEffects quick toggle and presets", "audio.easyEffects.enable", []string{"easyeffects"}},
 	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "gdbus"}},

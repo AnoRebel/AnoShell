@@ -22,7 +22,7 @@ ColumnLayout {
         title: "Services"
         subtitle: "AI, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
-            "ai", "gameMode", "performance", "updates", "powerProfiles", "network", "vpn",
+            "ai", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
@@ -467,6 +467,38 @@ ColumnLayout {
                 enabled: (Config.options?.updates?.enable ?? false) && !Updates.checking
                 onClicked: Updates.check()
             }
+        }
+    }
+
+    // ═══ Music recognition ═══
+    SettingsCard {
+        icon: "music_note"
+        title: "Music recognition"
+        subtitle: "\"What's playing?\" from the quick toggles or `qs -c ano ipc call musicRecognition recognize`: records a few seconds, asks songrec (which uses Shazam's unofficial service), then deletes the recording. Needs `songrec` and PipeWire (pw-record)."
+        configKeys: ["musicRecognition"]
+
+        ConfigSwitch {
+            label: "Enable"
+            configKey: "musicRecognition.enable"
+            checked: Config.options?.musicRecognition?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("musicRecognition.enable", checked)
+        }
+        ConfigRow {
+            label: "Listen to"
+            configKey: "musicRecognition.source"
+            ChoiceRow {
+                model: [{ value: "output", label: "What's playing", icon: "speaker" }, { value: "mic", label: "Microphone", icon: "mic" }]
+                current: Config.options?.musicRecognition?.source ?? "output"
+                onChose: value => Config.setNestedValue("musicRecognition.source", value)
+            }
+        }
+        ConfigSlider {
+            label: "Listen for"
+            configKey: "musicRecognition.seconds"
+            from: 4; to: 20; stepSize: 1
+            value: Config.options?.musicRecognition?.seconds ?? 8
+            onValueChanged: Config.setNestedValue("musicRecognition.seconds", Math.round(value))
+            valueText: `${Math.round(value)} s`
         }
     }
 

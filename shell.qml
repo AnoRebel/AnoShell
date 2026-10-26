@@ -58,6 +58,7 @@ ShellRoot {
         void LockKeys;    // lockKeys shortcut + IPC (the Caps/Num Lock binds call it)
         void Updates;     // updates IPC; checks only with updates.enable
         void EasyEffects; // easyEffects IPC; reads only with audio.easyEffects.enable
+        void MusicRecognition; // musicRecognition IPC; records only when asked
     }
 
     // ═══════════════════════════════════════════════════════════════════════

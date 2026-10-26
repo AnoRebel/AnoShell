@@ -1441,6 +1441,13 @@ Singleton {
                 property bool enable: false
             }
 
+            // "What's playing?" via songrec (services/MusicRecognition.qml)
+            property JsonObject musicRecognition: JsonObject {
+                property bool enable: false
+                property int seconds: 8
+                property string source: "output"   // output | mic
+            }
+
             // Device event pills (services/DeviceEvents.qml)
             property JsonObject deviceEvents: JsonObject {
                 property bool enable: true
