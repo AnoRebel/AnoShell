@@ -31,7 +31,10 @@ Item {
         : root.feed === "topic" ? (root.settings?.topic ?? "News").charAt(0) + (root.settings?.topic ?? "news").slice(1).toLowerCase()
         : "Top stories"
 
-    property var items: []      // [{ title, source, link, time }]
+    property var items: []      // [{ title, source, site, link, time }]
+    // Google News' feed carries no article images: each row shows its
+    // source's icon instead (Google's favicon service, given only the site).
+    readonly property bool icons: root.settings?.icons ?? true
     property string error: ""
 
     function decode(s) {
@@ -51,7 +54,9 @@ Item {
             // Google appends " - Source" to each headline.
             if (source && t.endsWith(" - " + source)) t = t.slice(0, -(source.length + 3))
             const link = root.decode(get("link"))
-            if (t && /^https:\/\//.test(link)) out.push({ title: t, source: source, link: link, time: Date.parse(root.decode(get("pubDate"))) || 0 })
+            const site = (m[1].match(/<source[^>]*url="https?:\/\/([^"\/]+)/) ?? [])[1] ?? ""
+            if (t && /^https:\/\//.test(link))
+                out.push({ title: t, source: source, site: /^[A-Za-z0-9.-]+$/.test(site) ? site : "", link: link, time: Date.parse(root.decode(get("pubDate"))) || 0 })
         }
         return out
     }
@@ -100,20 +105,46 @@ Item {
         ListView {
             Layout.fillWidth: true; Layout.fillHeight: true
             clip: true
-            spacing: 6
+            spacing: 0
             model: root.items
             delegate: MouseArea {
                 id: row
                 required property var modelData
+                required property int index
                 width: ListView.view.width
-                height: col.implicitHeight
+                height: rowLayout.implicitHeight + 16
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: DefaultApps.launch(["xdg-open", row.modelData.link])
+                Rectangle {     // separator above every row but the first
+                    visible: row.index > 0
+                    anchors { top: parent.top; left: parent.left; right: parent.right }
+                    height: 1
+                    color: Appearance.colors.colOutlineVariant
+                    opacity: 0.6
+                }
+                RowLayout {
+                    id: rowLayout
+                    anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter }
+                    spacing: 10
+                    Rectangle {
+                        visible: root.icons && row.modelData.site
+                        Layout.preferredWidth: 28; Layout.preferredHeight: 28
+                        Layout.alignment: Qt.AlignTop
+                        radius: Appearance.rounding.small
+                        color: Appearance.colors.colLayer2
+                        Image {
+                            anchors.centerIn: parent
+                            width: 20; height: 20
+                            sourceSize: Qt.size(40, 40)
+                            asynchronous: true
+                            source: parent.visible ? `https://www.google.com/s2/favicons?domain=${row.modelData.site}&sz=64` : ""
+                        }
+                    }
                 ColumnLayout {
                     id: col
-                    width: parent.width
-                    spacing: 1
+                    Layout.fillWidth: true
+                    spacing: 3
                     StyledText {
                         Layout.fillWidth: true
                         text: row.modelData.title
@@ -128,6 +159,7 @@ Item {
                         font.pixelSize: Appearance.font.pixelSize.smallest
                         elide: Text.ElideRight
                     }
+                }
                 }
             }
         }

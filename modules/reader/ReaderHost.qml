@@ -109,7 +109,15 @@ Scope {
             }
         }
 
-        anchors { top: parent.top; bottom: parent.bottom }
+        // Past the bar's zone but, like the sidebars, not the pill's when the
+        // pill at its widest stays clear of this panel (then it reaches the edge).
+        // (parent: the window's `area`, which knows its screen and zone mode)
+        readonly property real _from: parent.x + (onRight ? parent.width - fullWidth : 0)
+        function _inset(e) {
+            return parent.ignoreZones ? PanelRegistry.insetBeside(parent.scr, e, _from, _from + fullWidth)
+                + PanelRegistry.foreignInset(parent.scr, e) : 0
+        }
+        anchors { top: parent.top; bottom: parent.bottom; topMargin: _inset("top"); bottomMargin: _inset("bottom") }
         x: onRight ? parent.width - width : 0
         width: fullWidth * reveal
         visible: reveal > 0.001
@@ -168,7 +176,11 @@ Scope {
             visible: root.anyShown || animeSlot.visible || mangaSlot.visible || novelSlot.visible
             color: "transparent"
             anchors { top: true; bottom: true; left: true; right: true }
-            exclusionMode: ExclusionMode.Normal // beside the bar, not under it
+            // Beside the bar, not under it. With the connected frame the
+            // registry knows every zone, so the window covers the screen and
+            // each panel places itself (see ReaderSlot._inset).
+            readonly property bool ignoreZones: PanelRegistry.enabled
+            exclusionMode: ignoreZones ? ExclusionMode.Ignore : ExclusionMode.Normal
             WlrLayershell.namespace: "quickshell:reader"
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.keyboardFocus: root.anyShown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -181,7 +193,11 @@ Scope {
 
             Item {
                 id: area
+                readonly property bool ignoreZones: win.ignoreZones
+                readonly property string scr: win.screen?.name ?? ""
                 anchors.fill: parent
+                anchors.leftMargin: ignoreZones ? PanelRegistry.inset(scr, "left") + PanelRegistry.foreignInset(scr, "left") : 0
+                anchors.rightMargin: ignoreZones ? PanelRegistry.inset(scr, "right") + PanelRegistry.foreignInset(scr, "right") : 0
                 ReaderSlot { id: animeSlot; kind: "anime" }
                 ReaderSlot { id: mangaSlot; kind: "manga" }
                 ReaderSlot { id: novelSlot; kind: "novel" }

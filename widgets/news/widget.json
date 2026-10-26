@@ -12,6 +12,7 @@
     { "key": "topic", "type": "choice", "label": "Topic", "default": "TECHNOLOGY", "options": ["WORLD", "NATION", "BUSINESS", "TECHNOLOGY", "ENTERTAINMENT", "SCIENCE", "SPORTS", "HEALTH"] },
     { "key": "place", "type": "string", "label": "Place for local news (sent to Google)", "default": "" },
     { "key": "country", "type": "string", "label": "Edition country (e.g. US, GB, KE)", "default": "US" },
-    { "key": "language", "type": "string", "label": "Language (e.g. en, fr, sw)", "default": "en" }
+    { "key": "language", "type": "string", "label": "Language (e.g. en, fr, sw)", "default": "en" },
+    { "key": "icons", "type": "bool", "label": "Source icons (fetched from Google)", "default": true }
   ]
 }

@@ -294,6 +294,17 @@ func runChecks() []check {
 		add("ok", "last crash", "none recorded")
 	}
 
+	// The clock shows the system time: an unsynchronised clock drifts.
+	if have("timedatectl") {
+		if o, err := exec.Command("timedatectl", "show", "-p", "NTPSynchronized", "--value").Output(); err == nil {
+			if strings.TrimSpace(string(o)) == "yes" {
+				add("ok", "system clock", "synchronised")
+			} else {
+				add("warn", "system clock", "not synchronised, so the clock can drift — `sudo timedatectl set-ntp true` turns on systemd-timesyncd")
+			}
+		}
+	}
+
 	// Competing wallpaper rotators.
 	if found := runningMatching(rotators); len(found) > 0 {
 		// anod applies and rotates wallpapers now: another rotator changes the
