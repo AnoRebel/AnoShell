@@ -242,12 +242,13 @@ Item {
                     border.color: centralCore.isDangerState && !coreContainer.showPassword ? Appearance.colors.colError : coreContainer.view.activeColor
                     border.width: 2
                     z: -2
+                    id: pulseRing
                     readonly property bool pulseOn: coreContainer.lit && coreContainer.view.showInfoView && coreContainer.view.currentPower && !coreContainer.isMyDisconnecting
                     property real pulseOp: 0.3
                     opacity: pulseOn ? pulseOp : 0
                     SequentialAnimation on pulseOp {
                         loops: Animation.Infinite
-                        running: coreContainer.view.live && parent.pulseOn && AnimationConfig.continuous
+                        running: !!(coreContainer.view?.live && pulseRing.pulseOn && AnimationConfig.continuous)
                         NumberAnimation { to: 0.45; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                         NumberAnimation { to: 0.15; duration: AnimationConfig.scaledDuration(1250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
                     }
@@ -262,21 +263,22 @@ Item {
                     Repeater {
                         model: 3
                         Rectangle {
+                            id: ripple
                             required property int index
                             anchors.centerIn: parent
                             width: parent.width * 0.4; height: width; radius: width / 2
                             color: "transparent"
                             border.color: coreContainer.view.activeColor; border.width: 2
                             opacity: 0
-                            readonly property bool run: coreContainer.view.live && coreContainer.showScanning && AnimationConfig.continuous
+                            readonly property bool run: !!(coreContainer.view?.live && coreContainer.showScanning && AnimationConfig.continuous)
                             SequentialAnimation on scale {
-                                running: parent.run; loops: Animation.Infinite
-                                PauseAnimation { duration: AnimationConfig.scaledDuration(index * 400) }
+                                running: ripple.run; loops: Animation.Infinite
+                                PauseAnimation { duration: AnimationConfig.scaledDuration(ripple.index * 400) }
                                 NumberAnimation { from: 1; to: 2.5; duration: AnimationConfig.scaledDuration(2000); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standardDecel }
                             }
                             SequentialAnimation on opacity {
-                                running: parent.run; loops: Animation.Infinite
-                                PauseAnimation { duration: AnimationConfig.scaledDuration(index * 400) }
+                                running: ripple.run; loops: Animation.Infinite
+                                PauseAnimation { duration: AnimationConfig.scaledDuration(ripple.index * 400) }
                                 NumberAnimation { from: 0.8; to: 0; duration: AnimationConfig.scaledDuration(2000); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standardDecel }
                             }
                         }

@@ -294,7 +294,9 @@ Item {
     Behavior on smoothedActiveCoreCount { enabled: root.shown; MotionSpring { token: "liquid"; epsilon: AnimationConfig.transitions ? 0.002 : 1000 } }
 
     function syncCores() {
-        const list = root.currentPower ? root.connectedList.slice(0, 5) : []
+        // also runs from onActiveModeChanged during construction, before
+        // the connectedList binding has a value
+        const list = root.currentPower ? (root.connectedList ?? []).slice(0, 5) : []
         const cores = root.currentCores.map(c => c && list.find(d => d.id === c.id) ? list.find(d => d.id === c.id) : null)
         for (const d of list) {
             if (cores.some(c => c && c.id === d.id)) continue
