@@ -58,6 +58,13 @@ Item {
     }
     // ~2 frames: the intro starts after the panel's first frame, not inside it.
     Timer { id: introTimer; interval: 40; onTriggered: root.introState = 1 }
+    // nmcli starts once the card has faded in, so its processes and results
+    // don't land on the intro's first frames.
+    Timer {
+        id: scanTimer
+        interval: 40 + AnimationConfig.scaledDuration(120)
+        onTriggered: { root._scanForMode(); devicesProc.running = true }
+    }
 
     function _start() {
         exitAnim.stop()
@@ -67,12 +74,12 @@ Item {
         powerAnimBlocker.restart()
         introTimer.restart()
         root.showInfoView = root.currentConn
-        root._scanForMode()
-        devicesProc.running = true
+        scanTimer.restart()
     }
     onShownChanged: {
         if (root.shown) { root._start(); return }
         introTimer.stop()
+        scanTimer.stop()
         root._stopScans()
         root.pendingWifiSsid = ""
         root.hoveredCardCount = 0

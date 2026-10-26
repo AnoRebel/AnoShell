@@ -3,6 +3,7 @@ Shared utilities: HTTP session, fetch helpers, TTL cache, text cleaning.
 Imported by providers — never by server.py directly.
 """
 
+import html as _html
 import re
 import time
 import threading
@@ -173,12 +174,13 @@ def cache_invalidate(key: str):
 # ── Text cleaning ──────────────────────────────────────────────────────────
 
 def clean_text(html: str) -> str:
-    """Strip all HTML tags and normalise whitespace."""
+    """Strip all HTML tags, decode entities and normalise whitespace.
+    Some sites double-encode ("&amp;amp;", "&amp;#39;"), so decoding repeats
+    until nothing changes."""
     text = re.sub(r"<[^>]+>", " ", html)
-    text = re.sub(r"&nbsp;",  " ",  text)
-    text = re.sub(r"&amp;",   "&",  text)
-    text = re.sub(r"&lt;",    "<",  text)
-    text = re.sub(r"&gt;",    ">",  text)
-    text = re.sub(r"&quot;",  '"',  text)
-    text = re.sub(r"&#\d+;",  "",   text)
+    for _ in range(3):
+        decoded = _html.unescape(text)
+        if decoded == text:
+            break
+        text = decoded
     return re.sub(r"\s+", " ", text).strip()

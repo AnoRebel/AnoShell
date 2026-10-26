@@ -298,8 +298,12 @@ func (p *Pipeline) matugen(ctx context.Context, img string, s Settings) StepResu
 	}
 	c, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	out, err := exec.CommandContext(c, "matugen", "image", img, "--mode", mode, "--type", "scheme-"+scheme,
-		"--prefer", prefer, "--json", "hex", "--dry-run").Output()
+	args := []string{"image", img, "--mode", mode, "--type", "scheme-" + scheme,
+		"--prefer", prefer, "--json", "hex", "--dry-run"}
+	if cfg := p.matugenConfig(); cfg != "" {
+		args = append([]string{"-c", cfg}, args...)
+	}
+	out, err := exec.CommandContext(c, "matugen", args...).Output()
 	st.Duration = int(time.Since(start).Milliseconds())
 	if err != nil {
 		st.Error = err.Error()
@@ -368,6 +372,27 @@ func (p *Pipeline) Gtk(s Settings) StepResult {
 // cacheFile names img's palette for these options: path, size and mtime, so
 // an edited image is generated again. "" without a cache dir.
 // ponytail: never pruned; a few KB per wallpaper and option set.
+// matugenMinimalConfig is all matugen 4 accepts: both tables, even empty.
+const matugenMinimalConfig = "# Written by anod: only colours are read (--dry-run --json).\n[config]\n\n[templates]\n"
+
+// matugenConfig returns an anod-owned matugen config, so a user's own
+// ~/.config/matugen/config.toml (which matugen 4 rejects without a [config]
+// table, and whose templates we don't want) never breaks colour generation.
+// "" (matugen's default lookup) when it can't be written.
+func (p *Pipeline) matugenConfig() string {
+	if p.ColorsPath == "" {
+		return ""
+	}
+	path := filepath.Join(filepath.Dir(p.ColorsPath), "matugen.toml")
+	if b, err := os.ReadFile(path); err == nil && string(b) == matugenMinimalConfig {
+		return path
+	}
+	if err := writeAtomic(path, []byte(matugenMinimalConfig)); err != nil {
+		return ""
+	}
+	return path
+}
+
 func (p *Pipeline) cacheFile(img, scheme, prefer, mode string) string {
 	fi, err := os.Stat(img)
 	if p.ColorCache == "" || err != nil {

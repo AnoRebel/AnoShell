@@ -95,7 +95,25 @@ Singleton {
         onBrightnessChanged: {
             if (!monitor.ready) return
             root.brightnessChanged()
-            setTimer.restart()
+            if (!monitor._fromFile) setTimer.restart()
+        }
+
+        // The kernel notifies actual_brightness on every change, whoever
+        // made it, so this needs no polling.
+        readonly property FileView backlightFile: FileView {
+            path: monitor.backlightDir ? monitor.backlightDir + "/actual_brightness" : ""
+            watchChanges: true
+            onFileChanged: reload()
+            onLoaded: {
+                const raw = parseInt(text())
+                if (isNaN(raw) || !monitor.ready || monitor.setTimer.running) return
+                const value = raw / monitor.rawMaxBrightness
+                // Our own writes land on whole percents: ignore that rounding.
+                if (Math.abs(value - monitor.brightness) <= 0.0101) return
+                monitor._fromFile = true
+                monitor.brightness = value
+                monitor._fromFile = false
+            }
         }
 
         function initialize() {
@@ -104,19 +122,33 @@ Singleton {
             isDdc = !!match
             busNum = match?.busNum ?? ""
             const device = Config.options.light.device
-            const deviceFlag = device ? `-d '${device}'` : ""
             initProc.command = isDdc
                 ? ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"]
-                : ["sh", "-c", `echo "a b c $(brightnessctl ${deviceFlag} g) $(brightnessctl ${deviceFlag} m)"`]
+                : ["brightnessctl", "-m"].concat(device ? ["-d", device] : ["-c", "backlight"], ["i"])
             initProc.running = true
         }
+
+        // The backlight device brightnessctl picked; its actual_brightness is
+        // watched so keys, firmware and other tools show up here too.
+        property string backlightDir: ""
+        property bool _fromFile: false
 
         readonly property Process initProc: Process {
             stdout: SplitParser {
                 onRead: data => {
-                    const parts = data.split(" ")
-                    monitor.rawMaxBrightness = parseInt(parts[4] || "100")
-                    monitor.brightness = parseInt(parts[3] || "0") / monitor.rawMaxBrightness
+                    if (monitor.isDdc) {
+                        // "VCP 10 C <current> <max>"
+                        const parts = data.split(" ")
+                        monitor.rawMaxBrightness = parseInt(parts[4] || "100")
+                        monitor.brightness = parseInt(parts[3] || "0") / monitor.rawMaxBrightness
+                    } else {
+                        // "<device>,<class>,<current>,<percent>,<max>"
+                        const parts = data.split(",")
+                        if (parts.length < 5) return
+                        monitor.rawMaxBrightness = parseInt(parts[4]) || 100
+                        monitor.brightness = (parseInt(parts[2]) || 0) / monitor.rawMaxBrightness
+                        monitor.backlightDir = `/sys/class/${parts[1]}/${parts[0]}`
+                    }
                     monitor.ready = true
                 }
             }

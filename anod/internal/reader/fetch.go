@@ -176,10 +176,18 @@ var (
 	spaceRE = regexp.MustCompile(`\s+`)
 )
 
-// cleanText strips tags, decodes entities and collapses whitespace.
+// cleanText strips tags, decodes entities and collapses whitespace. Some
+// sites double-encode ("&amp;amp;", "&amp;#39;"), so decoding repeats until
+// nothing changes (at most 3 times).
 func cleanText(s string) string {
 	s = tagRE.ReplaceAllString(s, " ")
-	s = html.UnescapeString(s)
+	for i := 0; i < 3; i++ {
+		d := html.UnescapeString(s)
+		if d == s {
+			break
+		}
+		s = d
+	}
 	s = strings.ReplaceAll(s, " ", " ")
 	return strings.TrimSpace(spaceRE.ReplaceAllString(s, " "))
 }

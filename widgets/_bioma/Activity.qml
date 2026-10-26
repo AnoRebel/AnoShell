@@ -65,22 +65,34 @@ Singleton {
 
     // ---- Presence -------------------------------------------------------------------
 
-    IdleMonitor {
-        id: idle
-        enabled: root.active
-        timeout: root.idleMinutes * 60
-        respectInhibitors: true
+    // Created with its final values: an IdleMonitor made disabled and then
+    // enabled by a binding never reports idle (see ScreenTime).
+    Loader {
+        id: idleLoader
+        active: root.active
+        // a new monitor when the timeout changes
+        sourceComponent: IdleMonitor {
+            id: idle
+            enabled: true
+            timeout: root.idleMinutes * 60
+            respectInhibitors: true
 
-        onIsIdleChanged: {
-            if (idle.isIdle) {
-                // The quiet minutes before idle was declared were not presence.
-                root.add(-Math.min(root.streak, root.idleMinutes));
-                root.streak = 0;
+            onIsIdleChanged: {
+                if (idle.isIdle) {
+                    // The quiet minutes before idle was declared were not presence.
+                    root.add(-Math.min(root.streak, root.idleMinutes));
+                    root.streak = 0;
+                }
             }
         }
     }
+    onIdleMinutesChanged: if (idleLoader.active) {
+        idleLoader.active = false;
+        Qt.callLater(() => idleLoader.active = Qt.binding(() => root.active));
+    }
+    readonly property bool _isIdle: idleLoader.item?.isIdle ?? false
 
-    readonly property bool present: root.active && !idle.isIdle && !AnoRoot.GlobalStates.screenLocked
+    readonly property bool present: root.active && !root._isIdle && !AnoRoot.GlobalStates.screenLocked
 
     // Minutes counted since presence last began: what idle may take back.
     property int streak: 0
