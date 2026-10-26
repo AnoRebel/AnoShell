@@ -1,0 +1,17 @@
+{
+  "id": "news",
+  "name": "News",
+  "description": "Headlines from Google News (RSS, personal use): top stories, a topic, or local news",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "NewsWidget.qml",
+  "size": { "w": 4, "h": 3 },
+  "minSize": { "w": 3, "h": 2 },
+  "settings": [
+    { "key": "feed", "type": "choice", "label": "Show", "default": "top", "options": ["top", "topic", "local"] },
+    { "key": "topic", "type": "choice", "label": "Topic", "default": "TECHNOLOGY", "options": ["WORLD", "NATION", "BUSINESS", "TECHNOLOGY", "ENTERTAINMENT", "SCIENCE", "SPORTS", "HEALTH"] },
+    { "key": "place", "type": "string", "label": "Place for local news (sent to Google)", "default": "" },
+    { "key": "country", "type": "string", "label": "Edition country (e.g. US, GB, KE)", "default": "US" },
+    { "key": "language", "type": "string", "label": "Language (e.g. en, fr, sw)", "default": "en" }
+  ]
+}

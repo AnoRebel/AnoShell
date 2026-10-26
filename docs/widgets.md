@@ -42,6 +42,7 @@ tiled windows are); the window hides them, but their timers keep running.
 | Timer | focus (Pomodoro), stopwatch or countdown: the same timers as the sidebar's | mode |
 | To-do | your tasks: the sidebar's to-do and `todo.txt`, both ways | |
 | Calendar | the month with your events and holidays | |
+| News | headlines from Google News RSS (no key; personal use under Google's terms), opened in the browser on click; refreshed every 30 minutes. The local feed sends the place you type to Google | top / topic / local, place, country, language |
 
 The to-do and timer widgets keep their service running while they're placed,
 even with the sidebar's to-do or Pomodoro turned off.
@@ -83,7 +84,7 @@ widget. Memory: the layer and registry add about 50 MB; each widget a few MB.
 | Widget | CPU | Moves? |
 |---|---|---|
 | AnoShell clock (seconds on) | 0.5% | once a second |
-| AnoShell clock, profile, weather, to-do, calendar, timer (stopped) | ~0% | no |
+| AnoShell clock, profile, weather, to-do, calendar, timer (stopped), news | ~0% | no (news: one curl every 30 min) |
 | Bioma clock | 0.6% | second hand, once a second |
 | Bioma weather, photoperiod, agenda, calendar, adipose, sediment, rings, note | 0–1% | no |
 | Bioma nucleus | 0.4% (more while charging) | while the battery changes |
