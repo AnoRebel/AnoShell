@@ -1324,6 +1324,7 @@ Singleton {
                     property bool media: true
                     property bool keyboard: true
                     property bool network: true
+                    property bool lockKeys: true
                 }
             }
 

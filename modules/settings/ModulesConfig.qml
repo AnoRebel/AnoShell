@@ -195,10 +195,11 @@ ColumnLayout {
             model: [
                 { key: "volume", label: "Volume changes", icon: "volume_up" },
                 { key: "brightness", label: "Brightness changes", icon: "brightness_6" },
-                { key: "mic", label: "Microphone mute", icon: "mic" },
+                { key: "mic", label: "Microphone volume and mute", icon: "mic" },
                 { key: "media", label: "Media track changes", icon: "music_note" },
                 { key: "keyboard", label: "Keyboard layout switch", icon: "keyboard" },
                 { key: "network", label: "Network status changes", icon: "wifi" },
+                { key: "lockKeys", label: "Caps Lock and Num Lock (Hyprland: bundled binds)", icon: "keyboard_capslock" },
             ]
 
             RowLayout {

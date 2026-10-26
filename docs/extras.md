@@ -155,3 +155,24 @@ anod keeps one file per day in `~/.local/state/anoshell/screentime/` (0600,
 never sent anywhere) and deletes days older than `screenTime.keepDays`
 (default 30). The sidebar card shows today's total, the top apps (click one
 for its top titles) and the last 7 days.
+
+## Performance mode
+
+While a game holds GameMode (started with `gamemoderun` or a libgamemode
+game), the shell pauses its animations, blur, audio visualisers and
+notification popups; notifications still reach the notification centre.
+`performance.onFullscreen` also turns it on for any fullscreen window, and
+the quick toggle, Settings → Services → Performance mode or
+`qs -c ano ipc call performance toggle` (`on`, `off`, `status`) turn it on by
+hand. gamemoded is followed over D-Bus, never polled and never started by the
+shell. Each paused effect has its own switch (`performance.*`).
+
+## Lock keys and Do Not Disturb
+
+The OSD shows Caps Lock and Num Lock changes, and the lock screen says when
+Caps Lock is on. On Hyprland this needs the bundled `Caps_Lock`/`Num_Lock`
+binds (non-consuming), which ask the shell to read the main keyboard from
+`hyprctl devices`; elsewhere bind a key to `qs -c ano ipc call lockKeys refresh`
+(the lock screen reads the keyboard LEDs while locked). Do Not Disturb:
+`qs -c ano ipc call notifications toggleDnd` (also `setDnd true|false`,
+`clearAll`, `status`).

@@ -248,4 +248,12 @@ Singleton {
             }
         }
     }
+    // Do Not Disturb from keybinds and scripts (qs ipc call notifications toggleDnd).
+    IpcHandler {
+        target: "notifications"
+        function toggleDnd(): void { root.silent = !root.silent }
+        function setDnd(on: bool): void { root.silent = on }
+        function clearAll(): void { root.discardAllNotifications() }
+        function status(): string { return JSON.stringify({ dnd: root.silent, count: root.list.length, unread: root.unread }) }
+    }
 }

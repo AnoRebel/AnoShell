@@ -198,7 +198,8 @@
       "mic": true,
       "media": true,
       "keyboard": true,
-      "network": true
+      "network": true,
+      "lockKeys": true
     }
   },
   "hud": {

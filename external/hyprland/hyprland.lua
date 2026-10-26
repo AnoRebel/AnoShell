@@ -645,6 +645,10 @@ hl.bind("SUPER + mouse:273", hl.dsp.global("quickshell:searchToggleReleaseInterr
 -- Workspace-number HUD on Super hold
 hl.bind("Super_L", hl.dsp.global("quickshell:workspaceNumber"), { non_consuming = true })
 hl.bind("Super_R", hl.dsp.global("quickshell:workspaceNumber"), { non_consuming = true })
+-- Caps Lock / Num Lock OSD and the lock screen's Caps Lock warning: the shell
+-- reads the new state from the main keyboard after the key is released.
+hl.bind("Caps_Lock", hl.dsp.global("quickshell:lockKeys"), { release = true, locked = true, non_consuming = true })
+hl.bind("Num_Lock", hl.dsp.global("quickshell:lockKeys"), { release = true, locked = true, non_consuming = true })
 
 -- ── Panel toggles ───────────────────────────────────────────────────────────
 hl.bind(MAIN_MOD .. " + Tab", hl.dsp.exec_cmd(qs_ipc("anoview", "toggle")))

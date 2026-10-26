@@ -277,6 +277,15 @@ Scope {
                             Layout.alignment: Qt.AlignHCenter
                         }
 
+                        // Caps Lock warning (LockKeys reads it when the lock starts
+                        // and on each Caps Lock press)
+                        StyledText {
+                            text: "Caps Lock is on"
+                            visible: LockKeys.capsLock && !lockScope.authenticating
+                            font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colWarning
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
                         // Loading indicator
                         StyledText {
                             text: "Authenticating..."

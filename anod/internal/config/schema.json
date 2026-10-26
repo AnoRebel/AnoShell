@@ -286,6 +286,7 @@
   "onboarding.seen": "bool",
   "osd.indicators.brightness": "bool",
   "osd.indicators.keyboard": "bool",
+  "osd.indicators.lockKeys": "bool",
   "osd.indicators.media": "bool",
   "osd.indicators.mic": "bool",
   "osd.indicators.network": "bool",

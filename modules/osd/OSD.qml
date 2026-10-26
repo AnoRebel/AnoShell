@@ -31,6 +31,7 @@ Scope {
     readonly property bool enableMedia: Config.options?.osd?.indicators?.media ?? true
     readonly property bool enableKeyboard: Config.options?.osd?.indicators?.keyboard ?? true
     readonly property bool enableNetwork: Config.options?.osd?.indicators?.network ?? true
+    readonly property bool enableLockKeys: Config.options?.osd?.indicators?.lockKeys ?? true
 
     Timer {
         id: hideTimer
@@ -73,10 +74,11 @@ Scope {
         }
     }
 
-    // ═══ Mic Mute ═══
+    // ═══ Mic (volume and mute) ═══
     Connections {
         enabled: root.enableMic
         target: Audio.source?.audio ?? null
+        function onVolumeChanged() { root.show("mic", Audio.source.audio.volume, Audio.source.audio.muted) }
         function onMutedChanged() { root.show("mic", Audio.source.audio.volume, Audio.source.audio.muted) }
     }
 
@@ -87,6 +89,16 @@ Scope {
         function onTrackChanged() {
             if (!MprisController.activeTrack) return
             root.show("media", 0, false, `${MprisController.activeTrack.title ?? ""} — ${MprisController.activeTrack.artist ?? ""}`)
+        }
+    }
+
+    // ═══ Caps Lock / Num Lock ═══
+    Connections {
+        enabled: root.enableLockKeys
+        target: LockKeys
+        function onChanged(kind) {
+            const on = kind === "capslock" ? LockKeys.capsLock : LockKeys.numLock
+            root.show(kind, on ? 1 : 0, false, `${kind === "capslock" ? "Caps Lock" : "Num Lock"} ${on ? "on" : "off"}`)
         }
     }
 
@@ -177,7 +189,7 @@ Scope {
 
                 // Width depends on whether we have a label or a progress bar
                 property bool isProgressType: ["volume", "brightness", "mic"].includes(root.currentIndicator)
-                property bool isLabelType: ["media", "keyboard", "network"].includes(root.currentIndicator)
+                property bool isLabelType: ["media", "keyboard", "network", "capslock", "numlock"].includes(root.currentIndicator)
 
                 width: isLabelType ? Math.min(labelRow.implicitWidth + 40, 420) : 280
                 height: 56
@@ -255,6 +267,8 @@ Scope {
                                 case "media": return MprisController.isPlaying ? "music_note" : "pause"
                                 case "keyboard": return "keyboard"
                                 case "network": return Network.materialSymbol
+                                case "capslock": return "keyboard_capslock"
+                                case "numlock": return "dialpad"
                                 default: return "info"
                             }
                         }
