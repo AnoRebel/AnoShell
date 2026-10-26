@@ -104,7 +104,7 @@ Scope {
             id: cardsRegion
             // Clipped to the window last: cards sliding in or out leave it,
             // and an offscreen region can blur the whole surface on Hyprland.
-            regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r).concat([cardsClip]) }
+            regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r).concat([popupWindow.cardsClip]) }
         }
         property Region cardsClip: Region { intersection: Intersection.Intersect; width: popupWindow.width; height: popupWindow.height }
 
