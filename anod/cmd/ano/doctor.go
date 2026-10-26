@@ -41,7 +41,7 @@ var features = []feature{
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
-	{"game mode", "gameMode.enable", []string{"gamemoded"}},
+	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "gdbus"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},
 	{"Bioma organism widgets (weather: curl; media band: cava; disks: df)", "widgets.enable", []string{"curl", "cava", "df"}},

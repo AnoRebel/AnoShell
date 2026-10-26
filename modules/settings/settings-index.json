@@ -2662,7 +2662,7 @@
   "page": 8,
   "card": "GameMode",
   "label": "GameMode",
-  "sublabel": "Detects when gamemoded is active so the bar can show a 'gaming' indicator. Read-only — activation is handled by your existing ~/.config/hypr/scripts/gamemode helper or by libgamemode-aware games.",
+  "sublabel": "Follows gamemoded (games started with gamemoderun or libgamemode) over D-Bus, without polling and without starting it. Needs `gamemode`.",
   "keys": [
    "gameMode"
   ]
@@ -2670,19 +2670,73 @@
  {
   "page": 8,
   "card": "",
-  "label": "Enable detection",
-  "sublabel": "",
+  "label": "Bar indicator",
+  "sublabel": "Show a gaming icon in the bar while a game holds GameMode",
   "keys": [
    "gameMode.enable"
   ]
  },
  {
   "page": 8,
-  "card": "",
-  "label": "Poll interval",
-  "sublabel": "How often `gamemoded -s` is checked",
+  "card": "Performance mode",
+  "label": "Performance mode",
+  "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur and audio visualisers, and holds notification popups (they still reach the notification centre).",
   "keys": [
-   "gameMode.pollIntervalMs"
+   "performance"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "While a game holds GameMode",
+  "sublabel": "",
+  "keys": [
+   "performance.onGameMode"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "While a window is fullscreen",
+  "sublabel": "Videos and presentations count too",
+  "keys": [
+   "performance.onFullscreen"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Pause animations",
+  "sublabel": "",
+  "keys": [
+   "performance.stopAnimations"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Pause blur",
+  "sublabel": "",
+  "keys": [
+   "performance.stopBlur"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Pause audio visualisers",
+  "sublabel": "",
+  "keys": [
+   "performance.stopVisualizers"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Hold notification popups",
+  "sublabel": "",
+  "keys": [
+   "performance.holdPopups"
   ]
  },
  {

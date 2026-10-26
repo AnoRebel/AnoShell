@@ -385,8 +385,15 @@
     "models": {}
   },
   "gameMode": {
-    "enable": false,
-    "pollIntervalMs": 2000
+    "enable": false
+  },
+  "performance": {
+    "onGameMode": true,
+    "onFullscreen": false,
+    "stopAnimations": true,
+    "stopBlur": true,
+    "stopVisualizers": true,
+    "holdPopups": true
   },
   "powerProfiles": {
     "restoreOnStart": true,

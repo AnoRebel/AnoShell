@@ -72,7 +72,8 @@ Singleton {
     property list<Notif> list: []
     // notifications.silent: no popups (history still records them);
     // notifications.maxVisible: newest N popups on screen at once.
-    property var popupList: (Config.options?.notifications?.silent ?? false) ? []
+    // Performance mode holds popups; they still reach the centre.
+    property var popupList: (Config.options?.notifications?.silent ?? false) || GameMode.holdPopups ? []
         : list.filter(notif => notif.popup).slice(-Math.max(1, Config.options?.notifications?.maxVisible ?? 5))
     property bool popupInhibited: (GlobalStates?.sidebarRightOpen ?? false) || silent
     property var latestTimeForApp: ({})

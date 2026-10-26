@@ -243,7 +243,7 @@ Scope {
             // elevation shadow — is ONE ShaderEffect. It replaces the old stacked
             // opaque RoundCorner carve, which couldn't animate, z-fought panel
             // content, and only worked for horizontal bars.
-            BackgroundEffect.blurRegion: !win.ready ? null : root._frameBlur && root._shapedBlur ? (frameLoader.item?.blurShape ?? null) : null
+            BackgroundEffect.blurRegion: !win.ready || GameMode.stopBlur ? null : root._frameBlur && root._shapedBlur ? (frameLoader.item?.blurShape ?? null) : null
 
             Loader {
                 id: frameLoader

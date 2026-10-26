@@ -110,6 +110,20 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Performance mode (GameMode.qml)
+        TogglePill {
+            iconName: "speed"
+            label: GameMode.performance ? "Perf" : "Normal"
+            tooltip: GameMode.performance
+                ? (GameMode.manual ? "Performance mode on by hand · tap to turn off"
+                    : `Performance mode on while ${GameMode.performanceReason} · tap to keep it on afterwards`)
+                : "Performance mode off · tap to pause motion, blur and visualisers"
+            active: GameMode.performance
+            activeColor: Appearance.colors.colWarning
+            onClicked: GameMode.toggle()
+            Layout.fillWidth: true
+        }
+
         // Night light — tap pill to toggle, chevron to expand inline slider
         TogglePill {
             iconName: NightLight.enabled || NightLight.scheduled ? "nightlight" : "wb_sunny"

@@ -21,7 +21,8 @@ import qs.services
 Singleton {
     id: root
 
-    readonly property bool enabled: Config.options?.animations?.enable ?? true
+    // Performance mode (GameMode.qml) switches motion off while it lasts.
+    readonly property bool enabled: (Config.options?.animations?.enable ?? true) && !GameMode.stopAnimations
     readonly property bool reducedMotion: Config.options?.animations?.reducedMotion ?? false
     readonly property bool batterySaver: Config.options?.animations?.batterySaver ?? false
     readonly property bool onBattery: Battery.available && !Battery.isPluggedIn
@@ -41,7 +42,7 @@ Singleton {
         target: "motion"
         function status(): string {
             return JSON.stringify({ enabled: root.enabled, speed: root.speed, reducedMotion: root.reducedMotion,
-                batterySaver: root.batterySaver, onBattery: root.onBattery,
+                batterySaver: root.batterySaver, onBattery: root.onBattery, performance: GameMode.stopAnimations,
                 transitions: root.transitions, continuous: root.continuous })
         }
     }

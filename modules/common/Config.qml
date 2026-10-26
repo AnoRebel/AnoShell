@@ -1425,9 +1425,21 @@ Singleton {
             }
 
             // Game mode
+            // Game mode: enable shows the bar indicator; gamemoded is
+            // watched over D-Bus (no polling).
             property JsonObject gameMode: JsonObject {
                 property bool enable: false
-                property int pollIntervalMs: 2000
+            }
+
+            // Performance mode (services/GameMode.qml): what turns it on and
+            // what it stops while it lasts.
+            property JsonObject performance: JsonObject {
+                property bool onGameMode: true
+                property bool onFullscreen: false
+                property bool stopAnimations: true
+                property bool stopBlur: true
+                property bool stopVisualizers: true
+                property bool holdPopups: true
             }
 
             // Focus time tracker

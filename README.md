@@ -68,7 +68,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Cliphist` | Clipboard history with fuzzy search. |
 | `ResourceUsage` | CPU / RAM / swap / network from `/proc`. |
 | `Privacy` | Mic-active and cam-active detection. |
-| `GameMode` | Detects fullscreen + active gamemode clients via D-Bus. |
+| `GameMode` | Follows gamemoded over D-Bus (no polling) and drives performance mode (pauses animations, blur, visualisers and popups while a game runs, a window is fullscreen, or by hand). |
 | `PowerProfilePersistence` | Restores last `power-profiles-daemon` profile on shell start. |
 | `ShellExec` | Shell-runtime detection + safe exec helper. |
 
@@ -381,7 +381,8 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 
 | Block | Purpose | Notable keys |
 |---|---|---|
-| `gameMode.enable` | Auto-detect fullscreen apps and dim distractions | `pollIntervalMs` |
+| `gameMode.enable` | Bar indicator while a game holds GameMode | — |
+| `performance` | Performance mode: what turns it on (`onGameMode` on by default, `onFullscreen`) and what it pauses | `stopAnimations`, `stopBlur`, `stopVisualizers`, `holdPopups`; IPC `performance toggle\|on\|off\|status` |
 | `powerProfiles.restoreOnStart` | Restore last `power-profiles-daemon` profile on shell start | `preferredProfile` (auto-populated when you change profiles) |
 | `network.usage` | Per-interface rx/tx polling for the sidebar bandwidth panel | `intervalMs`, `historyLength` |
 | `network.hotspot` | WiFi tethering toggle backed by `nmcli device wifi hotspot` | `ssid`, `password` (auto-generated on first enable) |
@@ -599,6 +600,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
 | Bioma organisms (widgets `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
 | Location (Settings → Services → Location: weather, night light's sunset schedule, sun/moon widgets) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
+| Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

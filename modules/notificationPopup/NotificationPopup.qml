@@ -99,7 +99,7 @@ Scope {
         // Blur follows each rounded card (ext-background-effect-v1); the
         // compositor's rectangular layer-rule blur is opted out for this
         // namespace in the bundled hyprland.lua.
-        BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol && !root.connected ? cardsRegion : null
+        BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol && !root.connected && !GameMode.stopBlur ? cardsRegion : null
         Region {
             id: cardsRegion
             regions: { notifRepeater.count; return Array.from({ length: notifRepeater.count }, (_, i) => notifRepeater.itemAt(i)?.blurShape).filter(r => !!r) }

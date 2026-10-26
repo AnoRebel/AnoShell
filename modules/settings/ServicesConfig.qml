@@ -20,9 +20,9 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, GameMode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
+        subtitle: "AI, GameMode, Performance mode, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
-            "ai", "gameMode", "powerProfiles", "network", "vpn",
+            "ai", "gameMode", "performance", "powerProfiles", "network", "vpn",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
@@ -341,40 +341,83 @@ ColumnLayout {
     SettingsCard {
         icon: "videogame_asset"
         title: "GameMode"
-        subtitle: "Detects when gamemoded is active so the bar can show a 'gaming' indicator. Read-only — activation is handled by your existing ~/.config/hypr/scripts/gamemode helper or by libgamemode-aware games."
+        subtitle: "Follows gamemoded (games started with gamemoderun or libgamemode) over D-Bus, without polling and without starting it. Needs `gamemode`."
         configKeys: ["gameMode"]
 
         ConfigSwitch {
             id: gmEnable
-            label: "Enable detection"
+            label: "Bar indicator"
+            sublabel: "Show a gaming icon in the bar while a game holds GameMode"
             configKey: "gameMode.enable"
             checked: Config.options?.gameMode?.enable ?? false
             onCheckedChanged: Config.setNestedValue("gameMode.enable", checked)
         }
 
-        ConfigSlider {
-            label: "Poll interval"
-            configKey: "gameMode.pollIntervalMs"
-            sublabel: "How often `gamemoded -s` is checked"
-            from: 500; to: 10000; stepSize: 500
-            enabled: gmEnable.checked
-            value: Config.options?.gameMode?.pollIntervalMs ?? 2000
-            onValueChanged: Config.setNestedValue("gameMode.pollIntervalMs", Math.round(value))
-            valueText: Format.formatDuration(value)
-        }
-
         ConfigRow {
             label: "Status"
-            sublabel: gmEnable.checked
-                ? (GameMode.active ? `Active · ${GameMode.clientCount} client(s)` : "Inactive")
-                : "Detection disabled"
+            sublabel: GameMode.active ? `Active · ${GameMode.clientCount} client(s)` : "No game holds GameMode"
             StyledText {
-                text: gmEnable.checked && GameMode.active ? "●" : "○"
-                color: gmEnable.checked && GameMode.active
+                text: GameMode.active ? "●" : "○"
+                color: GameMode.active
                     ? (Appearance?.colors.colPrimary ?? "#a6e3a1")
                     : Qt.rgba(1, 1, 1, 0.3)
                 font.pixelSize: Appearance.font.pixelSize.larger
             }
+        }
+    }
+
+    // ═══ Performance mode ═══
+    SettingsCard {
+        icon: "speed"
+        title: "Performance mode"
+        subtitle: "Frees the GPU and CPU for a game: pauses the shell's animations, blur and audio visualisers, and holds notification popups (they still reach the notification centre)."
+        configKeys: ["performance"]
+
+        ConfigRow {
+            label: "Now"
+            sublabel: GameMode.performance ? `On: ${GameMode.performanceReason}` : "Off"
+            RippleButton {
+                buttonText: GameMode.manual ? "Turn off" : "Turn on"
+                toggled: GameMode.manual
+                onClicked: GameMode.toggle()
+            }
+        }
+        ConfigSwitch {
+            label: "While a game holds GameMode"
+            configKey: "performance.onGameMode"
+            checked: Config.options?.performance?.onGameMode ?? true
+            onCheckedChanged: Config.setNestedValue("performance.onGameMode", checked)
+        }
+        ConfigSwitch {
+            label: "While a window is fullscreen"
+            sublabel: "Videos and presentations count too"
+            configKey: "performance.onFullscreen"
+            checked: Config.options?.performance?.onFullscreen ?? false
+            onCheckedChanged: Config.setNestedValue("performance.onFullscreen", checked)
+        }
+        ConfigSwitch {
+            label: "Pause animations"
+            configKey: "performance.stopAnimations"
+            checked: Config.options?.performance?.stopAnimations ?? true
+            onCheckedChanged: Config.setNestedValue("performance.stopAnimations", checked)
+        }
+        ConfigSwitch {
+            label: "Pause blur"
+            configKey: "performance.stopBlur"
+            checked: Config.options?.performance?.stopBlur ?? true
+            onCheckedChanged: Config.setNestedValue("performance.stopBlur", checked)
+        }
+        ConfigSwitch {
+            label: "Pause audio visualisers"
+            configKey: "performance.stopVisualizers"
+            checked: Config.options?.performance?.stopVisualizers ?? true
+            onCheckedChanged: Config.setNestedValue("performance.stopVisualizers", checked)
+        }
+        ConfigSwitch {
+            label: "Hold notification popups"
+            configKey: "performance.holdPopups"
+            checked: Config.options?.performance?.holdPopups ?? true
+            onCheckedChanged: Config.setNestedValue("performance.holdPopups", checked)
         }
     }
 

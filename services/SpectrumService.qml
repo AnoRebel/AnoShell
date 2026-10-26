@@ -21,7 +21,7 @@ Singleton {
     // Register/unregister components that need audio data
     property var registeredComponents: ({})
     readonly property int registeredCount: Object.keys(registeredComponents).length
-    property bool shouldRun: registeredCount > 0
+    property bool shouldRun: registeredCount > 0 && !GameMode.stopVisualizers
 
     function registerComponent(componentId) {
         root.registeredComponents[componentId] = true
