@@ -1334,6 +1334,7 @@ Singleton {
                     property bool keyboard: true
                     property bool network: true
                     property bool lockKeys: true
+                    property bool micVolume: false
                 }
             }
 

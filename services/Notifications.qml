@@ -73,8 +73,12 @@ Singleton {
     // notifications.silent: no popups (history still records them);
     // notifications.maxVisible: newest N popups on screen at once.
     // Performance mode holds popups; they still reach the centre.
-    property var popupList: (Config.options?.notifications?.silent ?? false) || GameMode.holdPopups ? []
-        : list.filter(notif => notif.popup).slice(-Math.max(1, Config.options?.notifications?.maxVisible ?? 5))
+    // (critical ones, like low battery, still show while held)
+    property var popupList: (Config.options?.notifications?.silent ?? false) ? []
+        : list.filter(notif => notif.popup && (!GameMode.holdPopups || root.isCritical(notif)))
+            .slice(-Math.max(1, Config.options?.notifications?.maxVisible ?? 5))
+    // urgency is kept as text: the enum's string (a number) or a name from older files
+    function isCritical(n) { return String(n?.urgency) === String(NotificationUrgency.Critical) || /critical/i.test(String(n?.urgency)) }
     property bool popupInhibited: (GlobalStates?.sidebarRightOpen ?? false) || silent
     property var latestTimeForApp: ({})
 

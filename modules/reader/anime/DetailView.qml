@@ -27,6 +27,7 @@ Item {
         }
         Reader.play({ url: url, referer: referer, subtitle: subtitle }, title || "Anime",
             ReaderAnime.currentAnime?.id ?? "", ReaderAnime.currentEpisode)
+        ReaderAnime.playedShow = ReaderAnime.currentAnime?.id ?? ""
     }
     // (no backdrop of its own: the panel's SurfaceMaterial shows through)
 

@@ -15,6 +15,10 @@ Item {
 
     // ── Tab state ─────────────────────────────────────────────────────────────
     property int tabIndex: 0       // 0 = Browse, 1 = Library, 2 = Airing (reader.anime.airing)
+    Connections {
+        target: ReaderAnime
+        function onAiringEnabledChanged() { if (!ReaderAnime.airingEnabled && root.tabIndex === 2) root.tabIndex = 0 }
+    }
 
     // ── Navigation stacks (0 = list, 1 = detail) ──────────────────────────────
     // No "reader" stack — MPV handles playback externally

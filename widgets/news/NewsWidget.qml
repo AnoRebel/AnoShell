@@ -37,7 +37,8 @@ Item {
     function decode(s) {
         return String(s ?? "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
             .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'")
-            .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10))).replace(/&amp;/g, "&").trim()
+            .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(parseInt(n, 10)))
+            .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&").trim()
     }
     function parse(xml) {
         const out = []

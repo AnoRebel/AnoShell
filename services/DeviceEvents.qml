@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs
 import qs.modules.common
 import qs.services
 
@@ -15,7 +16,8 @@ import qs.services
  *
  * Sources the shell already has (Bluetooth, PipeWire, screens) plus one
  * `udevadm monitor` for USB devices while deviceEvents.usb is on; nothing
- * polls. The first seconds after start are quiet, and the same message
+ * polls. The first seconds after start, and the lock screen plus a few
+ * seconds after unlocking (resume), are quiet, and the same message
  * twice within a few seconds (one plug-in, several udev events) shows once.
  * (Idea from Ryoku's DeviceEvents.)
  *
@@ -30,8 +32,14 @@ Singleton {
 
     signal event(string label, string icon)
 
+    // Quiet after start, and while locked plus after unlocking: resume goes
+    // through the lock screen, and devices re-enumerate then.
     property bool _armed: false
-    Timer { running: Config.ready; interval: 6000; onTriggered: root._armed = true }
+    Timer { id: arm; running: Config.ready; interval: 6000; onTriggered: root._armed = !GlobalStates.screenLocked }
+    Connections {
+        target: GlobalStates
+        function onScreenLockedChanged() { root._armed = false; if (!GlobalStates.screenLocked) arm.restart() }
+    }
     property var _recent: ({})          // label → time shown
     function _emit(kind, label, icon) {
         if (!root._armed || !root._on(kind) || !label) return

@@ -157,8 +157,8 @@ func (s *Service) Airing(ctx context.Context, list string) ([]airingItem, error)
 // LatestAired maps AllAnime show ids to the newest aired episode number,
 // through their MAL ids (one AniList request for all of them).
 func (s *Service) LatestAired(ctx context.Context, ids []string) (map[string]int, error) {
-	if len(ids) > 100 {
-		ids = ids[:100]
+	if len(ids) > 50 { // one AniList page
+		ids = ids[:50]
 	}
 	s.mu.Lock()
 	a := s.anime

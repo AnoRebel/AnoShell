@@ -202,7 +202,8 @@
       "media": true,
       "keyboard": true,
       "network": true,
-      "lockKeys": true
+      "lockKeys": true,
+      "micVolume": false
     }
   },
   "hud": {

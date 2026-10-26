@@ -61,7 +61,7 @@ Singleton {
     function refreshLatest() {
         if (!root.airingEnabled || !Reader.base || root.libraryList.length === 0) return
         const ids = root.libraryList.map(e => e.id).join(",")
-        Reader.get(root.apiUrl + "/latest?ids=" + encodeURIComponent(ids), function(err, body) {
+        Reader.get(root.apiUrl + "/aired?ids=" + encodeURIComponent(ids), function(err, body) {
             if (err) return
             try { root.latestAired = JSON.parse(body) || {} } catch (e) {}
         })
@@ -82,7 +82,23 @@ Singleton {
             try { root.progress = JSON.parse(body) || {} } catch (e) {}
         })
     }
-    onCurrentAnimeChanged: { root.progress = ({}); root.refreshProgress() }
+    // Fetched when the show changes (currentAnime is reassigned as its detail
+    // loads), and every 20 s while a show played here is open, so marks and
+    // percentages follow the player.
+    property string _progressFor: ""
+    property string playedShow: ""
+    onCurrentAnimeChanged: {
+        const id = root.currentAnime?.id ?? ""
+        if (id === root._progressFor) return
+        root._progressFor = id
+        root.progress = ({})
+        root.refreshProgress()
+    }
+    Timer {
+        interval: 20000; repeat: true
+        running: root.playedShow !== "" && root.playedShow === root._progressFor
+        onTriggered: root.refreshProgress()
+    }
 
     // ── Library ───────────────────────────────────────────────────────────────
     // Each entry: { id, name, englishName, thumbnail, score,

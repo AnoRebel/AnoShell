@@ -326,7 +326,8 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeJSON(w, http.StatusOK, map[string]any{"items": items})
-	case kind == "anime" && endpoint == "latest":
+	// not "latest": that is the source's latest-releases list (serveProvider)
+	case kind == "anime" && endpoint == "aired":
 		latest, err := s.LatestAired(r.Context(), splitIDs(r.URL.Query().Get("ids")))
 		if err != nil {
 			writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error()})

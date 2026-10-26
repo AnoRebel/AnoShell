@@ -33,6 +33,8 @@ Scope {
     readonly property bool enableKeyboard: Config.options?.osd?.indicators?.keyboard ?? true
     readonly property bool enableNetwork: Config.options?.osd?.indicators?.network ?? true
     readonly property bool enableLockKeys: Config.options?.osd?.indicators?.lockKeys ?? true
+    // Off by default: call apps' gain control moves the mic level constantly.
+    readonly property bool enableMicVolume: Config.options?.osd?.indicators?.micVolume ?? false
 
     Timer {
         id: hideTimer
@@ -80,7 +82,7 @@ Scope {
     Connections {
         enabled: root.enableMic
         target: Audio.source?.audio ?? null
-        function onVolumeChanged() { root.show("mic", Audio.source.audio.volume, Audio.source.audio.muted) }
+        function onVolumeChanged() { if (root.enableMicVolume) root.show("mic", Audio.source.audio.volume, Audio.source.audio.muted) }
         function onMutedChanged() { root.show("mic", Audio.source.audio.volume, Audio.source.audio.muted) }
     }
 

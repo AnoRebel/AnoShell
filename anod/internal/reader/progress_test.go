@@ -73,3 +73,21 @@ func TestWatchMPVSavesProgress(t *testing.T) {
 		t.Fatal("rewatching unwatched the episode")
 	}
 }
+
+// anime/latest is the source's latest-releases list; the new-episode badges
+// have their own route (a clash once broke Browse → Latest).
+func TestAiredRouteDoesNotShadowLatest(t *testing.T) {
+	s := newService(t)
+	st, err := s.Open("anime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Shutdown()
+	if code, body := get(t, st.URL+"anime/aired?ids="); code != 200 || strings.TrimSpace(body) != "{}" {
+		t.Fatalf("aired with no ids = %d %q", code, body)
+	}
+	// Whatever the network does, the provider answers, not the badge route.
+	if _, body := get(t, st.URL+"anime/latest?limit=1&page=1&mode=sub&country=ALL"); strings.TrimSpace(body) == "{}" {
+		t.Fatal("anime/latest reached the aired-episodes route")
+	}
+}

@@ -299,6 +299,7 @@
   "osd.indicators.lockKeys": "bool",
   "osd.indicators.media": "bool",
   "osd.indicators.mic": "bool",
+  "osd.indicators.micVolume": "bool",
   "osd.indicators.network": "bool",
   "osd.indicators.volume": "bool",
   "osd.position": "string",

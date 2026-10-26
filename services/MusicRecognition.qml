@@ -57,21 +57,23 @@ Singleton {
                 root.title = t.title ?? ""
                 root.artist = t.subtitle ?? ""
                 root.url = t.url ?? ""
+                notifier.shown = { title: root.title, artist: root.artist, url: root.url }
                 notifier.exec(["notify-send", "-a", "AnoShell", "-i", "audio-x-generic", "--wait",
-                    "-A", "copy=Copy", "-A", "search=Search", root.title, root.artist])
+                    "-A", "copy=Copy", "-A", "search=Search", "--", root.title, root.artist])
             }
         }
     }
     // notify-send --wait prints the chosen action.
     Process {
         id: notifier
+        property var shown: ({})    // the song this notification is about
         stdout: StdioCollector {
             onStreamFinished: {
-                const a = (this.text || "").trim()
-                if (a === "copy") Quickshell.execDetached(["wl-copy", "--", `${root.artist} - ${root.title}`])
+                const a = (this.text || "").trim(), s = notifier.shown
+                if (a === "copy") Quickshell.execDetached(["wl-copy", "--", `${s.artist} - ${s.title}`])
                 else if (a === "search") {
-                    const u = /^https:\/\//.test(root.url) ? root.url
-                        : "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${root.artist} ${root.title}`)
+                    const u = /^https:\/\//.test(s.url ?? "") ? s.url
+                        : "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${s.artist} ${s.title}`)
                     DefaultApps.launch(["xdg-open", u])
                 }
             }

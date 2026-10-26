@@ -160,7 +160,8 @@ for its top titles) and the last 7 days.
 
 While a game holds GameMode (started with `gamemoderun` or a libgamemode
 game), the shell pauses its animations, blur, audio visualisers and
-notification popups; notifications still reach the notification centre.
+notification popups (critical ones, like low battery, still pop up);
+notifications still reach the notification centre.
 `performance.onFullscreen` also turns it on for any fullscreen window, and
 the quick toggle, Settings → Services → Performance mode or
 `qs -c ano ipc call performance toggle` (`on`, `off`, `status`) turn it on by
@@ -170,7 +171,9 @@ shell. Each paused effect has its own switch (`performance.*`).
 ## Lock keys and Do Not Disturb
 
 The OSD shows Caps Lock and Num Lock changes, and the lock screen says when
-Caps Lock is on. On Hyprland this needs the bundled `Caps_Lock`/`Num_Lock`
+Caps Lock is on. The microphone's volume (not only mute) can show too:
+`osd.indicators.micVolume`, off by default since call apps' gain control
+moves it all the time. On Hyprland the lock keys need the bundled `Caps_Lock`/`Num_Lock`
 binds (non-consuming), which ask the shell to read the main keyboard from
 `hyprctl devices`; elsewhere bind a key to `qs -c ano ipc call lockKeys refresh`
 (the lock screen reads the keyboard LEDs while locked). Do Not Disturb:
@@ -184,6 +187,8 @@ connects or disconnects, a USB device is plugged in or removed (hubs are
 skipped), the audio output changes or a display comes or goes. Wi-Fi and
 charging already have their own indicators. Nothing polls: USB events come
 from one `udevadm monitor` that runs only while `deviceEvents.usb` is on.
-The first seconds after the shell starts are quiet, and the same message
-twice within 4 s shows once. Settings → Modules → Device events;
+The first seconds after the shell starts are quiet, and so are the lock
+screen and the first seconds after unlocking (devices re-enumerate on
+resume, which goes through the lock screen); the same message twice within
+4 s shows once. Settings → Modules → Device events;
 `qs -c ano ipc call deviceEvents test "Some device connected"` shows a sample.

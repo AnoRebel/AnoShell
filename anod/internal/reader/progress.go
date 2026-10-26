@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -36,7 +37,12 @@ func (s *Service) progressPath() string { return filepath.Join(s.DataDir, "anime
 func (s *Service) readProgress() map[string]map[string]epProgress {
 	all := map[string]map[string]epProgress{}
 	if b, err := os.ReadFile(s.progressPath()); err == nil {
-		_ = json.Unmarshal(b, &all)
+		if json.Unmarshal(b, &all) != nil {
+			// Keep it rather than overwrite it on the next save.
+			_ = os.Rename(s.progressPath(), s.progressPath()+".bak")
+			s.logf("anime progress file unreadable; kept as %s.bak", s.progressPath())
+			all = map[string]map[string]epProgress{}
+		}
 	}
 	return all
 }
@@ -87,7 +93,11 @@ func resumeAt(p epProgress) float64 {
 	return p.Pos - 3
 }
 
-// mpvSocket is a fresh socket path in a private (0700) runtime folder.
+var mpvSeq atomic.Int64
+
+// mpvSocket is a fresh socket path in a private (0700) runtime folder, unique
+// per play: the previous player's watcher removes its own socket on exit and
+// must never hit the new one's.
 func mpvSocket() (string, error) {
 	dir := os.Getenv("XDG_RUNTIME_DIR")
 	if dir == "" {
@@ -100,7 +110,7 @@ func mpvSocket() (string, error) {
 	if err := os.Chmod(dir, 0o700); err != nil {
 		return "", err
 	}
-	p := filepath.Join(dir, "mpv.sock")
+	p := filepath.Join(dir, fmt.Sprintf("mpv-%d-%d.sock", os.Getpid(), mpvSeq.Add(1)))
 	_ = os.Remove(p)
 	return p, nil
 }

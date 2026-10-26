@@ -17,8 +17,9 @@ import qs.services
  * comes from the main keyboard in `hyprctl devices`, which is right even
  * with keyd or other virtual keyboards. Elsewhere there is no key event to
  * hang on, and the keyboard LEDs (/sys/class/leds/*::capslock) send no file
- * events, so they are read every 500 ms only while the screen is locked
- * (for the lock screen's Caps Lock warning). IPC `lockKeys refresh` lets
+ * events, so while the screen is locked (for the lock screen's Caps Lock
+ * warning) their files are found once and re-read every 500 ms through
+ * FileViews, without spawning anything. IPC `lockKeys refresh` lets
  * other compositors' binds trigger a read too.
  *
  * changed(kind) fires on a real change ("capslock" / "numlock").
@@ -31,7 +32,10 @@ Singleton {
     property bool known: false
     signal changed(string kind)
 
-    function refresh() { if (!reader.running) reader.running = true }
+    // A press during a read reads again when it ends (running = true on a
+    // running Process would do nothing and the press would be lost).
+    property bool _again: false
+    function refresh() { if (reader.running) root._again = true; else reader.running = true }
 
     function _apply(caps, num) {
         const first = !root.known
@@ -48,7 +52,8 @@ Singleton {
         id: reader
         command: CompositorService.isHyprland
             ? ["hyprctl", "devices", "-j"]
-            : ["sh", "-c", "for k in capslock numlock; do v=0; for f in /sys/class/leds/*::$k/brightness; do [ -r \"$f\" ] && [ \"$(cat \"$f\")\" != 0 ] && v=1; done; printf '%s ' $v; done"]
+            : ["sh", "-c", "for f in /sys/class/leds/*::capslock/brightness /sys/class/leds/*::numlock/brightness; do [ -r \"$f\" ] && echo \"$f\"; done"]
+        onRunningChanged: if (!running && root._again) { root._again = false; running = true }
         stdout: StdioCollector {
             onStreamFinished: {
                 const t = this.text || ""
@@ -59,10 +64,31 @@ Singleton {
                     } catch (e) {}
                     return
                 }
-                const v = t.trim().split(/\s+/)
-                if (v.length === 2) root._apply(v[0] === "1", v[1] === "1")
+                // LED files: every keyboard has its own; any lit one counts.
+                const files = t.split("\n").filter(l => l)
+                root._capsFiles = files.filter(f => f.includes("::capslock/"))
+                root._numFiles = files.filter(f => f.includes("::numlock/"))
+                root._readLeds()
             }
         }
+    }
+
+    // ── LEDs (not Hyprland) ──────────────────────────────────────────────
+    property var _capsFiles: []
+    property var _numFiles: []
+    property var _ledViews: []
+    function _readLeds() {
+        const lit = list => list.some(f => (root._ledViews.find(v => v.path === f) ?? root._view(f)).text().trim() !== "0")
+        root._apply(lit(root._capsFiles), lit(root._numFiles))
+    }
+    function _view(path) {
+        const v = ledView.createObject(root, { path: path })
+        root._ledViews = root._ledViews.concat([v])
+        return v
+    }
+    Component {
+        id: ledView
+        FileView { blockLoading: true; printErrors: false }
     }
 
     Component.onCompleted: if (Config.ready) root.refresh()
@@ -73,8 +99,8 @@ Singleton {
     }
     Timer {
         interval: 500; repeat: true
-        running: GlobalStates.screenLocked && !CompositorService.isHyprland
-        onTriggered: root.refresh()
+        running: GlobalStates.screenLocked && !CompositorService.isHyprland && root._ledViews.length > 0
+        onTriggered: { for (const v of root._ledViews) v.reload(); root._readLeds() }
     }
 
     GlobalShortcut {
