@@ -282,8 +282,8 @@ type Service struct {
 	mu       sync.Mutex
 	cursor   *Cursor   // set by SetCursor before the config catches up
 	keyboard *Keyboard // set by SetKeyboard, likewise
-	gen      int     // bumped per pending change, so an old timer can't revert a newer one
-	lastFP   string  // monitor set last seen by OutputsChanged
+	gen      int       // bumped per pending change, so an old timer can't revert a newer one
+	lastFP   string    // monitor set last seen by OutputsChanged
 	previous []Output
 	pending  []Output
 	timer    *time.Timer
