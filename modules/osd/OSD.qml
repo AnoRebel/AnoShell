@@ -21,6 +21,7 @@ Scope {
     property real currentValue: 0
     property bool currentMuted: false
     property string currentLabel: ""
+    property string currentIcon: ""
 
     // Config
     readonly property int timeout: Config.options?.osd?.timeout ?? 1500
@@ -44,14 +45,15 @@ Scope {
     property bool _armed: false
     Timer { running: true; interval: 2000; onTriggered: root._armed = true }
 
-    function show(indicator, value, muted, label) {
+    function show(indicator, value, muted, label, icon) {
         if (!root._armed) return
         // The pill shows it instead (anoSpot.transients.<kind>).
-        if (PillTransient.show(indicator, value, muted, label)) return
+        if (PillTransient.show(indicator, value, muted, label, icon)) return
         root.currentIndicator = indicator
         root.currentValue = value ?? 0
         root.currentMuted = muted ?? false
         root.currentLabel = label ?? ""
+        root.currentIcon = icon ?? ""
         hideTimer.restart()
     }
 
@@ -100,6 +102,12 @@ Scope {
             const on = kind === "capslock" ? LockKeys.capsLock : LockKeys.numLock
             root.show(kind, on ? 1 : 0, false, `${kind === "capslock" ? "Caps Lock" : "Num Lock"} ${on ? "on" : "off"}`)
         }
+    }
+
+    // ═══ Device events (DeviceEvents: Bluetooth, USB, audio output, displays) ═══
+    Connections {
+        target: DeviceEvents
+        function onEvent(label, icon) { root.show("device", 0, false, label, icon) }
     }
 
     // ═══ Keyboard Layout ═══
@@ -189,7 +197,7 @@ Scope {
 
                 // Width depends on whether we have a label or a progress bar
                 property bool isProgressType: ["volume", "brightness", "mic"].includes(root.currentIndicator)
-                property bool isLabelType: ["media", "keyboard", "network", "capslock", "numlock"].includes(root.currentIndicator)
+                property bool isLabelType: ["media", "keyboard", "network", "capslock", "numlock", "device"].includes(root.currentIndicator)
 
                 width: isLabelType ? Math.min(labelRow.implicitWidth + 40, 420) : 280
                 height: 56
@@ -269,6 +277,7 @@ Scope {
                                 case "network": return Network.materialSymbol
                                 case "capslock": return "keyboard_capslock"
                                 case "numlock": return "dialpad"
+                                case "device": return root.currentIcon || "devices"
                                 default: return "info"
                             }
                         }

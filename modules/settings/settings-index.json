@@ -309,6 +309,24 @@
  },
  {
   "page": 1,
+  "card": "Device events",
+  "label": "Device events",
+  "sublabel": "A short pill (or the OSD) when devices come and go. Nothing polls: Bluetooth, audio and displays come from what the shell already watches, USB from one udevadm monitor while it's on.",
+  "keys": [
+   "deviceEvents"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Show device events",
+  "sublabel": "",
+  "keys": [
+   "deviceEvents.enable"
+  ]
+ },
+ {
+  "page": 1,
   "card": "Hot Screen Corners",
   "label": "Hot Screen Corners",
   "sublabel": "Trigger actions by moving cursor to screen corners",
@@ -1857,6 +1875,15 @@
   "sublabel": "Started / saved",
   "keys": [
    "anoSpot.transients.recording"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Device events",
+  "sublabel": "Bluetooth, USB, audio output, displays (Settings → Modules → Device events)",
+  "keys": [
+   "anoSpot.transients.device"
   ]
  },
  {

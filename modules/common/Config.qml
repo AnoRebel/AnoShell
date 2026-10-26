@@ -1436,6 +1436,15 @@ Singleton {
                 property bool enable: false
             }
 
+            // Device event pills (services/DeviceEvents.qml)
+            property JsonObject deviceEvents: JsonObject {
+                property bool enable: true
+                property bool bluetooth: true
+                property bool usb: true
+                property bool audio: true
+                property bool displays: true
+            }
+
             // Pending package updates (services/Updates.qml, bar module "updates")
             property JsonObject updates: JsonObject {
                 property bool enable: false
@@ -1591,6 +1600,7 @@ Singleton {
                     property bool notification: true
                     property bool charging: true
                     property bool recording: true
+                    property bool device: true
                 }
                 property JsonObject growInto: JsonObject {
                     property bool mediaControls: false

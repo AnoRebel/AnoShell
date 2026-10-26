@@ -8,7 +8,8 @@ import qs.services
 
 /**
  * Transient states the pill morphs into for a moment (volume, brightness, mic,
- * keyboard layout, notification, charging, recording), then returns to its
+ * keyboard layout, notification, charging, recording, device events: `icon`
+ * is then the Material symbol), then returns to its
  * face. Each kind is toggle-able (anoSpot.transients.<kind>); a kind the pill
  * takes is not shown by the standalone OSD.
  *
@@ -25,7 +26,7 @@ Singleton {
     property string icon: ""
     readonly property bool active: kind !== ""
 
-    readonly property var kinds: ["volume", "brightness", "mic", "keyboard", "notification", "charging", "recording"]
+    readonly property var kinds: ["volume", "brightness", "mic", "keyboard", "notification", "charging", "recording", "device"]
     // Screens whose pill can show a transient right now (visible, revealed,
     // not tucked, not grown); set by AnoSpot. If the focused screen's can't,
     // the standalone OSD shows it instead of nothing.

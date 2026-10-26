@@ -633,7 +633,8 @@ Scope {
                             keyboard: "keyboard",
                             notification: "notifications",
                             charging: PillTransient.muted ? "battery_5_bar" : "battery_charging_full",
-                            recording: PillTransient.muted ? "stop_circle" : "fiber_manual_record"
+                            recording: PillTransient.muted ? "stop_circle" : "fiber_manual_record",
+                            device: PillTransient.icon || "devices"
                         })[PillTransient.kind] ?? "info"
                     }
                     Rectangle {

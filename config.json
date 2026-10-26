@@ -391,6 +391,13 @@
   "gameMode": {
     "enable": false
   },
+  "deviceEvents": {
+    "enable": true,
+    "bluetooth": true,
+    "usb": true,
+    "audio": true,
+    "displays": true
+  },
   "updates": {
     "enable": false,
     "intervalMin": 120,
@@ -550,7 +557,8 @@
       "keyboard": true,
       "notification": true,
       "charging": true,
-      "recording": true
+      "recording": true,
+      "device": true
     },
     "growInto": {
       "mediaControls": false,

@@ -437,6 +437,13 @@ ColumnLayout {
             checked: Config.options?.anoSpot?.transients?.recording ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.transients.recording", checked)
         }
+        ConfigSwitch {
+            label: "Device events"
+            configKey: "anoSpot.transients.device"
+            sublabel: "Bluetooth, USB, audio output, displays (Settings → Modules → Device events)"
+            checked: Config.options?.anoSpot?.transients?.device ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.device", checked)
+        }
     }
 
     // ═══ Drag and drop ═══

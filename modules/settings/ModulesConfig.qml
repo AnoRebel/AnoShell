@@ -27,7 +27,7 @@ ColumnLayout {
         subtitle: "Enable/disable shell modules, OSD, hot corners, apps, advanced"
         configRoots: [
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
-            "osd", "screenCorners", "altSwitcher", "apps", "focusTime",
+            "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
             "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "widgets"
         ]
@@ -211,6 +211,38 @@ ColumnLayout {
                     checked: Config.options?.osd?.indicators?.[modelData.key] ?? true
                     onCheckedChanged: Config.setNestedValue(`osd.indicators.${modelData.key}`, checked)
                 }
+            }
+        }
+    }
+
+    // ═══ Device events ═══
+    SettingsCard {
+        icon: "devices"
+        title: "Device events"
+        subtitle: "A short pill (or the OSD) when devices come and go. Nothing polls: Bluetooth, audio and displays come from what the shell already watches, USB from one udevadm monitor while it's on."
+        configKeys: ["deviceEvents"]
+
+        ConfigSwitch {
+            id: devEnable
+            label: "Show device events"
+            configKey: "deviceEvents.enable"
+            checked: Config.options?.deviceEvents?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("deviceEvents.enable", checked)
+        }
+        Repeater {
+            model: [
+                { key: "bluetooth", label: "Bluetooth devices connecting" },
+                { key: "usb", label: "USB devices plugged in or removed (not hubs)" },
+                { key: "audio", label: "Audio output changing" },
+                { key: "displays", label: "Displays connected or disconnected" },
+            ]
+            ConfigSwitch {
+                required property var modelData
+                label: modelData.label
+                configKey: `deviceEvents.${modelData.key}`
+                enabled: devEnable.checked
+                checked: Config.options?.deviceEvents?.[modelData.key] ?? true
+                onCheckedChanged: Config.setNestedValue(`deviceEvents.${modelData.key}`, checked)
             }
         }
     }

@@ -176,3 +176,14 @@ binds (non-consuming), which ask the shell to read the main keyboard from
 (the lock screen reads the keyboard LEDs while locked). Do Not Disturb:
 `qs -c ano ipc call notifications toggleDnd` (also `setDnd true|false`,
 `clearAll`, `status`).
+
+## Device events
+
+A short pill (or the OSD when no pill can show it) when a Bluetooth device
+connects or disconnects, a USB device is plugged in or removed (hubs are
+skipped), the audio output changes or a display comes or goes. Wi-Fi and
+charging already have their own indicators. Nothing polls: USB events come
+from one `udevadm monitor` that runs only while `deviceEvents.usb` is on.
+The first seconds after the shell starts are quiet, and the same message
+twice within 4 s shows once. Settings → Modules → Device events;
+`qs -c ano ipc call deviceEvents test "Some device connected"` shows a sample.
