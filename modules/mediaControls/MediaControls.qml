@@ -82,6 +82,7 @@ Scope {
 
             MediaControlsContent {
                 id: mediaContent
+                showing: GlobalStates.mediaControlsOpen
                 anchors { fill: parent; margins: 24 }
             }
         }

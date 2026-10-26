@@ -198,6 +198,10 @@ Singleton {
         target: "brightness"
         function increment(): void { root.increaseBrightness() }
         function decrement(): void { root.decreaseBrightness() }
+        // Per screen: { screen, percent, ddc } (read-only, for scripts and tests).
+        function status(): string {
+            return JSON.stringify(root.monitors.map(m => ({ screen: m.screen.name, percent: Math.round(m.brightness * 100), ddc: m.isDdc })))
+        }
     }
 
     GlobalShortcut {

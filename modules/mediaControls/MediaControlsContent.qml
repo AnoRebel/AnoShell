@@ -97,7 +97,9 @@ ColumnLayout {
         }
     }
 
-    ServiceLease { service: LyricsService; name: "mediaControls"; active: Config.options?.lyrics?.visible ?? true }
+    // The media panel keeps this alive while hidden: hosts say when it shows.
+    property bool showing: true
+    ServiceLease { service: LyricsService; name: "mediaControls"; active: root.showing && (Config.options?.lyrics?.visible ?? true) }
     // Lyrics — 5 lines centered on LyricsService.currentLine
     // (2 before, current bold + accent, 2 after). Visible only
     // when the user opted into lyrics AND the active track has
