@@ -317,6 +317,7 @@
   "pomodoro.longBreakMinutes": "int",
   "powerProfiles.preferredProfile": "string",
   "powerProfiles.restoreOnStart": "bool",
+  "reader.anime.airing": "bool",
   "reader.anime.edge": "string",
   "reader.anime.enable": "bool",
   "reader.anime.finishedRatio": "real",

@@ -14,6 +14,8 @@ Item {
 
     signal animeSelected(var show)
 
+    onVisibleChanged: if (visible) ReaderAnime.refreshLatest()
+
     // (no backdrop of its own: the panel's SurfaceMaterial shows through)
 
     ColumnLayout {
@@ -129,6 +131,21 @@ Item {
                             font.family: libraryView.fontBody
                             font.pixelSize: 8; font.bold: true
                             color: Appearance.colors.colWarning
+                        }
+                    }
+
+                    // A newer episode has aired than the last one watched (AniList)
+                    Rectangle {
+                        visible: ReaderAnime.hasNewEpisode(entry)
+                        anchors { top: parent.top; left: parent.left; topMargin: 32; leftMargin: 8 }
+                        height: 20; radius: 10; width: newText.implicitWidth + 12
+                        color: Appearance.m3colors.m3primary
+                        StyledText {
+                            id: newText; anchors.centerIn: parent
+                            text: "NEW · Ep. " + (ReaderAnime.latestAired[entry.id] ?? "")
+                            font.family: libraryView.fontBody
+                            font.pixelSize: 8; font.bold: true
+                            color: Appearance.m3colors.m3onPrimary
                         }
                     }
 

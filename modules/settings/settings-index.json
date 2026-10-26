@@ -717,6 +717,15 @@
  {
   "page": 1,
   "card": "",
+  "label": "Anime: Airing tab and new-episode badges",
+  "sublabel": "This week's episodes, this season and top airing from AniList (graphql.anilist.co, no account); library shows get a badge when a newer episode is out",
+  "keys": [
+   "reader.anime.airing"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
   "label": "Anime: watched after",
   "sublabel": "",
   "keys": [

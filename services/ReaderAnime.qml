@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.services
+import qs.modules.common
 
 Singleton {
     id: root
@@ -28,6 +29,49 @@ Singleton {
     property bool isFetchingLinks: false
     property string linksError: ""
     property string currentEpisode: ""
+    // ── Airing (AniList via anod, reader.anime.airing) ───────────────────
+    readonly property bool airingEnabled: Config.options?.reader?.anime?.airing ?? true
+    property string airingList: "week"   // week | season | top
+    property var airingItems: []
+    property bool airingLoading: false
+    property string airingError: ""
+    function fetchAiring(list) {
+        if (list) root.airingList = list
+        if (!root.airingEnabled || !Reader.base) return
+        const want = root.airingList
+        root.airingLoading = true
+        root.airingError = ""
+        Reader.get(root.apiUrl + "/airing?list=" + want, function(err, body) {
+            if (want !== root.airingList) return
+            root.airingLoading = false
+            let data = null
+            try { data = JSON.parse(body || "{}") } catch (e) {}
+            if (err || !data || data.error) {
+                root.airingError = data?.error || err || "No answer"
+                return
+            }
+            root.airingItems = data.items || []
+        })
+    }
+    // AniList covers through anod's image cache.
+    function proxied(u) { return u && Reader.base ? Reader.base + "image?url=" + encodeURIComponent(u) : "" }
+
+    // Library show id → newest aired episode (AniList by MAL id), for "new" badges.
+    property var latestAired: ({})
+    function refreshLatest() {
+        if (!root.airingEnabled || !Reader.base || root.libraryList.length === 0) return
+        const ids = root.libraryList.map(e => e.id).join(",")
+        Reader.get(root.apiUrl + "/latest?ids=" + encodeURIComponent(ids), function(err, body) {
+            if (err) return
+            try { root.latestAired = JSON.parse(body) || {} } catch (e) {}
+        })
+    }
+    function hasNewEpisode(entry) {
+        const latest = root.latestAired[entry?.id]
+        const seen = parseInt(entry?.lastWatchedEpNum)
+        return latest > 0 && !isNaN(seen) && latest > seen
+    }
+
     // episode number → { pos, dur, watched } for currentAnime (anod)
     property var progress: ({})
     function refreshProgress() {

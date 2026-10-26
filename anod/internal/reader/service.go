@@ -319,6 +319,20 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.serveLibrary(w, r, endpoint)
 	case kind == "anime" && endpoint == "play":
 		s.servePlay(w, r)
+	case kind == "anime" && endpoint == "airing":
+		items, err := s.Airing(r.Context(), r.URL.Query().Get("list"))
+		if err != nil {
+			writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"items": items})
+	case kind == "anime" && endpoint == "latest":
+		latest, err := s.LatestAired(r.Context(), splitIDs(r.URL.Query().Get("ids")))
+		if err != nil {
+			writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusOK, latest)
 	case kind == "anime" && endpoint == "progress":
 		writeJSON(w, http.StatusOK, s.Progress(r.URL.Query().Get("show")))
 	case kind == "anime" && endpoint == "stop":

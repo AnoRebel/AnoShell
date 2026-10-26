@@ -964,6 +964,7 @@ Singleton {
                     property bool resume: true
                     property bool skipIntro: false        // AniSkip
                     property real finishedRatio: 0.9      // watched past this fraction
+                    property bool airing: true            // Airing tab + new-episode badges (AniList)
                 }
                 // Per source: "go" (anod) or "python" (the legacy servers in scripts/reader).
                 property JsonObject providers: JsonObject {

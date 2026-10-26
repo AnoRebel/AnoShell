@@ -14,7 +14,7 @@ Item {
     readonly property string fontBody: Appearance.font.family.main
 
     // ── Tab state ─────────────────────────────────────────────────────────────
-    property int tabIndex: 0       // 0 = Browse, 1 = Library
+    property int tabIndex: 0       // 0 = Browse, 1 = Library, 2 = Airing (reader.anime.airing)
 
     // ── Navigation stacks (0 = list, 1 = detail) ──────────────────────────────
     // No "reader" stack — MPV handles playback externally
@@ -52,6 +52,7 @@ Item {
                 anchors.fill: parent
                 visible: root.tabIndex === 0
                 BrowseView {
+                    id: browseView
                     anchors.fill: parent
                     visible: root.browseStack === 0
                     opacity: visible ? 1 : 0
@@ -73,6 +74,17 @@ Item {
                         root.browseStack = 0
                         ReaderAnime.clearDetail()
                     }
+                }
+            }
+
+            // ── Airing tab ────────────────────────────────────────────────────
+            AiringView {
+                anchors.fill: parent
+                visible: root.tabIndex === 2 && ReaderAnime.airingEnabled
+                onSearchRequested: title => {
+                    root.tabIndex = 0
+                    root.browseStack = 0
+                    browseView.searchFor(title)
                 }
             }
 
@@ -132,10 +144,10 @@ Item {
                     model: [
                         { label: "Browse",  icon: "⊞" },
                         { label: "Library", icon: "⊟" }
-                    ]
+                    ].concat(ReaderAnime.airingEnabled ? [{ label: "Airing", icon: "◷" }] : [])
 
                     delegate: Item {
-                        width: (root.width - 46) / 2
+                        width: (root.width - 46) / (ReaderAnime.airingEnabled ? 3 : 2)
                         height: parent.height
 
                         readonly property bool active: root.tabIndex === index

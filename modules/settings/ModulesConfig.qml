@@ -905,6 +905,13 @@ ColumnLayout {
             checked: Config.options?.reader?.anime?.skipIntro ?? false
             onCheckedChanged: Config.setNestedValue("reader.anime.skipIntro", checked)
         }
+        ConfigSwitch {
+            label: "Anime: Airing tab and new-episode badges"
+            configKey: "reader.anime.airing"
+            sublabel: "This week's episodes, this season and top airing from AniList (graphql.anilist.co, no account); library shows get a badge when a newer episode is out"
+            checked: Config.options?.reader?.anime?.airing ?? true
+            onCheckedChanged: Config.setNestedValue("reader.anime.airing", checked)
+        }
         ConfigSlider {
             label: "Anime: watched after"
             configKey: "reader.anime.finishedRatio"

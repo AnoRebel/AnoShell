@@ -63,6 +63,17 @@ you got. With `reader.anime.skipIntro`, openings and endings are skipped once
 each, with community-submitted times from [AniSkip](https://api.aniskip.com)
 looked up by the show's MyAnimeList id (no times: nothing is skipped).
 
+### Airing
+
+The anime reader's **Airing** tab lists this week's episodes (with when each
+airs), this season's shows and the top airing shows from
+[AniList](https://anilist.co)'s public API (no account; anod asks at most
+every 2 s, caches answers for 10 minutes and gives up after three
+rate-limited tries). Picking one searches the anime source for its title.
+Library shows get a **NEW** badge when AniList says a newer episode has aired
+than the last one you watched (matched by MyAnimeList id).
+`reader.anime.airing` turns both off.
+
 ### Library and progress
 
 Each reader's library (with the chapter or episode you reached) is kept in
@@ -111,6 +122,7 @@ system-wide. Changes apply the next time the backend starts.
 | `reader.anime.resume` | `true` | start episodes where you stopped |
 | `reader.anime.skipIntro` | `false` | skip openings/endings (AniSkip) |
 | `reader.anime.finishedRatio` | `0.9` | from what fraction an episode is watched |
+| `reader.anime.airing` | `true` | the Airing tab and new-episode badges (AniList) |
 | `reader.idleTimeout` | `120` | seconds before the backend stops |
 | `reader.cacheMB` | `64` | image cache size |
 | `reader.metaCacheEntries` | `512` | lists, details and chapters kept in memory |

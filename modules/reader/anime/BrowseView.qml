@@ -16,6 +16,12 @@ Item {
     // Passes the full show object so DetailView can seed itself immediately
     signal animeSelected(var show)
 
+    // Opens the search bar on a query (the Airing tab's picks).
+    function searchFor(text) {
+        searchBar.visible = true
+        searchField.text = text
+    }
+
     // ── Background ────────────────────────────────────────────────────────────
     // (no backdrop of its own: the panel's SurfaceMaterial shows through)
 
