@@ -29,7 +29,10 @@ import "lrcparser.js" as Lrc
  *   offset           per-track offset in seconds (saved to lyricsMap)
  *   candidatesModel  alternate candidate songs from the online backend
  *                    so the user can manually pick when auto-match is wrong
- *   loadLyrics()     re-trigger lookup for the current track
+ *   loadLyrics(force) look up the current track (force: even if it was
+ *                    just looked up)
+ *   acquire/release(name)  leases (ServiceLease): nothing is fetched while
+ *                    no lyrics view is shown
  *   selectCandidate(songId, source)
  *   jumpTo(index, time)
  *   savePrefs()      persist offset + chosen backend + chosen songId
@@ -71,6 +74,24 @@ Singleton {
     property int currentRequestId: 0
     property var lyricsMap: ({})            // { "Artist - Title": { offset, backend, neteaseId } }
 
+    // Leases from visible lyrics views (ServiceLease): no lookups without one.
+    property var _leases: ({})
+    property int leaseCount: 0
+    function acquire(name) { root._leases[name] = (root._leases[name] ?? 0) + 1; root.leaseCount++ }
+    function release(name) {
+        if (!root._leases[name]) return
+        if (--root._leases[name] <= 0) delete root._leases[name]
+        root.leaseCount--
+    }
+    readonly property bool active: root.serviceEnabled && root.leaseCount > 0
+    onActiveChanged: if (root.active) root.loadLyrics()
+
+    // The track the model belongs to (or was last tried), and when: play/pause
+    // and repeated metadata signals must not wipe and refetch the same track.
+    property string _loadedKey: ""
+    property real _lastAttempt: 0
+    readonly property int _retryCooldownMs: 30000
+
     readonly property alias model: lyricsModel
     readonly property alias candidatesModel: fetchedCandidatesModel
 
@@ -104,25 +125,38 @@ Singleton {
             neteaseId: existing.neteaseId ?? null
         };
         root.lyricsMap = root.lyricsMap;  // notify bindings
-
-        const payload = JSON.stringify(root.lyricsMap);
-        saveLyricsMap.command = ["sh", "-c",
-            `mkdir -p ${_shEsc(root.lyricsDir)} && printf %s ${_shEsc(payload)} > ${_shEsc(root.lyricsMapFile)}`
-        ];
-        saveLyricsMap.running = true;
+        lyricsMapFileView.setText(JSON.stringify(root.lyricsMap));
     }
 
     function toggleVisibility() {
         Config.setNestedValue("lyrics.visible", !root.lyricsVisible);
     }
 
-    function loadLyrics() {
-        if (!root.serviceEnabled) return;
+    function loadLyrics(force) {
+        if (!root.active) return;
+        if (force) root._loadedKey = "";
         loadDebounce.restart();
     }
 
-    function _shEsc(s) {
-        return "'" + String(s).replace(/'/g, "'\\''") + "'";
+    // Starts a fetch process, or queues it behind the one still running:
+    // `running = true` on a running Process does nothing, so the new request
+    // would otherwise never start and the old reply would land on it.
+    function _run(proc, command, reqId) {
+        if (proc.running) {
+            proc._next = { command: command, reqId: reqId };
+            proc.running = false;
+            return;
+        }
+        proc._reqId = reqId;
+        proc._buf = "";
+        proc.command = command;
+        proc.running = true;
+    }
+    function _runNext(proc) {
+        if (proc.running || !proc._next) return;
+        const n = proc._next;
+        proc._next = null;
+        if (n.reqId === root.currentRequestId) _run(proc, n.command, n.reqId);
     }
 
     function _doLoadLyrics() {
@@ -130,8 +164,15 @@ Singleton {
         if (!meta) {
             lyricsModel.clear();
             root.currentIndex = -1;
+            root._loadedKey = "";
             return;
         }
+        const trackKey = _metaKey(meta);
+        if (trackKey === root._loadedKey
+                && (lyricsModel.count > 0 || root.loading || Date.now() - root._lastAttempt < root._retryCooldownMs))
+            return;
+        root._loadedKey = trackKey;
+        root._lastAttempt = Date.now();
 
         loading = true;
         lyricsModel.clear();
@@ -177,13 +218,19 @@ Singleton {
         const titleStr = Array.isArray(meta.title) ? meta.title.join(", ") : String(meta.title || "");
         // Track metadata is untrusted (any player, any title): passed as
         // arguments, never spliced into the shell string.
-        findLyricsInSubdirs.command = ["sh", "-c",
+        const cmd = ["sh", "-c",
             'find "$1" -type f -iname "*$2*$3*.lrc" 2>/dev/null | head -n 1',
             "sh", cleanDir, artistStr, titleStr
         ];
-        findLyricsInSubdirs.requestId = requestId;
-        findLyricsInSubdirs.foundFile = false;
-        findLyricsInSubdirs.running = true;
+        if (findLyricsInSubdirs.running) {
+            findLyricsInSubdirs._next = { command: cmd, reqId: requestId };
+            findLyricsInSubdirs.running = false;
+        } else {
+            findLyricsInSubdirs.command = cmd;
+            findLyricsInSubdirs.requestId = requestId;
+            findLyricsInSubdirs.foundFile = false;
+            findLyricsInSubdirs.running = true;
+        }
 
         // Fast path: try the flat-file location directly. Even if find takes
         // a beat, an exact filename hit lands first.
@@ -208,40 +255,90 @@ Singleton {
     }
 
     // ─── LRCLIB backend ───────────────────────────────────────────────────
+    // LRCLIB asks clients to identify themselves.
+    readonly property string _userAgent: "AnoShell (https://github.com/anorebel/anoshell)"
+
+    // Lower-case, without brackets ("(Remastered)", "[Live]") and punctuation.
+    function _norm(v) {
+        return String(v || "").toLowerCase().replace(/[(\[][^)\]]*[)\]]/g, " ")
+            .replace(/[^0-9a-z\u00c0-\uffff]+/g, " ").trim();
+    }
+    function _overlaps(wanted, got) {
+        wanted = _norm(wanted); got = _norm(got);
+        if (!wanted || !got) return false;
+        if (wanted.includes(got) || got.includes(wanted)) return true;
+        const words = got.split(" ");
+        return wanted.split(" ").some(w => w.length > 3 && words.includes(w));
+    }
+    // Search results are only taken when title and artist plausibly match.
+    function _lrclibMatch(c, title, artist) {
+        return !!c && !!c.syncedLyrics && _overlaps(title, c.trackName) && _overlaps(artist, c.artistName);
+    }
+
+    // Exact lookup with album + duration first (the most precise), then a
+    // field search, then a free-text search (ported from Ryoku's lyrics.py).
     function fetchLrclib(title, artist, reqId) {
-        lrclibProc._reqId = reqId;
-        lrclibProc._buf = "";
-        const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
-        lrclibProc.command = ["curl", "-sL", "--max-time", "15", url];
-        lrclibProc.running = true;
+        const q = encodeURIComponent;
+        const md = player?.metadata ?? {};
+        const album = md["xesam:album"] || "";
+        const secs = Math.round((player?.length ?? 0) || (md["mpris:length"] ?? 0) / 1e6);
+        const api = "https://lrclib.net/api";
+        const urls = [];
+        if (album && secs > 0)
+            urls.push(`${api}/get?track_name=${q(title)}&artist_name=${q(artist)}&album_name=${q(album)}&duration=${secs}`);
+        else
+            urls.push(`${api}/get?track_name=${q(title)}&artist_name=${q(artist)}`);
+        urls.push(`${api}/search?track_name=${q(title)}&artist_name=${q(artist)}`);
+        urls.push(`${api}/search?q=${q(title + " " + artist)}`);
+        lrclibProc._urls = urls;
+        lrclibProc._title = title;
+        lrclibProc._artist = artist;
+        _lrclibStep(0, reqId);
+    }
+    function _lrclibStep(i, reqId) {
+        lrclibProc._step = i;
+        _run(lrclibProc, ["curl", "-sL", "--max-time", "12", "-A", root._userAgent, lrclibProc._urls[i]], reqId);
     }
 
     Process {
         id: lrclibProc
         property int _reqId: -1
         property string _buf: ""
+        property var _next: null
+        property var _urls: []
+        property int _step: 0
+        property string _title: ""
+        property string _artist: ""
         running: false
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => { lrclibProc._buf += data; }
         }
+        onRunningChanged: root._runNext(lrclibProc)
         onExited: (code, _) => {
             if (_reqId !== root.currentRequestId) return;
-            if (code !== 0 || !_buf) {
-                _onLrclibFail();
+            let found = null;
+            if (code === 0 && _buf) {
+                try {
+                    const res = JSON.parse(_buf);
+                    // /get returns one record (trusted: exact fields); /search a list.
+                    found = Array.isArray(res)
+                        ? res.find(c => root._lrclibMatch(c, _title, _artist))
+                        : (res?.syncedLyrics ? res : null);
+                } catch (e) {
+                    // fall through
+                }
+            }
+            const parsed = found ? Lrc.parseLrc(found.syncedLyrics) : [];
+            if (parsed.length > 0) {
+                updateModel(parsed);
+                root.backend = "LRCLIB";
+                root.loading = false;
                 return;
             }
-            try {
-                const res = JSON.parse(_buf);
-                // LRCLIB fields: { syncedLyrics, plainLyrics, ... }
-                if (res && res.syncedLyrics && res.syncedLyrics.length > 0) {
-                    updateModel(Lrc.parseLrc(res.syncedLyrics));
-                    root.backend = "LRCLIB";
-                    root.loading = false;
-                    return;
-                }
-            } catch (e) {
-                // fall through
+            if (_step + 1 < _urls.length) {
+                root._lrclibStep(_step + 1, _reqId);
+                return;
             }
             _onLrclibFail();
         }
@@ -263,14 +360,10 @@ Singleton {
     // ─── NetEase backend ──────────────────────────────────────────────────
     // NetEase has two stages: search → pick best match → fetch lyrics by id.
     function _searchNetEase(title, artist, reqId, onResults) {
-        neteaseSearchProc._reqId = reqId;
-        neteaseSearchProc._buf = "";
         neteaseSearchProc._onResults = onResults;
         const query = encodeURIComponent(`${title} ${artist}`);
         const url = `https://music.163.com/api/search/get?s=${query}&type=1&limit=5`;
-        neteaseSearchProc.command = ["curl", "-sL", "--max-time", "15"]
-            .concat(_netEaseHeaders).concat([url]);
-        neteaseSearchProc.running = true;
+        _run(neteaseSearchProc, ["curl", "-sL", "--max-time", "15"].concat(_netEaseHeaders).concat([url]), reqId);
     }
 
     function fetchNetEaseCandidates(title, artist, reqId) {
@@ -308,11 +401,13 @@ Singleton {
         property int _reqId: -1
         property string _buf: ""
         property var _onResults: null
+        property var _next: null
         running: false
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => { neteaseSearchProc._buf += data; }
         }
+        onRunningChanged: root._runNext(neteaseSearchProc)
         onExited: (code, _) => {
             if (_reqId !== root.currentRequestId) return;
             if (code !== 0 || !_buf) {
@@ -339,23 +434,21 @@ Singleton {
     }
 
     function fetchNetEaseLyrics(id, reqId) {
-        neteaseLyricsProc._reqId = reqId;
-        neteaseLyricsProc._buf = "";
-        const url = `https://music.163.com/api/song/lyric?id=${id}&lv=1&kv=1&tv=-1`;
-        neteaseLyricsProc.command = ["curl", "-sL", "--max-time", "15"]
-            .concat(_netEaseHeaders).concat([url]);
-        neteaseLyricsProc.running = true;
+        const url = `https://music.163.com/api/song/lyric?id=${encodeURIComponent(id)}&lv=1&kv=1&tv=-1`;
+        _run(neteaseLyricsProc, ["curl", "-sL", "--max-time", "15"].concat(_netEaseHeaders).concat([url]), reqId);
     }
 
     Process {
         id: neteaseLyricsProc
         property int _reqId: -1
         property string _buf: ""
+        property var _next: null
         running: false
         stdout: SplitParser {
             splitMarker: ""
             onRead: data => { neteaseLyricsProc._buf += data; }
         }
+        onRunningChanged: root._runNext(neteaseLyricsProc)
         onExited: (code, _) => {
             if (_reqId !== root.currentRequestId) return;
             if (code !== 0 || !_buf) {
@@ -500,15 +593,21 @@ Singleton {
     }
 
     Process {
-        id: saveLyricsMap
-        running: false
-    }
-
-    Process {
         id: findLyricsInSubdirs
         property int requestId: -1
         property bool foundFile: false
+        property var _next: null
         running: false
+        onRunningChanged: {
+            if (running || !_next) return;
+            const n = _next;
+            _next = null;
+            if (n.reqId !== root.currentRequestId) return;
+            command = n.command;
+            requestId = n.reqId;
+            foundFile = false;
+            running = true;
+        }
         stdout: SplitParser {
             onRead: data => {
                 if (findLyricsInSubdirs.requestId === root.currentRequestId) {

@@ -333,6 +333,7 @@ Item {
         id: lyricsFace
         Item {
             id: lyr
+            ServiceLease { service: LyricsService; name: "anoSpotLyricsFace" }
             readonly property bool has: LyricsService.model.count > 0 && LyricsService.currentIndex >= 0
             readonly property string line: has ? (LyricsService.model.get(LyricsService.currentIndex)?.lyricLine ?? "") : ""
             implicitWidth: root.vertical ? root.thickness - 12 : Math.min(360, Math.max(140, shown.implicitWidth))

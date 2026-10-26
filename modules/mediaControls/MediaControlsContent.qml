@@ -97,6 +97,7 @@ ColumnLayout {
         }
     }
 
+    ServiceLease { service: LyricsService; name: "mediaControls"; active: Config.options?.lyrics?.visible ?? true }
     // Lyrics — 5 lines centered on LyricsService.currentLine
     // (2 before, current bold + accent, 2 after). Visible only
     // when the user opted into lyrics AND the active track has

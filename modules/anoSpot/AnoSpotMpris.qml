@@ -10,6 +10,7 @@ RowLayout {
     id: mprisRow
     spacing: 6
 
+    ServiceLease { service: LyricsService; name: "anoSpotMpris"; active: Config.options?.anoSpot?.showLyrics ?? false }
     readonly property string scrollAction: Config.options?.anoSpot?.actions?.scrollOnMpris ?? "audio"
     // Show lyrics inline when the user opted into lyrics-in-AnoSpot AND
     // LyricsService has a current line for the active track. Falls back
