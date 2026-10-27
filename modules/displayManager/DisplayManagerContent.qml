@@ -108,8 +108,18 @@ Item {
 
     // Through anod when it runs: it applies, asks "Keep these settings?"
     // (DisplayConfirm) and reverts after 15 s unless kept, then persists.
+    // The overlay closes once the change is in (anod then asks to keep it);
+    // a failure stays here with its reason.
+    property string applyError: ""
+    property bool applying: false
     function applyConfigs(configs) {
-        if (!Anod.available) { CompositorService.applyOutputs(configs); return }
+        window.applyError = ""
+        if (!Anod.available) {
+            if (CompositorService.applyOutputs(configs)) GlobalStates.displayManagerOpen = false
+            else window.applyError = "The compositor didn't take these settings."
+            return
+        }
+        window.applying = true
         const now = CompositorService.outputs ?? []
         const outs = configs.map(c => {
             const cur = now.find(o => o.name === c.name) ?? {}
@@ -118,7 +128,9 @@ Item {
                 transform: cur.transform ?? 0, vrr: !!cur.vrr, enabled: true }
         })
         Anod.call("display.apply", { outputs: outs }, (r, e) => {
-            if (e) Quickshell.execDetached(["notify-send", "Display", e.message])
+            window.applying = false
+            if (e) window.applyError = e.message || "Couldn't apply the display settings."
+            else GlobalStates.displayManagerOpen = false
         })
     }
 
@@ -495,6 +507,17 @@ Item {
             // ═════════════════════════════════════════════════════════════
             // Apply Button
             // ═════════════════════════════════════════════════════════════
+            // Why the last apply failed (it stays open for another try).
+            StyledText {
+                visible: window.applyError.length > 0
+                anchors { right: applyButtonContainer.left; rightMargin: 16; verticalCenter: applyButtonContainer.verticalCenter }
+                width: Math.min(360, parent.width * 0.45)
+                horizontalAlignment: Text.AlignRight
+                wrapMode: Text.Wrap
+                color: Appearance.m3colors.m3error
+                font.pixelSize: Appearance.font.pixelSize.small
+                text: window.applyError
+            }
             Item {
                 id: applyButtonContainer
                 anchors { bottom: parent.bottom; right: parent.right; margins: 30 }
@@ -528,7 +551,7 @@ Item {
                     RowLayout {
                         anchors.centerIn: parent; spacing: 8
                         StyledText { font.family: Appearance.font.family.iconNerd; font.pixelSize: Appearance.font.pixelSize.huge; color: window.crust; text: "󰸵" }
-                        StyledText { font.family: Appearance.font.family.monospace; font.weight: Font.Black; font.pixelSize: Appearance.font.pixelSize.small; color: window.crust; text: monitorsModel.count > 1 ? "Apply All" : "Apply" }
+                        StyledText { font.family: Appearance.font.family.monospace; font.weight: Font.Black; font.pixelSize: Appearance.font.pixelSize.small; color: window.crust; text: window.applying ? "Applying…" : monitorsModel.count > 1 ? "Apply All" : "Apply" }
                     }
                 }
 
@@ -537,12 +560,12 @@ Item {
                     onEntered: applyHovered = true; onExited: applyHovered = false
                     onPressed: applyPressed = true; onReleased: applyPressed = false; onCanceled: applyPressed = false
                     onClicked: {
+                        if (window.applying) return;
                         flashRect.opacity = 0.8; applyFlashAnim.start();
                         if (monitorsModel.count === 0) return;
                         if (monitorsModel.count === 1) {
                             let mon = monitorsModel.get(0);
                             window.applyConfigs([{ name: mon.name, width: mon.resW, height: mon.resH, rate: mon.rate, scale: mon.sysScale, x: null, y: null }]);
-                            Quickshell.execDetached(["notify-send", "Display Update", "Applied: " + mon.resW + "x" + mon.resH + " @ " + mon.rate + "Hz"]);
                         } else {
                             let rects = [];
                             for (let i = 0; i < monitorsModel.count; i++) {
@@ -556,18 +579,15 @@ Item {
                             }
                             let finalMinX = 999999, finalMinY = 999999;
                             for (let i = 0; i < rects.length; i++) { if (rects[i].x < finalMinX) finalMinX = rects[i].x; if (rects[i].y < finalMinY) finalMinY = rects[i].y; }
-                            let configs = [], summaryString = "";
+                            let configs = [];
                             for (let i = 0; i < rects.length; i++) {
                                 let r = rects[i];
                                 configs.push({ name: r.name, width: r.resW, height: r.resH, rate: r.rate, scale: r.sysScale,
                                                x: Math.round((r.x - finalMinX) + originalLayoutOriginX),
                                                y: Math.round((r.y - finalMinY) + originalLayoutOriginY) });
-                                summaryString += r.name + " ";
                             }
                             window.applyConfigs(configs);
-                            Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString]);
                         }
-                        GlobalStates.displayManagerOpen = false;
                     }
                 }
             }
