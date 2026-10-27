@@ -177,6 +177,11 @@ never sent anywhere) and deletes days older than `screenTime.keepDays`
 (default 30). The sidebar card shows today's total, the top apps (click one
 for its top titles) and the last 7 days.
 
+Limits: `screenTime.dailyLimitMinutes` (all apps) and `screenTime.appLimits`
+(`{ "firefox": 90 }`, by app id) in the same Settings card. Reaching one gives
+a single critical notification that day (remembered across restarts);
+nothing is blocked or closed.
+
 ## Performance mode
 
 While a game holds GameMode (started with `gamemoderun` or a libgamemode
