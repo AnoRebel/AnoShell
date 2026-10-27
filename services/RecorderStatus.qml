@@ -112,7 +112,9 @@ Singleton {
 
     Process {
         id: slurp
-        command: ["slurp"]
+        // slurp reads predefined boxes from a non-terminal stdin: give it none,
+        // or it waits on the pipe and never shows its selection overlay.
+        command: ["sh", "-c", "exec slurp < /dev/null"]
         stdout: StdioCollector { onStreamFinished: { const g = text.trim(); if (g.length > 0) root._begin(g) } }
     }
     Process {

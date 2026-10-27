@@ -46,6 +46,7 @@ Singleton {
     function cancel(): void {
         delayTick.stop(); root.countdown = 0
         if (waitFile.running) { waitFile.stop(); root._finish(1) }
+        else if (regionPick.running) regionPick.signal(15) // the region selection (onExited finishes it)
     }
 
     Timer {
@@ -79,8 +80,8 @@ Singleton {
             })
             if (!asked) { geometryGuard.stop(); root._finish(1) } // this backend can't say which window is focused
         } else if (root._mode === "region") {
-            shot.exec({ command: ["bash", "-c", root._mk + 'g=$(slurp) && grim -g "$g" "$OUT"'],
-                environment: ({ DIR: root.dir, OUT: root._out }) })
+            // slurp alone first (cancel signals it directly), then grim.
+            regionPick.running = true
         } else {
             const output = CompositorService.focusedMonitorName
             shot.exec({ command: ["bash", "-c", root._mk + 'if [ -n "$MON" ]; then grim -o "$MON" "$OUT"; else grim "$OUT"; fi'],
@@ -89,6 +90,22 @@ Singleton {
     }
 
     Timer { id: geometryGuard; interval: 3000; onTriggered: root._finish(1) }
+
+    Process {
+        id: regionPick
+        // slurp reads predefined boxes from a non-terminal stdin: give it none,
+        // or it waits on the pipe and never shows its selection overlay.
+        // It prints the region on success and nothing when cancelled.
+        command: ["sh", "-c", "exec slurp < /dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const g = text.trim()
+                if (!/^-?\d+,-?\d+ \d+x\d+$/.test(g)) { root._finish(1); return }
+                shot.exec({ command: ["bash", "-c", root._mk + 'grim -g "$G" "$OUT"'],
+                    environment: ({ DIR: root.dir, OUT: root._out, G: g }) })
+            }
+        }
+    }
 
     Process {
         id: shot
