@@ -221,8 +221,9 @@ Scope {
             readonly property bool ignoreZones: PanelRegistry.enabled
             exclusionMode: ignoreZones ? ExclusionMode.Ignore : ExclusionMode.Normal
             WlrLayershell.namespace: "quickshell:reader"
-            // Above the connected frame (Top), which paints this panel's body.
-            WlrLayershell.layer: WlrLayer.Overlay
+            // Above the connected frame (Top), which paints this panel's body;
+            // on its own, Top like other panels (so fullscreen windows cover it).
+            WlrLayershell.layer: ignoreZones ? WlrLayer.Overlay : WlrLayer.Top
             WlrLayershell.keyboardFocus: root.anyShown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             // Input only on the panels; the rest of the screen stays usable.
             mask: Region {

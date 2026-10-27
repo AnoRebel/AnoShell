@@ -57,7 +57,7 @@ ColumnLayout {
     }
     function open(it) { root.selected = it; root.stage = ""; root.prepared = null; root.say("") }
     function close() {
-        if (root.prepared?.token && root.stage === "confirm") Hub.cancel(root.prepared.token)
+        if (root.prepared?.token) Hub.cancel(root.prepared.token)
         root.selected = null; root.stage = ""; root.prepared = null; root.say("")
     }
 
@@ -65,8 +65,14 @@ ColumnLayout {
     // confirmation for code (and for an update over files you changed).
     function install(it) {
         root.stage = "preparing"; root.say("")
+        const want = `${it.type}/${it.id}`
         Hub.prepare(it.type, it.id, it.catalog, (r, e) => {
-            if (!root.selected) { if (r?.token) Hub.cancel(r.token); return }
+            // The answer for an item that is no longer open (Back, another
+            // item or tab meanwhile) is dropped, and its download with it.
+            if (!root.selected || `${root.selected.type}/${root.selected.id}` !== want || root.stage !== "preparing") {
+                if (r?.token) Hub.cancel(r.token)
+                return
+            }
             if (!r) { root.stage = "failed"; root.say(e?.message ?? "anod didn't answer", true); return }
             root.prepared = r
             if (r.code || (r.modifiedFiles ?? []).length || r.capabilitiesChanged) { root.stage = "confirm"; return }
@@ -150,7 +156,7 @@ ColumnLayout {
                     iconName: modelData.icon
                     buttonText: modelData.name
                     toggled: root.tab === modelData.id
-                    onClicked: { Hub.tab = modelData.id; root.selected = null }
+                    onClicked: { Hub.tab = modelData.id; root.close() }
                 }
             }
         }
