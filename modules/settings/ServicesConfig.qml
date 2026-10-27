@@ -84,11 +84,31 @@ ColumnLayout {
             text: "Also available: " + RecorderStatus.suggestions.filter(x => !RecorderStatus.installed.includes(x.name)).map(x => `${x.name} — ${x.why}`).join("; ")
         }
 
-        ConfigSwitch {
-            label: "Record desktop audio"
-            configKey: "recording.audio"
-            checked: Config.options?.recording?.audio ?? false
-            onCheckedChanged: Config.setNestedValue("recording.audio", checked)
+        ConfigRow {
+            label: "Audio"
+            configKey: "recording.audioSource"
+            sublabel: RecorderStatus.audioSource === "both" && RecorderStatus.backend !== "gpu-screen-recorder"
+                ? "Both: mixed through a temporary sink while recording, removed afterwards"
+                : "What you hear, your microphone, or both"
+            ChoiceRow {
+                model: [
+                    { value: "none", label: "None", icon: "volume_off" },
+                    { value: "system", label: "System", icon: "volume_up" },
+                    { value: "mic", label: "Mic", icon: "mic" },
+                    { value: "both", label: "Both", icon: "graphic_eq" }
+                ]
+                current: RecorderStatus.audioSource
+                onChose: value => Config.setNestedValue("recording.audioSource", value)
+            }
+        }
+        ConfigRow {
+            label: "Frame rate"
+            configKey: "recording.fps"
+            ChoiceRow {
+                model: [30, 60, 120].map(f => ({ value: f, label: `${f} fps` }))
+                current: RecorderStatus.fps
+                onChose: value => Config.setNestedValue("recording.fps", value)
+            }
         }
         ConfigRow {
             label: "Folder"

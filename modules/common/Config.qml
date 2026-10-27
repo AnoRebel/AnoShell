@@ -1551,7 +1551,9 @@ Singleton {
             property JsonObject recording: JsonObject {
                 property string backend: "auto"
                 property string dir: ""
-                property bool audio: false
+                property bool audio: false          // older switch: "system" when audioSource is ""
+                property string audioSource: ""     // none | system | mic | both
+                property int fps: 60
             }
 
             property JsonObject anoSpot: JsonObject {

@@ -2638,10 +2638,19 @@
  {
   "page": 8,
   "card": "",
-  "label": "Record desktop audio",
+  "label": "Audio",
+  "sublabel": "both",
+  "keys": [
+   "recording.audioSource"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Frame rate",
   "sublabel": "",
   "keys": [
-   "recording.audio"
+   "recording.fps"
   ]
  },
  {

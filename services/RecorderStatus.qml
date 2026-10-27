@@ -34,8 +34,15 @@ Singleton {
     readonly property string backend: installed.includes(configured) ? configured : (installed[0] ?? "")
     readonly property bool available: backend !== ""
     readonly property string dir: (Config.options?.recording?.dir ?? "") || `${Quickshell.env("HOME")}/Videos`
-    readonly property bool audio: (Config.options?.recording?.audio ?? false) || _audioOnce
+    // What audio goes in: none | system (what you hear) | mic | both.
+    // recording.audio (older bool) means "system" when audioSource is unset.
+    readonly property string audioSource: root._audioOnce ? "system"
+        : (["none", "system", "mic", "both"].includes(Config.options?.recording?.audioSource) ? Config.options.recording.audioSource
+        : ((Config.options?.recording?.audio ?? false) ? "system" : "none"))
+    readonly property bool audio: root.audioSource !== "none"
     property bool _audioOnce: false   // one recording with audio (record.sh --sound)
+    // Frames per second (0: the recorder's default).
+    readonly property int fps: Math.max(0, Math.min(240, Config.options?.recording?.fps ?? 60))
 
     property bool isRecording: recorder.running
     property string lastFile: ""
@@ -68,28 +75,36 @@ Singleton {
 
     // Builds the recorder command; `geom` is slurp's "x,y WxH" or "" for the
     // focused output.
+    // The PulseAudio-style device a one-device recorder records from;
+    // "both" uses our temporary mix (see mixer below).
+    function _pulseDevice() {
+        return root.audioSource === "mic" ? "@DEFAULT_SOURCE@" : root.audioSource === "both" ? "anoshell_rec_mix.monitor" : "@DEFAULT_MONITOR@"
+    }
     function _command(geom, file) {
         const out = CompositorService.focusedMonitorName
         switch (root.backend) {
         case "gpu-screen-recorder": {
-            const a = ["gpu-screen-recorder", "-f", "60", "-o", file]
+            const a = ["gpu-screen-recorder", "-f", String(root.fps || 60), "-o", file]
             if (geom) {
                 const m = geom.match(/(-?\d+),(-?\d+) (\d+)x(\d+)/)
                 a.push("-w", "region", "-region", `${m[3]}x${m[4]}+${m[1]}+${m[2]}`)
             } else a.push("-w", out || "screen")
-            if (root.audio) a.push("-a", "default_output")
+            // gpu-screen-recorder mixes "a|b" into one track itself.
+            if (root.audio) a.push("-a", { system: "default_output", mic: "default_input", both: "default_output|default_input" }[root.audioSource])
             return a
         }
         case "wl-screenrec": {
             const a = ["wl-screenrec", "-f", file]
             if (geom) a.push("-g", geom); else if (out) a.push("-o", out)
-            if (root.audio) a.push("--audio")
+            if (root.fps > 0) a.push("--max-fps", String(root.fps))
+            if (root.audio) a.push("--audio", "--audio-device", root._pulseDevice())
             return a
         }
         default: {
             const a = ["wf-recorder", "-f", file]
             if (geom) a.push("-g", geom); else if (out) a.push("-o", out)
-            if (root.audio) a.push("--audio")
+            if (root.fps > 0) a.push("-r", String(root.fps))
+            if (root.audio) a.push(`--audio=${root._pulseDevice()}`)
             return a
         }
         }
@@ -101,6 +116,13 @@ Singleton {
         root._begin("")
     }
     function _begin(geom) {
+        // "both" with a one-device recorder: mix system + mic into a temporary
+        // null sink first (only these modules are ours; they go when it ends).
+        if (root.audioSource === "both" && root.backend !== "gpu-screen-recorder" && !root._mixModules.length) {
+            mixer.geom = geom
+            mixer.running = true
+            return
+        }
         root.lastFile = root._file()
         // mkdir first, then the recorder (a missing folder failed the first one).
         recorder.command = ["sh", "-c", 'mkdir -p "$1" && shift && exec "$@"', "sh", root.dir, ...root._command(geom, root.lastFile)]
@@ -108,6 +130,9 @@ Singleton {
         root._audioOnce = false
     }
     function stop() { if (recorder.running) recorder.signal(2) }  // SIGINT: finalise the file
+    // Stop and throw the recording away (to the trash, not deleted).
+    property bool _discard: false
+    function discard() { if (recorder.running) { root._discard = true; recorder.signal(2) } }
     function toggle(mode) { if (root.isRecording) root.stop(); else root.start(mode ?? "region") }
 
     Process {
@@ -117,14 +142,53 @@ Singleton {
         command: ["sh", "-c", "exec slurp < /dev/null"]
         stdout: StdioCollector { onStreamFinished: { const g = text.trim(); if (g.length > 0) root._begin(g) } }
     }
+    property var _mixModules: []
+    Process {
+        id: mixer
+        property string geom: ""
+        command: ["sh", "-c", 'set -e; m=$(pactl load-module module-null-sink sink_name=anoshell_rec_mix sink_properties=device.description=AnoShell-recording-mix); '
+            + 'a=$(pactl load-module module-loopback source=@DEFAULT_MONITOR@ sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$m"; exit 1; }; '
+            + 'b=$(pactl load-module module-loopback source=@DEFAULT_SOURCE@ sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$a"; pactl unload-module "$m"; exit 1; }; '
+            + 'echo "$m $a $b"']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const ids = text.trim().split(/\s+/).filter(x => /^\d+$/.test(x))
+                if (ids.length !== 3) {
+                    Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-i", "video-x-generic", "Recording not started", "Couldn't mix system audio and the microphone (pactl)."])
+                    return
+                }
+                root._mixModules = ids
+                root._begin(mixer.geom)
+            }
+        }
+    }
+    function _unloadMix() {
+        for (const id of root._mixModules) Quickshell.execDetached(["pactl", "unload-module", id])
+        root._mixModules = []
+    }
     Process {
         id: recorder
         onExited: (code, status) => {
-            if (root.lastFile)
-                Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "-i", "video-x-generic",
-                    code === 0 || code === 130 || code === 2 ? "Recording saved" : "Recording failed", root.lastFile])
+            root._unloadMix()
+            const file = root.lastFile
+            if (!file) return
+            if (root._discard) {
+                root._discard = false
+                Quickshell.execDetached(["sh", "-c", 'gio trash -- "$1" || notify-send -a AnoShell -i video-x-generic "Couldn\'t move the recording to the trash" "$1"', "sh", file])
+                return
+            }
+            if (code === 0 || code === 130 || code === 2) Quickshell.execDetached(["sh", "-c", root._finishedScript, "sh", file])
+            else Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-i", "video-x-generic", "Recording failed", file])
         }
     }
+    // The finished recording: a first-frame thumbnail in the notification,
+    // with Open / Show in folder / Delete (to the trash). Fixed script; the
+    // file path is an argument.
+    readonly property string _finishedScript: 'f="$1"; [ -s "$f" ] || { notify-send -a AnoShell -i video-x-generic "Recording failed" "The file is empty: $f"; exit 0; }; '
+            + 't="${XDG_RUNTIME_DIR:-/tmp}/anoshell/rec-thumb.png"; mkdir -p "${t%/*}"; '
+            + 'ffmpeg -loglevel error -y -ss 0.3 -i "$f" -frames:v 1 -vf scale=480:-1 "$t" 2>/dev/null || t=video-x-generic; '
+            + 'a=$(notify-send -a AnoShell -i "$t" --wait -A open=Open -A folder="Show in folder" -A delete=Delete -- "Recording saved" "$f"); '
+            + 'case "$a" in open) xdg-open "$f";; folder) xdg-open "${f%/*}";; delete) gio trash -- "$f" || notify-send -a AnoShell "Couldn\'t move the recording to the trash" "$f";; esac'
 
     // Keybinds (bundled hyprland.lua: Super+Shift+R region, Super+Shift+Alt+R screen).
     Loader {
@@ -143,6 +207,7 @@ Singleton {
         // Screen recording on/off (the full-screen keybind); with audio: "audio".
         function toggleScreen(opts: string): void { if (root.isRecording) root.stop(); else { root._audioOnce = opts === "audio"; root.start("screen") } }
         function stop(): void { root.stop() }
+        function discard(): void { root.discard() }
         function status(): string { return JSON.stringify({ recording: root.isRecording, backend: root.backend, installed: root.installed, file: root.lastFile }) }
     }
 }

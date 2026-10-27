@@ -254,6 +254,12 @@ Scope {
                         onClicked: root.stopRecording()
                         tooltip: "Stop recording"
                     }
+                    OsdPillButton {
+                        visible: !root.collapsed
+                        iconName: "delete"
+                        onClicked: RecorderStatus.discard()
+                        tooltip: "Discard (stop and move it to the trash)"
+                    }
 
                     OsdSeparator { isVertical: false; visible: !root.collapsed }
 
@@ -296,6 +302,12 @@ Scope {
                         iconColor: Appearance?.colors?.colError ?? "#f38ba8"
                         onClicked: root.stopRecording()
                         tooltip: "Stop recording"
+                    }
+                    OsdPillButton {
+                        visible: !root.collapsed
+                        iconName: "delete"
+                        onClicked: RecorderStatus.discard()
+                        tooltip: "Discard (stop and move it to the trash)"
                     }
 
                     OsdSeparator { isVertical: true; visible: !root.collapsed }
