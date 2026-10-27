@@ -105,6 +105,16 @@ ColumnLayout {
     // when the user opted into lyrics AND the active track has
     // lyrics loaded. Section is gated by lyrics.visible (which
     // the user can toggle without disabling the whole service).
+    // While lyrics load, or when the song has none, say so (one quiet line).
+    StyledText {
+        Layout.fillWidth: true
+        horizontalAlignment: Text.AlignHCenter
+        visible: (Config.options?.lyrics?.enable ?? false) && (Config.options?.lyrics?.visible ?? true)
+            && LyricsService.model.count === 0 && !!LyricsService.player
+        text: LyricsService.loading ? "Looking for lyrics…" : "No lyrics found for this song"
+        color: Appearance.colors.colSubtext
+        font.pixelSize: Appearance.font.pixelSize.smaller
+    }
     Loader {
         Layout.fillWidth: true
         active: (Config.options?.lyrics?.enable ?? false)
