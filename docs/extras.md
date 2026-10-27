@@ -144,6 +144,27 @@ Delete, Close. It leaves after `screenshot.previewSeconds` (0 = stays) unless
 the pointer is on it; `screenshot.onTimeout` then keeps the temp file, saves
 it or deletes it. The card sits at `screenshot.previewEdge`.
 
+With `screenshot.freezeRegion` on (Settings → Modules → Screenshots), a region
+capture first takes each screen and shows it still while you drag, so the shot
+is the moment you pressed the key, not whatever moved meanwhile (Hyprland and
+other wlroots compositors; niri uses its own picker).
+
+## Screen recording
+
+`qs -c ano ipc call recorder region|screen|stop|discard` (Super+Shift+R and
+Super+Shift+Alt+R in the bundled binds) record with the recorder picked in
+Settings → Services → Screen recording (gpu-screen-recorder, wl-screenrec or
+wf-recorder; auto takes the first installed). `recording.fps` sets the frame
+rate (30/60/120) and `recording.audioSource` the sound: none, system (what you
+hear), mic, or both. gpu-screen-recorder mixes both itself; with the other two
+the shell loads a temporary null sink and two loopbacks for the recording and
+unloads exactly those afterwards, leaving your audio setup as it was.
+
+While recording, a small floating indicator shows the time with Stop, Discard
+(stops and moves the file to the trash), and mute buttons. When it's saved, a
+notification shows the first frame with Open, Show in folder and Delete.
+Recordings go to `recording.dir` (empty: ~/Videos).
+
 ## Screen time
 
 `screenTime.enable` (Settings → Sidebars → Productivity) counts how long each

@@ -178,6 +178,13 @@ change.
   `0.0.0.0/0`). Only one is used at a time; choosing one deselects the others.
 - **Networks:** each routed network has a switch (`netbird networks select -a`
   / `deselect`).
+- **Profile:** your NetBird profiles (`netbird profile list`); choosing another
+  one disconnects, selects it and reconnects.
+- **Self-hosted server:** Settings → Services → VPN → NetBird management URL
+  and admin URL (`vpn.netbird.managementUrl` / `adminUrl`) are passed to
+  `netbird up` when you connect from the shell; empty keeps the server the
+  profile already uses. When NetBird needs you to log in, its login page opens
+  in your default browser.
 - The bar's network icon carries a small shield while the VPN is up, filled
   while traffic goes out an exit node; its popup names the exit node.
 
