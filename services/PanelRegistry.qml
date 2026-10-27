@@ -76,7 +76,9 @@ Singleton {
         if (prev && prev.owner === owner && rev <= prev.rev) return root._reject(key, "stale-revision")
         // A zero-size entry is kept while it reserves space (a bar whose
         // content hasn't laid out yet): it counts for insets but gets no slot.
-        if (!geom || (((geom.w ?? 0) <= 0 || (geom.h ?? 0) <= 0) && (geom.reserve ?? 0) <= 0)) {
+        // Almost closed (< 0.4% grown out) is gone too: a sliver of a slot
+        // left a small nub in the field (Ryoku docs/frame.md).
+        if (!geom || (((geom.w ?? 0) <= 0 || (geom.h ?? 0) <= 0 || (geom.progress ?? 1) < 0.004) && (geom.reserve ?? 0) <= 0)) {
             if (prev) { delete root._byKey[key]; root._schedule() }
             return true
         }
