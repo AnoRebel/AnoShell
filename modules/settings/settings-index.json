@@ -3142,6 +3142,24 @@
  },
  {
   "page": 8,
+  "card": "",
+  "label": "NetBird management URL",
+  "sublabel": "Your self-hosted server; empty: NetBird's cloud. Used when connecting.",
+  "keys": [
+   "vpn.netbird.managementUrl"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "NetBird admin URL",
+  "sublabel": "The dashboard of that server (for the login page)",
+  "keys": [
+   "vpn.netbird.adminUrl"
+  ]
+ },
+ {
+  "page": 8,
   "card": "Calendar sync",
   "label": "Calendar sync",
   "sublabel": "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered.",

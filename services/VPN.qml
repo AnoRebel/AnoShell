@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.services
 
 /**
  * VPN connection status + control for the active configured provider.
@@ -102,7 +103,7 @@ Singleton {
                 displayName: "Warp"
             },
             "netbird": {
-                connectCmd: ["netbird", "up", "--no-browser"],
+                connectCmd: ["netbird", "up", "--no-browser"].concat(root.netbirdServerArgs),
                 disconnectCmd: ["netbird", "down"],
                 interface: "wt0",
                 displayName: "NetBird"
@@ -125,7 +126,7 @@ Singleton {
 
     function connect(): void {
         if (status.state === "needs-auth" && status.authUrl) {
-            console.log(lc, "VPN auth required, URL:", status.authUrl);
+            root.openAuthUrl();
             return;
         }
         if (!connected && !connecting && root.currentConfig && root.currentConfig.connectCmd) {
@@ -365,7 +366,7 @@ Singleton {
         stdout: SplitParser {
             onRead: data => {
                 const authUrl = root.extractAuthUrl(data);
-                if (authUrl) root.updateStatus(root.createAuthStatus(authUrl));
+                if (authUrl) { root.updateStatus(root.createAuthStatus(authUrl)); root.openAuthUrl() }
             }
         }
         stderr: StdioCollector {
@@ -468,6 +469,53 @@ Singleton {
     property var _candidate: null
     property real _candidateSince: 0
 
+    // ── NetBird: self-hosted servers and the SSO login ──────────────────
+    // vpn.netbird.managementUrl / adminUrl (empty: NetBird's cloud), passed
+    // to `netbird up` as flags; only http(s) URLs.
+    readonly property var netbirdServerArgs: {
+        const nb = Config.options?.vpn?.netbird ?? {}
+        const ok = u => /^https?:\/\/[^\s]+$/.test(u ?? "")
+        return [].concat(ok(nb.managementUrl) ? ["--management-url", nb.managementUrl] : [],
+                         ok(nb.adminUrl) ? ["--admin-url", nb.adminUrl] : [])
+    }
+    // The login page (SSO) in your browser, once per URL.
+    property string _openedAuthUrl: ""
+    function openAuthUrl() {
+        const u = root.status.authUrl ?? ""
+        if (!/^https:\/\//.test(u) || u === root._openedAuthUrl) return
+        root._openedAuthUrl = u
+        DefaultApps.launch(["xdg-open", u])
+    }
+
+    // ── NetBird profiles (`netbird profile list|select`) ─────────────────
+    property var netbirdProfiles: []      // [{ name, active }]
+    function parseNetBirdProfiles(text) {
+        const out = []
+        for (const raw of text.split("\n")) {
+            const m = raw.trim().match(/^([A-Za-z0-9._-]+)\s*(✓)?$/)
+            if (m && m[1] !== "NAME") out.push({ name: m[1], active: !!m[2] })
+        }
+        return out
+    }
+    function refreshNetBirdProfiles() {
+        if (root.providerName === "netbird" && !netbirdProfilesProc.running) netbirdProfilesProc.running = true
+    }
+    Process {
+        id: netbirdProfilesProc
+        command: ["netbird", "profile", "list"]
+        stdout: StdioCollector { onStreamFinished: root.netbirdProfiles = root.parseNetBirdProfiles(text) }
+    }
+    // Switch profile; reconnects when connected (down, select, up).
+    function selectNetBirdProfile(name) {
+        if (root.netbirdNetworksBusy || !root.netbirdProfiles.some(p => p.name === name && !p.active)) return
+        const cmds = []
+        const was = root.connected
+        if (was) cmds.push(["netbird", "down"])
+        cmds.push(["netbird", "profile", "select", name])
+        if (was) cmds.push(["netbird", "up", "--no-browser"].concat(root.netbirdServerArgs))
+        root._runNetBird(cmds)
+    }
+
     // ── NetBird networks (`netbird networks list`): routes and exit nodes.
     // An exit node routes everything (0.0.0.0/0 or ::/0); only one is used
     // at a time, so choosing one deselects the others.
@@ -525,6 +573,7 @@ Singleton {
         if (root._netbirdQueue.length === 0) {
             root.netbirdNetworksBusy = false
             root.refreshNetBirdNetworks()
+            root.refreshNetBirdProfiles()
             root.checkStatus()
             return
         }
@@ -559,7 +608,7 @@ Singleton {
         if (cmds.length) root._runNetBird(cmds)
     }
     // Networks are listed while a panel shows them (and after each change).
-    onWatchersChanged: if (root.watchers > 0) root.refreshNetBirdNetworks()
+    onWatchersChanged: if (root.watchers > 0) { root.refreshNetBirdNetworks(); root.refreshNetBirdProfiles() }
     Timer {
         running: root.enabled && root.providerName === "netbird" && root.watchers > 0
         interval: 15000

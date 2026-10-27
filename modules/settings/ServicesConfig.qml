@@ -878,6 +878,30 @@ ColumnLayout {
             onCheckedChanged: Config.setNestedValue("vpn.notifyOnChange", checked)
         }
 
+        // Self-hosted NetBird: its management and admin (dashboard) URLs.
+        ConfigRow {
+            label: "NetBird management URL"
+            configKey: "vpn.netbird.managementUrl"
+            sublabel: "Your self-hosted server; empty: NetBird's cloud. Used when connecting."
+            ConfigTextInput {
+                Layout.preferredWidth: 260
+                placeholderText: "https://netbird.example.com:443"
+                text: Config.options?.vpn?.netbird?.managementUrl ?? ""
+                onEditingFinished: Config.setNestedValue("vpn.netbird.managementUrl", text.trim())
+            }
+        }
+        ConfigRow {
+            label: "NetBird admin URL"
+            configKey: "vpn.netbird.adminUrl"
+            sublabel: "The dashboard of that server (for the login page)"
+            ConfigTextInput {
+                Layout.preferredWidth: 260
+                placeholderText: "https://netbird.example.com"
+                text: Config.options?.vpn?.netbird?.adminUrl ?? ""
+                onEditingFinished: Config.setNestedValue("vpn.netbird.adminUrl", text.trim())
+            }
+        }
+
         ConfigRow {
             label: "Active provider"
             sublabel: vpnEnable.checked && VPN.enabled

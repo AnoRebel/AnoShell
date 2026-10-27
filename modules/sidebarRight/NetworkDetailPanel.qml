@@ -264,6 +264,26 @@ Rectangle {
                 }
               }
 
+              // Profile: which NetBird account/server; switching reconnects.
+              RowLayout {
+                Layout.fillWidth: true
+                visible: VPN.netbirdProfiles.length > 0
+                spacing: 6
+                StyledText {
+                    Layout.preferredWidth: 86
+                    text: "Profile"
+                    font.pixelSize: Appearance.font.pixelSize.smaller
+                    color: Appearance.colors.colSubtext
+                }
+                ChoiceRow {
+                    Layout.fillWidth: true
+                    enabled: !VPN.netbirdNetworksBusy
+                    model: VPN.netbirdProfiles.map(p => ({ value: p.name, label: p.name, icon: "account_circle" }))
+                    current: (VPN.netbirdProfiles.find(p => p.active) ?? {}).name ?? ""
+                    onChose: value => VPN.selectNetBirdProfile(value)
+                }
+              }
+
               // Exit node: everything goes through one peer, or none (direct).
               RowLayout {
                 Layout.fillWidth: true

@@ -413,6 +413,8 @@
   "updates.intervalMin": "int",
   "user.avatarPath": "string",
   "vpn.enable": "bool",
+  "vpn.netbird.adminUrl": "string",
+  "vpn.netbird.managementUrl": "string",
   "vpn.notifyOnChange": "bool",
   "vpn.providers": "var",
   "widgets.cell": "int",
@@ -545,6 +547,7 @@
   "updates",
   "user",
   "vpn",
+  "vpn.netbird",
   "widgets"
  ]
 }
