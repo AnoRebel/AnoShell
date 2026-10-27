@@ -33,6 +33,7 @@ Singleton {
     property var items: []              // local: built-in, user, installed
     property var catalog: []            // catalog entries (installed: true when they are local too)
     property var catalogs: []           // [{url, name, ok, error, fetchedAt, offline}]
+    property var lastRice: null         // {id, name, appliedAt} while an undo is possible
     property int revision: -1
     property bool loading: false
     property bool refreshing: false
@@ -60,6 +61,7 @@ Singleton {
         root.items = r.items ?? []
         root.catalog = r.catalog ?? []
         root.catalogs = r.catalogs ?? []
+        root.lastRice = r.lastRice ?? null
         if (typeof r.revision === "number") root.revision = r.revision
     }
 

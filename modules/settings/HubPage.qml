@@ -104,6 +104,7 @@ ColumnLayout {
             Hub.riceApply(it.id, l, (r, e) => {
                 if (e) { root.say(e.message, true); return }
                 root.say(`Applied ${it.name || it.id}${l.length ? ` with ${l.join(" and ")}` : ""}. Undo puts your previous setup back.`)
+                Hub.list()
             })
             return
         }
@@ -297,7 +298,7 @@ ColumnLayout {
                 StyledText { text: "Also apply (off unless you tick them):"; color: Appearance.colors.colSubtext }
                 Repeater {
                     // (a compositor layer isn't applied yet: raw Hyprland Lua / niri KDL is code)
-                    model: [{ key: "keybinds", label: "Its keybinds" }]
+                    model: (it.keybinds ?? []).length ? [{ key: "keybinds", label: `Its keybinds (${it.keybinds.length})` }] : []
                     delegate: ConfigSwitch {
                         required property var modelData
                         Layout.fillWidth: true
@@ -305,6 +306,38 @@ ColumnLayout {
                         checked: root.layers[modelData.key] ?? false
                         onCheckedChanged: { const l = Object.assign({}, root.layers); l[modelData.key] = checked; root.layers = l }
                     }
+                }
+            }
+
+            // What the keybinds layer would set (commands spelled out).
+            ColumnLayout {
+                visible: it.type === "rices" && isLocal && (it.keybinds ?? []).length > 0
+                Layout.fillWidth: true
+                spacing: 1
+                Repeater {
+                    model: (it.keybinds ?? []).slice(0, 30)
+                    delegate: StyledText {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        color: modelData.command ? Appearance.colors.colWarning : Appearance.colors.colOnLayer1
+                        text: `${modelData.chord}  →  ${modelData.command ? "runs " + modelData.command : (modelData.label || modelData.action)}`
+                    }
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: (it.keybinds ?? []).length > 30
+                    color: Appearance.colors.colSubtext
+                    text: `…and ${(it.keybinds ?? []).length - 30} more`
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: (it.keybindsDropped ?? []).length > 0
+                    wrapMode: Text.Wrap
+                    color: Appearance.colors.colSubtext
+                    font.pixelSize: Appearance.font.pixelSize.small
+                    text: `Left out: ${(it.keybindsDropped ?? []).join("; ")}`
                 }
             }
 
@@ -444,9 +477,9 @@ ColumnLayout {
                 })
             }
             RippleButton {
-                buttonText: "Undo last rice"
-                enabled: Anod.available
-                onClicked: Hub.riceUndo((r, e) => root.say(e ? e.message : "Your previous setup is back.", !!e))
+                buttonText: Hub.lastRice ? `Undo ${Hub.lastRice.name || Hub.lastRice.id} (${Qt.formatDateTime(new Date(Hub.lastRice.appliedAt * 1000), "d MMM, hh:mm")})` : "Nothing to undo"
+                enabled: Anod.available && !!Hub.lastRice
+                onClicked: Hub.riceUndo((r, e) => { root.say(e ? e.message : "Your previous setup is back.", !!e); Hub.list() })
             }
         }
     }
