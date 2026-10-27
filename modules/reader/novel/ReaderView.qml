@@ -28,18 +28,18 @@ Item {
     readonly property bool _hasPrev: ReaderNovel.hasPrevChapter
     readonly property bool _hasNext: ReaderNovel.hasNextChapter
 
-    Rectangle { anchors.fill: parent; color: "#1a1714" } // look-coverage: fixed (always-dark reading surface)
+    Rectangle { anchors.fill: parent; color: Appearance.colors.colLayer0Base }
 
     Rectangle {
         id: readerHeader
         anchors { top: parent.top; left: parent.left; right: parent.right }
-        height: 54; color: Qt.rgba(0.08, 0.07, 0.06, 0.97); z: 10
+        height: 54; color: Appearance.colors.colLayer1; z: 10
         opacity: readerView.headerVisible ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-            height: 1; color: Qt.rgba(1, 1, 1, 0.07)
+            height: 1; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.07)
         }
 
         RowLayout {
@@ -50,10 +50,10 @@ Item {
                 width: 44; height: 44
                 Rectangle {
                     anchors.centerIn: parent; width: 34; height: 34; radius: 17
-                    color: backHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+                    color: backHover.containsMouse ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1) : "transparent"
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                 }
-                Text { anchors.centerIn: parent; text: "←"; font.pixelSize: 18; color: Qt.rgba(1,1,1,0.7) }
+                Text { anchors.centerIn: parent; text: "←"; font.pixelSize: 18; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.7) }
                 MouseArea {
                     id: backHover; anchors.fill: parent; hoverEnabled: true
                     onClicked: { ReaderNovel.clearChapter(); readerView.backRequested() }
@@ -66,13 +66,13 @@ Item {
                     width: parent.width
                     text: ReaderNovel.currentNovel ? ReaderNovel.currentNovel.title : ""
                     font.family: readerView.fontDisplay; font.pixelSize: 11
-                    color: Qt.rgba(1,1,1,0.45); elide: Text.ElideRight
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.45); elide: Text.ElideRight
                 }
                 StyledText {
                     width: parent.width
                     text: ReaderNovel.currentChapter ? ReaderNovel.currentChapter.title : ""
                     font.family: readerView.fontDisplay; font.pixelSize: 13
-                    color: Qt.rgba(1,1,1,0.85); elide: Text.ElideRight
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.85); elide: Text.ElideRight
                 }
             }
 
@@ -80,10 +80,10 @@ Item {
                 width: 34; height: 34
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
-                    color: fsMinusHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+                    color: fsMinusHover.containsMouse ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1) : "transparent"
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
-                Text { anchors.centerIn: parent; text: "A−"; font.pixelSize: 10; color: Qt.rgba(1,1,1,0.55) }
+                Text { anchors.centerIn: parent; text: "A−"; font.pixelSize: 10; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.55) }
                 MouseArea {
                     id: fsMinusHover; anchors.fill: parent; hoverEnabled: true
                     onClicked: readerView.fontSize = Math.max(13, readerView.fontSize - 1)
@@ -94,10 +94,10 @@ Item {
                 width: 34; height: 34
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
-                    color: fsPlusHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+                    color: fsPlusHover.containsMouse ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1) : "transparent"
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
-                Text { anchors.centerIn: parent; text: "A+"; font.pixelSize: 11; color: Qt.rgba(1,1,1,0.55) }
+                Text { anchors.centerIn: parent; text: "A+"; font.pixelSize: 11; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.55) }
                 MouseArea {
                     id: fsPlusHover; anchors.fill: parent; hoverEnabled: true
                     onClicked: readerView.fontSize = Math.min(26, readerView.fontSize + 1)
@@ -108,13 +108,13 @@ Item {
                 width: 34; height: 34
                 Rectangle {
                     anchors.centerIn: parent; width: 30; height: 30; radius: 15
-                    color: fullscreenHover.containsMouse ? Qt.rgba(1,1,1,0.1) : "transparent"
+                    color: fullscreenHover.containsMouse ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1) : "transparent"
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
                 }
                 Text {
                     anchors.centerIn: parent
                     text: readerView.isFullscreen ? "🗗" : "⛶"
-                    font.pixelSize: 13; color: Qt.rgba(1,1,1,0.55)
+                    font.pixelSize: 13; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.55)
                 }
                 MouseArea {
                     id: fullscreenHover; anchors.fill: parent; hoverEnabled: true
@@ -125,13 +125,13 @@ Item {
             Rectangle {
                 visible: ReaderNovel.currentChapter !== null && ReaderNovel.currentChapter.wordCount > 0
                 height: 24; width: wcTxt.implicitWidth + 18; radius: 12
-                color: Qt.rgba(1,1,1,0.07); border.color: Qt.rgba(1,1,1,0.1); border.width: 1
+                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.07); border.color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1); border.width: 1
                 Text {
                     id: wcTxt; anchors.centerIn: parent
                     text: ReaderNovel.currentChapter !== null
                         ? (Math.round(ReaderNovel.currentChapter.wordCount / 100) / 10) + "k words" : ""
                     font.family: readerView.fontBody; font.pixelSize: 10
-                    font.letterSpacing: 0.4; color: Qt.rgba(1,1,1,0.45)
+                    font.letterSpacing: 0.4; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.45)
                 }
             }
         }
@@ -140,7 +140,7 @@ Item {
     Item {
         anchors { top: readerHeader.bottom; left: parent.left; right: parent.right }
         height: 2; z: 9
-        Rectangle { anchors.fill: parent; color: Qt.rgba(1,1,1,0.04) }
+        Rectangle { anchors.fill: parent; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.04) }
         Rectangle {
             width: textScroll.contentHeight > textScroll.height
                 ? parent.width * Math.min(1,
@@ -153,7 +153,7 @@ Item {
 
     // Loading: a ghost page in the reader's own measure and type size
     Rectangle {
-        anchors.fill: parent; color: "#1a1714"; z: 8 // look-coverage: fixed (always-dark reading surface)
+        anchors.fill: parent; color: Appearance.colors.colLayer0Base; z: 8
         opacity: ReaderNovel.isFetchingChapter ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(280); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
@@ -174,7 +174,7 @@ Item {
     }
 
     Rectangle {
-        anchors.fill: parent; color: "#1a1714"; z: 7 // look-coverage: fixed (always-dark reading surface)
+        anchors.fill: parent; color: Appearance.colors.colLayer0Base; z: 7
         visible: ReaderNovel.chapterError.length > 0 && !ReaderNovel.isFetchingChapter
         Column {
             anchors.centerIn: parent; spacing: 10
@@ -183,7 +183,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             Text {
-                text: ReaderNovel.chapterError; color: Qt.rgba(1,1,1,0.4)
+                text: ReaderNovel.chapterError; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.4)
                 font.pixelSize: 11; font.family: readerView.fontBody
                 wrapMode: Text.Wrap; width: 260; horizontalAlignment: Text.AlignHCenter; lineHeight: 1.4
             }
@@ -220,7 +220,7 @@ Item {
                 font.family: readerView.fontDisplay
                 font.pixelSize: readerView.fontSize + 7
                 font.bold: true
-                color: Qt.rgba(0.96, 0.93, 0.87, 0.90)
+                color: Appearance.colors.colOnLayer0
                 wrapMode: Text.Wrap; lineHeight: 1.25; bottomPadding: 8
             }
 
@@ -244,7 +244,7 @@ Item {
                     text: modelData
                     font.family: readerView.fontDisplay
                     font.pixelSize: readerView.fontSize
-                    color: Qt.rgba(0.91, 0.87, 0.80, 0.87)
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
                     wrapMode: Text.Wrap; lineHeight: readerView.lineHeight
                     bottomPadding: Math.round(readerView.fontSize * readerView.lineHeight * 0.75)
                     textFormat: Text.PlainText
@@ -260,11 +260,11 @@ Item {
 
     Rectangle {
         anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-        height: 56; color: Qt.rgba(0.08, 0.07, 0.06, 0.97); z: 10
+        height: 56; color: Appearance.colors.colLayer1; z: 10
 
         Rectangle {
             anchors { top: parent.top; left: parent.left; right: parent.right }
-            height: 1; color: Qt.rgba(1,1,1,0.07)
+            height: 1; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.07)
         }
 
         Row {
@@ -280,13 +280,13 @@ Item {
                     anchors { verticalCenter: parent.verticalCenter; left: parent.left }
                     width: prevBtnRow.implicitWidth + 28; height: 36; radius: 18
                     color: prevNavArea.containsMouse && readerView._hasPrev
-                        ? Qt.rgba(1,1,1,0.12) : Qt.rgba(1,1,1,0.06)
+                        ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.12) : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.06)
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 
                     Row {
                         id: prevBtnRow; anchors.centerIn: parent; spacing: 5
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: "‹"; font.pixelSize: 18; color: Qt.rgba(1,1,1,0.7) }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: "Prev"; font.family: readerView.fontBody; font.pixelSize: 12; color: Qt.rgba(1,1,1,0.7) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: "‹"; font.pixelSize: 18; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.7) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: "Prev"; font.family: readerView.fontBody; font.pixelSize: 12; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.7) }
                     }
                 }
 
@@ -303,7 +303,7 @@ Item {
                     anchors.centerIn: parent
                     text: ReaderNovel.currentChapter ? ReaderNovel.currentChapter.title : ""
                     font.family: readerView.fontBody; font.pixelSize: 10
-                    color: Qt.rgba(1,1,1,0.28); font.letterSpacing: 0.4
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.28); font.letterSpacing: 0.4
                     elide: Text.ElideMiddle; width: parent.width - 12
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -325,8 +325,8 @@ Item {
 
                     Row {
                         id: nextBtnRow; anchors.centerIn: parent; spacing: 5
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: "Next"; font.family: readerView.fontBody; font.pixelSize: 12; color: Qt.rgba(1,1,1,0.92) }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: "›"; font.pixelSize: 18; color: Qt.rgba(1,1,1,0.92) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: "Next"; font.family: readerView.fontBody; font.pixelSize: 12; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.92) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: "›"; font.pixelSize: 18; color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.92) }
                     }
                 }
 

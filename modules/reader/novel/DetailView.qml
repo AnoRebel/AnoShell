@@ -395,6 +395,7 @@ Item {
                     background: Rectangle { color: Appearance.m3colors.m3primary; radius: 14; opacity: parent.enabled ? 1 : 0.6 }
                     onClicked: readNext()
                 }
+                Item { Layout.fillWidth: true } // the buttons sit together on the left
             }
 
             Rectangle {

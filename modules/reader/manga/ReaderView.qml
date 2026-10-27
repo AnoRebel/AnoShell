@@ -27,14 +27,14 @@ Item {
     }
 
     // ── Ink-black background ─────────────────────────────────────────────────
-    Rectangle { anchors.fill: parent; color: "#08080a" } // look-coverage: fixed (always-dark reading surface)
+    Rectangle { anchors.fill: parent; color: Appearance.colors.colLayer0Base }
 
     // ── Reader header ────────────────────────────────────────────────────────
     Rectangle {
         id: readerHeader
         anchors { top: parent.top; left: parent.left; right: parent.right }
         height: 54
-        color: Qt.rgba(0.05, 0.05, 0.08, 0.95)
+        color: Appearance.colors.colLayer1
         z: 10
         opacity: readerView.headerVisible ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(250); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
@@ -43,7 +43,7 @@ Item {
         Rectangle {
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
             height: 1
-            color: Qt.rgba(1, 1, 1, 0.07)
+            color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.07)
         }
 
         RowLayout {
@@ -58,7 +58,7 @@ Item {
                     anchors.centerIn: parent
                     width: 34; height: 34; radius: 17
                     color: readerBackArea.containsMouse
-                        ? Qt.rgba(1, 1, 1, 0.1)
+                        ? ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.1)
                         : "transparent"
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                 }
@@ -66,7 +66,7 @@ Item {
                     anchors.centerIn: parent
                     text: "←"
                     font.pixelSize: 18
-                    color: Qt.rgba(1, 1, 1, 0.7)
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.7)
                 }
                 MouseArea {
                     id: readerBackArea
@@ -85,7 +85,7 @@ Item {
                 text: ReaderManga.currentManga ? ReaderManga.currentManga.title : ""
                 font.family: readerView.fontDisplay
                 font.pixelSize: 13
-                color: Qt.rgba(1, 1, 1, 0.85)
+                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.85)
                 elide: Text.ElideRight
             }
 
@@ -95,8 +95,8 @@ Item {
                 height: 24
                 width: pageCountText.implicitWidth + 18
                 radius: 12
-                color: Qt.rgba(1, 1, 1, 0.09)
-                border.color: Qt.rgba(1, 1, 1, 0.12)
+                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.09)
+                border.color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.12)
                 border.width: 1
 
                 StyledText {
@@ -106,7 +106,7 @@ Item {
                     font.family: readerView.fontBody
                     font.pixelSize: 10
                     font.letterSpacing: 0.5
-                    color: Qt.rgba(1, 1, 1, 0.65)
+                    color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.65)
                 }
             }
         }
@@ -117,7 +117,7 @@ Item {
         anchors.fill: parent
         z: 8
         active: ReaderManga.isFetchingPages
-        color: "#08080a" // look-coverage: fixed (always-dark reading surface)
+        color: Appearance.colors.colLayer0Base
         textColor: "white"
         spinnerSize: 40
         label: "loading pages"
@@ -128,7 +128,7 @@ Item {
     // ── Pages error overlay ──────────────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
-        color: "#08080a" // look-coverage: fixed (always-dark reading surface)
+        color: Appearance.colors.colLayer0Base
         visible: ReaderManga.pagesError.length > 0 && !ReaderManga.isFetchingPages
         z: 7
 
@@ -145,7 +145,7 @@ Item {
             }
             StyledText {
                 text: ReaderManga.pagesError
-                color: Qt.rgba(1, 1, 1, 0.45)
+                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.45)
                 font.pixelSize: 11
                 font.family: readerView.fontBody
                 wrapMode: Text.Wrap
@@ -208,7 +208,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 z: -1
-                color: "#111115" // look-coverage: fixed (always-dark reading surface)
+                color: Appearance.colors.colLayer0Base
                 visible: pageImg.status !== Image.Ready
 
                 Column {
@@ -220,8 +220,8 @@ Item {
                         visible: pageImg.status !== Image.Error
                         width: 22
                         border.width: 2
-                        border.color: Qt.rgba(1, 1, 1, 0.08)
-                        arcColor: Qt.rgba(1, 1, 1, 0.45)
+                        border.color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.08)
+                        arcColor: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.45)
                         period: 1200
                     }
                     StyledText {
@@ -229,13 +229,13 @@ Item {
                         visible: pageImg.status === Image.Error
                         text: "⊘"
                         font.pixelSize: 22
-                        color: Qt.rgba(1, 1, 1, 0.3)
+                        color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.3)
                     }
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "p. " + (modelData.index + 1)
                             + (pageImg.status === Image.Error ? "  ·  failed to load" : "")
-                        color: Qt.rgba(1, 1, 1, 0.3)
+                        color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.3)
                         font.pixelSize: 10
                         font.family: readerView.fontBody
                         font.letterSpacing: 1.5
@@ -246,7 +246,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: pageImg.status === Image.Loading && pageImg.progress > 0
                         width: 96; height: 2; radius: 1
-                        color: Qt.rgba(1, 1, 1, 0.08)
+                        color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.08)
 
                         Rectangle {
                             width: parent.width * pageImg.progress
@@ -276,7 +276,7 @@ Item {
         // Track
         Rectangle {
             anchors.fill: parent
-            color: Qt.rgba(1, 1, 1, 0.06)
+            color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.06)
         }
 
         // Fill
