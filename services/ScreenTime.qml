@@ -108,7 +108,11 @@ Singleton {
         function onAvailableChanged() { if (Anod.available && root.enabled && root._hasLimits) root.checkLimits() }
     }
     function _today() { return Qt.formatDate(new Date(), "yyyy-MM-dd") }
+    // The day's "already told you" list is read first (else a restart could
+    // tell you again); a missing file counts as read.
+    property bool _limitsRead: false
     function checkLimits() {
+        if (!root._limitsRead) { Qt.callLater(() => { if (root._limitsRead) root.checkLimits() }); return }
         Anod.call("screentime.day", {}, (r, e) => {
             if (!r) return
             const today = root._today()
@@ -118,7 +122,9 @@ Singleton {
                 hit.push({ key: "*", text: `You've reached your daily screen time (${root.dailyLimit} min).` })
             for (const app in root.appLimits) {
                 const min = root.appLimits[app] ?? 0
-                if (min > 0 && (r.perApp?.[app] ?? 0) >= min * 60 && !done.includes(app))
+                // app ids match whatever their case (Firefox / firefox)
+                const used = Object.keys(r.perApp ?? {}).filter(k => k.toLowerCase() === app.toLowerCase()).reduce((n, k) => n + r.perApp[k], 0)
+                if (min > 0 && used >= min * 60 && !done.includes(app))
                     hit.push({ key: app, text: `You've reached today's limit for ${app} (${min} min).` })
             }
             if (!hit.length) return
@@ -136,6 +142,8 @@ Singleton {
         path: `${FileUtils.trimFileProtocol(Directories.state)}/anoshell/screentime-limits.json`
         watchChanges: false
         printErrors: false
+        onLoaded: { root._limitsRead = true; if (Anod.available && root.enabled && root._hasLimits) root.checkLimits() }
+        onLoadFailed: { root._limitsRead = true; if (Anod.available && root.enabled && root._hasLimits) root.checkLimits() }
         JsonAdapter {
             id: limitState
             property string date: ""

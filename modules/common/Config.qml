@@ -1430,7 +1430,7 @@ Singleton {
                 property bool enable: true
                 property bool notifyOnChange: true
                 property var providers: []
-                // Self-hosted NetBird (empty: NetBird's cloud)
+                // Self-hosted NetBird (empty: keep the profile's server)
                 property JsonObject netbird: JsonObject {
                     property string managementUrl: ""
                     property string adminUrl: ""

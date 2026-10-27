@@ -126,6 +126,7 @@ Singleton {
 
     function connect(): void {
         if (status.state === "needs-auth" && status.authUrl) {
+            root._openedAuthUrl = ""; // you asked again: open it again
             root.openAuthUrl();
             return;
         }
@@ -366,7 +367,7 @@ Singleton {
         stdout: SplitParser {
             onRead: data => {
                 const authUrl = root.extractAuthUrl(data);
-                if (authUrl) { root.updateStatus(root.createAuthStatus(authUrl)); root.openAuthUrl() }
+                if (authUrl) { root.updateStatus(root.createAuthStatus(authUrl)); if (root.providerName === "netbird") root.openAuthUrl() }
             }
         }
         stderr: StdioCollector {
@@ -470,7 +471,7 @@ Singleton {
     property real _candidateSince: 0
 
     // ── NetBird: self-hosted servers and the SSO login ──────────────────
-    // vpn.netbird.managementUrl / adminUrl (empty: NetBird's cloud), passed
+    // vpn.netbird.managementUrl / adminUrl (empty: the profile's own server), passed
     // to `netbird up` as flags; only http(s) URLs.
     readonly property var netbirdServerArgs: {
         const nb = Config.options?.vpn?.netbird ?? {}
@@ -506,15 +507,19 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.netbirdProfiles = root.parseNetBirdProfiles(text) }
     }
     // Switch profile; reconnects when connected (down, select, up).
+    // The reconnect goes through connectProc (its login URL is seen and
+    // opened) and without the server flags: each profile keeps its own server.
+    // If the switch fails, the old profile reconnects.
     function selectNetBirdProfile(name) {
         if (root.netbirdNetworksBusy || !root.netbirdProfiles.some(p => p.name === name && !p.active)) return
-        const cmds = []
         const was = root.connected
+        const cmds = []
         if (was) cmds.push(["netbird", "down"])
         cmds.push(["netbird", "profile", "select", name])
-        if (was) cmds.push(["netbird", "up", "--no-browser"].concat(root.netbirdServerArgs))
+        root._afterChain = ok => { if (was) connectProc.exec(["netbird", "up", "--no-browser"]) }
         root._runNetBird(cmds)
     }
+    property var _afterChain: null
 
     // ── NetBird networks (`netbird networks list`): routes and exit nodes.
     // An exit node routes everything (0.0.0.0/0 or ::/0); only one is used
@@ -572,6 +577,9 @@ Singleton {
     function _nextNetBird() {
         if (root._netbirdQueue.length === 0) {
             root.netbirdNetworksBusy = false
+            const after = root._afterChain
+            root._afterChain = null
+            if (after) after(root.netbirdNetworksError === "")
             root.refreshNetBirdNetworks()
             root.refreshNetBirdProfiles()
             root.checkStatus()

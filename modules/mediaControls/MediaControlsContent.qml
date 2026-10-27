@@ -111,7 +111,7 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         visible: (Config.options?.lyrics?.enable ?? false) && (Config.options?.lyrics?.visible ?? true)
             && LyricsService.model.count === 0 && !!LyricsService.player
-        text: LyricsService.loading ? "Looking for lyrics…" : "No lyrics found for this song"
+        text: LyricsService.pending ? "Looking for lyrics…" : "No lyrics found for this song"
         color: Appearance.colors.colSubtext
         font.pixelSize: Appearance.font.pixelSize.smaller
     }

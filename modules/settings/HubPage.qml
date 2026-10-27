@@ -504,11 +504,12 @@ ColumnLayout {
                     colBackground: Appearance.colors.colLayer2
                     enabled: !modelData.installed && wh.installing === ""
                     onClicked: {
-                        wh.installing = modelData.id
-                        Hub.wallhavenInstall(modelData.id, (r, e) => {
+                        const id = modelData.id // the card may be gone when the answer comes (a new search)
+                        wh.installing = id
+                        Hub.wallhavenInstall(id, (r, e) => {
                             wh.installing = ""
                             if (!r) { wh.note = e?.message ?? "Install failed"; return }
-                            const l = wh.results.slice(); const i = l.findIndex(x => x.id === whCard.modelData.id)
+                            const l = wh.results.slice(); const i = l.findIndex(x => x.id === id)
                             if (i >= 0) l[i] = Object.assign({}, l[i], { installed: true })
                             wh.results = l
                             root.say(`Installed ${r.path}: find it above to apply.`)

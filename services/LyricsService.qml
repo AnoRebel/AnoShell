@@ -66,6 +66,8 @@ Singleton {
     property var player: MprisController.activePlayer
     property int currentIndex: -1
     property bool loading: false
+    // A fetch running or about to (the track just changed): not "no lyrics" yet.
+    readonly property bool pending: root.loading || loadDebounce.running
     property bool isManualSeeking: false
     property string backend: "Local"        // backend that produced the current model
     property real currentSongId: 0          // backend-specific id (NetEase) or 0

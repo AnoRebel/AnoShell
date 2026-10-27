@@ -41,12 +41,14 @@ Singleton {
     function capture(mode: string, delaySec: int): void {
         if (root.busy || root.preparing || root.countdown > 0 || !["region", "window", "screen"].includes(mode)) return
         root._mode = mode
+        root._cancelled = false
         if (delaySec > 0) { root.countdown = Math.min(60, delaySec); delayTick.start() }
         else root._prepare()
     }
     function cancel(): void {
         delayTick.stop(); root.countdown = 0
         if (waitFile.running) { waitFile.stop(); root._finish(1) }
+        else if (freezeGrab.running) root._cancelled = true // finishes when the grab ends
         else if (regionPick.running) regionPick.signal(15) // the region selection (onExited finishes it)
         else if (freezeSettle.running) { freezeSettle.stop(); root._finish(1) }
     }
@@ -103,15 +105,17 @@ Singleton {
     Process {
         id: freezeGrab
         onExited: code => {
-            if (code !== 0) { root._finish(1); return }
+            if (code !== 0 || root._cancelled) { root._finish(1); return }
             root.frozen = true
             freezeSettle.restart()
         }
     }
     // The still picture is up (layer animations included) before slurp starts.
     Timer { id: freezeSettle; interval: 350; onTriggered: regionPick.running = true }
+    property bool _cancelled: false
+    // After every freeze capture (also one whose grab failed half way).
     function _unfreeze() {
-        if (!root.frozen) return
+        if (!root.freezeRegion || root._mode !== "region") return
         root.frozen = false
         Quickshell.execDetached(["sh", "-c", 'rm -f -- "$1"/.freeze-*.png', "sh", root.dir])
     }

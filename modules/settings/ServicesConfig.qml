@@ -882,7 +882,7 @@ ColumnLayout {
         ConfigRow {
             label: "NetBird management URL"
             configKey: "vpn.netbird.managementUrl"
-            sublabel: "Your self-hosted server; empty: NetBird's cloud. Used when connecting."
+            sublabel: "Your self-hosted server, passed when you connect from the shell; empty keeps the server the profile already uses"
             ConfigTextInput {
                 Layout.preferredWidth: 260
                 placeholderText: "https://netbird.example.com:443"

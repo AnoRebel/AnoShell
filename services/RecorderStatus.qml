@@ -61,7 +61,12 @@ Singleton {
     }
 
     function refreshInstalled() { detect.running = true }
-    Component.onCompleted: refreshInstalled()
+    // A mix left loaded by a shell that crashed or reloaded mid-recording
+    // (only modules naming our sink are touched).
+    Component.onCompleted: {
+        refreshInstalled()
+        Quickshell.execDetached(["sh", "-c", 'command -v pactl >/dev/null || exit 0; pactl list short modules | awk \'/anoshell_rec_mix/ {print $1}\' | while read -r id; do pactl unload-module "$id"; done'])
+    }
     Process {
         id: detect
         command: ["sh", "-c", 'for b in "$@"; do command -v "$b" >/dev/null 2>&1 && echo "$b"; done', "sh", ...root.known]
@@ -110,12 +115,16 @@ Singleton {
         }
     }
 
+    // Busy picking a region or mixing audio counts as starting: a second
+    // start then would record under the wrong file name.
+    readonly property bool _starting: slurp.running || mixer.running
     function start(mode) {
-        if (root.isRecording || !root.available) return
+        if (root.isRecording || root._starting || !root.available) return
         if (mode === "region") { slurp.running = true; return }
         root._begin("")
     }
     function _begin(geom) {
+        if (recorder.running) return
         // "both" with a one-device recorder: mix system + mic into a temporary
         // null sink first (only these modules are ours; they go when it ends).
         if (root.audioSource === "both" && root.backend !== "gpu-screen-recorder" && !root._mixModules.length) {
@@ -146,9 +155,12 @@ Singleton {
     Process {
         id: mixer
         property string geom: ""
-        command: ["sh", "-c", 'set -e; m=$(pactl load-module module-null-sink sink_name=anoshell_rec_mix sink_properties=device.description=AnoShell-recording-mix); '
-            + 'a=$(pactl load-module module-loopback source=@DEFAULT_MONITOR@ sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$m"; exit 1; }; '
-            + 'b=$(pactl load-module module-loopback source=@DEFAULT_SOURCE@ sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$a"; pactl unload-module "$m"; exit 1; }; '
+        // The defaults are read before the mix sink exists, so the system
+        // loopback can never pick the mix itself.
+        command: ["sh", "-c", 'set -e; s=$(pactl get-default-sink); src=$(pactl get-default-source); '
+            + 'm=$(pactl load-module module-null-sink sink_name=anoshell_rec_mix sink_properties=device.description=AnoShell-recording-mix); '
+            + 'a=$(pactl load-module module-loopback source="$s.monitor" sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$m"; exit 1; }; '
+            + 'b=$(pactl load-module module-loopback source="$src" sink=anoshell_rec_mix latency_msec=40) || { pactl unload-module "$a"; pactl unload-module "$m"; exit 1; }; '
             + 'echo "$m $a $b"']
         stdout: StdioCollector {
             onStreamFinished: {
