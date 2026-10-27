@@ -60,11 +60,22 @@ Scope {
     }
 
     // ═══ Volume ═══
+    // A new output reports its volume as it becomes the default: that is not
+    // a volume change (the device event says which output it is).
+    property real _sinkSwitchedAt: 0
+    Connections {
+        target: Audio
+        function onSinkChanged() { root._sinkSwitchedAt = Date.now() }
+    }
+    function _volume() {
+        if (Date.now() - root._sinkSwitchedAt < 1500) return
+        root.show("volume", Audio.sink.audio.volume, Audio.sink.audio.muted)
+    }
     Connections {
         enabled: root.enableVolume
         target: Audio.sink?.audio ?? null
-        function onVolumeChanged() { root.show("volume", Audio.sink.audio.volume, Audio.sink.audio.muted) }
-        function onMutedChanged() { root.show("volume", Audio.sink.audio.volume, Audio.sink.audio.muted) }
+        function onVolumeChanged() { root._volume() }
+        function onMutedChanged() { root._volume() }
     }
 
     // ═══ Brightness ═══
