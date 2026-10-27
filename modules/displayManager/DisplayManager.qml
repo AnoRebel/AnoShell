@@ -22,8 +22,8 @@ PanelWindow {
     // inside (Quickshell 0.3 dropped anchors.rect.{x,y,w,h} positioning).
     anchors { top: true; bottom: true; left: true; right: true }
 
-    property int panelWidth: Math.min(860, panel.screen?.width * 0.55 ?? 860)
-    property int panelHeight: Math.min(420, panel.screen?.height * 0.45 ?? 420)
+    property int panelWidth: Math.min(920, (panel.screen?.width ?? 1280) * 0.85)
+    property int panelHeight: Math.min(460, (panel.screen?.height ?? 800) * 0.7)
 
     screen: GlobalStates.primaryScreen
     visible: GlobalStates.displayManagerOpen && (CompositorService.supports.outputConfig ?? false)
@@ -56,9 +56,12 @@ PanelWindow {
     // ═══════════════════════════════════════════════════════════════════════
     // Content
     // ═══════════════════════════════════════════════════════════════════════
+    // A card in the middle (it was stretched over the whole screen).
     DisplayManagerContent {
         id: content
-        anchors.fill: parent
+        anchors.centerIn: parent
+        width: panel.panelWidth
+        height: panel.panelHeight
         visible: GlobalStates.displayManagerOpen
     }
 }

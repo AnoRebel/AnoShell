@@ -54,6 +54,13 @@ Item {
 
     property real introState: 0.0
     Component.onCompleted: { introState = 1.0; loadOutputs() }
+    // Outputs arrive after startup and change with hotplug: follow them,
+    // and re-read on every open (a half-dragged layout starts fresh).
+    Connections {
+        target: CompositorService
+        function onOutputsChanged() { if (!window.applying) window.loadOutputs() }
+    }
+    onVisibleChanged: if (visible) { window.applyError = ""; window.loadOutputs() }
     Behavior on introState { NumberAnimation { duration: AnimationConfig.scaledDuration(800); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     property bool applyHovered: false
@@ -134,6 +141,25 @@ Item {
         })
     }
 
+    readonly property var _fallbackModes: [[3840, 2160], [2560, 1440], [1920, 1080], [1600, 900], [1366, 768], [1280, 720], [1024, 768], [800, 600]]
+    readonly property var _modeNames: ({ "3840x2160": "4K", "2560x1600": "WQXGA", "2560x1440": "QHD", "1920x1200": "WUXGA", "1920x1080": "FHD",
+        "1680x1050": "WSXGA+", "1600x900": "HD+", "1440x900": "WXGA+", "1366x768": "WXGA", "1280x800": "WXGA", "1280x720": "HD", "1024x768": "XGA", "800x600": "SVGA" })
+    readonly property var resolutionChoices: {
+        void monitorsModel.count
+        const out = CompositorService.outputs ?? []
+        const name = monitorsModel.count > 0 ? monitorsModel.get(Math.min(window.activeEditIndex, monitorsModel.count - 1)).name : ""
+        const modes = (out.find(o => o.name === name)?.availableModes ?? [])
+            .map(m => (String(m).match(/^(\d+)x(\d+)/) ?? []).slice(1).map(Number)).filter(m => m.length === 2)
+        const seen = {}, sizes = []
+        for (const m of (modes.length ? modes : window._fallbackModes)) {
+            const k = `${m[0]}x${m[1]}`
+            if (!seen[k]) { seen[k] = true; sizes.push(m) }
+        }
+        sizes.sort((a, b) => b[0] * b[1] - a[0] * a[1])
+        const accents = [accentPink, accentMauve, accentBlue, accentTeal, accentYellow, accentPeach, accentGreen, accentRed]
+        return sizes.slice(0, 8).map((m, i) => ({ resW: m[0], resH: m[1], label: window._modeNames[`${m[0]}x${m[1]}`] ?? `${m[0]}×${m[1]}`, accent: accents[i % accents.length] }))
+    }
+
     // ─── System Query ───────────────────────────────────────────────────
     // Outputs come from the compositor backend (Hyprland: j/monitors).
     function loadOutputs() {
@@ -195,6 +221,7 @@ Item {
             Item {
                 id: leftVisualArea
                 width: 380; height: 300
+                clip: true // the desk under the monitor is wider than this
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: 20
@@ -401,16 +428,9 @@ Item {
                     GridLayout {
                         Layout.fillWidth: true; columns: 2; columnSpacing: 10; rowSpacing: 10
                         Repeater {
-                            model: [
-                                { resW: 3840, resH: 2160, label: "4K",   accent: accentPink },
-                                { resW: 2560, resH: 1440, label: "QHD",  accent: accentMauve },
-                                { resW: 1920, resH: 1080, label: "FHD",  accent: accentBlue },
-                                { resW: 1600, resH: 900,  label: "HD+",  accent: accentTeal },
-                                { resW: 1366, resH: 768,  label: "WXGA", accent: accentYellow },
-                                { resW: 1280, resH: 720,  label: "HD",   accent: accentPeach },
-                                { resW: 1024, resH: 768,  label: "XGA",  accent: accentGreen },
-                                { resW: 800,  resH: 600,  label: "SVGA", accent: accentRed }
-                            ]
+                            // The selected monitor's own modes (Hyprland's availableModes),
+                            // largest first, up to 8; the common sizes when none are reported.
+                            model: window.resolutionChoices
                             delegate: Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 48; radius: Appearance.rounding.small
                                 property bool isSel: monitorsModel.count > 0 && monitorsModel.get(activeEditIndex).resW === modelData.resW && monitorsModel.get(activeEditIndex).resH === modelData.resH
