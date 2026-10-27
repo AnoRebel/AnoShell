@@ -2,9 +2,11 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -15,6 +17,12 @@ import qs.services
  * doesn't) or locked. Idle inhibitors are ignored, so a forgotten
  * "keep awake" toggle doesn't count the whole night. Credits go to anod once a minute
  * (screentime.add), which keeps them in local day files.
+ *
+ * Daily limits (idea from ilyamiro-new's wellbeing): screenTime.dailyLimitMinutes
+ * for everything and screenTime.appLimits { appId: minutes } per app. After
+ * each report the day's totals are checked; reaching a limit gives one
+ * critical notification per day (remembered across restarts). Nothing is
+ * blocked or closed.
  */
 Singleton {
     id: root
@@ -87,4 +95,51 @@ Singleton {
         }
     }
     signal updated()
+
+    // ── Daily limits ─────────────────────────────────────────────────────
+    readonly property int dailyLimit: Math.max(0, Config.options?.screenTime?.dailyLimitMinutes ?? 0)
+    readonly property var appLimits: Config.options?.screenTime?.appLimits ?? ({})
+    readonly property bool _hasLimits: root.dailyLimit > 0 || Object.keys(root.appLimits).some(k => (root.appLimits[k] ?? 0) > 0)
+    onUpdated: if (root._hasLimits) root.checkLimits()
+    // and once anod is there (a restart after the limit was reached today
+    // stays quiet: the notified list is kept).
+    Connections {
+        target: Anod
+        function onAvailableChanged() { if (Anod.available && root.enabled && root._hasLimits) root.checkLimits() }
+    }
+    function _today() { return Qt.formatDate(new Date(), "yyyy-MM-dd") }
+    function checkLimits() {
+        Anod.call("screentime.day", {}, (r, e) => {
+            if (!r) return
+            const today = root._today()
+            const done = limitState.date === today ? limitState.notified.slice() : []
+            const hit = []
+            if (root.dailyLimit > 0 && r.total >= root.dailyLimit * 60 && !done.includes("*"))
+                hit.push({ key: "*", text: `You've reached your daily screen time (${root.dailyLimit} min).` })
+            for (const app in root.appLimits) {
+                const min = root.appLimits[app] ?? 0
+                if (min > 0 && (r.perApp?.[app] ?? 0) >= min * 60 && !done.includes(app))
+                    hit.push({ key: app, text: `You've reached today's limit for ${app} (${min} min).` })
+            }
+            if (!hit.length) return
+            for (const h of hit) {
+                Quickshell.execDetached(["notify-send", "-u", "critical", "-a", "AnoShell", "-i", "hourglass", "--", "Screen time", h.text])
+                done.push(h.key)
+            }
+            limitState.date = today
+            limitState.notified = done
+            limitFile.writeAdapter()
+        })
+    }
+    FileView {
+        id: limitFile
+        path: `${FileUtils.trimFileProtocol(Directories.state)}/anoshell/screentime-limits.json`
+        watchChanges: false
+        printErrors: false
+        JsonAdapter {
+            id: limitState
+            property string date: ""
+            property var notified: []
+        }
+    }
 }

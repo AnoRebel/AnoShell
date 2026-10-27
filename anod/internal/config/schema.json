@@ -356,6 +356,8 @@
   "screenCorners.hitSize": "int",
   "screenFilter.last": "string",
   "screenFilter.mode": "string",
+  "screenTime.appLimits": "var",
+  "screenTime.dailyLimitMinutes": "int",
   "screenTime.enable": "bool",
   "screenTime.idleSeconds": "int",
   "screenTime.keepDays": "int",

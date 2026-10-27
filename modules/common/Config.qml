@@ -862,6 +862,8 @@ Singleton {
                 property bool enable: false
                 property int keepDays: 30      // older days are deleted
                 property int idleSeconds: 120  // no input this long = not counted
+                property int dailyLimitMinutes: 0   // 0 = no limit; reaching it notifies once a day
+                property var appLimits: ({})        // { appId: minutes }
             }
             property JsonObject pomodoro: JsonObject {
                 property bool enable: false

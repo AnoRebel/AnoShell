@@ -157,6 +157,8 @@ type Summary struct {
 	Total   int     `json:"total"`
 	Hours   [24]int `json:"hours"`
 	TopApps []Named `json:"apps"`
+	// Every app's seconds (no titles): daily limits need apps past the top 8.
+	PerApp map[string]int `json:"perApp"`
 }
 
 func top(m map[string]int, n int) []Named {
@@ -210,6 +212,7 @@ func (s *Store) DaySummary(date string) (Summary, error) {
 		}
 	}
 	s.mu.Unlock()
+	sum.PerApp = appSecs
 	sum.TopApps = top(appSecs, 8)
 	for i := range sum.TopApps {
 		sum.TopApps[i].Titles = top(appTitles[sum.TopApps[i].Name], 5)

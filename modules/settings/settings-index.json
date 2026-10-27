@@ -1568,6 +1568,15 @@
  {
   "page": 4,
   "card": "",
+  "label": "Daily limit",
+  "sublabel": "A notification when today's total reaches it (nothing is blocked)",
+  "keys": [
+   "screenTime.dailyLimitMinutes"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
   "label": "Sticky note",
   "sublabel": "On the desktop, kept in ~/.local/share/anoshell/sticky.md",
   "keys": [

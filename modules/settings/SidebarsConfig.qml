@@ -255,6 +255,49 @@ ColumnLayout {
             onValueChanged: Config.setNestedValue("screenTime.keepDays", Math.round(value))
             valueText: `${Math.round(value)} days`
         }
+        ConfigSlider {
+            visible: Config.options?.screenTime?.enable ?? false
+            label: "Daily limit"; configKey: "screenTime.dailyLimitMinutes"
+            sublabel: "A notification when today's total reaches it (nothing is blocked)"
+            from: 0; to: 720; stepSize: 15
+            value: Config.options?.screenTime?.dailyLimitMinutes ?? 0
+            onValueChanged: Config.setNestedValue("screenTime.dailyLimitMinutes", Math.round(value))
+            valueText: Math.round(value) === 0 ? "off" : Format.formatDuration(value * 60000)
+        }
+        // Per-app limits: { appId: minutes }.
+        ColumnLayout {
+            id: appLimitsBox
+            visible: Config.options?.screenTime?.enable ?? false
+            Layout.fillWidth: true
+            spacing: 4
+            readonly property var limits: Config.options?.screenTime?.appLimits ?? ({})
+            function setLimit(app, min) {
+                const l = JSON.parse(JSON.stringify(appLimitsBox.limits))
+                if (min > 0) l[app] = min; else delete l[app]
+                Config.setNestedValue("screenTime.appLimits", l)
+            }
+            StyledText { text: "App limits"; font.weight: Font.DemiBold }
+            Repeater {
+                model: Object.keys(appLimitsBox.limits)
+                delegate: RowLayout {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    StyledText { Layout.fillWidth: true; text: `${modelData} — ${appLimitsBox.limits[modelData]} min a day`; elide: Text.ElideRight }
+                    RippleButtonWithIcon { iconName: "delete"; buttonText: "Remove"; onClicked: appLimitsBox.setLimit(modelData, 0) }
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                ConfigTextInput { id: limitApp; Layout.fillWidth: true; placeholderText: "App id (as in the screen time card, e.g. firefox)" }
+                ConfigTextInput { id: limitMin; Layout.preferredWidth: 90; placeholderText: "minutes" }
+                RippleButton {
+                    buttonText: "Add"
+                    enabled: /^[A-Za-z0-9._-]+$/.test(limitApp.text.trim()) && parseInt(limitMin.text, 10) > 0
+                    onClicked: { appLimitsBox.setLimit(limitApp.text.trim(), Math.min(1440, parseInt(limitMin.text, 10))); limitApp.text = ""; limitMin.text = "" }
+                }
+            }
+        }
         ConfigSwitch {
             label: "Sticky note"; configKey: "stickyNotes.enable"
             sublabel: "On the desktop, kept in ~/.local/share/anoshell/sticky.md"

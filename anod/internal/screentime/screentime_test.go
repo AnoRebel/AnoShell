@@ -32,6 +32,9 @@ func TestAddSummaryWeekPrune(t *testing.T) {
 	if len(sum.TopApps) != 2 || sum.TopApps[0].Name != "kitty" || sum.TopApps[0].Seconds != 360+maxAddSeconds || sum.TopApps[1].Seconds != 240 {
 		t.Errorf("apps %+v", sum.TopApps)
 	}
+	if sum.PerApp["kitty"] != 360+maxAddSeconds || sum.PerApp["firefox"] != 240 {
+		t.Errorf("perApp %v", sum.PerApp)
+	}
 	if sum.Hours[14] != 360+maxAddSeconds || sum.Hours[15] != 240 {
 		t.Errorf("hours 14=%d 15=%d", sum.Hours[14], sum.Hours[15])
 	}
