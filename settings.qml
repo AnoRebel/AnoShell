@@ -2,6 +2,7 @@
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
 
 import "modules/common"
+import "modules/common/widgets"
 import "modules/settings"
 import "services"
 
@@ -37,8 +38,8 @@ ShellRoot {
         title: "Ano Shell Settings"
         color: Appearance?.m3colors.m3background ?? "#1C1B1F"
 
-        width: 960
-        height: 720
+        implicitWidth: 960
+        implicitHeight: 720
 
         // Shared keyboard navigation: Up/Down/Tab through pages, Ctrl+1..9
         // jump-to-page, Esc closes the window. focus: true so the handler
