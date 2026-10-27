@@ -1443,6 +1443,13 @@ Singleton {
             }
 
             // "What's playing?" via songrec (services/MusicRecognition.qml)
+            // Hub (Settings → Hub, services/Hub.qml, anod hub.*): online
+            // catalogs (https index.json URLs). The community catalog is added
+            // here once it exists.
+            property JsonObject hub: JsonObject {
+                property var catalogs: []
+            }
+
             property JsonObject musicRecognition: JsonObject {
                 property bool enable: false
                 property int seconds: 8

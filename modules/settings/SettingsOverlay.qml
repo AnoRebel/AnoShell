@@ -60,4 +60,21 @@ Scope {
             GlobalStates.settingsCommandPaletteOpen = true
         }
     }
+
+    // `ano hub [type]`: the Hub page on a type's tab — in the overlay when it
+    // is open, else in standalone Settings (which reads the env below).
+    IpcHandler {
+        target: "hub"
+        function open(type: string): void {
+            const tab = ["themes", "looks", "widgets", "wallpapers", "rices"].includes(type) ? type : ""
+            const page = SettingsRegistry.pages.findIndex(p => p.name === "Hub")
+            if (GlobalStates.settingsOpen) {
+                if (tab) Hub.tab = tab
+                GlobalStates.settingsPage = page
+                return
+            }
+            Quickshell.execDetached(["env", "ANO_SETTINGS_PAGE=hub", `ANO_HUB_TAB=${tab}`,
+                "qs", "-n", "-p", Quickshell.shellPath("settings.qml")])
+        }
+    }
 }

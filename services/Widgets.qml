@@ -54,7 +54,9 @@ Singleton {
     property int _rev: 0
     function _ingest(source: string, dir: string, text: string): void {
         if (!dir.startsWith((source === "user" ? root.userDir : root.bundledDir) + "/")) return
-        const dirId = dir.split("/").pop()
+        // Hub installs code into a fresh <id>~<n> folder per version, so an
+        // update never runs stale cached QML; the id is the part before "~".
+        const dirId = dir.split("/").pop().replace(/~\d+$/, "")
         let m = null
         const errors = []
         try { m = JSON.parse(text) } catch (err) { errors.push(`widget.json: invalid JSON: ${err.message ?? err}`) }
@@ -83,7 +85,7 @@ Singleton {
         if (root.checking) root._check(e)
     }
     function _drop(dir: string): void {
-        const id = dir.split("/").pop()
+        const id = dir.split("/").pop().replace(/~\d+$/, "")
         const user = dir.startsWith(root.userDir + "/")
         const m = user ? root._user : root._bundled
         if (m[id]?.dir !== dir) return
