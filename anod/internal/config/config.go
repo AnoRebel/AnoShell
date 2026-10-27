@@ -137,7 +137,9 @@ func String(m map[string]any, path string, def string) string {
 	return def
 }
 
-// set writes a dot path, creating objects on the way.
+// Set writes a dot path, creating objects on the way.
+func Set(m map[string]any, path string, v any) { set(m, path, v) }
+
 func set(m map[string]any, path string, v any) {
 	keys := strings.Split(path, ".")
 	for _, k := range keys[:len(keys)-1] {
@@ -410,6 +412,11 @@ func writeBackup(path string, data []byte, now time.Time) (string, error) {
 		return name, werr
 	}
 	return "", fmt.Errorf("too many backups named %s*", base)
+}
+
+// WriteAtomic replaces path via a unique temp file in the same directory.
+func WriteAtomic(path string, data []byte, perm os.FileMode) error {
+	return writeAtomic(path, data, perm)
 }
 
 // writeAtomic replaces path via a unique temp file in the same directory.

@@ -69,6 +69,11 @@ is not restarted.
 | `ano backup create [--only a,b] [--add a,b] [-o FILE]` | archives the default categories, only the ones named, or the defaults plus opt-in ones, to `~/.local/share/anoshell/backups/anoshell-<time>.tar.gz` (mode 0600; secrets keep 0600 inside) |
 | `ano backup list` | lists the backups in that folder with their categories |
 | `ano backup restore FILE [--only a,b] [--dry-run] [--no-snapshot]` | restores every category in the backup, or only the named ones. The files it will replace are first saved to `pre-restore-<time>.tar.gz`. It never writes outside your home, never overwrites a symlink, and follows a symlinked folder (stow-style dotfiles) only if it stays inside your home |
+| `ano hub [type]` | opens Settings on the Hub page (that type's tab): through the running shell (`hub open`), else standalone Settings |
+| `ano hub list [type] [--json]` / `ano hub refresh` | local and catalog items (refresh fetches the catalogs first) |
+| `ano hub install <type> <id> [--catalog URL] [--yes]` | verified install from a catalog; code content (widgets) shows the audit findings and declared hosts/commands and asks y/N unless `--yes` |
+| `ano hub remove <type> <id>` | removes a catalog install (never built-in items or your own files) |
+| `ano hub pack <dir\|file> [--type T] [--id ID] [--version V] [--url-base URL] [--out DIR]` | archives an item in the catalog format, checks it would install, prints its index entry with the SHA-256 |
 | `ano version` | prints the version |
 
 `ano setup` with no command, run in a terminal, opens an interactive menu
@@ -183,6 +188,19 @@ Reader methods (see [reader.md](reader.md)): `reader.open` (`{"kind"}`:
 `anime`, `manga` or `novel`; starts the backend if needed and answers its
 `url`, token included; slow), `reader.close` (`{"kind"}`), `reader.status`
 and `reader.stop` (ends playback).
+
+Hub methods (Settings → Hub; see `anod/internal/hub`): `hub.list` (`{"type"?}`, cache only:
+`{"revision", "items", "catalog", "catalogs"}`), `hub.refresh` (the same after fetching every catalog
+in `hub.catalogs` with ETags; a failure keeps the cache and marks the catalog `offline`),
+`hub.prepare` (`{"type", "id", "catalog"}`: download, SHA-256 check, staged extraction, static audit
+for code; returns a token valid 10 minutes), `hub.commit` (`{"token"}` → `{"path"}`), `hub.cancel`,
+`hub.remove` (`{"type", "id"}`), `hub.riceApply` (`{"id", "layers"}`), `hub.riceUndo` and
+`hub.riceExport` (`{"name"}` → `{"id", "path"}`). Every change bumps
+`$XDG_STATE_HOME/anoshell/hub/revision`; receipts live in `…/hub/receipts/<type>/<id>.json`.
+Archives with links, devices, absolute paths or `..`, more than 500 files or 64 MiB unpacked are
+refused; nothing in an archive is ever run. A rice merges only look keys (`appearance`,
+`panelFamily`, bar/dock styles, background resize/transition, anoSpot size/position, widget layout)
+and applies its keybinds only when that layer is ticked.
 
 From the shell: `qs -c ano ipc call anod status` shows whether the shell is connected.
 

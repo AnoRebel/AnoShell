@@ -119,7 +119,7 @@ func TestSafeRel(t *testing.T) {
 		".config/anoshell/config.json": true, "../x": false, "/abs": false,
 		"a/../b": false, "./a": false, "": false, "a//b": false,
 	} {
-		if safeRel(name) != want {
+		if SafeRel(name) != want {
 			t.Errorf("safeRel(%q) = %v", name, !want)
 		}
 	}

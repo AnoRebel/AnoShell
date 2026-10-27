@@ -260,8 +260,8 @@ func walk(archive string, fn func(*tar.Header, io.Reader) error) error {
 	}
 }
 
-// safeRel rejects absolute paths, `..` and anything not already clean.
-func safeRel(name string) bool {
+// SafeRel rejects absolute paths, `..` and anything not already clean.
+func SafeRel(name string) bool {
 	if name == "" || filepath.IsAbs(name) || strings.Contains(name, "\\") {
 		return false
 	}
@@ -275,7 +275,7 @@ func safeRel(name string) bool {
 func Restore(home, archive string, cats []Category, snapshot string, dryRun bool, now time.Time) ([]string, error) {
 	var picked []string
 	err := walk(archive, func(h *tar.Header, _ io.Reader) error {
-		if h.Name == manifestName || h.Typeflag != tar.TypeReg || !safeRel(h.Name) {
+		if h.Name == manifestName || h.Typeflag != tar.TypeReg || !SafeRel(h.Name) {
 			return nil
 		}
 		for _, c := range cats {
@@ -294,7 +294,7 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 	// can't leave the restore half-done.
 	for _, rel := range picked {
 		dst := filepath.Join(home, rel)
-		if !within(home, filepath.Dir(dst)) {
+		if !Within(home, filepath.Dir(dst)) {
 			return nil, fmt.Errorf("refusing to restore %s: it resolves outside %s (nothing was restored)", rel, home)
 		}
 		if fi, err := os.Lstat(dst); err == nil && fi.Mode()&os.ModeSymlink != 0 {
@@ -327,9 +327,9 @@ func Restore(home, archive string, cats []Category, snapshot string, dryRun bool
 	return written, err
 }
 
-// within reports whether path resolves (through any symlinks in its existing
+// Within reports whether path resolves (through any symlinks in its existing
 // part) to somewhere inside home.
-func within(home, path string) bool {
+func Within(home, path string) bool {
 	realHome, err := filepath.EvalSymlinks(home)
 	if err != nil {
 		return false
@@ -355,7 +355,7 @@ func within(home, path string) bool {
 func writeFile(home, rel string, mode os.FileMode, r io.Reader) error {
 	dst := filepath.Join(home, rel)
 	dir := filepath.Dir(dst)
-	if !within(home, dir) {
+	if !Within(home, dir) {
 		return fmt.Errorf("refusing to restore %s: it resolves outside %s", rel, home)
 	}
 	if fi, err := os.Lstat(dst); err == nil && fi.Mode()&os.ModeSymlink != 0 {
