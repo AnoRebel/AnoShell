@@ -109,7 +109,10 @@ func Audit(root string, hosts, commands []string) []Finding {
 }
 
 func auditFile(p string, content []byte, hosts, commands []string, add func(rule, file string, line int, detail string)) {
-	class := classify(p, content)
+	auditText(p, classify(p, content), content, hosts, commands, add)
+}
+
+func auditText(p, class string, content []byte, hosts, commands []string, add func(rule, file string, line int, detail string)) {
 	raw := strings.Split(string(content), "\n")
 	for i, ln := range raw {
 		if secretLitRe.MatchString(ln) {

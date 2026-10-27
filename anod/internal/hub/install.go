@@ -47,7 +47,9 @@ type Prepared struct {
 	Commands            []string  `json:"commands"`
 	CapabilitiesChanged bool      `json:"capabilitiesChanged"`
 	ModifiedFiles       []string  `json:"modifiedFiles"`
-	Update              bool      `json:"update"` // replaces an installed copy
+	// rices: what the keybinds layer would set (applied only when ticked)
+	Keybinds []KeybindSummary `json:"keybinds,omitempty"`
+	Update   bool             `json:"update"` // replaces an installed copy
 }
 
 type pending struct {
@@ -56,7 +58,9 @@ type pending struct {
 	stage   string // staged file or folder
 	ext     string // wallpapers: the image's extension
 	expires time.Time
-	timer   *time.Timer
+	// the receipt's version at prepare time ("" = not installed)
+	installedVersion string
+	timer            *time.Timer
 }
 
 // stageParent is where an install of t is staged: the folder it lands in,
@@ -142,7 +146,20 @@ func (h *Hub) Prepare(typ, id, catalog string) (*Prepared, error) {
 			p.Findings = Audit(root, e.Hosts, e.Commands)
 		}
 	}
+	if kb := filepath.Join(p.stage, "keybinds.json"); typ == "rices" && fileExists(kb) {
+		_, sum, dropped, err := riceKeybinds(kb)
+		if err != nil {
+			os.RemoveAll(p.stage)
+			return nil, fmt.Errorf("the rice's keybinds.json is invalid: %v", err)
+		}
+		p.Code, p.Keybinds = true, sum
+		p.Findings = append(p.Findings, auditKeybinds(sum, e.Hosts, e.Commands)...)
+		for _, d := range dropped {
+			p.Findings = append(p.Findings, Finding{"keybinds-dropped", "keybinds.json", 0, "won't be applied: " + d, "warn"})
+		}
+	}
 	if old != nil {
+		p.installedVersion = old.Version
 		p.ModifiedFiles = h.modifiedFiles(old)
 		p.CapabilitiesChanged = !sameSet(old.Hosts, e.Hosts) || !sameSet(old.Commands, e.Commands)
 	}
@@ -241,7 +258,7 @@ func extract(data []byte, typ, id, dst string) (string, error) {
 	}
 	tr := tar.NewReader(gz)
 	var total int64
-	files, ext := 0, ""
+	files, entries, ext := 0, 0, ""
 	if !singleFile(typ) {
 		if err := os.Mkdir(dst, 0o755); err != nil {
 			return "", err
@@ -260,6 +277,9 @@ func extract(data []byte, typ, id, dst string) (string, error) {
 		name = strings.TrimSuffix(name, "/")
 		if name == "" || name == "." {
 			continue
+		}
+		if entries++; entries > MaxFiles {
+			return "", fmt.Errorf("archive has more than %d entries", MaxFiles)
 		}
 		if !backup.SafeRel(name) || path.IsAbs(hd.Name) {
 			return "", fmt.Errorf("archive entry %q: unsafe path", hd.Name)
@@ -367,6 +387,14 @@ func (h *Hub) Commit(tok string) (string, error) {
 	defer os.RemoveAll(p.stage)
 	typ, id := p.Type, p.ID
 	old := h.receipt(typ, id)
+	if (old != nil) != p.Update || old != nil && old.Version != p.installedVersion {
+		return "", errors.New("the installed copy changed since this install was prepared; prepare it again")
+	}
+	if old == nil {
+		if up := h.userItemPath(typ, id); up != "" {
+			return "", fmt.Errorf("you now have your own %s %q at %s; nothing was installed", strings.TrimSuffix(typ, "s"), id, up)
+		}
+	}
 	dir := h.userDir(typ)
 	var dst string
 	seq := 0
@@ -412,7 +440,7 @@ func (h *Hub) Commit(tok string) (string, error) {
 	if trash != "" {
 		os.RemoveAll(trash)
 	}
-	if old != nil && old.Path != dst {
+	if old != nil && old.Path != dst && strings.HasPrefix(old.Path, dir+string(filepath.Separator)) {
 		os.RemoveAll(old.Path) // the previous version's folder (or a wallpaper with another extension)
 	}
 	files, err := hashTree(dst)

@@ -202,9 +202,22 @@ func (h *Hub) fetchCatalog(url string) error {
 	return nil
 }
 
+// client is h.Client (or a default) that follows at most 5 redirects, all https.
 func (h *Hub) client() *http.Client {
+	c := http.Client{Timeout: 15 * time.Second}
 	if h.Client != nil {
-		return h.Client
+		c = *h.Client
 	}
-	return &http.Client{Timeout: 15 * time.Second}
+	c.CheckRedirect = httpsRedirect
+	return &c
+}
+
+func httpsRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= 5 {
+		return errors.New("too many redirects")
+	}
+	if req.URL.Scheme != "https" {
+		return fmt.Errorf("refusing a redirect to %s: only https", req.URL.Redacted())
+	}
+	return nil
 }

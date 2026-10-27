@@ -10,14 +10,14 @@ import (
 
 // registerHub serves the Hub (Settings → Hub, `ano hub`):
 //
-//	hub.list       {type?}                     → {revision, items, catalog, catalogs} (cache only)
+//	hub.list       {type?}                     → {revision, items, catalog, catalogs, lastRice} (cache only)
 //	hub.refresh    {type?}                     → the same, after fetching every catalog
 //	hub.prepare    {type, id, catalog}         → {token, code, name, author, catalog, catalogName, version,
-//	                                              findings, hosts, commands, capabilitiesChanged, modifiedFiles, update}
+//	                                              findings, hosts, commands, capabilitiesChanged, modifiedFiles, update, keybinds?}
 //	hub.commit     {token}                     → {path}
 //	hub.cancel     {token}                     → true
 //	hub.remove     {type, id}                  → true
-//	hub.riceApply  {id, layers}                → {snapshot, applied, created, skipped, wallpaper}
+//	hub.riceApply  {id, layers}                → {snapshot, applied, created, skipped, wallpaper, keybinds, appliedAt}
 //	hub.riceUndo                               → true
 //	hub.riceExport {name}                      → {id, path}
 func registerHub(srv *ipc.Server, h *hub.Hub) {

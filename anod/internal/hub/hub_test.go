@@ -13,10 +13,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"sync"
 	"testing"
+
+	"ano/anod/internal/config"
 )
 
 type tarEnt struct {
@@ -385,7 +388,9 @@ func TestRiceApplyUndo(t *testing.T) {
 	w(rice+"/themes/shared.json", `{"_meta":{"name":"Theirs"}}`)
 	w(rice+"/widgets/duskclock/widget.json", `{"name":"Dusk clock"}`)
 	w(rice+"/wallpapers/dusk.png", "png")
-	w(rice+"/keybinds.json", `{"binds":{}}`)
+	w(rice+"/keybinds.json", `{"binds":[{"chord":"Super+Return","action":"exec","args":["kitty"]},
+		{"chord":"Super+L","action":"hyprland","args":["os.execute('rm -rf ~')"]}],
+		"remove":["Super+Q"],"hyprlandHelpers":"os.execute('evil')"}`)
 
 	before := readTree(t, cfg)
 	beforeWall := readTree(t, tmp+"/Pictures")
@@ -424,8 +429,14 @@ func TestRiceApplyUndo(t *testing.T) {
 		t.Fatal(err)
 	}
 	after := readTree(t, cfg)
+	cfgFile := cfg + "/anoshell/config.json"
+	want, _ := config.Parse([]byte(before[cfgFile]))
+	gotCfg, _ := config.Parse([]byte(after[cfgFile]))
+	if !reflect.DeepEqual(want, gotCfg) {
+		t.Errorf("config after undo:\n%s", after[cfgFile])
+	}
 	for p, s := range before {
-		if after[p] != s {
+		if p != cfgFile && after[p] != s {
 			t.Errorf("%s differs after undo:\n%q\n%q", p, s, after[p])
 		}
 	}
@@ -446,8 +457,15 @@ func TestRiceApplyUndo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(cfg + "/anoshell/keybinds.json"); string(b) != `{"binds":{}}` {
-		t.Fatal("ticked keybinds layer not applied")
+	kb, _ := os.ReadFile(cfg + "/anoshell/keybinds.json")
+	if !strings.Contains(string(kb), "kitty") || strings.Contains(string(kb), "evil") || strings.Contains(string(kb), "rm -rf") {
+		t.Fatalf("ticked keybinds layer: %s", kb)
+	}
+	if len(res.Keybinds) != 2 || res.Keybinds[0].Command != "kitty" || res.Keybinds[1].Action != "unbind" {
+		t.Fatalf("keybinds summary %+v", res.Keybinds)
+	}
+	if n := len(slices.DeleteFunc(slices.Clone(res.Skipped), func(s SkippedPart) bool { return s.Part != "keybinds" })); n != 2 {
+		t.Fatalf("dropped keybinds not reported: %+v", res.Skipped)
 	}
 	if !slices.ContainsFunc(res.Skipped, func(s SkippedPart) bool { return s.Part == "compositor" && s.Reason == "not supported yet" }) {
 		t.Fatalf("skipped %+v", res.Skipped)

@@ -45,6 +45,9 @@ func oneArg(re *regexp.Regexp, what string) func([]string) error {
 }
 
 // checkArgs refuses arguments the renderers can't put safely into Lua/KDL.
+// CheckArgs reports whether b's arguments suit its action.
+func CheckArgs(b Bind) error { return checkArgs(b) }
+
 func checkArgs(b Bind) error {
 	if b.Action == "hyprland" || b.Action == "niri" {
 		if len(b.Args) != 1 || strings.TrimSpace(b.Args[0]) == "" {

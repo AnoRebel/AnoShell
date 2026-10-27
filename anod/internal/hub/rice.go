@@ -7,11 +7,16 @@ package hub
 //	looks/*.json     copied to cfg/anoshell/looks/
 //	widgets/<id>/    copied to cfg/anoshell/widgets/<id>~1/ (skipped when you have that widget)
 //	wallpapers/*     copied to <wallpaper folder>/hub/ (never over an existing file)
-//	keybinds.json    behaviour layer "keybinds": replaces ano's keybind overrides
+//	keybinds.json    behaviour layer "keybinds": catalogue binds only (see ricekeys.go),
+//	                 replacing ano's keybind overrides
 //
-// `config` is a sparse config delta; only LookKeys are merged from it.
+// `config` is a sparse config delta; only LookKeys that are schema leaves of
+// the right type are merged from it.
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,6 +51,10 @@ var LookKeys = []string{
 // lookDeny: per-machine keys under an allowed prefix.
 var lookDeny = []string{"appearance.colors.monitor"}
 
+// UndoTTL: how long the last rice apply can be undone.
+// ponytail: one fixed window; make it a setting if anyone asks.
+const UndoTTL = 14 * 24 * time.Hour
+
 func lookKey(p string) bool {
 	under := func(list []string) bool {
 		return slices.ContainsFunc(list, func(k string) bool { return p == k || strings.HasPrefix(p, k+".") })
@@ -53,22 +62,42 @@ func lookKey(p string) bool {
 	return under(LookKeys) && !under(lookDeny)
 }
 
-// lookLeaves flattens m into its allowlisted leaf paths (arrays are leaves).
-func lookLeaves(m map[string]any, prefix string, out map[string]any) {
-	for k, v := range m {
-		if k == "" || strings.Contains(k, ".") {
-			continue
-		}
-		p := k
-		if prefix != "" {
-			p = prefix + "." + k
-		}
-		if sub, ok := v.(map[string]any); ok {
-			lookLeaves(sub, p, out)
-		} else if lookKey(p) {
-			out[p] = v
+// lookAncestor: p is an object on the way to an allowlisted key ("bar").
+func lookAncestor(p string) bool {
+	return slices.ContainsFunc(LookKeys, func(k string) bool { return strings.HasPrefix(k, p+".") })
+}
+
+// lookLeaves collects the allowlisted schema leaves of m whose values fit
+// their schema type. A value at an object key, unknown keys and wrong types
+// are dropped.
+func lookLeaves(m map[string]any, out map[string]any) {
+	s, err := config.LoadSchema()
+	if err != nil {
+		return
+	}
+	var walk func(m map[string]any, prefix string)
+	walk = func(m map[string]any, prefix string) {
+		for k, v := range m {
+			if k == "" || strings.Contains(k, ".") {
+				continue
+			}
+			p := k
+			if prefix != "" {
+				p = prefix + "." + k
+			}
+			if !lookKey(p) && !lookAncestor(p) {
+				continue
+			}
+			if _, leaf := s.Leaves[p]; leaf {
+				if lookKey(p) && s.Leaf(p, v) {
+					out[p] = v
+				}
+			} else if sub, ok := v.(map[string]any); ok && s.Object(p) {
+				walk(sub, p)
+			}
 		}
 	}
+	walk(m, "")
 }
 
 // Rice is rice.json.
@@ -86,27 +115,87 @@ type Rice struct {
 	Wallpaper   string         `json:"wallpaper,omitempty"` // a file in wallpapers/
 }
 
-// undoRecord is what riceUndo needs: the snapshot of the files the apply
-// replaced and the files it created.
+// decodeNumbers decodes JSON keeping numbers as json.Number (what the
+// config schema checks and writes back unchanged).
+func decodeNumbers(b []byte, v any) error {
+	d := json.NewDecoder(bytes.NewReader(b))
+	d.UseNumber()
+	return d.Decode(v)
+}
+
+func readRice(dir string) (Rice, error) {
+	var r Rice
+	b, err := os.ReadFile(filepath.Join(dir, "rice.json"))
+	if err != nil {
+		return r, fmt.Errorf("no rice at %s", dir)
+	}
+	if err := decodeNumbers(b, &r); err != nil {
+		return r, fmt.Errorf("rice.json: %v", err)
+	}
+	return r, nil
+}
+
+// configPrev is a config key's value before a rice set it.
+type configPrev struct {
+	Key   string `json:"key"`
+	Had   bool   `json:"had"`
+	Value any    `json:"value,omitempty"`
+}
+
+// undoRecord is what riceUndo needs.
 type undoRecord struct {
-	Rice      string    `json:"rice"`
-	At        time.Time `json:"at"`
-	Snapshot  string    `json:"snapshot"`
-	Paths     []string  `json:"paths"`   // home-relative, in the snapshot
-	Created   []string  `json:"created"` // absolute, removed on undo
-	Wallpaper string    `json:"wallpaper,omitempty"`
-	Keybinds  bool      `json:"keybinds,omitempty"`
+	Rice      string            `json:"rice"`
+	Name      string            `json:"name"`
+	At        time.Time         `json:"at"`
+	Snapshot  string            `json:"snapshot"`
+	Paths     []string          `json:"paths"`   // replaced files, home-relative, in the snapshot
+	Created   []string          `json:"created"` // absolute, removed on undo
+	Hashes    map[string]string `json:"hashes"`  // replaced and created paths -> fingerprint after the apply
+	Config    []configPrev      `json:"config"`  // the keys the rice set
+	CfgPath   string            `json:"configPath"`
+	Wallpaper string            `json:"wallpaper,omitempty"` // shown before the apply
+	Keybinds  bool              `json:"keybinds,omitempty"`
 }
 
 func (h *Hub) undoPath() string { return filepath.Join(h.StateDir, "rice-undo.json") }
 
+func (h *Hub) readUndo() (*undoRecord, error) {
+	b, err := os.ReadFile(h.undoPath())
+	if err != nil {
+		return nil, errors.New("no rice apply to undo")
+	}
+	var rec undoRecord
+	if err := decodeNumbers(b, &rec); err != nil {
+		return nil, err
+	}
+	return &rec, nil
+}
+
+// LastRice is the rice apply that can still be undone.
+type LastRice struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	AppliedAt int64  `json:"appliedAt"` // unix seconds
+}
+
+// LastRice is nil when there is nothing to undo.
+func (h *Hub) LastRice() *LastRice {
+	rec, err := h.readUndo()
+	if err != nil || time.Since(rec.At) > UndoTTL {
+		return nil
+	}
+	return &LastRice{rec.Rice, rec.Name, rec.At.Unix()}
+}
+
 // RiceResult is hub.riceApply's reply.
 type RiceResult struct {
-	Snapshot  string        `json:"snapshot"`
-	Applied   []string      `json:"applied"`
-	Created   []string      `json:"created"`
-	Skipped   []SkippedPart `json:"skipped"`
-	Wallpaper string        `json:"wallpaper"`
+	Snapshot  string           `json:"snapshot"`
+	Applied   []string         `json:"applied"`
+	Created   []string         `json:"created"`
+	Skipped   []SkippedPart    `json:"skipped"`
+	Wallpaper string           `json:"wallpaper"`
+	Keybinds  []KeybindSummary `json:"keybinds"` // what the keybinds layer set (empty when unticked)
+	AppliedAt int64            `json:"appliedAt"`
 }
 
 type SkippedPart struct {
@@ -114,7 +203,11 @@ type SkippedPart struct {
 	Reason string `json:"reason"`
 }
 
-type copyOp struct{ src, dst string }
+// copyOp copies src to dst, or writes data when it is set.
+type copyOp struct {
+	src, dst string
+	data     []byte
+}
 
 // RiceApply applies an installed or user rice. layers picks the behaviour
 // layers ("keybinds", "compositor") ticked in the apply dialog.
@@ -123,13 +216,11 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 		return nil, fmt.Errorf("invalid rice id %q", id)
 	}
 	dir := filepath.Join(h.userDir("rices"), id)
-	var r Rice
-	if b, err := os.ReadFile(filepath.Join(dir, "rice.json")); err != nil {
-		return nil, fmt.Errorf("no rice %q", id)
-	} else if err := json.Unmarshal(b, &r); err != nil {
-		return nil, fmt.Errorf("rice.json: %v", err)
+	r, err := readRice(dir)
+	if err != nil {
+		return nil, err
 	}
-	res := &RiceResult{Applied: []string{}, Created: []string{}, Skipped: []SkippedPart{}}
+	res := &RiceResult{Applied: []string{}, Created: []string{}, Skipped: []SkippedPart{}, Keybinds: []KeybindSummary{}}
 	wantKeybinds := false
 	for _, l := range layers {
 		switch l {
@@ -142,13 +233,32 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 		}
 	}
 
-	// Plan every write first.
+	// Plan and check everything before anything changes.
 	var ops []copyOp
 	parts := map[string]bool{}
+	kbPath := keybinds.DefaultPaths().Overrides
+	if wantKeybinds {
+		if src := filepath.Join(dir, "keybinds.json"); fileExists(src) {
+			o, summary, dropped, err := riceKeybinds(src)
+			if err != nil {
+				return nil, fmt.Errorf("the rice's keybinds can't be applied: %v", err)
+			}
+			for _, d := range dropped {
+				res.Skipped = append(res.Skipped, SkippedPart{"keybinds", d})
+			}
+			b, _ := json.MarshalIndent(o, "", "  ")
+			ops = append(ops, copyOp{dst: kbPath, data: append(b, '\n')})
+			res.Keybinds = summary
+			parts["keybinds"] = true
+		} else {
+			wantKeybinds = false
+			res.Skipped = append(res.Skipped, SkippedPart{"keybinds", "this rice has no keybinds"})
+		}
+	}
 	for _, t := range []string{"themes", "looks"} {
 		files, _ := filepath.Glob(filepath.Join(dir, t, "*.json"))
 		for _, f := range files {
-			ops = append(ops, copyOp{f, filepath.Join(h.userDir(t), filepath.Base(f))})
+			ops = append(ops, copyOp{src: f, dst: filepath.Join(h.userDir(t), filepath.Base(f))})
 			parts[t] = true
 		}
 	}
@@ -165,7 +275,7 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 			if _, err := os.Lstat(dst); err == nil {
 				continue // already there (from an earlier apply, or yours)
 			}
-			ops = append(ops, copyOp{filepath.Join(dir, "wallpapers", e.Name()), dst})
+			ops = append(ops, copyOp{src: filepath.Join(dir, "wallpapers", e.Name()), dst: dst})
 			parts["wallpapers"] = true
 		}
 	}
@@ -183,56 +293,59 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 				res.Skipped = append(res.Skipped, SkippedPart{"widgets/" + e.Name(), "you already have this widget"})
 				continue
 			}
-			widgetDirs = append(widgetDirs, copyOp{filepath.Join(dir, "widgets", e.Name()), filepath.Join(h.userDir("widgets"), e.Name()+"~1")})
+			widgetDirs = append(widgetDirs, copyOp{src: filepath.Join(dir, "widgets", e.Name()), dst: filepath.Join(h.userDir("widgets"), e.Name()+"~1")})
 			parts["widgets"] = true
 		}
 	}
-	kbPath := keybinds.DefaultPaths().Overrides
-	if wantKeybinds {
-		if _, err := os.Stat(filepath.Join(dir, "keybinds.json")); err == nil {
-			ops = append(ops, copyOp{filepath.Join(dir, "keybinds.json"), kbPath})
-			parts["keybinds"] = true
-		} else {
-			wantKeybinds = false
-			res.Skipped = append(res.Skipped, SkippedPart{"keybinds", "this rice has no keybinds"})
-		}
-	}
 	leaves := map[string]any{}
-	lookLeaves(r.Config, "", leaves)
+	lookLeaves(r.Config, leaves)
 	cfgPath := config.UserPath()
 	if real, err := filepath.EvalSymlinks(cfgPath); err == nil {
 		cfgPath = real
 	}
+	var userCfg map[string]any
+	rec := undoRecord{Rice: id, Name: r.Name, At: time.Now().UTC(), Keybinds: wantKeybinds, CfgPath: cfgPath, Hashes: map[string]string{}}
+	if rec.Name == "" {
+		rec.Name = id
+	}
+	keys := make([]string, 0, len(leaves))
+	for k := range leaves {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	if len(keys) > 0 {
+		if userCfg, err = config.Load(cfgPath); err != nil {
+			return nil, fmt.Errorf("your config: %v", err)
+		}
+		for _, k := range keys {
+			v, had := config.Get(userCfg, k)
+			rec.Config = append(rec.Config, configPrev{k, had, v})
+		}
+	}
 
-	// Snapshot what will be replaced; remember what will be created.
-	targets := []string{}
-	if len(leaves) > 0 {
-		targets = append(targets, cfgPath)
-	}
+	// Snapshot the files that will be replaced; remember what will be created.
 	for _, op := range ops {
-		targets = append(targets, op.dst)
-	}
-	rec := undoRecord{Rice: id, At: time.Now().UTC(), Keybinds: wantKeybinds}
-	for _, t := range targets {
-		fi, err := os.Lstat(t)
+		fi, err := os.Lstat(op.dst)
 		if errors.Is(err, os.ErrNotExist) {
-			rec.Created = append(rec.Created, t)
+			rec.Created = append(rec.Created, op.dst)
 			continue
 		}
 		if err != nil || !fi.Mode().IsRegular() {
-			return nil, fmt.Errorf("refusing to replace %s (not a regular file)", t)
+			return nil, fmt.Errorf("refusing to replace %s (not a regular file)", op.dst)
 		}
-		rel, err := filepath.Rel(h.Home, t)
+		rel, err := filepath.Rel(h.Home, op.dst)
 		if err != nil || !backup.SafeRel(rel) {
-			return nil, fmt.Errorf("%s is outside your home folder; can't snapshot it", t)
+			return nil, fmt.Errorf("%s is outside your home folder; can't snapshot it", op.dst)
 		}
 		rec.Paths = append(rec.Paths, filepath.ToSlash(rel))
 	}
 	for _, w := range widgetDirs {
 		rec.Created = append(rec.Created, w.dst)
 	}
-	snapDir := filepath.Join(h.StateDir, "snapshots")
-	rec.Snapshot = filepath.Join(snapDir, fmt.Sprintf("rice-%s-%d.tar.gz", id, time.Now().UnixNano()))
+	if h.CurrentWallpaper != nil {
+		rec.Wallpaper = h.CurrentWallpaper()
+	}
+	rec.Snapshot = filepath.Join(h.StateDir, "snapshots", fmt.Sprintf("rice-%s-%d.tar.gz", id, time.Now().UnixNano()))
 	if _, err := backup.Create(h.Home, rec.Snapshot, []backup.Category{{Name: "rice-snapshot", Paths: rec.Paths}}, time.Now()); err != nil {
 		return nil, fmt.Errorf("snapshot: %w", err)
 	}
@@ -242,7 +355,13 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 	}
 
 	for _, op := range ops {
-		if err := copyFile(op.src, op.dst); err != nil {
+		var err error
+		if op.data != nil {
+			err = writeFileAtomic(op.dst, op.data)
+		} else {
+			err = copyFile(op.src, op.dst)
+		}
+		if err != nil {
 			return res, err
 		}
 	}
@@ -251,29 +370,26 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 			return res, err
 		}
 	}
-	if len(leaves) > 0 {
-		user, err := config.Load(cfgPath)
-		if err != nil {
-			return res, fmt.Errorf("your config: %v", err)
-		}
-		keys := make([]string, 0, len(leaves))
-		for k := range leaves {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
+	if len(keys) > 0 {
 		for _, k := range keys {
-			config.Set(user, k, leaves[k])
+			config.Set(userCfg, k, leaves[k])
 		}
-		if err := writeConfig(cfgPath, user); err != nil {
+		if err := writeConfig(cfgPath, userCfg); err != nil {
 			return res, err
 		}
 		parts["config"] = true
 	}
+	for _, p := range rec.Created {
+		rec.Hashes[p] = fingerprint(p)
+	}
+	for _, rel := range rec.Paths {
+		p := filepath.Join(h.Home, rel)
+		rec.Hashes[p] = fingerprint(p)
+	}
+	if err := h.writeUndo(rec); err != nil {
+		return res, err
+	}
 	if wallpaper != "" && h.SetWallpaper != nil {
-		if h.CurrentWallpaper != nil {
-			rec.Wallpaper = h.CurrentWallpaper()
-			h.writeUndo(rec)
-		}
 		if err := h.SetWallpaper(wallpaper); err != nil {
 			res.Skipped = append(res.Skipped, SkippedPart{"wallpaper", err.Error()})
 		}
@@ -288,7 +404,7 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 			res.Applied = append(res.Applied, p)
 		}
 	}
-	res.Snapshot, res.Wallpaper = rec.Snapshot, wallpaper
+	res.Snapshot, res.Wallpaper, res.AppliedAt = rec.Snapshot, wallpaper, rec.At.Unix()
 	res.Created = append(res.Created, rec.Created...)
 	h.bump()
 	return res, nil
@@ -302,29 +418,89 @@ func (h *Hub) writeUndo(rec undoRecord) error {
 	return config.WriteAtomic(h.undoPath(), b, 0o644)
 }
 
-// RiceUndo restores the setup from before the last rice apply.
-func (h *Hub) RiceUndo() error {
-	b, err := os.ReadFile(h.undoPath())
+// fingerprint is a file's SHA-256, a folder's hash over its files, or "" when missing.
+func fingerprint(p string) string {
+	fi, err := os.Lstat(p)
 	if err != nil {
-		return errors.New("no rice apply to undo")
+		return ""
 	}
-	var rec undoRecord
-	if err := json.Unmarshal(b, &rec); err != nil {
+	if fi.Mode().IsRegular() {
+		s, _ := hashFile(p)
+		return s
+	}
+	files, _ := hashTree(p)
+	names := make([]string, 0, len(files))
+	for n := range files {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	s := sha256.New()
+	for _, n := range names {
+		fmt.Fprintf(s, "%s=%s\n", n, files[n])
+	}
+	return "dir:" + hex.EncodeToString(s.Sum(nil))
+}
+
+// RiceUndo puts back what the last rice apply changed: the config keys it
+// set, the files it replaced, and removes the files it created. It refuses
+// when any of those files changed since, so undo never discards later edits.
+func (h *Hub) RiceUndo() error {
+	rec, err := h.readUndo()
+	if err != nil {
 		return err
+	}
+	if time.Since(rec.At) > UndoTTL {
+		os.Remove(h.undoPath())
+		return fmt.Errorf("%s was applied more than %d days ago; undo is no longer offered", rec.Name, int(UndoTTL.Hours()/24))
+	}
+	created := map[string]bool{}
+	for _, c := range rec.Created {
+		created[c] = true
+	}
+	var changed []string
+	for p, want := range rec.Hashes {
+		got := fingerprint(p)
+		if got != want && !(created[p] && got == "") {
+			changed = append(changed, p)
+		}
+	}
+	if len(changed) > 0 {
+		sort.Strings(changed)
+		return fmt.Errorf("can't undo %s: changed since it was applied (undo would discard your edits): %s", rec.Name, strings.Join(changed, ", "))
 	}
 	if len(rec.Paths) > 0 {
 		if _, err := backup.Restore(h.Home, rec.Snapshot, []backup.Category{{Name: "rice-snapshot", Paths: rec.Paths}}, "", false, time.Now()); err != nil {
 			return fmt.Errorf("restore: %w", err)
 		}
 	}
-	for _, c := range rec.Created {
-		// only what the Hub manages; a tampered record can't delete elsewhere
-		if h.managed(c) {
-			os.RemoveAll(c)
+	if len(rec.Config) > 0 {
+		cfg, err := config.Load(rec.CfgPath)
+		if err != nil {
+			return fmt.Errorf("your config: %v", err)
+		}
+		for _, c := range rec.Config {
+			if c.Had {
+				config.Set(cfg, c.Key, c.Value)
+			} else {
+				config.Delete(cfg, c.Key)
+			}
+		}
+		if err := writeConfig(rec.CfgPath, cfg); err != nil {
+			return err
 		}
 	}
+	inUse := ""
 	if rec.Wallpaper != "" && h.SetWallpaper != nil {
 		h.SetWallpaper(rec.Wallpaper)
+	}
+	if h.CurrentWallpaper != nil {
+		inUse = h.CurrentWallpaper()
+	}
+	for _, c := range rec.Created {
+		// only what the Hub manages, never the config or the wallpaper on screen
+		if h.managed(c) && c != inUse && c != rec.CfgPath && c != config.UserPath() {
+			os.RemoveAll(c)
+		}
 	}
 	if rec.Keybinds && h.KeybindsChanged != nil {
 		h.KeybindsChanged()
@@ -335,7 +511,7 @@ func (h *Hub) RiceUndo() error {
 }
 
 func (h *Hub) managed(p string) bool {
-	roots := []string{config.UserPath(), keybinds.DefaultPaths().Overrides}
+	roots := []string{keybinds.DefaultPaths().Overrides}
 	for _, t := range Types {
 		roots = append(roots, h.userDir(t)+string(filepath.Separator))
 	}
@@ -345,6 +521,13 @@ func (h *Hub) managed(p string) bool {
 		}
 	}
 	return false
+}
+
+func writeFileAtomic(dst string, data []byte) error {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+	return config.WriteAtomic(dst, data, 0o644)
 }
 
 func writeConfig(path string, m map[string]any) error {
@@ -441,7 +624,7 @@ func (h *Hub) RiceExport(name string) (string, string, error) {
 		eff = userCfg
 	}
 	leaves := map[string]any{}
-	lookLeaves(userCfg, "", leaves)
+	lookLeaves(userCfg, leaves)
 	r := Rice{ID: id, Name: strings.TrimSpace(name), Version: "1.0.0", Keys: []string{}, Config: map[string]any{}}
 	if u, err := user.Current(); err == nil {
 		r.Author = u.Username

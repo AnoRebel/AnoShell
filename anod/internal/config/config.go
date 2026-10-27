@@ -153,6 +153,9 @@ func set(m map[string]any, path string, v any) {
 	m[keys[len(keys)-1]] = v
 }
 
+// Delete removes a dot path and any objects it leaves empty.
+func Delete(m map[string]any, path string) { del(m, path) }
+
 // del removes a dot path and any objects it leaves empty.
 func del(m map[string]any, path string) {
 	keys := strings.Split(path, ".")
@@ -237,6 +240,16 @@ func (s *Schema) walk(m map[string]any, prefix string, out *[]Issue) {
 		*out = append(*out, Issue{p, "warning", msg})
 	}
 }
+
+// Leaf reports whether path is a schema leaf and v fits its type
+// (null, "use the default", fits every type).
+func (s *Schema) Leaf(path string, v any) bool {
+	t, ok := s.Leaves[path]
+	return ok && typeError(t, v) == ""
+}
+
+// Object reports whether path is an object in the schema.
+func (s *Schema) Object(path string) bool { return s.objects[path] }
 
 func typeError(t string, v any) string {
 	ok := false

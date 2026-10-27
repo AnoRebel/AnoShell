@@ -340,6 +340,9 @@ type Item struct {
 	Modified    bool   `json:"modified,omitempty"`
 	Revoked     bool   `json:"revoked,omitempty"`
 	Code        bool   `json:"code"`
+	// rices: what the keybinds layer would set, and what it leaves out
+	Keybinds        []KeybindSummary `json:"keybinds,omitempty"`
+	KeybindsDropped []string         `json:"keybindsDropped,omitempty"`
 }
 
 // ListResult is hub.list's reply.
@@ -348,6 +351,7 @@ type ListResult struct {
 	Items    []Item          `json:"items"`
 	Catalog  []CatalogItem   `json:"catalog"`
 	Catalogs []CatalogStatus `json:"catalogs"`
+	LastRice *LastRice       `json:"lastRice"` // null: nothing to undo
 }
 
 // List merges the local items with the cached catalogs (no network).
@@ -360,7 +364,7 @@ func (h *Hub) List(typ string) (ListResult, error) {
 		types = []string{typ}
 	}
 	cats, status := h.cachedCatalogs()
-	res := ListResult{Revision: h.Revision(), Items: []Item{}, Catalog: []CatalogItem{}, Catalogs: status}
+	res := ListResult{Revision: h.Revision(), Items: []Item{}, Catalog: []CatalogItem{}, Catalogs: status, LastRice: h.LastRice()}
 	for _, t := range types {
 		items := h.localItems(t)
 		for i := range items {
@@ -569,14 +573,28 @@ func (h *Hub) localItems(t string) []Item {
 				continue
 			}
 			m := readMeta(mf, "")
-			add(Item{ID: e.Name(), Name: m.Name, Author: m.Author, Version: m.Version, Description: m.Description,
-				Preview: localPreview(dir, m.Preview), Source: "user", Path: dir})
+			it := Item{ID: e.Name(), Name: m.Name, Author: m.Author, Version: m.Version, Description: m.Description,
+				Preview: localPreview(dir, m.Preview), Source: "user", Path: dir}
+			if kb := filepath.Join(dir, "keybinds.json"); fileExists(kb) {
+				if _, sum, dropped, err := riceKeybinds(kb); err != nil {
+					it.KeybindsDropped = []string{err.Error()}
+				} else {
+					it.Keybinds, it.KeybindsDropped = sum, dropped
+				}
+			}
+			add(it)
+			out[len(out)-1].Code = it.Keybinds != nil || len(it.KeybindsDropped) > 0 || dirExists(filepath.Join(dir, "widgets"))
 		}
 	}
 	if out == nil {
 		out = []Item{}
 	}
 	return out
+}
+
+func dirExists(p string) bool {
+	fi, err := os.Stat(p)
+	return err == nil && fi.IsDir()
 }
 
 var imageExts = map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true, ".avif": true, ".bmp": true, ".gif": true}
