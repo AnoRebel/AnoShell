@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Widgets
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -77,6 +78,11 @@ Scope {
     }
 
     Component.onCompleted: Reader.sweep()
+    // A video started: step aside (minimised, so the toggle brings the panel back as it was).
+    Connections {
+        target: Reader
+        function onPlayStarted() { root.kinds.forEach(k => { if (root.shown[k]) root.minimize(k) }) }
+    }
     // reader.enable turned off (PanelGate unloads this): nothing stays open in anod.
     Component.onDestruction: root.kinds.forEach(k => Reader.close(k))
 
@@ -123,46 +129,79 @@ Scope {
         visible: reveal > 0.001
         clip: true
 
-        Loader {
-            id: loader
-            active: root.loaded[slot.kind] ?? false
-            width: slot.fullWidth
-            height: slot.height
-            // Pinned to the screen edge; the slot's growing clip reveals it.
-            x: slot.onRight ? slot.width - width : 0
-            sourceComponent: slot.kind === "anime" ? animeComp : slot.kind === "manga" ? mangaComp : novelComp
-            Component { id: animeComp; AnimePanel { onMinimizeRequested: root.minimize("anime") } }
-            Component { id: mangaComp; MangaReader { onMinimizeRequested: root.minimize("manga") } }
-            Component { id: novelComp; NovelReader { onMinimizeRequested: root.minimize("novel") } }
+        // Connected frame: the frame paints the panel's body, fused into the
+        // bar and bands with their fillets, like the sidebars. Otherwise the
+        // panel is a rounded card of its own (`rounded` clips its content).
+        readonly property bool connected: parent.ignoreZones
+        ConnectedSurfaceLease {
+            key: "reader:" + slot.kind
+            kind: "sidebar"; edge: slot.onRight ? "right" : "left"; priority: 5
+            omitStartConnector: true; omitEndConnector: true
+            screenName: slot.parent?.scr ?? ""
+            active: slot.connected && slot.visible
+            // The window covers the screen here, so window = screen coordinates.
+            x: (slot.parent?.x ?? 0) + slot.x
+            y: slot.y
+            w: slot.width
+            h: slot.height
+            progress: slot.reveal
         }
-
-        // Backend starting / failed: the panel says so and offers a retry.
-        Rectangle {
+        ClippingRectangle {
+            id: rounded
             anchors.fill: parent
-            visible: Reader.state(slot.kind) === "starting" || Reader.state(slot.kind) === "error"
-            color: Appearance.m3colors.m3background
-            Column {
-                anchors.centerIn: parent
-                width: Math.min(parent.width - 48, 360)
-                spacing: 12
-                MaterialSymbol {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: Reader.state(slot.kind) === "error" ? "cloud_off" : "hourglass_top"
-                    iconSize: 40
-                    color: Reader.state(slot.kind) === "error" ? Appearance.m3colors.m3error : Appearance.m3colors.m3primary
-                }
-                StyledText {
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.Wrap
-                    text: Reader.state(slot.kind) === "error" ? Reader.error : "Starting the reader…"
-                    color: Appearance.m3colors.m3onSurfaceVariant
-                }
-                RippleButton {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: Reader.state(slot.kind) === "error"
-                    buttonText: "Retry"
-                    onClicked: Reader.open(slot.kind)
+            visible: !slot.connected
+            color: "transparent"
+            radius: Appearance.rounding.normal
+            border.width: 1
+            border.color: Appearance.colors.colLayer0Border
+            contentUnderBorder: true
+        }
+        Binding { target: body; property: "parent"; value: slot.connected ? slot : rounded.contentItem }
+
+        Item {
+            id: body
+            anchors.fill: parent
+            Loader {
+                id: loader
+                active: root.loaded[slot.kind] ?? false
+                width: slot.fullWidth
+                height: slot.height
+                // Pinned to the screen edge; the slot's growing clip reveals it.
+                x: slot.onRight ? slot.width - width : 0
+                sourceComponent: slot.kind === "anime" ? animeComp : slot.kind === "manga" ? mangaComp : novelComp
+                Component { id: animeComp; AnimePanel { onMinimizeRequested: root.minimize("anime") } }
+                Component { id: mangaComp; MangaReader { onMinimizeRequested: root.minimize("manga") } }
+                Component { id: novelComp; NovelReader { onMinimizeRequested: root.minimize("novel") } }
+            }
+
+            // Backend starting / failed: the panel says so and offers a retry.
+            Rectangle {
+                anchors.fill: parent
+                visible: Reader.state(slot.kind) === "starting" || Reader.state(slot.kind) === "error"
+                color: Appearance.colors.colLayer0Base
+                Column {
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width - 48, 360)
+                    spacing: 12
+                    MaterialSymbol {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: Reader.state(slot.kind) === "error" ? "cloud_off" : "hourglass_top"
+                        iconSize: 40
+                        color: Reader.state(slot.kind) === "error" ? Appearance.m3colors.m3error : Appearance.m3colors.m3primary
+                    }
+                    StyledText {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                        text: Reader.state(slot.kind) === "error" ? Reader.error : "Starting the reader…"
+                        color: Appearance.m3colors.m3onSurfaceVariant
+                    }
+                    RippleButton {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: Reader.state(slot.kind) === "error"
+                        buttonText: "Retry"
+                        onClicked: Reader.open(slot.kind)
+                    }
                 }
             }
         }
@@ -182,13 +221,29 @@ Scope {
             readonly property bool ignoreZones: PanelRegistry.enabled
             exclusionMode: ignoreZones ? ExclusionMode.Ignore : ExclusionMode.Normal
             WlrLayershell.namespace: "quickshell:reader"
-            WlrLayershell.layer: WlrLayer.Top
+            // Above the connected frame (Top), which paints this panel's body.
+            WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: root.anyShown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             // Input only on the panels; the rest of the screen stays usable.
             mask: Region {
                 Region { item: animeSlot }
                 Region { item: mangaSlot }
                 Region { item: novelSlot }
+            }
+            // Rounded blur behind the panels when they are cards of their own
+            // (the connected frame blurs its body itself).
+            BackgroundEffect.blurRegion: CompositorService.supports.blurProtocol && !win.ignoreZones && !GameMode.stopBlur ? blurShapes : null
+            Region {
+                id: blurShapes
+                BlurShape { slot: animeSlot }
+                BlurShape { slot: mangaSlot }
+                BlurShape { slot: novelSlot }
+            }
+            component BlurShape: Region {
+                required property Item slot
+                x: slot.parent.x + slot.x; y: slot.y
+                width: slot.visible ? slot.width : 0; height: slot.height
+                radius: Appearance.rounding.normal
             }
 
             Item {

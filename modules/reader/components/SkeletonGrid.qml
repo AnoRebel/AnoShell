@@ -24,7 +24,7 @@ Rectangle {
     readonly property int _rows: _cellHeight > 0
         ? Math.ceil((height - padding) / _cellHeight) : 0
 
-    color: Appearance.m3colors.m3background
+    color: Appearance.colors.colLayer0Base
     clip: true
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
@@ -51,7 +51,7 @@ Rectangle {
                     id: card
                     anchors { fill: parent; margins: 5 }
                     radius: 12
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
 
                     // Cover
                     Rectangle {
@@ -60,7 +60,7 @@ Rectangle {
                             bottom: lines.top; bottomMargin: 10
                         }
                         radius: card.radius
-                        color: Appearance.m3colors.m3surfaceContainerHigh
+                        color: Appearance.colors.colLayer3
                     }
 
                     // Title
@@ -77,12 +77,12 @@ Rectangle {
                         Rectangle {
                             width: parent.width * (cell.index % 3 === 1 ? 0.9 : 0.75)
                             height: 7; radius: 3.5
-                            color: Appearance.m3colors.m3surfaceContainerHighest
+                            color: Appearance.colors.colLayer4
                         }
                         Rectangle {
                             width: parent.width * (cell.index % 2 ? 0.4 : 0.55)
                             height: 7; radius: 3.5
-                            color: Appearance.m3colors.m3surfaceContainerHighest
+                            color: Appearance.colors.colLayer4
                         }
                     }
 
@@ -96,7 +96,7 @@ Rectangle {
                             bottomMargin: (root.footerHeight - height) / 2
                         }
                         height: 3; radius: 1.5
-                        color: Appearance.m3colors.m3surfaceContainerHighest
+                        color: Appearance.colors.colLayer4
                     }
                 }
 

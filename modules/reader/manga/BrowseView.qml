@@ -27,7 +27,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 60
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             z: 2
 
             Divider {
@@ -67,7 +67,7 @@ Item {
                     Layout.fillWidth: true
                     height: 38
                     radius: 19
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     visible: false
                     border.color: searchField.activeFocus ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                     border.width: searchField.activeFocus ? 1.5 : 1
@@ -114,7 +114,7 @@ Item {
                         Rectangle {
                             anchors.centerIn: parent
                             width: 18; height: 18; radius: 9
-                            color: Appearance.m3colors.m3surfaceContainerHighest
+                            color: Appearance.colors.colLayer4
                         }
                         StyledText {
                             anchors.centerIn: parent
@@ -175,7 +175,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 48
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             clip: true
 
             Divider {
@@ -212,7 +212,7 @@ Item {
                         radius: 15
                         color: browseView.currentTagId === tagId
                             ? Appearance.m3colors.m3primary
-                            : Appearance.m3colors.m3surfaceContainer
+                            : Appearance.colors.colLayer2
                         border.color: browseView.currentTagId === tagId
                             ? Appearance.m3colors.m3primary
                             : Appearance.m3colors.m3outlineVariant
@@ -275,7 +275,7 @@ Item {
             // Error state
             Rectangle {
                 anchors.fill: parent
-                color: Appearance.m3colors.m3background
+                color: Appearance.colors.colLayer0Base
                 visible: ReaderManga.mangaError.length > 0 && !ReaderManga.isFetchingManga
                 z: 9
 
@@ -332,7 +332,7 @@ Item {
                         id: card
                         anchors { fill: parent; margins: 5 }
                         radius: 12
-                        color: Appearance.m3colors.m3surfaceContainer
+                        color: Appearance.colors.colLayer2
                         clip: true
 
                         CoverPlaceholder {
@@ -380,7 +380,7 @@ Item {
                                 height: 56
                                 gradient: Gradient {
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 1.0; color: Appearance.m3colors.m3surfaceContainer }
+                                    GradientStop { position: 1.0; color: Appearance.colors.colLayer2 }
                                 }
                             }
                         }
@@ -390,7 +390,7 @@ Item {
                             id: titleBar
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                             height: titleText.implicitHeight + 18
-                            color: Appearance.m3colors.m3surfaceContainer
+                            color: Appearance.colors.colLayer2
                             radius: 12
 
                             StyledText {

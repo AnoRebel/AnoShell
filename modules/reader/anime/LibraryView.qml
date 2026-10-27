@@ -25,7 +25,7 @@ Item {
         // ── Header ────────────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 52
-            color: Appearance.m3colors.m3surfaceContainerLow; z: 2
+            color: Appearance.colors.colLayer1; z: 2
 
             Rectangle {
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -53,7 +53,7 @@ Item {
                 Rectangle {
                     visible: ReaderAnime.libraryList.length > 0
                     height: 22; width: libCountText.implicitWidth + 16; radius: 11
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     border.color: Appearance.m3colors.m3outlineVariant; border.width: 1
 
                     StyledText {

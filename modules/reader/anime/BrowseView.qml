@@ -33,7 +33,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 56
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             z: 2
 
             Rectangle {
@@ -70,7 +70,7 @@ Item {
                     id: searchBar
                     Layout.fillWidth: true
                     height: 36; radius: 18
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     visible: false
                     border.color: searchField.activeFocus ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                     border.width: searchField.activeFocus ? 1.5 : 1
@@ -116,7 +116,7 @@ Item {
                         Rectangle {
                             anchors.centerIn: parent
                             width: 18; height: 18; radius: 9
-                            color: Appearance.m3colors.m3surfaceContainerHighest
+                            color: Appearance.colors.colLayer4
                         }
                         StyledText {
                             anchors.centerIn: parent
@@ -173,7 +173,7 @@ Item {
                     height: 28
                     width: modeRow.implicitWidth + 16
                     radius: 14
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     border.color: Appearance.m3colors.m3outlineVariant; border.width: 1
 
                     Row {
@@ -219,7 +219,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 44
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             clip: true
 
             Rectangle {
@@ -255,7 +255,7 @@ Item {
                         anchors.centerIn: parent
                         implicitWidth: chipLbl.implicitWidth + 24
                         height: 28; radius: 14
-                        color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3surfaceContainer
+                        color: active ? Appearance.m3colors.m3primary : Appearance.colors.colLayer2
                         border.color: active ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
@@ -312,7 +312,7 @@ Item {
 
             // Error
             Rectangle {
-                anchors.fill: parent; color: Appearance.m3colors.m3background
+                anchors.fill: parent; color: Appearance.colors.colLayer0Base
                 visible: ReaderAnime.animeError.length > 0 && !ReaderAnime.isFetchingAnime
                 z: 9
 
@@ -361,7 +361,7 @@ Item {
                     ClickableRect {
                         id: card
                         anchors { fill: parent; margins: 5 }
-                        radius: 12; color: Appearance.m3colors.m3surfaceContainer; clip: true
+                        radius: 12; color: Appearance.colors.colLayer2; clip: true
 
                         CoverPlaceholder {
                             anchors.fill: coverImg
@@ -448,7 +448,7 @@ Item {
                                 height: 48
                                 gradient: Gradient {
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 1.0; color: Appearance.m3colors.m3surfaceContainer }
+                                    GradientStop { position: 1.0; color: Appearance.colors.colLayer2 }
                                 }
                             }
                         }
@@ -458,7 +458,7 @@ Item {
                             id: titleBar
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                             height: titleText.implicitHeight + 16
-                            color: Appearance.m3colors.m3surfaceContainer; radius: 12
+                            color: Appearance.colors.colLayer2; radius: 12
 
                             StyledText {
                                 id: titleText

@@ -16,7 +16,7 @@ Rectangle {
     property bool subtitle: true
     property int dividerInset: 72
 
-    color: Appearance.m3colors.m3background
+    color: Appearance.colors.colLayer0Base
     clip: true
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
@@ -43,7 +43,7 @@ Rectangle {
                         id: pill
                         anchors.verticalCenter: parent.verticalCenter
                         width: 44; height: 26; radius: 13
-                        color: Appearance.m3colors.m3surfaceContainerHigh
+                        color: Appearance.colors.colLayer3
                     }
 
                     Column {
@@ -58,12 +58,12 @@ Rectangle {
                             // Varied so the rows don't read as a barcode.
                             width: parent.width * [0.62, 0.48, 0.7, 0.55, 0.4][row.index % 5]
                             height: 9; radius: 4.5
-                            color: Appearance.m3colors.m3surfaceContainerHigh
+                            color: Appearance.colors.colLayer3
                         }
                         Rectangle {
                             visible: root.subtitle
                             width: 64; height: 7; radius: 3.5
-                            color: Appearance.m3colors.m3surfaceContainer
+                            color: Appearance.colors.colLayer2
                         }
                     }
                 }

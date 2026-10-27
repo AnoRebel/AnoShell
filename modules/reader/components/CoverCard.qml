@@ -20,7 +20,7 @@ ClickableRect {
 
     anchors.margins: 5
     radius: 12
-    color: Appearance.m3colors.m3surfaceContainer
+    color: Appearance.colors.colLayer2
     clip: true
 
     // Beside the cover, not inside it: the cover sits at opacity 0 until it's
@@ -47,7 +47,7 @@ ClickableRect {
             height: root.gradientHeight
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "transparent" }
-                GradientStop { position: 1.0; color: Appearance.m3colors.m3surfaceContainer }
+                GradientStop { position: 1.0; color: Appearance.colors.colLayer2 }
             }
         }
     }
@@ -61,7 +61,7 @@ ClickableRect {
             right: parent.right
         }
         height: titleText.implicitHeight + 10
-        color: Appearance.m3colors.m3surfaceContainer
+        color: Appearance.colors.colLayer2
 
         StyledText {
             id: titleText

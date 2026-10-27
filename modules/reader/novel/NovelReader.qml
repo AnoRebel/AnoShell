@@ -29,7 +29,9 @@ Item {
     W.SurfaceMaterial {
         anchors.fill: parent
         surface: "reader"
-        color: Appearance.m3colors.m3background
+        // Connected frame: it paints the panel (fused, curved, blurred) itself.
+        color: PanelRegistry.enabled ? "transparent" : Appearance.colors.colLayer0
+        radius: PanelRegistry.enabled ? 0 : Appearance.rounding.normal
     }
 
     ColumnLayout {
@@ -38,7 +40,7 @@ Item {
 
         Rectangle {
             Layout.fillWidth: true; height: 44
-            color: Appearance.m3colors.m3surfaceContainerLow; z: 10
+            color: Appearance.colors.colLayer1; z: 10
 
             Rectangle {
                 anchors { bottom: parent.bottom; right: parent.right; left: parent.left }

@@ -35,7 +35,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 60
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             z: 2
 
             Rectangle {
@@ -70,7 +70,7 @@ Item {
                     id: searchBar
                     Layout.fillWidth: true
                     height: 38; radius: 19
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     visible: false
                     border.color: searchField.activeFocus ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                     border.width: searchField.activeFocus ? 1.5 : 1
@@ -111,7 +111,7 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(100) } }
                         Rectangle {
                             anchors.centerIn: parent; width: 18; height: 18; radius: 9
-                            color: Appearance.m3colors.m3surfaceContainerHighest
+                            color: Appearance.colors.colLayer4
                         }
                         StyledText {
                             anchors.centerIn: parent; text: "✕"
@@ -145,8 +145,8 @@ Item {
                     Rectangle {
                         anchors.fill: parent; radius: 16
                         color: providerDropArea.containsMouse
-                            ? Appearance.m3colors.m3surfaceContainerHighest
-                            : Appearance.m3colors.m3surfaceContainer
+                            ? Appearance.colors.colLayer4
+                            : Appearance.colors.colLayer2
                         border.color: Appearance.m3colors.m3outlineVariant; border.width: 1
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(150) } }
                     }
@@ -210,7 +210,7 @@ Item {
                         width: 150
                         height: popupColumn.implicitHeight + 10
                         radius: 10
-                        color: Appearance.m3colors.m3surfaceContainerHigh
+                        color: Appearance.colors.colLayer3
                         border.color: Appearance.m3colors.m3outlineVariant; border.width: 1
                         z: 100
 
@@ -237,7 +237,7 @@ Item {
                                             if (modelData.name === ReaderNovel.activeProvider)
                                                 return Appearance.m3colors.m3primaryContainer
                                             return optionArea.containsMouse
-                                                ? Appearance.m3colors.m3surfaceContainerHighest
+                                                ? Appearance.colors.colLayer4
                                                 : "transparent"
                                         }
                                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
@@ -318,7 +318,7 @@ Item {
         // ── Filter chips (Hot / Latest) ───────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 48
-            color: Appearance.m3colors.m3surfaceContainerLow; clip: true
+            color: Appearance.colors.colLayer1; clip: true
 
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -343,7 +343,7 @@ Item {
                         id: chip
                         anchors.centerIn: parent
                         implicitWidth: chipLbl.implicitWidth + 28; height: 30; radius: 15
-                        color: browseView.currentFilter === fid ? Appearance.m3colors.m3primary : Appearance.m3colors.m3surfaceContainer
+                        color: browseView.currentFilter === fid ? Appearance.m3colors.m3primary : Appearance.colors.colLayer2
                         border.color: browseView.currentFilter === fid ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
@@ -400,7 +400,7 @@ Item {
 
             // Error overlay
             Rectangle {
-                anchors.fill: parent; color: Appearance.m3colors.m3background; z: 9
+                anchors.fill: parent; color: Appearance.colors.colLayer0Base; z: 9
                 visible: ReaderNovel.novelError.length > 0 && !ReaderNovel.isFetchingNovel
 
                 Column {
@@ -441,7 +441,7 @@ Item {
                     ClickableRect {
                         id: nCard
                         anchors { fill: parent; margins: 5 }
-                        radius: 10; color: Appearance.m3colors.m3surfaceContainer; clip: true
+                        radius: 10; color: Appearance.colors.colLayer2; clip: true
 
                         CoverPlaceholder {
                             anchors.fill: coverImg
@@ -480,7 +480,7 @@ Item {
                                 height: 52
                                 gradient: Gradient {
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 1.0; color: Appearance.m3colors.m3surfaceContainer }
+                                    GradientStop { position: 1.0; color: Appearance.colors.colLayer2 }
                                 }
                             }
                         }
@@ -488,7 +488,7 @@ Item {
                         Rectangle {
                             id: nTitleBar
                             anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-                            height: nTitleText.implicitHeight + 18; color: Appearance.m3colors.m3surfaceContainer; radius: 10
+                            height: nTitleText.implicitHeight + 18; color: Appearance.colors.colLayer2; radius: 10
 
                             Column {
                                 anchors {

@@ -38,7 +38,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 52
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             z: 2
 
             Rectangle {
@@ -56,7 +56,7 @@ Item {
 
                     Rectangle {
                         anchors.centerIn: parent; width: 34; height: 34; radius: 17
-                        color: backArea.containsMouse ? Appearance.m3colors.m3surfaceContainer : "transparent"
+                        color: backArea.containsMouse ? Appearance.colors.colLayer2 : "transparent"
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     Text {
@@ -84,7 +84,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent; radius: height / 2
-                        color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.m3colors.m3surfaceContainer
+                        color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.colors.colLayer2
                         border.color: detailView._inLibrary ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
@@ -126,7 +126,7 @@ Item {
 
         Rectangle {
             Layout.fillWidth: true; height: 34
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Appearance.colors.colLayer2
             visible: ReaderAnime.currentAnime !== null
 
             RowLayout {
@@ -188,7 +188,7 @@ Item {
             LoadingState {
                 anchors.fill: parent; z: 6
                 active: ReaderAnime.isFetchingLinks
-                color: ColorUtils.transparentize(Appearance.m3colors.m3background, 0.88)
+                color: ColorUtils.transparentize(Appearance.colors.colLayer0Base, 0.88)
                 label: "fetching stream"
                 detail: ReaderAnime.currentEpisode ? "Episode " + ReaderAnime.currentEpisode : ""
                 bodyFont: detailView.fontBody
@@ -240,8 +240,8 @@ Item {
                     color: isLastWatched
                         ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.07)
                         : (epRowAreaRect.pressed
-                            ? Appearance.m3colors.m3surfaceContainerHigh
-                            : (epRowAreaRect.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"))
+                            ? Appearance.colors.colLayer3
+                            : (epRowAreaRect.hovered ? Appearance.colors.colLayer2 : "transparent"))
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(110) } }
 
                     Rectangle {

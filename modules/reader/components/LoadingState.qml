@@ -17,7 +17,7 @@ Rectangle {
     property color textColor: Appearance.m3colors.m3onSurfaceVariant
     property color arcColor: Appearance.m3colors.m3primary
 
-    color: Appearance.m3colors.m3background
+    color: Appearance.colors.colLayer0Base
     opacity: root.active ? 1 : 0
     visible: root.opacity > 0
     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }

@@ -34,7 +34,9 @@ Item {
     W.SurfaceMaterial {
         anchors.fill: parent
         surface: "reader"
-        color: Appearance.m3colors.m3background
+        // Connected frame: it paints the panel (fused, curved, blurred) itself.
+        color: PanelRegistry.enabled ? "transparent" : Appearance.colors.colLayer0
+        radius: PanelRegistry.enabled ? 0 : Appearance.rounding.normal
         // Top edge shadow / divider
         Divider {
             anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -126,7 +128,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 48
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
 
             // Top hairline
             Rectangle {

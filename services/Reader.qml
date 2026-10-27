@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import qs.modules.common
 
 /**
  * Reader — the shell side of anod's reader backend (novel, manga, anime).
@@ -138,7 +139,10 @@ Singleton {
     // ── Playback (mpv owned by anod, so it outlives the panel) ───────────
     // show/episode (optional) let anod save the position: resume, watched,
     // AniSkip (reader.anime.resume/skipIntro/finishedRatio).
+    // Emitted as playback starts: the host minimises the panels so the video shows.
+    signal playStarted()
     function play(link, title, show, episode) {
+        root.playStarted()
         const a = Config.options?.reader?.anime ?? {}
         root.post(root.base + "anime/play", {
             url: link.url, referer: link.referer ?? "", subtitle: link.subtitle ?? "", title: title ?? "",

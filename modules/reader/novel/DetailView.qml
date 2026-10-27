@@ -121,7 +121,7 @@ Item {
         // ── Header ────────────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 56
-            color: Appearance.m3colors.m3surfaceContainerLow; z: 2
+            color: Appearance.colors.colLayer1; z: 2
 
             Rectangle {
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
@@ -137,7 +137,7 @@ Item {
                     width: 44; height: 44
                     Rectangle {
                         anchors.centerIn: parent; width: 34; height: 34; radius: 17
-                        color: backArea.containsMouse ? Appearance.m3colors.m3surfaceContainer : "transparent"
+                        color: backArea.containsMouse ? Appearance.colors.colLayer2 : "transparent"
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(130) } }
                     }
                     Text { anchors.centerIn: parent; text: "←"; font.pixelSize: 18; color: Appearance.m3colors.m3onSurfaceVariant }
@@ -161,7 +161,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent; radius: height / 2
-                        color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.m3colors.m3surfaceContainer
+                        color: detailView._inLibrary ? Appearance.m3colors.m3primaryContainer : Appearance.colors.colLayer2
                         border.color: detailView._inLibrary ? Appearance.m3colors.m3primary : Appearance.m3colors.m3outlineVariant
                         border.width: 1
                         Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(180) } }
@@ -222,8 +222,8 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: ColorUtils.transparentize(Appearance.m3colors.m3surfaceContainerLow, 0.8) }
-                    GradientStop { position: 1.0; color: Appearance.m3colors.m3background }
+                    GradientStop { position: 0.0; color: ColorUtils.transparentize(Appearance.colors.colLayer1, 0.8) }
+                    GradientStop { position: 1.0; color: Appearance.colors.colLayer0 }
                 }
             }
 
@@ -235,7 +235,7 @@ Item {
                 // Cover thumbnail
                 Rectangle {
                     width: 90; height: 130; radius: 8
-                    color: Appearance.m3colors.m3surfaceContainerHigh; clip: true
+                    color: Appearance.colors.colLayer3; clip: true
                     anchors.verticalCenter: parent.verticalCenter
 
                     Image {
@@ -306,7 +306,7 @@ Item {
         // ── Chapter count + last-read strip ───────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 36
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Appearance.colors.colLayer2
             visible: ReaderNovel.currentNovel !== null
 
             RowLayout {
@@ -363,7 +363,7 @@ Item {
         // ── Continue / Next Chapter buttons ───────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 48
-            color: Appearance.m3colors.m3surfaceContainer
+            color: Appearance.colors.colLayer2
             visible: ReaderNovel.currentNovel !== null
 
             RowLayout {
@@ -406,7 +406,7 @@ Item {
         // ── Search & Sort bar ─────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 56
-            color: Appearance.m3colors.m3surfaceContainerLow
+            color: Appearance.colors.colLayer1
             visible: ReaderNovel.currentNovel !== null
 
             RowLayout {
@@ -417,7 +417,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 36; radius: 18
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: Appearance.colors.colLayer2
                     border.width: 1
                     border.color: chapterSearch.activeFocus
                         ? Appearance.m3colors.m3primary
@@ -519,7 +519,7 @@ Item {
         Item {
             Layout.fillWidth: true; Layout.fillHeight: true
 
-            Rectangle { anchors.fill: parent; color: Appearance.m3colors.m3background }
+            // (no backdrop: the panel shows through)
 
             // Loading overlay
             SkeletonList {
@@ -532,7 +532,7 @@ Item {
             // Error state (the backend or the site refused the novel)
             Rectangle {
                 anchors.fill: parent; z: 4
-                color: Appearance.m3colors.m3background
+                color: Appearance.colors.colLayer0Base
                 visible: ReaderNovel.detailError.length > 0 && !ReaderNovel.isFetchingDetail
 
                 Column {
@@ -595,8 +595,8 @@ Item {
 
                     color: isLastRead
                         ? ColorUtils.transparentize(Appearance.m3colors.m3primary, 0.07)
-                        : (rowAreaRect.pressed ? Appearance.m3colors.m3surfaceContainerHigh
-                            : (rowAreaRect.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"))
+                        : (rowAreaRect.pressed ? Appearance.colors.colLayer3
+                            : (rowAreaRect.hovered ? Appearance.colors.colLayer2 : "transparent"))
                     Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(110) } }
 
                     Rectangle {

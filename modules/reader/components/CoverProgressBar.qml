@@ -18,7 +18,7 @@ Rectangle {
 
     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
     height: 30
-    color: Appearance.m3colors.m3surfaceContainerHigh
+    color: Appearance.colors.colLayer3
     radius: 12
 
     // Square off the top corners so only the card's bottom edge stays rounded.

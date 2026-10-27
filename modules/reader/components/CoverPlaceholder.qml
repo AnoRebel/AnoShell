@@ -11,7 +11,7 @@ Rectangle {
     property int status: Image.Null
     property int glyphSize: 32
 
-    color: Appearance.m3colors.m3surfaceContainerHigh
+    color: Appearance.colors.colLayer3
     visible: root.status !== Image.Ready
 
     StyledText {

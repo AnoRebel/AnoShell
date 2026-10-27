@@ -32,7 +32,7 @@ Item {
         // ── Header: which list ───────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true; height: 52
-            color: Appearance.m3colors.m3surfaceContainerLow; z: 2
+            color: Appearance.colors.colLayer1; z: 2
             Rectangle {
                 anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
                 height: 1; color: Appearance.m3colors.m3outlineVariant; opacity: 0.5
@@ -47,7 +47,7 @@ Item {
                         readonly property bool on: ReaderAnime.airingList === modelData.id
                         width: lbl.implicitWidth + 24; height: 30; radius: 15
                         color: on ? Appearance.m3colors.m3secondaryContainer
-                            : (hovered ? Appearance.m3colors.m3surfaceContainer : "transparent")
+                            : (hovered ? Appearance.colors.colLayer2 : "transparent")
                         StyledText {
                             id: lbl; anchors.centerIn: parent
                             text: modelData.label
@@ -89,7 +89,7 @@ Item {
                 id: row
                 required property var modelData
                 width: list.width; height: 76
-                color: row.hovered ? Appearance.m3colors.m3surfaceContainer : "transparent"
+                color: row.hovered ? Appearance.colors.colLayer2 : "transparent"
                 onClicked: airingView.searchRequested(modelData.title)
 
                 RowLayout {
