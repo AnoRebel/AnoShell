@@ -453,6 +453,96 @@ ColumnLayout {
         }
     }
 
+    // ═══ Wallhaven (Wallpapers tab) ═══
+    SettingsCard {
+        id: wh
+        visible: root.tab === "wallpapers"
+        icon: "travel_explore"
+        title: "Wallhaven"
+        subtitle: "Search wallhaven.cc and install a wallpaper into your wallpaper folder (hub/). Safe-for-work only unless your Wallhaven key is set."
+        configKeys: ["background.wallhaven"]
+        property var results: []
+        property int page: 1
+        property int lastPage: 1
+        property bool busy: false
+        property string note: ""
+        property string installing: ""
+        function search(p) {
+            wh.busy = true; wh.note = ""
+            Hub.wallhaven(whQuery.text.trim(), p, (r, e) => {
+                wh.busy = false
+                if (!r) { wh.note = e?.message ?? "anod didn't answer"; return }
+                if (r.error) wh.note = r.error
+                wh.results = r.items ?? []; wh.page = r.page ?? p; wh.lastPage = r.lastPage ?? p
+            })
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            ConfigTextInput {
+                id: whQuery
+                Layout.fillWidth: true
+                placeholderText: "Search Wallhaven (empty: latest)…"
+            }
+            RippleButton { buttonText: wh.busy ? "Searching…" : "Search"; enabled: !wh.busy && Anod.available; onClicked: wh.search(1) }
+        }
+        StyledText { Layout.fillWidth: true; visible: wh.note.length > 0; wrapMode: Text.Wrap; color: Appearance.m3colors.m3error; text: wh.note }
+        Flow {
+            id: whGrid
+            Layout.fillWidth: true
+            spacing: 8
+            readonly property int cols: Math.max(2, Math.floor((width + spacing) / (170 + spacing)))
+            readonly property real cardW: (width - spacing * (cols - 1)) / cols
+            Repeater {
+                model: wh.results
+                delegate: RippleButton {
+                    id: whCard
+                    required property var modelData
+                    width: whGrid.cardW
+                    implicitHeight: width * 0.62 + 30
+                    buttonRadius: Appearance.rounding.small
+                    colBackground: Appearance.colors.colLayer2
+                    enabled: !modelData.installed && wh.installing === ""
+                    onClicked: {
+                        wh.installing = modelData.id
+                        Hub.wallhavenInstall(modelData.id, (r, e) => {
+                            wh.installing = ""
+                            if (!r) { wh.note = e?.message ?? "Install failed"; return }
+                            const l = wh.results.slice(); const i = l.findIndex(x => x.id === whCard.modelData.id)
+                            if (i >= 0) l[i] = Object.assign({}, l[i], { installed: true })
+                            wh.results = l
+                            root.say(`Installed ${r.path}: find it above to apply.`)
+                            Hub.list()
+                        })
+                    }
+                    ColumnLayout {
+                        anchors { fill: parent; margins: 4 }
+                        spacing: 2
+                        Image {
+                            Layout.fillWidth: true; Layout.fillHeight: true
+                            source: /^https:\/\//.test(whCard.modelData.thumb ?? "") ? whCard.modelData.thumb : ""
+                            asynchronous: true; fillMode: Image.PreserveAspectCrop; sourceSize.width: 340; clip: true
+                        }
+                        StyledText {
+                            Layout.fillWidth: true; elide: Text.ElideRight
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: Appearance.colors.colSubtext
+                            text: wh.installing === whCard.modelData.id ? "Installing…" : whCard.modelData.installed ? `${whCard.modelData.resolution} · installed` : `${whCard.modelData.resolution} · install`
+                        }
+                    }
+                }
+            }
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            visible: wh.results.length > 0
+            Item { Layout.fillWidth: true }
+            RippleButton { buttonText: "Previous"; enabled: !wh.busy && wh.page > 1; onClicked: wh.search(wh.page - 1) }
+            StyledText { text: `${wh.page} / ${wh.lastPage}`; color: Appearance.colors.colSubtext }
+            RippleButton { buttonText: "Next"; enabled: !wh.busy && wh.page < wh.lastPage; onClicked: wh.search(wh.page + 1) }
+        }
+    }
+
     // ═══ Rices: undo + export ═══
     SettingsCard {
         visible: root.tab === "rices"

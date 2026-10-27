@@ -39,6 +39,16 @@ Installing never changes your setup; **Apply** is a separate button:
   instead.
 - **Rices**: see below.
 
+## Wallhaven
+
+On the Wallpapers tab, the Wallhaven card searches wallhaven.cc (empty search:
+the latest) and installs a picture into your wallpaper folder's `hub/`
+subfolder with a receipt, so it shows as installed and can be removed here.
+Results are safe-for-work unless your Wallhaven API key is set (Settings →
+Appearance → Wallpaper, kept in the secrets folder and sent only as a header).
+anod looks the picture up again itself before downloading and only accepts an
+image from Wallhaven's own image host.
+
 ## Catalogs
 
 A catalog is a JSON index on an `https://` address that lists items with
@@ -106,4 +116,4 @@ archive and prints the catalog entry with its checksum (see
 
 Launcher plugins and lock screens are listed in the spec as Hub content, but
 the shell has no way to load user-made ones yet, so the Hub doesn't offer
-them. Wallhaven search for wallpapers is also still to come.
+them.

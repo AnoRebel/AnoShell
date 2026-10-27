@@ -74,6 +74,10 @@ Singleton {
     function riceApply(id, layers, cb) { Anod.call("hub.riceApply", { id, layers }, cb, 180000) }
     function riceUndo(cb) { Anod.call("hub.riceUndo", {}, cb, 180000) }
     function riceExport(name, cb) { Anod.call("hub.riceExport", { name }, cb, 60000) }
+    // Wallhaven (wallpapers): search, then install one (anod fetches the real
+    // image path itself, verifies it and keeps a receipt).
+    function wallhaven(query, page, cb) { Anod.call("hub.wallhaven", { query, page }, cb, 30000) }
+    function wallhavenInstall(id, cb) { Anod.call("hub.wallhavenInstall", { id }, cb, 150000) }
 
     // ── Applying (the shell's job; install never applies) ─────────────
     function isActive(item) {
