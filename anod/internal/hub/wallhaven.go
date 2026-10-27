@@ -107,6 +107,26 @@ func (h *Hub) whImageHost(host string) bool {
 	return host == "w.wallhaven.cc"
 }
 
+// whClient is the https, 5-hop client with Wallhaven's rules on every hop:
+// the key never follows a redirect to another host, and an image download
+// stays on the image host.
+func (h *Hub) whClient(image bool) *http.Client {
+	c := h.client()
+	c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if err := httpsRedirect(req, via); err != nil {
+			return err
+		}
+		if image && !h.whImageHost(req.URL.Host) {
+			return fmt.Errorf("refusing a redirect to %s: not Wallhaven's image host", req.URL.Host)
+		}
+		if req.URL.Host != via[0].URL.Host {
+			req.Header.Del("X-API-Key")
+		}
+		return nil
+	}
+	return c
+}
+
 func wallhavenKey() string {
 	p, err := secrets.Path("wallhaven")
 	if err != nil {
@@ -148,7 +168,7 @@ func (h *Hub) whGet(u, key string, v any) error {
 	if key != "" {
 		req.Header.Set("X-API-Key", key)
 	}
-	resp, err := h.client().Do(req)
+	resp, err := h.whClient(false).Do(req)
 	if err != nil {
 		var ue *url.Error
 		if errors.As(err, &ue) {
@@ -309,7 +329,7 @@ func (h *Hub) WallhavenInstall(id string) (string, error) {
 
 	req, _ := http.NewRequest("GET", pu.String(), nil)
 	req.Header.Set("User-Agent", "AnoShell-Hub")
-	c := h.client()
+	c := h.whClient(true)
 	c.Timeout = 2 * time.Minute
 	resp, err := c.Do(req)
 	if err != nil {

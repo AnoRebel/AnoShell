@@ -148,3 +148,49 @@ func TestWallhavenLive(t *testing.T) {
 	}
 	t.Logf("%d results, page %d/%d, installed %s", len(res.Items), res.Page, res.LastPage, p)
 }
+
+func TestWallhavenRedirects(t *testing.T) {
+	h, _, _ := setup(t)
+	if err := secrets.Set("wallhaven", "sekrit"); err != nil {
+		t.Fatal(err)
+	}
+	var leaked atomic.Value
+	leaked.Store("")
+	other := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		leaked.Store(r.Header.Get("X-API-Key"))
+		if strings.HasPrefix(r.URL.Path, "/full/") {
+			w.Header().Set("Content-Type", "image/png")
+			w.Write([]byte("png"))
+			return
+		}
+		w.Write([]byte(`{"data":[],"meta":{"current_page":1,"last_page":1}}`))
+	}))
+	defer other.Close()
+	var api *httptest.Server
+	api = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api/v1/search":
+			http.Redirect(w, r, other.URL+"/search", http.StatusFound)
+		case r.URL.Path == "/api/v1/w/abc":
+			fmt.Fprintf(w, `{"data":{"id":"abc","path":"%s/full/ab/wallhaven-abc.png","file_type":"image/png","file_size":3}}`, api.URL)
+		case strings.HasPrefix(r.URL.Path, "/full/"):
+			http.Redirect(w, r, other.URL+r.URL.Path, http.StatusFound)
+		}
+	}))
+	defer api.Close()
+	// one client trusting both test certificates
+	pool := api.Client().Transport.(*http.Transport).TLSClientConfig.RootCAs
+	pool.AddCert(other.Certificate())
+	u, _ := url.Parse(api.URL)
+	h.Client, h.WallhavenAPI, h.WallhavenHosts = api.Client(), api.URL+"/api/v1", []string{u.Host}
+
+	if res := h.WallhavenSearch(WallhavenQuery{Query: "x"}); res.Error != "" {
+		t.Fatalf("search via redirect: %v", res.Error)
+	}
+	if leaked.Load() != "" {
+		t.Fatal("API key forwarded to another host")
+	}
+	if _, err := h.WallhavenInstall("abc"); err == nil || !strings.Contains(err.Error(), "image host") {
+		t.Fatalf("image redirect off the image host: %v", err)
+	}
+}

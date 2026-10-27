@@ -425,7 +425,7 @@ func TestRiceApplyUndo(t *testing.T) {
 		t.Fatal("wallpaper not copied")
 	}
 
-	if err := h.RiceUndo(); err != nil {
+	if _, err := h.RiceUndo(); err != nil {
 		t.Fatal(err)
 	}
 	after := readTree(t, cfg)
@@ -448,7 +448,7 @@ func TestRiceApplyUndo(t *testing.T) {
 	if w := readTree(t, tmp+"/Pictures"); len(w) != len(beforeWall) {
 		t.Errorf("wallpapers left behind: %v", w)
 	}
-	if err := h.RiceUndo(); err == nil {
+	if _, err := h.RiceUndo(); err == nil {
 		t.Error("a second undo should have nothing to undo")
 	}
 

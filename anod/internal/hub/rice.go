@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"slices"
 	"sort"
@@ -135,11 +136,12 @@ func readRice(dir string) (Rice, error) {
 	return r, nil
 }
 
-// configPrev is a config key's value before a rice set it.
+// configPrev is a config key's value before a rice set it, and what it set.
 type configPrev struct {
-	Key   string `json:"key"`
-	Had   bool   `json:"had"`
-	Value any    `json:"value,omitempty"`
+	Key     string `json:"key"`
+	Had     bool   `json:"had"`
+	Value   any    `json:"value,omitempty"`
+	Applied any    `json:"applied"`
 }
 
 // undoRecord is what riceUndo needs.
@@ -246,10 +248,16 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 			for _, d := range dropped {
 				res.Skipped = append(res.Skipped, SkippedPart{"keybinds", d})
 			}
-			b, _ := json.MarshalIndent(o, "", "  ")
-			ops = append(ops, copyOp{dst: kbPath, data: append(b, '\n')})
-			res.Keybinds = summary
-			parts["keybinds"] = true
+			if len(o.Binds) == 0 && len(o.Remove) == 0 {
+				// nothing usable: keep the user's keybinds rather than emptying them
+				res.Skipped = append(res.Skipped, SkippedPart{"keybinds", "nothing in this rice's keybinds can be applied; yours are unchanged"})
+				wantKeybinds = false
+			} else {
+				b, _ := json.MarshalIndent(o, "", "  ")
+				ops = append(ops, copyOp{dst: kbPath, data: append(b, '\n')})
+				res.Keybinds = summary
+				parts["keybinds"] = true
+			}
 		} else {
 			wantKeybinds = false
 			res.Skipped = append(res.Skipped, SkippedPart{"keybinds", "this rice has no keybinds"})
@@ -319,7 +327,7 @@ func (h *Hub) RiceApply(id string, layers []string) (*RiceResult, error) {
 		}
 		for _, k := range keys {
 			v, had := config.Get(userCfg, k)
-			rec.Config = append(rec.Config, configPrev{k, had, v})
+			rec.Config = append(rec.Config, configPrev{k, had, v, leaves[k]})
 		}
 	}
 
@@ -443,15 +451,17 @@ func fingerprint(p string) string {
 
 // RiceUndo puts back what the last rice apply changed: the config keys it
 // set, the files it replaced, and removes the files it created. It refuses
-// when any of those files changed since, so undo never discards later edits.
-func (h *Hub) RiceUndo() error {
+// when any of those files changed since; a config key you changed since is
+// kept as you set it and returned in kept. Undo never discards later edits.
+func (h *Hub) RiceUndo() (kept []string, err error) {
+	kept = []string{}
 	rec, err := h.readUndo()
 	if err != nil {
-		return err
+		return kept, err
 	}
 	if time.Since(rec.At) > UndoTTL {
 		os.Remove(h.undoPath())
-		return fmt.Errorf("%s was applied more than %d days ago; undo is no longer offered", rec.Name, int(UndoTTL.Hours()/24))
+		return kept, fmt.Errorf("%s was applied more than %d days ago; undo is no longer offered", rec.Name, int(UndoTTL.Hours()/24))
 	}
 	created := map[string]bool{}
 	for _, c := range rec.Created {
@@ -466,19 +476,23 @@ func (h *Hub) RiceUndo() error {
 	}
 	if len(changed) > 0 {
 		sort.Strings(changed)
-		return fmt.Errorf("can't undo %s: changed since it was applied (undo would discard your edits): %s", rec.Name, strings.Join(changed, ", "))
+		return kept, fmt.Errorf("can't undo %s: changed since it was applied (undo would discard your edits): %s", rec.Name, strings.Join(changed, ", "))
 	}
 	if len(rec.Paths) > 0 {
 		if _, err := backup.Restore(h.Home, rec.Snapshot, []backup.Category{{Name: "rice-snapshot", Paths: rec.Paths}}, "", false, time.Now()); err != nil {
-			return fmt.Errorf("restore: %w", err)
+			return kept, fmt.Errorf("restore: %w", err)
 		}
 	}
 	if len(rec.Config) > 0 {
 		cfg, err := config.Load(rec.CfgPath)
 		if err != nil {
-			return fmt.Errorf("your config: %v", err)
+			return kept, fmt.Errorf("your config: %v", err)
 		}
 		for _, c := range rec.Config {
+			if cur, ok := config.Get(cfg, c.Key); !ok || !reflect.DeepEqual(cur, c.Applied) {
+				kept = append(kept, c.Key) // you changed it since: yours stays
+				continue
+			}
 			if c.Had {
 				config.Set(cfg, c.Key, c.Value)
 			} else {
@@ -486,7 +500,7 @@ func (h *Hub) RiceUndo() error {
 			}
 		}
 		if err := writeConfig(rec.CfgPath, cfg); err != nil {
-			return err
+			return kept, err
 		}
 	}
 	inUse := ""
@@ -507,7 +521,7 @@ func (h *Hub) RiceUndo() error {
 	}
 	os.Remove(h.undoPath())
 	h.bump()
-	return nil
+	return kept, nil
 }
 
 func (h *Hub) managed(p string) bool {

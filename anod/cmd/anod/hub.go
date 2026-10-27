@@ -18,7 +18,7 @@ import (
 //	hub.cancel     {token}                     → true
 //	hub.remove     {type, id}                  → true
 //	hub.riceApply  {id, layers}                → {snapshot, applied, created, skipped, wallpaper, keybinds, appliedAt}
-//	hub.riceUndo                               → true
+//	hub.riceUndo                               → {ok: true, kept: [config keys you changed since, left as you set them]}
 //	hub.riceExport {name}                      → {id, path}
 //	hub.wallhaven  {query, page?, purity?, sorting?} → {items, page, lastPage, hasKey, error?}
 //	hub.wallhavenInstall {id}                  → {path}
@@ -114,10 +114,11 @@ func registerHub(srv *ipc.Server, h *hub.Hub) {
 		return res, nil
 	})
 	srv.HandleSlow("hub.riceUndo", func(json.RawMessage) (any, error) {
-		if err := h.RiceUndo(); err != nil {
+		kept, err := h.RiceUndo()
+		if err != nil {
 			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
 		}
-		return true, nil
+		return map[string]any{"ok": true, "kept": kept}, nil
 	})
 	srv.HandleSlow("hub.wallhaven", func(p json.RawMessage) (any, error) {
 		var q hub.WallhavenQuery

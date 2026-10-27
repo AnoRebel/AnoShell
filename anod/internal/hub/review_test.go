@@ -101,20 +101,22 @@ func TestRiceUndoKeepsLaterChanges(t *testing.T) {
 		t.Fatal("hub.list has no lastRice")
 	}
 
-	// a later edit to another key survives undo
+	// a later edit to another key survives undo, and so does one to a key the rice set
 	config.Set(m, "time.format", "hh:mm")
+	config.Set(m, "appearance.look", "mine")
 	b, _ := json.Marshal(m)
 	os.WriteFile(config.UserPath(), b, 0o644)
 	// a later edit to a file the rice created blocks undo
 	os.WriteFile(cfgDir+"/themes/t.json", []byte(`{"mine":1}`), 0o644)
-	if err := h.RiceUndo(); err == nil || !strings.Contains(err.Error(), "t.json") {
+	if _, err := h.RiceUndo(); err == nil || !strings.Contains(err.Error(), "t.json") {
 		t.Fatalf("undo over a changed file: %v", err)
 	}
 	os.WriteFile(cfgDir+"/themes/t.json", []byte(`{}`), 0o644)
-	if err := h.RiceUndo(); err != nil {
-		t.Fatal(err)
+	kept, err := h.RiceUndo()
+	if err != nil || !slices.Equal(kept, []string{"appearance.look"}) {
+		t.Fatalf("undo: kept %v, %v", kept, err)
 	}
-	m, err := config.Load(config.UserPath())
+	m, err = config.Load(config.UserPath())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +126,10 @@ func TestRiceUndoKeepsLaterChanges(t *testing.T) {
 	if v, _ := config.Get(m, "time.format"); v != "hh:mm" {
 		t.Fatal("undo discarded a later change")
 	}
-	if _, ok := config.Get(m, "appearance.look"); ok {
+	if v, _ := config.Get(m, "appearance.look"); v != "mine" {
+		t.Fatal("undo discarded a later edit of a key the rice set")
+	}
+	if _, ok := config.Get(m, "appearance.transparency.enable"); ok {
 		t.Fatal("rice key not removed")
 	}
 	if fileExists(cfgDir + "/themes/t.json") {
@@ -159,5 +164,25 @@ func TestCommitRechecksAndEntryCount(t *testing.T) {
 	ents = append(ents, tarEnt{name: "widget.json", body: "{}"})
 	if _, err := extract(targz(t, ents...), "widgets", "w", filepath.Join(t.TempDir(), "s")); err == nil {
 		t.Fatal("folder entries not counted")
+	}
+}
+
+func TestRiceKeybindsAllDropped(t *testing.T) {
+	h, _, tmp := setup(t)
+	cfgDir := filepath.Join(tmp, ".config/anoshell")
+	os.MkdirAll(cfgDir+"/rices/r", 0o755)
+	os.WriteFile(cfgDir+"/rices/r/rice.json", []byte(`{"name":"R","config":{}}`), 0o644)
+	os.WriteFile(cfgDir+"/rices/r/keybinds.json", []byte(`{"binds":[{"chord":"Super+L","action":"hyprland","args":["x()"]}]}`), 0o644)
+	mine := `{"binds":[{"chord":"Super+T","action":"exec","args":["kitty"]}]}`
+	os.WriteFile(cfgDir+"/keybinds.json", []byte(mine), 0o644)
+	res, err := h.RiceApply("r", []string{"keybinds"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(cfgDir + "/keybinds.json"); string(b) != mine {
+		t.Fatalf("keybinds emptied: %s", b)
+	}
+	if slices.Contains(res.Applied, "keybinds") || !slices.ContainsFunc(res.Skipped, func(s SkippedPart) bool { return strings.Contains(s.Reason, "yours are unchanged") }) {
+		t.Fatalf("result %+v", res)
 	}
 }

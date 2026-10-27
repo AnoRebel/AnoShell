@@ -76,7 +76,8 @@ func riceKeybinds(path string) (o keybinds.Overrides, summary []KeybindSummary, 
 	return o, summary, dropped, nil
 }
 
-// auditKeybinds runs the per-line rules over the commands the binds run.
+// auditKeybinds runs the per-line rules over the commands the binds run;
+// a finding's file names the chord and line 1 is the command line.
 func auditKeybinds(summary []KeybindSummary, hosts, commands []string) []Finding {
 	out := []Finding{}
 	add := func(rule, file string, line int, detail string) {
@@ -84,7 +85,7 @@ func auditKeybinds(summary []KeybindSummary, hosts, commands []string) []Finding
 		if highRules[rule] {
 			sev = "high"
 		}
-		out = append(out, Finding{rule, file, 0, detail, sev})
+		out = append(out, Finding{rule, file, line, detail, sev})
 	}
 	for _, s := range summary {
 		if s.Command == "" {
@@ -98,7 +99,7 @@ func auditKeybinds(summary []KeybindSummary, hosts, commands []string) []Finding
 				name = name[i+1:]
 			}
 			if !harmlessCommands[name] && !declared(name, commands) {
-				add("undeclared-command", file, 0, fmt.Sprintf("binds a key to %q, which the rice doesn't declare", name))
+				add("undeclared-command", file, 1, fmt.Sprintf("binds a key to %q, which the rice doesn't declare", name))
 			}
 		}
 	}
