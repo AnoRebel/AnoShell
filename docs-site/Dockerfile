@@ -47,4 +47,7 @@ ENV NODE_ENV=production \
     DOCS_VERSION=$DOCS_VERSION
 
 EXPOSE 3000
+# /api/health reads the content index (curl isn't in the slim image).
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
 CMD ["node", ".output/server/index.mjs"]
