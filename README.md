@@ -8,6 +8,32 @@ backend is picked from the session at start.
 
 **Documentation:** [anoshell.anorebel.net](https://anoshell.anorebel.net) (stable) · [dev.anoshell.anorebel.net](https://dev.anoshell.anorebel.net) (development) · source in [`docs/`](docs/overview.md)
 
+## What's in it
+
+- **Panels and the pill:** bars in several forms with attachable groups, the
+  AnoSpot pill (faces, transients, any edge), sidebars, dock, launcher,
+  overview, and four panel families; with the connected frame they fuse into
+  one curved surface ([overview](docs/overview.md), [the pill](docs/anospot.md)).
+- **Looks and colours:** Liquid, Ink, Neo-tech and Clay looks, static themes or
+  wallpaper colours (matugen), glass, colour modes, your own looks
+  ([looks](docs/looks.md)).
+- **Hub:** themes, looks, widgets, wallpapers (and Wallhaven) and whole-setup
+  rices from built-in, your folders and catalogs, with checksums, a code check
+  and undo ([hub](docs/hub.md)).
+- **Desktop widgets** in pages on a grid, plus your own ([widgets](docs/widgets.md)).
+- **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
+  the frame ([reader](docs/reader.md)).
+- **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
+  brightness, night light, power and performance mode, device pills, package
+  updates, removable drives, notifications with DND, lock screen, screen time
+  with limits, screenshots (freeze-frame regions) and screen recording,
+  song recognition, lyrics ([extras](docs/extras.md), [configuration](docs/configuration.md)).
+- **anod and `ano`:** the companion daemon (wallpapers, hooks, keybinds,
+  displays, backups, the Hub, the reader backend) and its CLI: `ano doctor`,
+  `ano backup`, `ano hub`, `ano keybinds` ([anod](docs/anod.md), [CLI](docs/cli.md)).
+- **Settings** for all of it, as an overlay or a standalone window, with a
+  Ctrl+K search over every option.
+
 Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config + themes + lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
 
 ## Quick Start
