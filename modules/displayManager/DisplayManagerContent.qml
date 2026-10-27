@@ -12,7 +12,8 @@ Item {
     id: window
 
     // ─── Colors from Appearance ─────────────────────────────────────────
-    readonly property color base: Appearance.colors.colLayer0
+    // Opaque like the other cards (text stays readable over any wallpaper).
+    readonly property color base: Appearance.colors.colLayer0Base
     readonly property color mantle: Appearance.colors.colLayer1
     readonly property color crust: Appearance.colors.colLayer2
     readonly property color text_: Appearance.colors.colOnLayer0
@@ -158,6 +159,24 @@ Item {
         sizes.sort((a, b) => b[0] * b[1] - a[0] * a[1])
         const accents = [accentPink, accentMauve, accentBlue, accentTeal, accentYellow, accentPeach, accentGreen, accentRed]
         return sizes.slice(0, 8).map((m, i) => ({ resW: m[0], resH: m[1], label: window._modeNames[`${m[0]}x${m[1]}`] ?? `${m[0]}×${m[1]}`, accent: accents[i % accents.length] }))
+    }
+
+    property int _modelRev: 0   // bumped on monitorsModel edits (ListModel changes aren't tracked)
+    readonly property var rateChoices: {
+        void monitorsModel.count; void window._modelRev
+        if (monitorsModel.count === 0) return []
+        const m = monitorsModel.get(Math.min(window.activeEditIndex, monitorsModel.count - 1))
+        void window.resolutionChoices
+        const modes = (CompositorService.outputs ?? []).find(o => o.name === m.name)?.availableModes ?? []
+        const rates = []
+        for (const x of modes) {
+            const r = String(x).match(/^(\d+)x(\d+)@([\d.]+)/)
+            if (r && Number(r[1]) === m.resW && Number(r[2]) === m.resH) {
+                const hz = Math.round(Number(r[3]))
+                if (!rates.includes(hz)) rates.push(hz)
+            }
+        }
+        return rates.sort((a, b) => a - b).slice(0, 8)
     }
 
     // ─── System Query ───────────────────────────────────────────────────
@@ -454,6 +473,7 @@ Item {
                                             selectedResAccent = accentColor;
                                             monitorsModel.setProperty(activeEditIndex, "resW", modelData.resW);
                                             monitorsModel.setProperty(activeEditIndex, "resH", modelData.resH);
+                                            window._modelRev++;
                                             delayedLayoutUpdate.restart();
                                         }
                                     }
@@ -465,12 +485,22 @@ Item {
                     Item { Layout.preferredHeight: 15 }
 
                     // Refresh rate slider
+                    // A single rate (most laptop panels): just say it.
+                    StyledText {
+                        visible: window.rateChoices.length === 1
+                        Layout.leftMargin: 10
+                        font.family: Appearance.font.family.monospace
+                        color: window.text_
+                        text: `${window.rateChoices[0] ?? 60} Hz (the only rate at this size)`
+                    }
                     Item {
                         id: sliderContainer
+                        visible: window.rateChoices.length !== 1
                         Layout.fillWidth: true; Layout.preferredHeight: 50
                         Layout.leftMargin: 10; Layout.rightMargin: 10
-                        property var rates: [60, 75, 100, 120, 144, 240]
-                        property var rateColors: [accentRed, accentMauve, accentBlue, accentBlue, accentTeal, accentGreen]
+                        // This size's rates from the monitor's modes; the common ones when none are reported.
+                        property var rates: window.rateChoices.length > 1 ? window.rateChoices : [60, 75, 100, 120, 144, 240]
+                        property var rateColors: [accentRed, accentMauve, accentBlue, accentBlue, accentTeal, accentGreen, accentPink, accentYellow]
                         property int currentIndex: {
                             if (monitorsModel.count === 0) return 0;
                             let currentVal = parseInt(monitorsModel.get(activeEditIndex).rate) || 60;
