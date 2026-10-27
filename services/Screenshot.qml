@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import qs.modules.common
 import qs.services
 
@@ -47,6 +48,7 @@ Singleton {
         delayTick.stop(); root.countdown = 0
         if (waitFile.running) { waitFile.stop(); root._finish(1) }
         else if (regionPick.running) regionPick.signal(15) // the region selection (onExited finishes it)
+        else if (freezeSettle.running) { freezeSettle.stop(); root._finish(1) }
     }
 
     Timer {
@@ -81,6 +83,11 @@ Singleton {
             if (!asked) { geometryGuard.stop(); root._finish(1) } // this backend can't say which window is focused
         } else if (root._mode === "region") {
             // slurp alone first (cancel signals it directly), then grim.
+            // screenshot.freezeRegion: each screen is captured first and shown
+            // still while you pick, so the shot is that moment (grim then
+            // captures the still picture).
+            if (root.freezeRegion) { freezeGrab.exec({ command: ["bash", "-c", root._mk + 'for o in "$@"; do grim -o "$o" "$DIR/.freeze-$o.png" || exit 1; done', "bash", ...Quickshell.screens.map(x => x.name)],
+                environment: ({ DIR: root.dir }) }); return }
             regionPick.running = true
         } else {
             const output = CompositorService.focusedMonitorName
@@ -90,6 +97,43 @@ Singleton {
     }
 
     Timer { id: geometryGuard; interval: 3000; onTriggered: root._finish(1) }
+
+    readonly property bool freezeRegion: Config.options?.screenshot?.freezeRegion ?? false
+    property bool frozen: false
+    Process {
+        id: freezeGrab
+        onExited: code => {
+            if (code !== 0) { root._finish(1); return }
+            root.frozen = true
+            freezeSettle.restart()
+        }
+    }
+    // The still picture is up (layer animations included) before slurp starts.
+    Timer { id: freezeSettle; interval: 350; onTriggered: regionPick.running = true }
+    function _unfreeze() {
+        if (!root.frozen) return
+        root.frozen = false
+        Quickshell.execDetached(["sh", "-c", 'rm -f -- "$1"/.freeze-*.png', "sh", root.dir])
+    }
+    Variants {
+        model: root.frozen ? Quickshell.screens : []
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            color: "black"
+            anchors { top: true; bottom: true; left: true; right: true }
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.namespace: "quickshell:freeze"
+            mask: Region { item: null } // slurp takes the pointer
+            Image {
+                anchors.fill: parent
+                source: `file://${root.dir}/.freeze-${modelData.name}.png`
+                cache: false
+                smooth: false
+            }
+        }
+    }
 
     Process {
         id: regionPick
@@ -131,6 +175,7 @@ Singleton {
     }
 
     function _finish(code) {
+        root._unfreeze()
         root.busy = false
         if (code === 0) { root.lastFile = root._out; root.captured(root._out, root._mode) }
         else root.failed(root._mode, root._mode === "region" ? "cancelled" : "capture failed")

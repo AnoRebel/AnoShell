@@ -855,6 +855,7 @@ Singleton {
                 property int previewSeconds: 6         // 0 = the card stays until closed
                 property string onTimeout: "keep"      // keep (temp file) | save | delete
                 property string saveDir: ""            // "" = ~/Pictures/Screenshots
+                property bool freezeRegion: false      // the screen stands still while you pick a region
             }
             // Screen time (services/ScreenTime.qml → anod screentime.*): local only.
             property JsonObject screenTime: JsonObject {

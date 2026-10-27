@@ -360,6 +360,7 @@
   "screenTime.idleSeconds": "int",
   "screenTime.keepDays": "int",
   "screenshot.copyOnCapture": "bool",
+  "screenshot.freezeRegion": "bool",
   "screenshot.onTimeout": "string",
   "screenshot.previewEdge": "string",
   "screenshot.previewSeconds": "int",

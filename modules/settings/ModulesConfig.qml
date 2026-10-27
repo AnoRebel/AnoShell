@@ -491,6 +491,13 @@ ColumnLayout {
                 Layout.preferredWidth: 200
             }
         }
+        ConfigSwitch {
+            label: "Freeze the screen while picking a region"
+            configKey: "screenshot.freezeRegion"
+            sublabel: "The region shot is the moment you started, not what moved meanwhile (Hyprland and other wlroots compositors)"
+            checked: Config.options?.screenshot?.freezeRegion ?? false
+            onCheckedChanged: Config.setNestedValue("screenshot.freezeRegion", checked)
+        }
     }
 
     // ═══ App Launcher / Search ═══

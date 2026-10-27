@@ -552,6 +552,15 @@
  },
  {
   "page": 1,
+  "card": "",
+  "label": "Freeze the screen while picking a region",
+  "sublabel": "The region shot is the moment you started, not what moved meanwhile (Hyprland and other wlroots compositors)",
+  "keys": [
+   "screenshot.freezeRegion"
+  ]
+ },
+ {
+  "page": 1,
   "card": "App Launcher",
   "label": "App Launcher",
   "sublabel": "Extra results above your apps · each off until you turn it on",
