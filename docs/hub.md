@@ -81,13 +81,20 @@ A rice is a folder in `~/.config/anoshell/rices/<id>/` with a `rice.json`
 widgets, wallpapers and keybinds.
 
 - **Apply rice** first snapshots your current setup, then merges only
-  appearance settings (look, theme, bar style, pill position, widget layout
+  appearance settings, each checked against the setting's type (look, theme, bar style, pill position, widget layout
   and similar; never hooks, apps or commands), copies its files and sets its
   wallpaper.
-- **Its keybinds** apply only when you tick that switch. A compositor layer
-  (raw Hyprland or niri config) is not applied.
-- **Undo last rice** puts the snapshot back exactly and deletes the files the
-  rice added.
+- **Its keybinds** apply only when you tick that switch, and the page lists
+  every bind first (commands it runs are highlighted). Only actions from the
+  keybind catalogue are taken; raw Hyprland/niri binds, Lua helpers and
+  submaps are left out and listed. A rice with keybinds or widgets counts as
+  code, so installing one from a catalog asks first. A compositor layer (raw
+  Hyprland or niri config) is not applied.
+- **Undo** (named after the last rice and when you applied it, for 14 days)
+  puts back only the settings that rice changed, so later changes to other
+  settings stay; it removes the files the rice added and restores the ones it
+  replaced. If you edited one of those files since, it says which and stops
+  instead of overwriting your edit.
 - **Export** saves what you have now as a rice: your appearance settings, your
   own theme or look, and the current wallpaper.
 
