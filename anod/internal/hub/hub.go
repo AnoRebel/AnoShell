@@ -80,7 +80,13 @@ type Hub struct {
 	CurrentWallpaper func() string
 	KeybindsChanged  func() error // regenerate + reload compositor binds
 
+	// Wallhaven: the API base and the image hosts (tests point them at a fake).
+	WallhavenAPI   string
+	WallhavenHosts []string
+
 	mu       sync.Mutex
+	whCache  map[string]whCached
+	whCalls  []time.Time
 	pending  map[string]*pending
 	fetchErr map[string]string // catalog url -> last refresh error
 	hashes   map[string]hashMemo

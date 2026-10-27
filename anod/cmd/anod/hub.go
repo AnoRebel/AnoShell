@@ -20,6 +20,8 @@ import (
 //	hub.riceApply  {id, layers}                → {snapshot, applied, created, skipped, wallpaper, keybinds, appliedAt}
 //	hub.riceUndo                               → true
 //	hub.riceExport {name}                      → {id, path}
+//	hub.wallhaven  {query, page?, purity?, sorting?} → {items, page, lastPage, hasKey, error?}
+//	hub.wallhavenInstall {id}                  → {path}
 func registerHub(srv *ipc.Server, h *hub.Hub) {
 	if err := h.Init(); err != nil {
 		log.Printf("hub: %v", err)
@@ -116,6 +118,28 @@ func registerHub(srv *ipc.Server, h *hub.Hub) {
 			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
 		}
 		return true, nil
+	})
+	srv.HandleSlow("hub.wallhaven", func(p json.RawMessage) (any, error) {
+		var q hub.WallhavenQuery
+		if len(p) > 0 {
+			if err := json.Unmarshal(p, &q); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {query, page?, purity?, sorting?}")
+			}
+		}
+		return h.WallhavenSearch(q), nil
+	})
+	srv.HandleSlow("hub.wallhavenInstall", func(p json.RawMessage) (any, error) {
+		var req struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.ID == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {id}")
+		}
+		path, err := h.WallhavenInstall(req.ID)
+		if err != nil {
+			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
+		}
+		return map[string]any{"path": path}, nil
 	})
 	srv.HandleSlow("hub.riceExport", func(p json.RawMessage) (any, error) {
 		var req struct {

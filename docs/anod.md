@@ -73,6 +73,7 @@ is not restarted.
 | `ano hub list [type] [--json]` / `ano hub refresh` | local and catalog items (refresh fetches the catalogs first) |
 | `ano hub install <type> <id> [--catalog URL] [--yes]` | verified install from a catalog; code content (widgets) shows the audit findings and declared hosts/commands and asks y/N unless `--yes` |
 | `ano hub remove <type> <id>` | removes a catalog install (never built-in items or your own files) |
+| `ano hub wallhaven [query…] [--page N] [--purity sfw\|sketchy\|nsfw] [--sorting S]` / `ano hub wallhaven-install <id>` | searches Wallhaven through anod (beyond SFW needs your key, saved with `secret.set` as `wallhaven`), or installs one into `<wallpaper folder>/hub/wallhaven-<id>.<ext>` with a receipt |
 | `ano hub pack <dir\|file> [--type T] [--id ID] [--version V] [--url-base URL] [--out DIR]` | archives an item in the catalog format, checks it would install, prints its index entry with the SHA-256 |
 | `ano version` | prints the version |
 
@@ -195,7 +196,11 @@ in `hub.catalogs` with ETags; a failure keeps the cache and marks the catalog `o
 `hub.prepare` (`{"type", "id", "catalog"}`: download, SHA-256 check, staged extraction, static audit
 for code; returns a token valid 10 minutes), `hub.commit` (`{"token"}` → `{"path"}`), `hub.cancel`,
 `hub.remove` (`{"type", "id"}`), `hub.riceApply` (`{"id", "layers"}`), `hub.riceUndo` and
-`hub.riceExport` (`{"name"}` → `{"id", "path"}`). Every change bumps
+`hub.riceExport` (`{"name"}` → `{"id", "path"}`), `hub.wallhaven` (`{"query", "page"?, "purity"?, "sorting"?}` →
+`{"items": [{"id", "url", "thumb", "resolution", "fileSize", "fileType", "source", "purity", "page", "installed"}],
+"page", "lastPage", "hasKey", "error"?}`; results cached 10 minutes, at most 40 calls a minute, the key sent only as
+`X-API-Key`) and `hub.wallhavenInstall` (`{"id"}` → `{"path"}`: the image location is looked up again on Wallhaven,
+only https from `w.wallhaven.cc`, JPEG/PNG/WebP up to 64 MiB). Every change bumps
 `$XDG_STATE_HOME/anoshell/hub/revision`; receipts live in `…/hub/receipts/<type>/<id>.json`.
 Archives with links, devices, absolute paths or `..`, more than 500 files or 64 MiB unpacked are
 refused; nothing in an archive is ever run. A rice merges only look keys (`appearance`,

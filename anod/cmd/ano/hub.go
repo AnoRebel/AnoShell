@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -22,6 +23,8 @@ const hubUsage = `usage: ano hub [themes|looks|widgets|wallpapers|rices]   open 
        ano hub refresh
        ano hub install <type> <id> [--catalog URL] [--yes]
        ano hub remove <type> <id>
+       ano hub wallhaven [query…] [--page N] [--purity sfw|sketchy|nsfw] [--sorting S] [--json]
+       ano hub wallhaven-install <id>
        ano hub pack <dir|file> [--type T] [--id ID] [--version V] [--url-base URL] [--out DIR]`
 
 func hubCmd(args []string) int {
@@ -169,6 +172,49 @@ func hubCmd(args []string) int {
 		}
 		b, _ := json.MarshalIndent(e, "", "  ")
 		fmt.Println(string(b))
+		return 0
+	case "wallhaven":
+		fs := flag.NewFlagSet("hub wallhaven", flag.ExitOnError)
+		var q hub.WallhavenQuery
+		fs.IntVar(&q.Page, "page", 1, "result page")
+		fs.StringVar(&q.Purity, "purity", "", "sfw (default), sketchy or nsfw (needs your API key)")
+		fs.StringVar(&q.Sorting, "sorting", "", "date_added, relevance, random, views, favorites or toplist")
+		asJSON := fs.Bool("json", false, "machine-readable output")
+		q.Query = strings.Join(parseInterleaved(fs, args[1:]), " ")
+		raw, err := ipc.CallTimeout(sock, "hub.wallhaven", q, time.Minute)
+		if err != nil {
+			return fail(err)
+		}
+		if *asJSON {
+			fmt.Println(string(raw))
+			return 0
+		}
+		var res hub.WallhavenResult
+		json.Unmarshal(raw, &res)
+		if res.Error != "" {
+			return fail(errors.New(res.Error))
+		}
+		for _, w := range res.Items {
+			mark := ""
+			if w.Installed {
+				mark = "  installed"
+			}
+			fmt.Printf("%-8s %-10s %5d KiB  %s%s\n", w.ID, w.Resolution, w.FileSize>>10, w.URL, mark)
+		}
+		fmt.Printf("page %d of %d\n", res.Page, res.LastPage)
+		return 0
+	case "wallhaven-install":
+		if len(args) != 2 {
+			fmt.Fprintln(os.Stderr, hubUsage)
+			return 2
+		}
+		raw, err := ipc.CallTimeout(sock, "hub.wallhavenInstall", map[string]any{"id": args[1]}, 3*time.Minute)
+		if err != nil {
+			return fail(err)
+		}
+		var c struct{ Path string }
+		json.Unmarshal(raw, &c)
+		fmt.Println("Installed:", c.Path)
 		return 0
 	case "help", "-h", "--help":
 		fmt.Println(hubUsage)
