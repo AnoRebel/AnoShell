@@ -570,7 +570,7 @@ ColumnLayout {
             RippleButton {
                 buttonText: Hub.lastRice ? `Undo ${Hub.lastRice.name || Hub.lastRice.id} (${Qt.formatDateTime(new Date(Hub.lastRice.appliedAt * 1000), "d MMM, hh:mm")})` : "Nothing to undo"
                 enabled: Anod.available && !!Hub.lastRice
-                onClicked: Hub.riceUndo((r, e) => { root.say(e ? e.message : "Your previous setup is back.", !!e); Hub.list() })
+                onClicked: Hub.riceUndo((r, e) => { root.say(e ? e.message : (r?.kept ?? []).length ? `Your previous setup is back, except what you changed since: ${r.kept.join(", ")}.` : "Your previous setup is back.", !!e); Hub.list() })
             }
         }
     }
