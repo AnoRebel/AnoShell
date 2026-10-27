@@ -92,7 +92,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `MprisController` | Active Mpris player tracking, duplicate filtering, position polling. |
 | `LyricsService` | Synced `.lrc` parsing — local files first, falls back to LRCLIB / NetEase. Opt-in. |
 | `SpectrumService` | Cava audio spectrum, reference-counted (only runs when something subscribes). |
-| `RecorderStatus` | Detects `wf-recorder` process. Powers the recording-active indicators. |
+| `RecorderStatus` | Screen recording with gpu-screen-recorder, wl-screenrec or wf-recorder (fps, audio none/system/mic/both, discard, finish preview); state from its own recorder process. |
 
 ### Time, weather, notifications, calendar, AI
 
@@ -564,7 +564,7 @@ Each AnoSpot widget/action and the underlying tool that makes it work:
 |--------------------------|------------------------------------------------------------|
 | Mpris widget             | Mpris D-Bus (any modern player); `playerctl` recommended    |
 | Notification widget      | `libnotify`-emitted notifications via the QS service       |
-| Recording widget         | `wf-recorder` (detected by polling `pgrep -x wf-recorder`)  |
+| Recording widget         | a recorder: `gpu-screen-recorder`, `wl-screenrec` or `wf-recorder`; `ffmpeg` (finish thumbnail), `gio` (Discard to trash), `pactl` (system + mic mix) |
 | Battery widget           | UPower D-Bus (standard on every Linux desktop with a battery) |
 | Workspace widget         | `CompositorService` → Hyprland or Niri IPC                 |
 | Clock/Weather widget     | Built-in `DateTime` + `Weather` services                   |
