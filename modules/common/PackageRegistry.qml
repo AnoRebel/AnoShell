@@ -34,21 +34,31 @@ Scope {
 
     property var _bundled: ({})
     property var _user: ({})
-    property var qmlErrors: ({})       // id -> compile error ("" when it compiled)
+    property var qmlErrors: ({})       // entry url -> compile error ("" when it compiled)
     readonly property var entries: Object.assign({}, root._bundled, root._user)
     readonly property var list: Object.values(root.entries).sort((a, b) => a.name.localeCompare(b.name))
 
+    // Results are per version (the URL carries the revision), so a package
+    // is usable only once the version in effect has compiled.
     function errorsOf(id: string): var {
         const e = root.entries[id]
         if (!e) return [`no ${root.kind} package "${id}"`]
-        return root.qmlErrors[id] ? e.errors.concat([root.qmlErrors[id]]) : e.errors
+        const q = root.qmlErrors[e.url]
+        return q ? e.errors.concat([q]) : e.errors
     }
-    // Usable once its manifest is valid and its QML compiled (check()).
-    function usable(id: string): bool { return root.errorsOf(id).length === 0 && root.qmlErrors[id] === "" }
+    function usable(id: string): bool {
+        const e = root.entries[id]
+        return !!e && e.errors.length === 0 && root.qmlErrors[e.url] === ""
+    }
 
     property int _rev: 0
     function _ingest(source: string, dir: string, text: string): string {
         const dirId = dir.split("/").pop().replace(/~\d+$/, "")
+        const seq = parseInt((dir.match(/~(\d+)$/) ?? [0, 0])[1], 10)
+        // Two versions side by side (an interrupted update, a copy): the
+        // newest folder wins whichever manifest loads last.
+        const have = (source === "user" ? root._user : root._bundled)[dirId]
+        if (have && have.dir !== dir && have.seq > seq) return ""
         let m = null
         const errors = []
         try { m = JSON.parse(text) } catch (err) { errors.push(`${root.manifest}: invalid JSON: ${err.message ?? err}`) }
@@ -62,14 +72,13 @@ Scope {
         const entryFile = str(m?.entry) || "main.qml"
         const e = {
             id: dirId, name: str(m?.name) || dirId, description: str(m?.description), author: str(m?.author),
-            version: str(m?.version), entry: entryFile, source, dir,
+            version: str(m?.version), entry: entryFile, source, dir, seq,
             url: `file://${dir}/${entryFile}?r=${root._rev}`, errors, manifest: m ?? {}
         }
         const all = Object.assign({}, source === "user" ? root._user : root._bundled)
         all[dirId] = e
         if (source === "user") root._user = all; else root._bundled = all
         if (errors.length) console.warn(`[${root.kind}] ${dir}: ${errors.join("; ")}`)
-        const q = Object.assign({}, root.qmlErrors); delete q[dirId]; root.qmlErrors = q
         root._check(e)
         return entryFile
     }
@@ -89,10 +98,15 @@ Scope {
         const c = Qt.createComponent(e.url, Component.Asynchronous)
         const done = () => {
             if (c.status === Component.Loading) return
-            if (root.entries[e.id]?.url !== e.url) { c.destroy(); return } // stale
-            const q = Object.assign({}, root.qmlErrors)
-            q[e.id] = c.status === Component.Error ? c.errorString().trim().split(`file://${e.dir}/`).join("").replace(/\?r=\d+/g, "") : ""
-            if (q[e.id]) console.warn(`[${root.kind}] ${e.id}: ${q[e.id]}`)
+            // Keep only results for versions still listed (bundled ones a
+            // user package shadows included).
+            const live = new Set(Object.values(root._bundled).concat(Object.values(root._user)).map(x => x.url))
+            const q = {}
+            for (const u in root.qmlErrors) if (live.has(u)) q[u] = root.qmlErrors[u]
+            if (live.has(e.url)) {
+                q[e.url] = c.status === Component.Error ? c.errorString().trim().split(`file://${e.dir}/`).join("").replace(/\?r=\d+/g, "") : ""
+                if (q[e.url]) console.warn(`[${root.kind}] ${e.id}: ${q[e.url]}`)
+            }
             root.qmlErrors = q
             c.destroy()
         }

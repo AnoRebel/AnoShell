@@ -77,7 +77,8 @@ starts empty.
    rights, no sandbox), checks the
    files for risky patterns: downloading and running scripts, `sudo` or
    undeclared `pkexec`, writing to `~/.ssh`, `/etc` or your shell config,
-   reading the secrets folder, binaries, and network hosts or commands the
+   reading the secrets folder, touching the screen lock or PAM, binaries, and
+   network hosts or commands the
    item doesn't declare. You see the author, the catalog, what it declares and
    what the check found, and choose **Install** (or **Install anyway**) or
    **Cancel**. The check is not a security audit, and neither is a catalog's

@@ -261,7 +261,10 @@ Item {
                 if (item.hasOwnProperty("active")) item.active = Qt.binding(() => root._activeFor(host.modelData))
                 if (item.hasOwnProperty("query")) item.query = Qt.binding(() => root._queryFor(host.modelData))
             }
+            // A model refresh recreates the delegates: an old one clears only
+            // what it wrote itself, not its successor's results.
             Component.onDestruction: {
+                if (root._pluginOut[modelData.id] !== host.out) return
                 const o = Object.assign({}, root._pluginOut); delete o[modelData.id]; root._pluginOut = o
             }
         }

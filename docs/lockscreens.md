@@ -39,9 +39,9 @@ key itself). In a preview on Hyprland the compositor's own Ctrl+Shift+Escape
 bind gets the key first.
 
 If the shell itself stops while locked, the screens stay covered: that's the
-protocol doing its job, and it means nothing can unlock them. Whether a
-restarted shell can take the lock over depends on the compositor and hasn't
-been tested on niri yet. From another TTY (Ctrl+Alt+F2) you can always end the
+protocol doing its job, and it means nothing can unlock them until a locker
+takes over. The restarted shell locks again (the marker above); whether niri
+hands the covered screens to it hasn't been tested yet. From another TTY (Ctrl+Alt+F2) you can always end the
 session with `loginctl terminate-session <id>` (`loginctl list-sessions`
 shows it), which closes your apps.
 
@@ -63,7 +63,11 @@ file. Its root `Item` fills the screen and gets `ctx`:
 | `preview` | shown as a preview: nothing is checked |
 
 Give your password field `focus: true`. Unlocking is never the lock screen's
-job: it only draws and calls `ctx.submit()`.
+job: it only draws and calls `ctx.submit()`. The shell holds the lock itself
+until PAM accepts a password; setting `GlobalStates.screenLocked` or changing
+`lock.enable` while locked doesn't release it, and neither does reloading the
+shell (a crash leaves a marker in `$XDG_RUNTIME_DIR/ano/locked`, and the
+restarted shell locks again).
 
 ```qml
 import QtQuick
@@ -84,5 +88,7 @@ Item {
 }
 ```
 
-Like widgets and plugins, a lock screen runs with the shell's rights; from a
-catalog the Hub checks it and asks first (see [Hub](hub.md)).
+Like widgets and plugins, a lock screen runs with the shell's rights, so it
+could still do anything the shell can: install only ones you trust. From a
+catalog the Hub checks it first, flags code that touches the lock state, the
+session lock or PAM, and asks (see [Hub](hub.md)).

@@ -30,7 +30,7 @@ type Finding struct {
 
 var highRules = map[string]bool{
 	"symlink": true, "binary": true, "escalation": true, "pipe-shell": true,
-	"config-write": true, "secrets-read": true,
+	"config-write": true, "secrets-read": true, "lock-state": true,
 }
 
 // harmlessCommands may run without being declared.
@@ -150,6 +150,14 @@ func auditText(p, class string, content []byte, hosts, commands []string, add fu
 		}
 		if strings.Contains(code, "anoshell/secrets") || strings.Contains(code, "/secrets/") {
 			add("secrets-read", p, line, "reads the secrets folder (API keys)")
+		}
+		// The lock is the shell's: a package that touches the lock state, the
+		// session lock or PAM is trying to do the unlocking itself.
+		for _, w := range []string{"screenLocked", "WlSessionLock", "Quickshell.Services.Pam", "PamContext", "unlock-session"} {
+			if strings.Contains(code, w) {
+				add("lock-state", p, line, "touches the screen lock ("+w+")")
+				break
+			}
 		}
 		if qmlLike {
 			for _, name := range extractCommands(code) {

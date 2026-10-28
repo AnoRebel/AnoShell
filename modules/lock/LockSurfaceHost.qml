@@ -17,11 +17,11 @@ FocusScope {
     // A package id to show instead of the configured one (the preview).
     property string packageId: ""
 
-    readonly property var entry: host.packageId !== ""
-        ? (host.packageId !== "default" && LockScreens.registry.usable(host.packageId) ? LockScreens.registry.entries[host.packageId] : null)
-        : LockScreens.current
+    // Picked once, when this screen's lock starts: a package edited or
+    // re-checked meanwhile isn't swapped in under your typing, and a fallback
+    // lasts until you unlock.
+    property var entry: null
     property bool fallback: false
-    onEntryChanged: host.fallback = false
     readonly property bool usePackage: !!host.entry && !host.fallback
 
     function _giveUp(why) {
@@ -33,8 +33,12 @@ FocusScope {
     // ctx is set as the package is created (setSource), so its bindings and
     // Connections see it from the start.
     readonly property string _url: host.usePackage ? host.entry.url : ""
-    on_UrlChanged: host._url ? pkg.setSource(host._url, { ctx: host.ctx }) : pkg.setSource("")
-    Component.onCompleted: if (host._url) pkg.setSource(host._url, { ctx: host.ctx })
+    on_UrlChanged: pkg.setSource(host._url, host._url ? { ctx: host.ctx } : {})
+    Component.onCompleted: {
+        host.entry = host.packageId !== ""
+            ? (host.packageId !== "default" && LockScreens.registry.usable(host.packageId) ? LockScreens.registry.entries[host.packageId] : null)
+            : LockScreens.current
+    }
     Loader {
         id: pkg
         anchors.fill: parent

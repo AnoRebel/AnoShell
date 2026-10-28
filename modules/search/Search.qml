@@ -80,12 +80,13 @@ Scope {
             Item {
                 implicitWidth: 32; implicitHeight: 32
                 MaterialSymbol { anchors.centerIn: parent; visible: !modelData.text; text: modelData.icon ?? "bolt"; iconSize: 24; color: Appearance.colors.colPrimary }
-                Text { anchors.centerIn: parent; visible: !!modelData.text; text: modelData.text ?? ""; font.pixelSize: 24 }
+                Text { anchors.centerIn: parent; visible: !!modelData.text; text: modelData.text ?? ""; textFormat: Text.PlainText; font.pixelSize: 24 }
             }
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 0
-                StyledText { text: modelData.title ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: isSelected ? Font.DemiBold : Font.Normal; elide: Text.ElideRight; Layout.fillWidth: true }
-                StyledText { text: modelData.subtitle ?? ""; visible: text !== ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.45; elide: Text.ElideRight; Layout.fillWidth: true }
+                // Plain text: results carry what plugins and the clipboard give.
+                StyledText { text: modelData.title ?? ""; textFormat: Text.PlainText; font.pixelSize: Appearance.font.pixelSize.small; font.weight: isSelected ? Font.DemiBold : Font.Normal; elide: Text.ElideRight; Layout.fillWidth: true }
+                StyledText { text: modelData.subtitle ?? ""; textFormat: Text.PlainText; visible: text !== ""; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.45; elide: Text.ElideRight; Layout.fillWidth: true }
             }
         }
         MouseArea {

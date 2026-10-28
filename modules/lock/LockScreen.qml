@@ -27,6 +27,72 @@ Scope {
 
     readonly property bool lockEnabled: CompositorService.compositor === "niri" && (Config.options?.lock?.enable ?? true)
 
+    // ── The latch ───────────────────────────────────────────────────────
+    // The lock is held from a lock request until PAM says yes, and nothing
+    // else releases it: GlobalStates.screenLocked only mirrors it (the bars
+    // hide on it), so config changes, IPC, a package or any other code
+    // setting it false don't unlock. It survives a shell reload
+    // (PersistentProperties) and a crash: a marker in $XDG_RUNTIME_DIR, read
+    // synchronously at start, locks again (the compositor keeps the screens
+    // covered meanwhile).
+    readonly property string markerPath: `${Quickshell.env("XDG_RUNTIME_DIR")}/ano/locked`
+    FileView { id: marker; path: root.markerPath; blockLoading: true; printErrors: false }
+    readonly property bool _bootMarker: marker.text().trim() === "1"
+    property bool _booting: true
+    PersistentProperties {
+        id: persist
+        reloadableId: "anoSessionLock"
+        property bool held: false
+    }
+    readonly property bool held: persist.held || (root._booting && root.lockEnabled && root._bootMarker)
+    Component.onCompleted: {
+        if (root.held) persist.held = true
+        root._booting = false
+        GlobalStates.screenLocked = persist.held
+    }
+    function _lock() {
+        if (!root.lockEnabled || persist.held) return
+        persist.held = true
+        markerProc.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && printf 1 > "$1"', "sh", root.markerPath]
+        markerProc.running = true
+    }
+    function _unlocked() {
+        persist.held = false
+        markerProc.command = ["rm", "-f", "--", root.markerPath]
+        markerProc.running = true
+    }
+    Process { id: markerProc }
+    onHeldChanged: {
+        GlobalStates.screenLocked = root.held
+        auth.reset()
+        if (pam.active) pam.abort()
+        if (root.sessionPath) Quickshell.execDetached(["gdbus", "call", "--system", "--dest", "org.freedesktop.login1",
+            "--object-path", root.sessionPath, "--method", "org.freedesktop.login1.Session.SetLockedHint", root.held ? "true" : "false"])
+    }
+    Connections {
+        target: GlobalStates
+        function onScreenLockedChanged() {
+            if (GlobalStates.screenLocked === root.held) return
+            if (GlobalStates.screenLocked) {
+                root._lock()
+                if (!root.held) GlobalStates.screenLocked = false // nothing to lock with here
+            } else {
+                GlobalStates.screenLocked = true // only a password unlocks
+            }
+        }
+    }
+    // A lock the compositor refused (another locker holds the session) leaves
+    // nothing to protect: let go rather than hide the bars for good.
+    Timer {
+        running: root.held && !sessionLock.secure
+        interval: 5000
+        onTriggered: {
+            console.warn("[lock] the compositor didn't confirm the lock; letting go")
+            root._unlocked()
+            Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Couldn't lock the screen", "The compositor refused the lock (is another locker running?)."])
+        }
+    }
+
     // ── Password check (one for all screens) ────────────────────────────
     QtObject {
         id: auth
@@ -35,7 +101,7 @@ Scope {
         property string _pending: ""
         signal failed()
         function submit(password) {
-            if (auth.busy || !GlobalStates.screenLocked) return
+            if (auth.busy || !root.held) return
             auth._pending = password
             auth.busy = true
             auth.error = ""
@@ -53,7 +119,14 @@ Scope {
         onPamMessage: {
             if (pam.responseRequired) {
                 if (auth._pending !== "") { pam.respond(auth._pending); auth._pending = "" }
-                else { auth.error = pam.message || "PAM asked for more than a password"; pam.abort() }
+                else {
+                    // A second question (a code, a token): not supported here.
+                    // abort() signals nothing, so this try ends now.
+                    auth.error = pam.message || "PAM asked for more than a password"
+                    pam.abort()
+                    auth.busy = false
+                    auth.failed()
+                }
             } else if (pam.messageIsError && pam.message) {
                 auth.error = pam.message
             }
@@ -63,28 +136,20 @@ Scope {
             auth._pending = ""
             if (result === PamResult.Success) {
                 auth.error = ""
-                GlobalStates.screenLocked = false
+                root._unlocked()
                 return
             }
             auth.error = result === PamResult.MaxTries ? "Too many tries: wait a moment" : (auth.error || "Wrong password")
             auth.failed()
         }
-        onError: err => {
-            auth.busy = false
-            auth._pending = ""
-            auth.error = `Password check failed: ${PamError.toString(err)}`
-            auth.failed()
-        }
-    }
-    Connections {
-        target: GlobalStates
-        function onScreenLockedChanged() { auth.reset(); if (pam.active) pam.abort() }
+        // completed(PamResult.Error) follows, which ends the try.
+        onError: err => { auth.error = `Password check failed: ${PamError.toString(err)}` }
     }
 
     // ── The lock ────────────────────────────────────────────────────────
     WlSessionLock {
         id: sessionLock
-        locked: root.lockEnabled && GlobalStates.screenLocked
+        locked: root.held
         WlSessionLockSurface {
             id: surface
             color: "black"
@@ -117,15 +182,20 @@ Scope {
         }
         return `/org/freedesktop/login1/session/${s}`
     }
+    property int _watchFails: 0
     Process {
         id: logindWatch
         running: root.lockEnabled && root.sessionPath !== ""
         command: ["gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1", "--object-path", root.sessionPath]
         stdout: SplitParser {
-            onRead: line => { if (line.includes("org.freedesktop.login1.Session.Lock (")) GlobalStates.screenLocked = true }
+            onRead: line => {
+                root._watchFails = 0
+                if (line.includes("org.freedesktop.login1.Session.Lock (")) root._lock()
+            }
         }
-        // gdbus exits if the bus restarts: watch again shortly.
-        onExited: if (root.lockEnabled) rewatch.restart()
+        // gdbus exits if the bus restarts: watch again, giving up after a
+        // few quick failures (no gdbus: ano doctor says so).
+        onExited: if (root.lockEnabled && ++root._watchFails <= 5) rewatch.restart()
     }
     Timer { id: rewatch; interval: 5000; onTriggered: logindWatch.running = root.lockEnabled && root.sessionPath !== "" }
 
@@ -174,11 +244,11 @@ Scope {
 
     IpcHandler {
         target: "lock"
-        function lock(): void { if (root.lockEnabled) GlobalStates.screenLocked = true }
+        function lock(): void { root._lock() }
         function unlock(): void { /* only a password unlocks */ }
         function preview(id: string): void { LockScreens.preview(id) }
         function status(): string {
-            return JSON.stringify({ enabled: root.lockEnabled, locked: GlobalStates.screenLocked, secure: sessionLock.secure,
+            return JSON.stringify({ enabled: root.lockEnabled, locked: root.held, secure: sessionLock.secure,
                 screen: LockScreens.selected, using: LockScreens.current?.id ?? "default" })
         }
     }

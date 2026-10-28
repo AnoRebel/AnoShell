@@ -78,6 +78,9 @@ func (h *Hub) Prepare(typ, id, catalog string) (*Prepared, error) {
 	if !ValidID(id) {
 		return nil, fmt.Errorf("invalid id %q (want lowercase letters, digits and dashes)", id)
 	}
+	if typ == "lockscreens" && id == "default" {
+		return nil, errors.New(`"default" is the built-in lock screen's id`)
+	}
 	cats, _ := h.cachedCatalogs()
 	if catalog == "" { // the first catalog that has it
 		for _, c := range cats {

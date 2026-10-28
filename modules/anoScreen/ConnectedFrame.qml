@@ -116,10 +116,12 @@ Item {
     property var _giveVel: [0, 0, 0, 0, 0, 0, 0, 0]
     property var _edge: []                          // free edge last frame
     property real _lastT: 0                         // its time, s
+    property int _hitches: 0
     property bool _awake: false
     onJellyChanged: if (!root.jelly) root._rest()
     function _rest() {
         root._awake = false
+        root._hitches = 0
         root._edge = []
         root._giveVel = [0, 0, 0, 0, 0, 0, 0, 0]
         if (root._give.some(g => g !== 0)) root._give = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -127,13 +129,18 @@ Item {
     function _step() {
         const now = Date.now() / 1000, dt = now - root._lastT
         root._lastT = now
+        // Frames this slow can't be animated: after a few in a row, rest
+        // rather than hold the give frozen on screen.
+        root._hitches = dt > 0.1 ? root._hitches + 1 : 0
+        if (root._hitches > 3) { root._rest(); return }
         const g = root._give.slice(), v = root._giveVel.slice(), e = root._edge.slice()
         const src = root.surfaces ?? []
         const stiffness = 200, damping = 16
         let moving = false
         for (let i = 0; i < root.slotCount; i++) {
             const p = root._packed[i], side = src[i]?.side ?? "top"
-            if (!p.active) { g[i] = 0; v[i] = 0; e[i] = undefined; continue }
+            // inactive, or a detached island (nothing to anchor the stretch to)
+            if (!p.active || p.junction === null) { g[i] = 0; v[i] = 0; e[i] = undefined; continue }
             const r = p.rect
             const free = side === "top" ? r[1] + r[3] : side === "bottom" ? r[1] : side === "left" ? r[0] + r[2] : r[0]
             // A first frame, a hitch (> 100 ms) or a jump this fast (a surface
