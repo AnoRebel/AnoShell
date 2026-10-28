@@ -687,6 +687,11 @@ Singleton {
                     // a visible effect when opacity < 1.0 (a fully opaque frame has
                     // nothing to see through to).
                     property bool blur: false
+                    // Jelly: a surface growing out of the frame gives at its
+                    // free edge and springs back (Ryoku-style). jellyAmount
+                    // scales the give (0–3).
+                    property bool jelly: false
+                    property real jellyAmount: 1.0
                 }
 
                 // Material 3 elevation shadows (SDF shader). Default off — when

@@ -19,7 +19,9 @@ layout(std140, binding = 0) uniform buf {
     // Eight chrome slots, one mat4 each (ShaderEffect has no array uniforms).
     // Columns: [0] rect = x,y,w,h px; [1] corner = per-corner radii; [2] k =
     // per-corner junction fillet radii (both topLeft, topRight, bottomRight,
-    // bottomLeft; a corner is sharp exactly where its k > 0); [3] x = active.
+    // bottomLeft; a corner is sharp exactly where its k > 0); [3] x = active,
+    // y = jelly offset px (the free edge's give, 0 at rest), z = axis (0 x,
+    // 1 y), w = the anchored (frame-side) edge in px.
     mat4 slot0;
     mat4 slot1;
     mat4 slot2;
@@ -101,9 +103,21 @@ float smin(float a, float b, float k) {
     return max(k, min(a, b)) - length(max(vec2(k) - vec2(a, b), vec2(0.0)));
 }
 
-float chromeDist(vec2 px, vec4 rect, vec4 corner) {
+float chromeDist(vec2 px, mat4 s) {
+    vec4 rect = s[0];
+    // Jelly: stretch along the depth axis about the anchored edge, so the body
+    // stays joined to the band and only its free edge gives.
+    if (s[3].y != 0.0) {
+        int ax = int(s[3].z + 0.5);
+        float depth = max(ax == 1 ? rect.w : rect.z, 1.0);
+        float k = depth / max(depth + s[3].y, 1.0);
+        if (ax == 1)
+            px.y = s[3].w + (px.y - s[3].w) * k;
+        else
+            px.x = s[3].w + (px.x - s[3].w) * k;
+    }
     vec2 c = rect.xy + rect.zw * 0.5;
-    return sdRoundBox4(px, c, rect.zw * 0.5, corner);
+    return sdRoundBox4(px, c, rect.zw * 0.5, s[1]);
 }
 
 float chromeK(vec2 px, vec4 rect, vec4 ks) {
@@ -115,13 +129,13 @@ float chromeK(vec2 px, vec4 rect, vec4 ks) {
 float addSlot(float d, vec2 px, mat4 s) {
     if (s[3].x < 0.5)
         return d;
-    return smin(d, chromeDist(px, s[0], s[1]), chromeK(px, s[0], s[2]));
+    return smin(d, chromeDist(px, s), chromeK(px, s[0], s[2]));
 }
 
 float addChrome(float d, vec2 px, mat4 s) {
     if (s[3].x < 0.5)
         return d;
-    return min(d, chromeDist(px, s[0], s[1]));
+    return min(d, chromeDist(px, s));
 }
 
 float sceneDist(vec2 px) {

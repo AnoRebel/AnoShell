@@ -90,14 +90,84 @@ Item {
         return out
     }
 
-    readonly property var _slots: root._packed.map(p => {
+    readonly property var _slots: root._packed.map((p, i) => {
         const r = p.rect, c = p.corner, k = p.k
+        const side = (root.surfaces ?? [])[i]?.side ?? "top"
+        const vertical = side === "top" || side === "bottom"
+        const anchor = side === "top" ? r[1] : side === "bottom" ? r[1] + r[3] : side === "left" ? r[0] : r[0] + r[2]
+        const give = p.active ? root._give[i] : 0
         // Qt.matrix4x4 takes rows; the shader reads columns.
         return Qt.matrix4x4(r[0], c[0], k[0], p.active,
-                            r[1], c[1], k[1], 0,
-                            r[2], c[2], k[2], 0,
-                            r[3], c[3], k[3], 0)
+                            r[1], c[1], k[1], give,
+                            r[2], c[2], k[2], vertical ? 1 : 0,
+                            r[3], c[3], k[3], anchor)
     })
+
+    // ── Jelly (appearance.connectedCorners.jelly) ─────────────────────────
+    // A surface whose free edge moves gives along its depth and springs back.
+    // Ported from Ryoku's BlobRect (GPL-3.0): an underdamped spring toward a
+    // target set by the speed, integrated in ≤8 ms steps with implicit
+    // damping (stable at any frame time), snapped to rest when invisible.
+    // Ryoku stretches a free blob about its centre; these bodies grow out of
+    // the band, so the stretch is anchored there (the shader) and in pixels.
+    readonly property bool jelly: (Config.options?.appearance?.connectedCorners?.jelly ?? false) && AnimationConfig.continuous
+    readonly property real jellyAmount: Math.max(0, Math.min(3, Config.options?.appearance?.connectedCorners?.jellyAmount ?? 1))
+    property var _give: [0, 0, 0, 0, 0, 0, 0, 0]   // px past the free edge
+    property var _giveVel: [0, 0, 0, 0, 0, 0, 0, 0]
+    property var _edge: []                          // free edge last frame
+    property real _lastT: 0                         // its time, s
+    property bool _awake: false
+    onJellyChanged: if (!root.jelly) root._rest()
+    function _rest() {
+        root._awake = false
+        root._edge = []
+        root._giveVel = [0, 0, 0, 0, 0, 0, 0, 0]
+        if (root._give.some(g => g !== 0)) root._give = [0, 0, 0, 0, 0, 0, 0, 0]
+    }
+    function _step() {
+        const now = Date.now() / 1000, dt = now - root._lastT
+        root._lastT = now
+        const g = root._give.slice(), v = root._giveVel.slice(), e = root._edge.slice()
+        const src = root.surfaces ?? []
+        const stiffness = 200, damping = 16
+        let moving = false
+        for (let i = 0; i < root.slotCount; i++) {
+            const p = root._packed[i], side = src[i]?.side ?? "top"
+            if (!p.active) { g[i] = 0; v[i] = 0; e[i] = undefined; continue }
+            const r = p.rect
+            const free = side === "top" ? r[1] + r[3] : side === "bottom" ? r[1] : side === "left" ? r[0] + r[2] : r[0]
+            // A first frame, a hitch (> 100 ms) or a jump this fast (a surface
+            // swapped into the slot) is not motion: just remember the edge.
+            const first = e[i] === undefined || dt > 0.1 || dt <= 0
+            // outward speed of the free edge (into the screen is +)
+            const out = first ? 0 : (side === "top" || side === "left" ? free - e[i] : e[i] - free) / dt
+            const speed = Math.abs(out)
+            e[i] = free
+            if (first) { moving = true; continue } // measure from the next frame
+            // The edge lags its motion (short while growing, long while
+            // shrinking) and overshoots when it stops: that ring is the jelly.
+            const target = speed > 5 && speed < 8000 ? -Math.max(-24, Math.min(24, out * 0.012)) * root.jellyAmount : 0
+            const steps = Math.max(1, Math.ceil(dt / 0.008)), h = Math.min(dt, 0.1) / steps
+            const invDamp = 1 / (1 + damping * h)
+            for (let s = 0; s < steps; s++) {
+                v[i] = (v[i] - stiffness * (g[i] - target) * h) * invDamp
+                g[i] += v[i] * h
+            }
+            if (!isFinite(g[i]) || Math.abs(g[i]) > 200) { g[i] = 0; v[i] = 0 }
+            // never more than a third of the body: a body closing to nothing
+            // takes its give with it instead of popping at the last frame
+            const depth = side === "top" || side === "bottom" ? r[3] : r[2]
+            g[i] = Math.max(-depth / 3, Math.min(depth / 3, g[i]))
+            if (speed > 5 || Math.abs(g[i]) > 0.25 || Math.abs(v[i]) > 2) moving = true
+            else { g[i] = 0; v[i] = 0 }
+        }
+        root._give = g; root._giveVel = v; root._edge = e
+        if (!moving) root._awake = false
+    }
+    FrameAnimation {
+        running: root.jelly && root._awake
+        onTriggered: root._step()
+    }
 
     /// Blur that follows the drawn silhouette (ext-background-effect-v1): the
     /// ring (window minus the rounded cutout), every active slot with its own
@@ -144,7 +214,7 @@ Item {
     }
     Component.onCompleted: blurThrottle.start()
     function _blurChanged() { root._blurDirty = true; if (!blurThrottle.running) blurThrottle.start() }
-    on_PackedChanged: _blurChanged()
+    on_PackedChanged: { _blurChanged(); if (root.jelly) root._awake = true }
     on_CutRadiusChanged: _blurChanged()
     on_CutLChanged: _blurChanged()
     on_CutTChanged: _blurChanged()

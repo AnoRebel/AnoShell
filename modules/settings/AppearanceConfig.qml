@@ -944,6 +944,27 @@ ColumnLayout {
             onCheckedChanged: Config.setNestedValue("appearance.connectedCorners.blur", checked)
         }
 
+        ConfigSwitch {
+            label: "Jelly"
+            configKey: "appearance.connectedCorners.jelly"
+            sublabel: "Panels give at their free edge as they slide out of the frame, then spring back. Off with reduced motion, performance mode or the battery saver."
+            enabled: shellModeCard.connected
+            checked: Config.options?.appearance?.connectedCorners?.jelly ?? false
+            onCheckedChanged: Config.setNestedValue("appearance.connectedCorners.jelly", checked)
+        }
+
+        ConfigSlider {
+            label: "Jelly amount"
+            configKey: "appearance.connectedCorners.jellyAmount"
+            sublabel: "How far the edge gives"
+            visible: Config.options?.appearance?.connectedCorners?.jelly ?? false
+            enabled: shellModeCard.connected
+            from: 0.25; to: 3; stepSize: 0.25
+            value: Config.options?.appearance?.connectedCorners?.jellyAmount ?? 1.0
+            onValueChanged: Config.setNestedValue("appearance.connectedCorners.jellyAmount", value)
+            valueText: `${value.toFixed(2)}×`
+        }
+
         NoticeBox {
             visible: shellModeCard.connected
             iconName: "info"

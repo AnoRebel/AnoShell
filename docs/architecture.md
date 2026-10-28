@@ -34,6 +34,12 @@ band.
   one `ShaderEffect` that draws the ring and up to **8 slots** as a signed
   distance field. Slots join the ring and each other with a smooth minimum
   (`smin`), whose `k` is the fillet radius.
+  With jelly on, each slot also carries a give in pixels: an underdamped
+  spring (ported from Ryoku's `BlobRect`) driven by the speed of the slot's
+  free edge, which the shader applies as a stretch along the slot's depth,
+  anchored at the band. The give is capped at a third of the body's depth, so
+  a closing surface takes it along instead of popping. The spring runs on a
+  `FrameAnimation` only while something moves.
 - **PanelRegistry** (`services/PanelRegistry.qml`): the per-screen list of
   surfaces the frame should draw.
 - **ConnectedSurfaceLease** (`modules/common/ConnectedSurfaceLease.qml`): how a

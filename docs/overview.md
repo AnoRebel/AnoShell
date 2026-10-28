@@ -41,6 +41,11 @@ touches an edge (bar, pill, sidebars, dock, popouts, notifications, OSD, tray
 menus) is drawn as part of one continuous shape, joined to the band by concave
 fillets. Surfaces grow out of their own edge rather than sliding in.
 
+**Jelly** (`appearance.connectedCorners.jelly`, off by default) makes a
+surface's free edge trail its motion and spring back when it stops, after
+Ryoku's frame. `jellyAmount` (0.25 to 3) scales it. Reduced motion,
+performance mode and the battery saver turn it off.
+
 While connected, the shell sets the compositor's outer gap to 0 so windows sit
 flush against the band, and the band reserves its thickness on edges no bar
 covers. When a window goes fullscreen the frame retracts, and the bar and pill
