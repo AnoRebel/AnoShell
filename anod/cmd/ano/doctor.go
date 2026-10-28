@@ -60,6 +60,8 @@ var features = []feature{
 	{"apps in their own session (else systemd-run)", "", []string{"setsid"}},
 	{"password prompt (polkit) details", "polkit.enable", []string{"pkaction", "pgrep", "ps"}},
 	{"removable drives (bar module drives)", "", []string{"udisksctl", "lsblk", "udevadm"}},
+	{"lock screen on niri: locking on loginctl lock-session", "lock.enable", []string{"gdbus"}},
+	{"launcher plugin clipboard history (bundled)", "", []string{"cliphist"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.

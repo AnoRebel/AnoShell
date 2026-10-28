@@ -1,327 +1,185 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pam
 import qs
 import qs.modules.common
-import qs.modules.common.widgets
 import qs.services
 import "."
 
 /**
- * Lock screen — only active on Niri (Hyprland uses hyprlock).
- * Uses PAM authentication for password verification.
- * Shows user avatar, time, date, and a password input field.
- * Configurable: enable/disable, compositor-aware.
+ * The lock screen. On niri the shell locks the session itself (ext-session-
+ * lock, so the compositor keeps every screen covered even if the shell dies);
+ * on Hyprland hyprlock does, and only the preview runs here.
+ *
+ * Every screen shows the chosen lock screen (LockScreens: the built-in one or
+ * a package, through LockSurfaceHost); they share one password check, PAM's
+ * "login" service. Locks on IPC `lock lock` and when logind asks
+ * (`loginctl lock-session`, the session menu, idle tools).
+ *
+ * Preview (IPC `lock preview [id]`, Settings → Hub): the lock screen in an
+ * ordinary window on the focused screen. Nothing is checked: Escape, a
+ * password or 60 s close it.
  */
 Scope {
     id: root
 
-    // Only run on Niri — Hyprland uses hyprlock
     readonly property bool lockEnabled: CompositorService.compositor === "niri" && (Config.options?.lock?.enable ?? true)
 
-    Loader {
-        active: root.lockEnabled
-
-        sourceComponent: Scope {
-            id: lockScope
-
-            Connections {
-                target: GlobalStates
-                function onScreenLockedChanged() {
-                    if (GlobalStates.screenLocked) pamContext.start()
-                }
+    // ── Password check (one for all screens) ────────────────────────────
+    QtObject {
+        id: auth
+        property bool busy: false
+        property string error: ""
+        property string _pending: ""
+        signal failed()
+        function submit(password) {
+            if (auth.busy || !GlobalStates.screenLocked) return
+            auth._pending = password
+            auth.busy = true
+            auth.error = ""
+            if (!pam.start()) {
+                auth._pending = ""
+                auth.busy = false
+                auth.error = "Couldn't start the password check"
             }
-
-            PamContext {
-                id: pamContext
-                configDirectory: "login"
-
-                onAuthenticationStarted: {
-                    lockScope.authError = ""
-                    lockScope.authenticating = true
-                }
-                onAuthenticated: {
-                    lockScope.authenticating = false
-                    GlobalStates.screenLocked = false
-                }
-                onAuthenticationError: (message) => {
-                    lockScope.authError = message || "Authentication failed"
-                    lockScope.authenticating = false
-                    passwordInput.text = ""
-                    errorShake.start()
-                }
+        }
+        function reset() { auth.busy = false; auth.error = ""; auth._pending = "" }
+    }
+    PamContext {
+        id: pam
+        config: "login"
+        onPamMessage: {
+            if (pam.responseRequired) {
+                if (auth._pending !== "") { pam.respond(auth._pending); auth._pending = "" }
+                else { auth.error = pam.message || "PAM asked for more than a password"; pam.abort() }
+            } else if (pam.messageIsError && pam.message) {
+                auth.error = pam.message
             }
+        }
+        onCompleted: result => {
+            auth.busy = false
+            auth._pending = ""
+            if (result === PamResult.Success) {
+                auth.error = ""
+                GlobalStates.screenLocked = false
+                return
+            }
+            auth.error = result === PamResult.MaxTries ? "Too many tries: wait a moment" : (auth.error || "Wrong password")
+            auth.failed()
+        }
+        onError: err => {
+            auth.busy = false
+            auth._pending = ""
+            auth.error = `Password check failed: ${PamError.toString(err)}`
+            auth.failed()
+        }
+    }
+    Connections {
+        target: GlobalStates
+        function onScreenLockedChanged() { auth.reset(); if (pam.active) pam.abort() }
+    }
 
-            property string authError: ""
-            property bool authenticating: false
-
-            Variants {
-                model: GlobalStates.screenLocked ? Quickshell.screens : []
-
-                PanelWindow {
-                    id: lockWindow
-                    required property var modelData
-                    screen: modelData
-                    visible: GlobalStates.screenLocked
-                    color: "transparent"
-                    WlrLayershell.namespace: "quickshell:lock"
-                    WlrLayershell.layer: WlrLayer.Overlay
-                    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-                    anchors { top: true; bottom: true; left: true; right: true }
-
-                    // Auto-dim after Config.options.lock.dim.idleMs of no input.
-                    property bool dimmed: false
-                    Timer {
-                        id: dimIdleTimer
-                        interval: Config.options?.lock?.dim?.idleMs ?? 30000
-                        running: GlobalStates.screenLocked
-                            && (Config.options?.lock?.dim?.enable ?? true)
-                        repeat: false
-                        onTriggered: lockWindow.dimmed = true
-                    }
-                    function _wake() {
-                        lockWindow.dimmed = false
-                        dimIdleTimer.restart()
-                    }
-
-                    // Background
-                    Rectangle {
-                        anchors.fill: parent
-                        color: Appearance?.m3colors.m3background ?? "#1C1B1F"
-
-                        // Wallpaper background (blurred)
-                        Image {
-                            anchors.fill: parent
-                            source: {
-                                const path = Config.options?.background?.wallpaperPath ?? ""
-                                return path.length > 0 ? (path.startsWith("file://") ? path : "file://" + path) : ""
-                            }
-                            fillMode: Image.PreserveAspectCrop; visible: false
-                            id: bgImage
-                        }
-                        ShaderEffectSource {
-                            anchors.fill: parent
-                            sourceItem: bgImage; visible: bgImage.status === Image.Ready
-                        }
-                        Rectangle { anchors.fill: parent; color: Qt.rgba(0, 0, 0, 0.6) }
-                    }
-
-                    // Idle dim overlay — fades to a configurable opacity after
-                    // dim.idleMs of no input, back to 0 on any pointer/key event.
-                    Rectangle {
-                        anchors.fill: parent
-                        color: "black"
-                        z: 1
-                        opacity: lockWindow.dimmed
-                            ? (Config.options?.lock?.dim?.opacity ?? 0.6)
-                            : 0
-                        Behavior on opacity {
-                            NumberAnimation { duration: AnimationConfig.scaledDuration(400); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard }
-                        }
-                    }
-
-                    // Catch-all wake input — hover-and-watch surface, doesn't
-                    // accept events so they propagate to the password input.
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.NoButton
-                        propagateComposedEvents: true
-                        z: 2
-                        onPositionChanged: lockWindow._wake()
-                    }
-                    Connections {
-                        target: passwordInput
-                        function onTextChanged() { lockWindow._wake() }
-                        function onActiveFocusChanged() { lockWindow._wake() }
-                    }
-
-                    // Content
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 24; width: 320
-                        z: 3  // above the wake-watch MouseArea
-
-                        // Notifications-while-locked panel (opt-in via
-                        // Config.options.lock.notifications.enable). Self-
-                        // hides when empty so it doesn't take vertical space.
-                        LockNotifications {
-                            Layout.fillWidth: true
-                        }
-
-                        // Clock
-                        ColumnLayout {
-                            Layout.alignment: Qt.AlignHCenter; spacing: 4
-                            StyledText {
-                                text: DateTime.time
-                                font.pixelSize: 72; font.weight: Font.Bold
-                                font.family: Appearance?.font.family.numbers ?? "monospace"
-                                color: "white"; Layout.alignment: Qt.AlignHCenter
-                            }
-                            StyledText {
-                                text: DateTime.collapsedCalendarFormat
-                                font.pixelSize: Appearance.font.pixelSize.larger; color: "white"; opacity: 0.6
-                                Layout.alignment: Qt.AlignHCenter
-                            }
-                        }
-
-                        // Avatar
-                        Rectangle {
-                            Layout.alignment: Qt.AlignHCenter
-                            width: 80; height: 80; radius: 40
-                            color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-                            border.width: 3; border.color: Appearance?.colors.colPrimary ?? "#65558F"
-                            Image {
-                                anchors.centerIn: parent; width: 72; height: 72
-                                source: `file://${Directories.userAvatarPath}`
-                                fillMode: Image.PreserveAspectCrop
-                                visible: status === Image.Ready
-                                layer.enabled: true
-                                layer.effect: OpacityMask { maskSource: Rectangle { width: 72; height: 72; radius: 36 } }
-                            }
-                            MaterialSymbol {
-                                anchors.centerIn: parent; text: "person"; iconSize: 40
-                                color: Appearance?.colors.colPrimary ?? "#65558F"
-                                visible: parent.children[0].status !== Image.Ready
-                            }
-                        }
-
-                        // Username
-                        StyledText {
-                            text: Quickshell.env("USER") || "user"
-                            font.pixelSize: Appearance.font.pixelSize.huge; font.weight: Font.DemiBold
-                            font.capitalization: Font.Capitalize
-                            color: "white"; Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        // Status row (battery/wifi/clock) — opt-in via
-                        // Config.options.lock.statusRow.enable. Sits above
-                        // the password input.
-                        LockStatusRow {
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        // Password input — animates wider on focus
-                        // (Config.options.lock.passwordInput.expandOnFocus,
-                        // default true) so the whole control "wakes up"
-                        // when the user starts typing.
-                        Rectangle {
-                            Layout.alignment: Qt.AlignHCenter
-                            readonly property bool expandOnFocus: Config.options?.lock?.passwordInput?.expandOnFocus ?? true
-                            readonly property int collapsedWidth: 240
-                            readonly property int expandedWidth: 320
-                            Layout.preferredWidth: expandOnFocus
-                                ? (passwordInput.activeFocus ? expandedWidth : collapsedWidth)
-                                : 320
-                            implicitHeight: 48; radius: 24
-                            Behavior on Layout.preferredWidth {
-                                NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel }
-                            }
-                            color: Qt.rgba(1, 1, 1, 0.1)
-                            border.width: passwordInput.activeFocus ? 2 : 1
-                            border.color: lockScope.authError.length > 0 ? Appearance.colors.colError : (passwordInput.activeFocus ? Appearance?.colors.colPrimary ?? "#65558F" : "#33ffffff")
-
-                            // Error shake animation
-                            NumberAnimation {
-                                id: errorShake; target: parent; property: "x"
-                                from: parent.x - 10; to: parent.x + 10; duration: AnimationConfig.scaledDuration(80)
-                                loops: 3; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
-                                onFinished: parent.x = 0
-                            }
-
-                            RowLayout {
-                                anchors { fill: parent; leftMargin: 16; rightMargin: 16 }
-                                spacing: 8
-                                MaterialSymbol {
-                                    text: lockScope.authenticating ? "hourglass_top" : "lock"
-                                    iconSize: 20; color: "white"; opacity: 0.5
-                                }
-                                TextInput {
-                                    id: passwordInput
-                                    Layout.fillWidth: true
-                                    echoMode: TextInput.Password
-                                    font.pixelSize: Appearance.font.pixelSize.normal; color: "white"
-                                    focus: GlobalStates.screenLocked
-                                    verticalAlignment: TextInput.AlignVCenter
-                                    enabled: !lockScope.authenticating
-                                    onAccepted: {
-                                        if (text.length > 0) {
-                                            pamContext.respond(text)
-                                        }
-                                    }
-                                    Text {
-                                        anchors.fill: parent; verticalAlignment: Text.AlignVCenter
-                                        text: "Password"; color: "white"; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.normal
-                                        visible: !passwordInput.text || passwordInput.text.length === 0
-                                    }
-                                }
-                                MaterialSymbol {
-                                    text: "arrow_forward"; iconSize: 20; color: "white"
-                                    visible: passwordInput.text?.length > 0 && !lockScope.authenticating
-                                    MouseArea {
-                                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                                        onClicked: { if (passwordInput.text.length > 0) pamContext.respond(passwordInput.text) }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Error message
-                        StyledText {
-                            text: lockScope.authError
-                            visible: lockScope.authError.length > 0
-                            font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colError
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        // Caps Lock warning (LockKeys reads it when the lock starts
-                        // and on each Caps Lock press)
-                        StyledText {
-                            text: "Caps Lock is on"
-                            visible: LockKeys.capsLock && !lockScope.authenticating
-                            font.pixelSize: Appearance.font.pixelSize.smallie; color: Appearance.colors.colWarning
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        // Loading indicator
-                        StyledText {
-                            text: "Authenticating..."
-                            visible: lockScope.authenticating
-                            font.pixelSize: Appearance.font.pixelSize.smallie; color: "white"; opacity: 0.5
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        // On-screen keyboard — opt-in via
-                        // Config.options.lock.osk.enable. Routes its key()
-                        // and submit() signals into passwordInput.
-                        LockOSK {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: 12
-                            onKey: (text) => {
-                                passwordInput.text = passwordInput.text + text
-                                lockWindow._wake()
-                            }
-                            onBackspace: {
-                                passwordInput.text = passwordInput.text.slice(0, -1)
-                                lockWindow._wake()
-                            }
-                            onSubmit: {
-                                if (passwordInput.text.length > 0)
-                                    pamContext.respond(passwordInput.text)
-                            }
-                        }
-                    }
+    // ── The lock ────────────────────────────────────────────────────────
+    WlSessionLock {
+        id: sessionLock
+        locked: root.lockEnabled && GlobalStates.screenLocked
+        WlSessionLockSurface {
+            id: surface
+            color: "black"
+            LockSurfaceHost {
+                id: lockHost
+                anchors.fill: parent
+                focus: true
+                ctx: LockContext {
+                    screen: surface.screen
+                    busy: auth.busy
+                    error: auth.error
+                    onSubmitted: password => auth.submit(password)
                 }
+                Connections { target: auth; function onFailed() { lockHost.ctx.failed() } }
             }
         }
     }
 
+    // logind's Lock for this session (loginctl lock-session, idle tools):
+    // signals come from the session's object path, the id escaped as
+    // systemd does (anything but a letter, or a digit after the first
+    // character, becomes _xx).
+    readonly property string sessionPath: {
+        const id = Quickshell.env("XDG_SESSION_ID") ?? ""
+        if (!id) return ""
+        let s = ""
+        for (let i = 0; i < id.length; i++) {
+            const c = id[i]
+            s += /[A-Za-z]/.test(c) || (i > 0 && /[0-9]/.test(c)) ? c : "_" + c.charCodeAt(0).toString(16).padStart(2, "0")
+        }
+        return `/org/freedesktop/login1/session/${s}`
+    }
+    Process {
+        id: logindWatch
+        running: root.lockEnabled && root.sessionPath !== ""
+        command: ["gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1", "--object-path", root.sessionPath]
+        stdout: SplitParser {
+            onRead: line => { if (line.includes("org.freedesktop.login1.Session.Lock (")) GlobalStates.screenLocked = true }
+        }
+        // gdbus exits if the bus restarts: watch again shortly.
+        onExited: if (root.lockEnabled) rewatch.restart()
+    }
+    Timer { id: rewatch; interval: 5000; onTriggered: logindWatch.running = root.lockEnabled && root.sessionPath !== "" }
+
+    // ── Preview ─────────────────────────────────────────────────────────
+    PanelWindow {
+        id: previewWin
+        visible: LockScreens.previewId !== ""
+        screen: Quickshell.screens.find(s => s.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]
+        anchors { top: true; bottom: true; left: true; right: true }
+        exclusionMode: ExclusionMode.Ignore
+        color: "black"
+        WlrLayershell.namespace: "quickshell:lockPreview"
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: previewWin.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
+        Loader {
+            anchors.fill: parent
+            active: previewWin.visible
+            focus: true
+            sourceComponent: LockSurfaceHost {
+                focus: true
+                packageId: LockScreens.previewId
+                ctx: LockContext {
+                    preview: true
+                    screen: previewWin.screen
+                    onSubmitted: LockScreens.endPreview()
+                }
+                Keys.onEscapePressed: LockScreens.endPreview()
+            }
+        }
+        Rectangle {
+            anchors { top: parent.top; horizontalCenter: parent.horizontalCenter; topMargin: 16 }
+            width: note.implicitWidth + 24; height: note.implicitHeight + 12
+            radius: height / 2
+            color: Qt.rgba(0, 0, 0, 0.6)
+            z: 10
+            Text {
+                id: note
+                anchors.centerIn: parent
+                color: "white"
+                text: "Preview: nothing is checked. Escape or any password closes it."
+            }
+        }
+        Timer { running: previewWin.visible; interval: 60000; onTriggered: LockScreens.endPreview() }
+    }
+
     IpcHandler {
         target: "lock"
-        function lock(): void { GlobalStates.screenLocked = true }
-        function unlock(): void { /* handled by PAM */ }
+        function lock(): void { if (root.lockEnabled) GlobalStates.screenLocked = true }
+        function unlock(): void { /* only a password unlocks */ }
+        function preview(id: string): void { LockScreens.preview(id) }
+        function status(): string {
+            return JSON.stringify({ enabled: root.lockEnabled, locked: GlobalStates.screenLocked, secure: sessionLock.secure,
+                screen: LockScreens.selected, using: LockScreens.current?.id ?? "default" })
+        }
     }
 }

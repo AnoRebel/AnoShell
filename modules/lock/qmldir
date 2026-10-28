@@ -1,5 +1,8 @@
 module qs.modules.lock
+DefaultLockSurface 1.0 DefaultLockSurface.qml
+LockContext 1.0 LockContext.qml
 LockNotifications 1.0 LockNotifications.qml
 LockOSK 1.0 LockOSK.qml
 LockScreen 1.0 LockScreen.qml
 LockStatusRow 1.0 LockStatusRow.qml
+LockSurfaceHost 1.0 LockSurfaceHost.qml

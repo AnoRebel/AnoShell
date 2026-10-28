@@ -636,6 +636,9 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | EasyEffects quick toggle and presets (`audio.easyEffects.enable`) | `easyeffects` ≥ 7 running (its CLI: `-b`, `--bypass-toggle`, `-p`, `-l`); the shell never starts it | the pill stays hidden |
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
+| Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
+| Launcher plugins (`search.userPlugins`; bundled `clipboard`) | nothing for the loader; the bundled clipboard plugin needs `cliphist` | the plugin shows nothing |
+| Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
 

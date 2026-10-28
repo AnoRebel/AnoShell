@@ -57,7 +57,7 @@ Singleton {
         { id: "anoStickyNote", name: "Sticky Note", icon: "sticky_note_2", desc: "A note on the desktop, kept in a file (click-through toggle)", category: "Utilities", source: "modules/stickyNotes/StickyNote.qml", key: "stickyNotes.enable" },
         { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor arrangement, mode and scale", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", capability: "outputConfig" },
         { id: "anoPolkit", name: "Password Prompt", icon: "admin_panel_settings", desc: "Built-in polkit agent: asks for your password when an app needs permission", category: "Utilities", source: "modules/polkit/PolkitPrompt.qml", key: "polkit.enable" },
-        { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Niri lock screen (Hyprland uses hyprlock)", category: "Utilities", source: "modules/lock/LockScreen.qml", compositor: "niri" },
+        { id: "anoLockScreen", name: "Lock Screen", icon: "lock", desc: "Locks the session on niri, with your chosen lock screen (Hyprland locks with hyprlock; there only the preview runs)", category: "Utilities", source: "modules/lock/LockScreen.qml" },
         // Features with their own Settings pages (not listed on the Modules page)
         { id: "anoScreen", source: "modules/anoScreen/AnoScreen.qml", key: "appearance.connectedCorners.enable", listed: false },
         { id: "anoBackground", source: "modules/background/ShellBackground.qml", effective: "shellBackground", listed: false },

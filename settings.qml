@@ -26,7 +26,8 @@ ShellRoot {
     property int currentPage: Quickshell.env("ANO_SETTINGS_PAGE") === "hub" ? Math.max(0, SettingsRegistry.pages.findIndex(p => p.name === "Hub")) : 0
     Component.onCompleted: {
         const tab = Quickshell.env("ANO_HUB_TAB") ?? ""
-        if (["themes", "looks", "widgets", "wallpapers", "rices"].includes(tab)) Hub.tab = tab
+        if (Hub.types.some(t => t.id === tab)) Hub.tab = tab
+        LockScreens.remote = true // the preview is the shell's, not this window's
     }
 
     readonly property var pages: SettingsRegistry.pages

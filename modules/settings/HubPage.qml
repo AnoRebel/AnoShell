@@ -10,7 +10,7 @@ import qs.services
 import "."
 
 /**
- * Settings → Hub (spec content-hub): themes, looks, widgets, wallpapers and
+ * Settings → Hub (spec content-hub): themes, looks, widgets, plugins, lock screens, wallpapers and
  * rices from the shell (built-in), your folders and online catalogs, in one
  * searchable grid per type. A card opens its detail: Apply for what you
  * have, Install / Update / Remove for catalog items (installing never
@@ -109,7 +109,9 @@ ColumnLayout {
             return
         }
         const m = Hub.apply(it)
-        root.say(m || `${it.name || it.id} applied.`, !!m)
+        const name = it.name || it.id
+        root.say(m || (it.type === "plugins" ? `${name} is ${LauncherPlugins.isEnabled(it.id) ? "on: try it in the launcher" : "off"}.`
+            : it.type === "lockscreens" ? `${name} is your lock screen.` : `${name} applied.`), !!m)
     }
 
     // On the Widgets tab the registry compile-checks widgets, so a broken one
@@ -284,7 +286,7 @@ ColumnLayout {
                         color: Appearance.colors.colWarning
                         visible: text.length > 0
                         text: it.revoked ? "The catalog revoked this item: remove it." : it.unavailable ? `Not available here (${it.unavailable}).`
-                            : (isLocal && it.type === "widgets" && !Widgets.usable(it.id)) ? `It doesn't load: ${Widgets.errorsOf(it.id).join("; ") || "unknown error"}`
+                            : (isLocal && Hub.problems(it).length) ? `It doesn't load: ${Hub.problems(it).join("; ")}`
                             : it.modified ? "You changed its files since installing; an update asks first." : ""
                     }
                 }
@@ -437,9 +439,17 @@ ColumnLayout {
                     onClicked: root.install(it)
                 }
                 RippleButton {
+                    visible: isLocal && it.type === "lockscreens" && (Config.options?.lock?.enable ?? true)
+                    buttonText: "Preview"
+                    enabled: Hub.problems(it).length === 0
+                    onClicked: LockScreens.preview(it.id)
+                }
+                RippleButton {
                     visible: isLocal && it.type !== "rices"
-                    buttonText: active ? (it.type === "widgets" ? "Add another" : "Applied") : (it.type === "widgets" ? "Add to desktop" : "Apply")
-                    enabled: (!active || it.type === "widgets") && !it.revoked && (it.type !== "widgets" || Widgets.usable(it.id))
+                    buttonText: ({ widgets: active ? "Add another" : "Add to desktop", plugins: active ? "Turn off" : "Turn on",
+                        lockscreens: active ? "In use" : "Use" })[it.type] ?? (active ? "Applied" : "Apply")
+                    enabled: (!active || it.type === "widgets" || it.type === "plugins") && !it.revoked
+                        && (it.type === "widgets" ? Widgets.usable(it.id) : active || Hub.problems(it).length === 0)
                     toggled: true // the primary fill
                     onClicked: root.apply(it)
                 }

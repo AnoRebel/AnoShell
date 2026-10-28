@@ -1128,6 +1128,9 @@ Singleton {
             // Launcher state
             property JsonObject search: JsonObject {
                 property var recentApps: [] // app ids, most recent first
+                // Launcher plugin packages that are on (LauncherPlugins; plugins/,
+                // ~/.config/anoshell/plugins/), by id.
+                property var userPlugins: []
                 // Launcher result providers (modules/search/Providers.qml); off = nothing runs.
                 property JsonObject plugins: JsonObject {
                     property JsonObject calculator: JsonObject { property bool enable: false }
@@ -1349,6 +1352,8 @@ Singleton {
             // Lock screen
             property JsonObject lock: JsonObject {
                 property bool enable: true
+                // The lock screen package (LockScreens); "default" is the built-in one.
+                property string screen: "default"
                 property JsonObject notifications: JsonObject {
                     property bool enable: false
                     property int maxItems: 5

@@ -66,7 +66,7 @@ Scope {
     IpcHandler {
         target: "hub"
         function open(type: string): void {
-            const tab = ["themes", "looks", "widgets", "wallpapers", "rices"].includes(type) ? type : ""
+            const tab = Hub.types.some(t => t.id === type) ? type : ""
             const page = SettingsRegistry.pages.findIndex(p => p.name === "Hub")
             if (GlobalStates.settingsOpen) {
                 if (tab) Hub.tab = tab

@@ -1,5 +1,6 @@
 // Package hub is the AnoShell Hub's content store: built-in, user and
-// catalog-installed themes, looks, widgets, wallpapers and rices, verified
+// catalog-installed themes, looks, widgets, launcher plugins, lock screens,
+// wallpapers and rices, verified
 // installs with receipts, a static audit for code content, and rice
 // apply/undo/export. The shell's Settings → Hub page drives it over anod.
 //
@@ -8,6 +9,8 @@
 //	themes      <shell>/assets/themes/<id>.json      cfg/anoshell/themes/<id>.json
 //	looks       <shell>/looks/<id>.json              cfg/anoshell/looks/<id>.json
 //	widgets     <shell>/widgets/<id>/widget.json     cfg/anoshell/widgets/<id>[~<n>]/widget.json
+//	plugins     <shell>/plugins/<id>/plugin.json     cfg/anoshell/plugins/<id>[~<n>]/plugin.json
+//	lockscreens <shell>/lockscreens/<id>/lockscreen.json  cfg/anoshell/lockscreens/<id>[~<n>]/lockscreen.json
 //	wallpapers  (none built in)                      <wallpaper folder>/*, installs in <wallpaper folder>/hub/<id>.<ext>
 //	rices       (none built in)                      cfg/anoshell/rices/<id>/rice.json
 //
@@ -38,9 +41,13 @@ import (
 	"ano/anod/internal/looks"
 )
 
-// Types the Hub handles. Launcher plugins and lock screens have no loading
-// system in the shell yet.
-var Types = []string{"themes", "looks", "widgets", "wallpapers", "rices"}
+// Types the Hub handles; "plugins" are launcher plugins.
+var Types = []string{"themes", "looks", "widgets", "plugins", "lockscreens", "wallpapers", "rices"}
+
+// codeManifest: the code types (QML that runs with the shell's rights), each
+// a folder with this manifest at its root, installed into a fresh <id>~<n>
+// folder per version so the shell never loads stale cached QML.
+var codeManifest = map[string]string{"widgets": "widget.json", "plugins": "plugin.json", "lockscreens": "lockscreen.json"}
 
 var idRe = regexp.MustCompile(`^[a-z0-9-]+$`)
 
@@ -54,14 +61,16 @@ func checkType(t string) error {
 		}
 	}
 	switch t {
-	case "plugins", "launcher-plugins", "lockscreens", "lock-screens":
-		return fmt.Errorf("%s are not supported yet (the shell has no loader for them)", t)
+	case "launcher-plugins":
+		return errors.New(`launcher plugins are "plugins"`)
+	case "lock-screens":
+		return errors.New(`lock screens are "lockscreens"`)
 	}
 	return fmt.Errorf("unknown content type %q (want one of %s)", t, strings.Join(Types, ", "))
 }
 
 // isCode: content that runs QML with the shell's rights.
-func isCode(t string) bool { return t == "widgets" }
+func isCode(t string) bool { return codeManifest[t] != "" }
 
 // Hub holds the paths and hooks; New fills them from the environment.
 type Hub struct {
@@ -531,15 +540,15 @@ func (h *Hub) localItems(t string) []Item {
 			}
 			add(Item{ID: e.ID, Name: e.Name, Author: m.Author, Version: m.Version, Description: m.Description, Source: src, Path: e.Path})
 		}
-	case "widgets":
-		for _, d := range []struct{ dir, src string }{{filepath.Join(h.ShellDir, "widgets"), "builtin"}, {h.userDir(t), "user"}} {
+	case "widgets", "plugins", "lockscreens":
+		for _, d := range []struct{ dir, src string }{{filepath.Join(h.ShellDir, t), "builtin"}, {h.userDir(t), "user"}} {
 			ents, _ := os.ReadDir(d.dir)
 			for _, e := range ents {
 				if !e.IsDir() || strings.HasPrefix(e.Name(), "_") || strings.HasPrefix(e.Name(), ".") {
 					continue
 				}
 				dir := filepath.Join(d.dir, e.Name())
-				mf := filepath.Join(dir, "widget.json")
+				mf := filepath.Join(dir, codeManifest[t])
 				if _, err := os.Stat(mf); err != nil {
 					continue
 				}
@@ -548,6 +557,10 @@ func (h *Hub) localItems(t string) []Item {
 				add(Item{ID: id, Name: m.Name, Author: m.Author, Version: m.Version, Description: m.Description,
 					Preview: localPreview(dir, m.Preview), Source: d.src, Path: dir})
 			}
+		}
+		if t == "lockscreens" { // the shell's own, drawn by modules/lock
+			add(Item{ID: "default", Name: "AnoShell", Description: "The built-in lock screen", Source: "builtin",
+				Path: filepath.Join(h.ShellDir, "modules", "lock")})
 		}
 	case "wallpapers":
 		// ponytail: top level of the wallpaper folder plus hub/, capped at

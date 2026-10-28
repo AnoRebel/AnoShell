@@ -218,6 +218,60 @@
  },
  {
   "page": 0,
+  "card": "Lock screen",
+  "label": "Lock screen",
+  "sublabel": "niri",
+  "keys": [
+   "lock"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Lock with AnoShell (niri)",
+  "sublabel": "Off: another locker (swaylock, hyprlock…) handles it",
+  "keys": [
+   "lock.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Notifications on the lock screen",
+  "sublabel": "The built-in lock screen lists the ones that arrive while locked",
+  "keys": [
+   "lock.notifications.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Status row",
+  "sublabel": "Battery and network above the password field",
+  "keys": [
+   "lock.statusRow.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "On-screen keyboard",
+  "sublabel": "",
+  "keys": [
+   "lock.osk.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Dim when idle",
+  "sublabel": "Darkens the lock screen after 30 s without input",
+  "keys": [
+   "lock.dim.enable"
+  ]
+ },
+ {
+  "page": 0,
   "card": "Scrolling & Interactions",
   "label": "Scrolling & Interactions",
   "sublabel": "Touchpad and mouse scroll speed",
@@ -2341,6 +2395,24 @@
   "sublabel": "Blurs the desktop behind a translucent frame (frosted glass). No visible effect at 100% opacity.",
   "keys": [
    "appearance.connectedCorners.blur"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Jelly",
+  "sublabel": "Panels give at their free edge as they slide out of the frame, then spring back. Off with reduced motion, performance mode or the battery saver.",
+  "keys": [
+   "appearance.connectedCorners.jelly"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Jelly amount",
+  "sublabel": "How far the edge gives",
+  "keys": [
+   "appearance.connectedCorners.jellyAmount"
   ]
  },
  {

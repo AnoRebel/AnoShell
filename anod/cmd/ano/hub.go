@@ -18,7 +18,7 @@ import (
 	"ano/anod/internal/ipc"
 )
 
-const hubUsage = `usage: ano hub [themes|looks|widgets|wallpapers|rices]   open Settings on the Hub
+const hubUsage = `usage: ano hub [themes|looks|widgets|plugins|lockscreens|wallpapers|rices]   open Settings on the Hub
        ano hub list [type] [--json]
        ano hub refresh
        ano hub install <type> <id> [--catalog URL] [--yes]

@@ -1,0 +1,9 @@
+{
+  "id": "clipboard",
+  "name": "Clipboard history",
+  "description": "Type \"cb \" and part of something you copied; Enter copies it again (needs cliphist).",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "cb "
+}

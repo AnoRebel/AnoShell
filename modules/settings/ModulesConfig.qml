@@ -544,6 +544,35 @@ ColumnLayout {
                 Layout.preferredWidth: 120
             }
         }
+
+        // Plugin packages (docs/plugins.md): bundled, yours, or from the Hub.
+        StyledText {
+            Layout.fillWidth: true
+            Layout.topMargin: 8
+            visible: LauncherPlugins.list.length > 0
+            text: "Plugins"
+            font.weight: Font.DemiBold
+        }
+        Repeater {
+            model: LauncherPlugins.list
+            delegate: ConfigSwitch {
+                required property var modelData
+                readonly property var problems: LauncherPlugins.registry.errorsOf(modelData.id)
+                label: modelData.name + (modelData.source === "user" ? "  ·  yours" : "")
+                sublabel: problems.length ? `Doesn't load: ${problems.join("; ")}` : (modelData.description || modelData.id)
+                configKey: "search.userPlugins"
+                enabled: problems.length === 0
+                checked: LauncherPlugins.isEnabled(modelData.id)
+                onCheckedChanged: if (checked !== LauncherPlugins.isEnabled(modelData.id)) LauncherPlugins.setEnabled(modelData.id, checked)
+            }
+        }
+        StyledText {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.6
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            text: "Plugins run with the shell's rights. Add your own in ~/.config/anoshell/plugins/ or get them from Settings → Hub → Plugins."
+        }
     }
 
     // ═══ Default Applications ═══

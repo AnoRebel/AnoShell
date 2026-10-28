@@ -10,7 +10,7 @@ import qs.modules.common.functions
 
 /**
  * Hub — the shell side of anod's content hub (spec content-hub): themes,
- * looks, widgets, wallpapers and rices from three sources (built-in, yours in
+ * looks, widgets, launcher plugins, lock screens, wallpapers and rices from three sources (built-in, yours in
  * ~/.config/anoshell/<type>/, installed from a catalog). anod lists, fetches,
  * verifies and installs (hub.*); installing never applies, apply is the
  * shell's own action per type (apply()). Exists only while the Hub page or
@@ -24,6 +24,8 @@ Singleton {
         { id: "themes", name: "Themes", icon: "palette", code: false },
         { id: "looks", name: "Looks", icon: "style", code: false },
         { id: "widgets", name: "Widgets", icon: "widgets", code: true },
+        { id: "plugins", name: "Plugins", icon: "extension", code: true },
+        { id: "lockscreens", name: "Lock screens", icon: "lock", code: true },
         { id: "wallpapers", name: "Wallpapers", icon: "wallpaper", code: false },
         { id: "rices", name: "Rices", icon: "auto_awesome_mosaic", code: false }
     ]
@@ -90,8 +92,19 @@ Singleton {
             const scr = Config.options?.widgets?.screens ?? {}
             return Object.values(scr).some(s => (s?.pages ?? []).some(p => (p ?? []).some(w => w.id === item.id)))
         }
+        case "plugins": return LauncherPlugins.isEnabled(item.id)
+        case "lockscreens": return LockScreens.selected === item.id
         }
         return false
+    }
+    // Why a local code item can't be used ([] when it can).
+    function problems(item) {
+        switch (item.type) {
+        case "widgets": return Widgets.errorsOf(item.id)
+        case "plugins": return LauncherPlugins.registry.errorsOf(item.id)
+        case "lockscreens": return item.id === "default" ? [] : LockScreens.registry.errorsOf(item.id)
+        }
+        return []
     }
     // Returns "" or a message for the page to show.
     function apply(item) {
@@ -113,6 +126,12 @@ Singleton {
             if (!g) return "Add it from the desktop: right-click the desktop → Edit widgets."
             return Widgets.add(scr, item.id, g.cols, g.rows) ? "" : "No free spot on this desktop page."
         }
+        case "plugins":
+            LauncherPlugins.setEnabled(item.id, !LauncherPlugins.isEnabled(item.id))
+            return ""
+        case "lockscreens":
+            LockScreens.select(item.id)
+            return ""
         }
         return "Nothing to apply for this type."
     }

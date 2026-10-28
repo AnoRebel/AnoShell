@@ -16,6 +16,9 @@ import qs.services
  *   schemes     "scheme …" → colour themes and Material variants, applied live
  *   looks       "look …" → the looks, applied live
  *
+ * Plus the launcher plugin packages that are on (LauncherPlugins,
+ * docs/plugins.md), loaded only while the launcher is.
+ *
  * A result is { provider, icon, text, title, subtitle, run() }; `text` is
  * a glyph shown instead of an icon (emoji).
  */
@@ -27,8 +30,8 @@ Item {
 
     // Leading results go above the apps; `trailing` (emoji typed without ":")
     // below them, so Enter on a plain word still opens the app.
-    readonly property var results: [].concat(calcResults, actionResults, schemeResults, lookResults, root.query.trim().startsWith(":") ? emojiResults : [], packageResults)
-    readonly property var trailing: root.query.trim().startsWith(":") ? [] : emojiResults
+    readonly property var results: [].concat(calcResults, actionResults, schemeResults, lookResults, root.query.trim().startsWith(":") ? emojiResults : [], packageResults, pluginResults.top)
+    readonly property var trailing: (root.query.trim().startsWith(":") ? [] : emojiResults).concat(pluginResults.bottom)
     property string message: ""     // a one-line note (guarded action, missing helper)
 
     // ── Which helpers exist (once, only for enabled providers) ────────
@@ -199,5 +202,68 @@ Item {
             provider: "looks", icon: "style", title: `Look: ${l.name}`, subtitle: l.description || "Applies now",
             run: () => Config.setNestedValue("appearance.look", l.id)
         }))
+    }
+
+    // ── Plugin packages ───────────────────────────────────────────────
+    // A plugin gets `active` (the query is for it: its prefix typed, or long
+    // enough) and `query` (without the prefix; "" while not active), and
+    // offers `results` shaped like the ones above. What it
+    // offers is checked here, and a run() that throws says so instead of
+    // closing the launcher.
+    property var _pluginOut: ({})       // id -> wrapped results
+    readonly property var pluginResults: {
+        const top = [], bottom = []
+        for (const e of LauncherPlugins.active) {
+            const r = root._pluginOut[e.id] ?? []
+            if (e.manifest.position === "bottom") bottom.push(...r); else top.push(...r)
+        }
+        return { top, bottom }
+    }
+    function _activeFor(e) {
+        const p = e.manifest.prefix
+        if (typeof p === "string" && p.length) return root.query.startsWith(p)
+        const min = Number.isInteger(e.manifest.minLength) ? e.manifest.minLength : 2
+        return root.query.trim().length >= min
+    }
+    function _queryFor(e) {
+        if (!root._activeFor(e)) return ""
+        const p = e.manifest.prefix
+        return typeof p === "string" && p.length ? root.query.slice(p.length) : root.query
+    }
+    function _wrap(e, raw) {
+        if (!Array.isArray(raw)) return []
+        const str = v => typeof v === "string" ? v : ""
+        return raw.filter(r => r && typeof r.title === "string" && r.title.length).slice(0, 20).map(r => ({
+            provider: e.id, icon: str(r.icon) || "extension", text: str(r.text), title: r.title,
+            subtitle: str(r.subtitle) || e.name,
+            run: () => {
+                try { return typeof r.run === "function" ? r.run() : undefined }
+                catch (err) {
+                    console.warn(`[plugins] ${e.id}: ${err}`)
+                    root.message = `${e.name}: ${err}`
+                    return false
+                }
+            }
+        }))
+    }
+    Repeater {
+        model: LauncherPlugins.active
+        delegate: Loader {
+            id: host
+            required property var modelData
+            visible: false
+            source: modelData.url
+            readonly property var out: status === Loader.Ready && item && item.hasOwnProperty("results") && root._activeFor(modelData) ? root._wrap(modelData, item.results) : []
+            onOutChanged: {
+                const o = Object.assign({}, root._pluginOut); o[modelData.id] = host.out; root._pluginOut = o
+            }
+            onLoaded: {
+                if (item.hasOwnProperty("active")) item.active = Qt.binding(() => root._activeFor(host.modelData))
+                if (item.hasOwnProperty("query")) item.query = Qt.binding(() => root._queryFor(host.modelData))
+            }
+            Component.onDestruction: {
+                const o = Object.assign({}, root._pluginOut); delete o[modelData.id]; root._pluginOut = o
+            }
+        }
     }
 }

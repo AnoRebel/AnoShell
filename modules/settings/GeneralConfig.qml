@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"
-        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session", "polkit"]
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session", "polkit", "lock"]
     }
 
     // ═══ Audio ═══
@@ -456,6 +456,67 @@ ColumnLayout {
             visible: PolkitAuth.wanted && PolkitAuth.otherAgent
             buttonText: "Retry"
             onClicked: PolkitAuth.retry()
+        }
+    }
+
+    // ═══ Lock screen ═══
+    SettingsCard {
+        icon: "lock"
+        title: "Lock screen"
+        subtitle: CompositorService.compositor === "niri"
+            ? "AnoShell locks the session (Super+L, loginctl lock-session, the session menu)"
+            : "On Hyprland, hyprlock locks the session; here you can pick and preview AnoShell's lock screens for niri"
+        configKeys: ["lock"]
+
+        ConfigSwitch {
+            label: "Lock with AnoShell (niri)"
+            configKey: "lock.enable"
+            sublabel: "Off: another locker (swaylock, hyprlock…) handles it"
+            checked: Config.options?.lock?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("lock.enable", checked)
+        }
+        ConfigRow {
+            label: "Lock screen"
+            configKey: "lock.screen"
+            sublabel: LockScreens.selected !== "default" && !LockScreens.current
+                ? `"${LockScreens.selected}" doesn't load (${LockScreens.registry.errorsOf(LockScreens.selected).join("; ")}): the built-in one is used`
+                : "More in Settings → Hub → Lock screens, or make your own (docs/lockscreens.md)"
+            ChoiceRow {
+                model: [{ value: "default", label: "AnoShell", icon: "lock" }].concat(LockScreens.list.map(e => ({ value: e.id, label: e.name, icon: "style" })))
+                current: LockScreens.selected
+                onChose: value => LockScreens.select(value)
+            }
+        }
+        RippleButton {
+            buttonText: "Preview"
+            onClicked: LockScreens.preview(LockScreens.selected)
+        }
+        ConfigSwitch {
+            label: "Notifications on the lock screen"
+            configKey: "lock.notifications.enable"
+            sublabel: "The built-in lock screen lists the ones that arrive while locked"
+            checked: Config.options?.lock?.notifications?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("lock.notifications.enable", checked)
+        }
+        ConfigSwitch {
+            label: "Status row"
+            configKey: "lock.statusRow.enable"
+            sublabel: "Battery and network above the password field"
+            checked: Config.options?.lock?.statusRow?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("lock.statusRow.enable", checked)
+        }
+        ConfigSwitch {
+            label: "On-screen keyboard"
+            configKey: "lock.osk.enable"
+            checked: Config.options?.lock?.osk?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("lock.osk.enable", checked)
+        }
+        ConfigSwitch {
+            label: "Dim when idle"
+            configKey: "lock.dim.enable"
+            sublabel: "Darkens the lock screen after 30 s without input"
+            checked: Config.options?.lock?.dim?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("lock.dim.enable", checked)
         }
     }
 

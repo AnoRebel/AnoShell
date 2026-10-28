@@ -31,12 +31,12 @@ func Pack(src string, o PackOptions) (string, Entry, error) {
 	var m meta
 	var mid string
 	if fi.IsDir() {
-		for _, mf := range []string{"widget.json", "rice.json"} {
+		for _, mf := range []string{"widget.json", "plugin.json", "lockscreen.json", "rice.json"} {
 			p := filepath.Join(src, mf)
 			if fileExists(p) {
 				m, mid = readMeta(p, ""), readManifestID(p)
 				if o.Type == "" {
-					o.Type = map[string]string{"widget.json": "widgets", "rice.json": "rices"}[mf]
+					o.Type = map[string]string{"widget.json": "widgets", "plugin.json": "plugins", "lockscreen.json": "lockscreens", "rice.json": "rices"}[mf]
 				}
 				break
 			}

@@ -1,7 +1,8 @@
 # Hub
 
 One place for shareable content: **themes**, **looks**, **desktop widgets**,
-**wallpapers** and **rices** (a whole setup). Open it at **Settings → Hub**,
+**launcher plugins**, **lock screens**, **wallpapers** and **rices** (a whole
+setup). Open it at **Settings → Hub**,
 or from a terminal:
 
 ```sh
@@ -19,7 +20,7 @@ Each tab merges three sources, and every card says which one it is:
 
 | Label | Where | Notes |
 |---|---|---|
-| Built-in | shipped with AnoShell (`assets/themes/`, `looks/`, `widgets/`) | can't be removed |
+| Built-in | shipped with AnoShell (`assets/themes/`, `looks/`, `widgets/`, `plugins/`, `lockscreens/`) | can't be removed |
 | Yours | `~/.config/anoshell/<type>/` (wallpapers: your wallpaper folder) | your files: the Hub never deletes them |
 | Installed · *catalog* | installed from a catalog; a receipt in `~/.local/state/anoshell/hub/receipts/` | can be updated and removed |
 | *catalog name* | in a catalog, not installed yet | Install |
@@ -37,6 +38,11 @@ Installing never changes your setup; **Apply** is a separate button:
 - **Widgets** are put on the desktop page you're on, at the first free spot
   (desktop widgets must be on). A widget that fails to load shows its error
   instead.
+- **Plugins** turn on or off in the launcher (`search.userPlugins`); see
+  [Launcher plugins](plugins.md).
+- **Lock screens**: **Use** sets `lock.screen`, **Preview** shows it on the
+  focused screen without locking (nothing is checked; Escape closes it). See
+  [Lock screens](lockscreens.md).
 - **Rices**: see below.
 
 ## Wallhaven
@@ -67,7 +73,8 @@ starts empty.
 2. Unpacks it into a staging folder next to its destination, refusing
    symlinks, device files, absolute paths, `..`, too many or too large files,
    and ids other than `a-z`, `0-9` and `-`.
-3. For **widgets** (code that runs with your rights, no sandbox), checks the
+3. For **widgets, plugins and lock screens** (code that runs with your
+   rights, no sandbox), checks the
    files for risky patterns: downloading and running scripts, `sudo` or
    undeclared `pkexec`, writing to `~/.ssh`, `/etc` or your shell config,
    reading the secrets folder, binaries, and network hosts or commands the
@@ -75,8 +82,8 @@ starts empty.
    what the check found, and choose **Install** (or **Install anyway**) or
    **Cancel**. The check is not a security audit, and neither is a catalog's
    review. An update that declares different hosts or commands asks again.
-4. Moves it into place in one step and writes the receipt. Widgets get a
-   fresh folder per installed version (`<id>~<n>`), so an update never runs
+4. Moves it into place in one step and writes the receipt. Widgets, plugins
+   and lock screens get a fresh folder per installed version (`<id>~<n>`), so an update never runs
    old cached code.
 
 Nothing from an item is ever executed while installing: there are no install
@@ -111,9 +118,3 @@ widgets, wallpapers and keybinds.
 To publish one, `ano hub pack <folder> --url-base https://…/` writes the
 archive and prints the catalog entry with its checksum (see
 [anod](anod.md) for the CLI and methods).
-
-## Not yet
-
-Launcher plugins and lock screens are listed in the spec as Hub content, but
-the shell has no way to load user-made ones yet, so the Hub doesn't offer
-them.

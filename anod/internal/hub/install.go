@@ -136,7 +136,7 @@ func (h *Hub) Prepare(typ, id, catalog string) (*Prepared, error) {
 	if p.Name == "" {
 		p.Name = id
 	}
-	if typ == "widgets" || typ == "rices" {
+	if isCode(typ) || typ == "rices" {
 		root := p.stage
 		if typ == "rices" {
 			root = filepath.Join(p.stage, "widgets")
@@ -346,12 +346,13 @@ func extract(data []byte, typ, id, dst string) (string, error) {
 		return "", errors.New("the archive is empty")
 	}
 	switch typ {
-	case "widgets":
-		if _, err := os.Stat(filepath.Join(dst, "widget.json")); err != nil {
-			return "", errors.New("a widget archive needs widget.json at its root")
+	case "widgets", "plugins", "lockscreens":
+		mf := codeManifest[typ]
+		if _, err := os.Stat(filepath.Join(dst, mf)); err != nil {
+			return "", fmt.Errorf("a %s archive needs %s at its root", strings.TrimSuffix(typ, "s"), mf)
 		}
-		if m := readManifestID(filepath.Join(dst, "widget.json")); m != "" && m != id {
-			return "", fmt.Errorf("widget.json says id %q, the catalog says %q", m, id)
+		if m := readManifestID(filepath.Join(dst, mf)); m != "" && m != id {
+			return "", fmt.Errorf("%s says id %q, the catalog says %q", mf, m, id)
 		}
 	case "rices":
 		if _, err := os.Stat(filepath.Join(dst, "rice.json")); err != nil {
@@ -403,7 +404,7 @@ func (h *Hub) Commit(tok string) (string, error) {
 		dst = filepath.Join(dir, id+".json")
 	case "wallpapers":
 		dst = filepath.Join(dir, id+p.ext)
-	case "widgets":
+	case "widgets", "plugins", "lockscreens":
 		// A fresh folder per version: the shell never loads stale cached QML.
 		seq = 1
 		if old != nil {
