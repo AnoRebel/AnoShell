@@ -7,10 +7,13 @@ branch:
 | Application | Branch | Domain | Build arg |
 |---|---|---|---|
 | `anoshell-docs` | `main` | `anoshell.anorebel.net` | `DOCS_VERSION=main` |
-| `anoshell-docs-dev` | `dev` | `dev.anoshell.anorebel.net` | `DOCS_VERSION=dev` |
+| `anoshell-docs-dev` | `dev` | `anoshell-dev.anorebel.net` | `DOCS_VERSION=dev` |
 
-The `dev` branch has to exist before its application can build (the
-repository only has `main` today).
+Both live in the Dokploy project **AnoShell**, created 2026-10-28.
+
+The dev site is `anoshell-dev`, not `dev.anoshell`. Cloudflare sits in front of
+`anorebel.net`, and its free certificate covers one level of subdomain
+(`*.anorebel.net`), so `dev.anoshell.anorebel.net` fails the TLS handshake.
 
 ## Application settings (both)
 
@@ -23,8 +26,11 @@ repository only has `main` today).
   - Build argument: `DOCS_VERSION` as in the table. It is read at build time:
     links from a page into the repository point at that branch.
 - **Port:** the container listens on `3000`.
-- **Domain:** the domain above, HTTPS with Let's Encrypt (Dokploy's
-  certificate resolver), container port `3000`.
+- **Domain:** the domain above, HTTPS on, certificate **None** (Cloudflare
+  proxies the name and ends TLS, as for the other anorebel.net apps),
+  container port `3000`. The DNS names already resolve through Cloudflare.
+- **Watch paths:** `docs/**`, `docs-site/**`, so pushes that touch only the
+  shell don't rebuild the site.
 - **Health check:** `GET /api/health` → `200 {"status":"healthy","version":…}`
   after reading the content index; `503` otherwise. The image has the same
   check as a Docker `HEALTHCHECK`, so Dokploy's rolling deploys wait for it.
@@ -45,7 +51,7 @@ curl -f http://localhost:3000/api/health
 
 ```sh
 curl -f https://anoshell.anorebel.net/api/health
-curl -f https://dev.anoshell.anorebel.net/api/health
+curl -f https://anoshell-dev.anorebel.net/api/health
 ```
 
 The header's version switcher moves between the two; it asks the other site

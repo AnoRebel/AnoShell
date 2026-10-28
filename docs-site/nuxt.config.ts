@@ -14,7 +14,7 @@ const version = process.env.DOCS_VERSION || "dev";
 
 const versions = [
   { version: "main", label: "Stable", url: "https://anoshell.anorebel.net" },
-  { version: "dev", label: "Development", url: "https://dev.anoshell.anorebel.net" },
+  { version: "dev", label: "Development", url: "https://anoshell-dev.anorebel.net" },
 ];
 
 export default defineNuxtConfig({

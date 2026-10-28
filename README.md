@@ -6,7 +6,7 @@ Quickshell 0.3.2 / Qt 6.11). **Hyprland** and **niri** are supported;
 compositor on a generic one ([docs/compositors.md](docs/compositors.md)). The
 backend is picked from the session at start.
 
-**Documentation:** [anoshell.anorebel.net](https://anoshell.anorebel.net) (stable) · [dev.anoshell.anorebel.net](https://dev.anoshell.anorebel.net) (development) · source in [`docs/`](docs/overview.md)
+**Documentation:** [anoshell.anorebel.net](https://anoshell.anorebel.net) (stable) · [anoshell-dev.anorebel.net](https://anoshell-dev.anorebel.net) (development) · source in [`docs/`](docs/overview.md)
 
 ## What's in it
 
