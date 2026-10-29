@@ -1,0 +1,11 @@
+#%PAM-1.0
+# AnoShell's fingerprint check on the lock screen (modules/lock/LockScreen.qml),
+# beside the password check (PAM "login", faillock included). One scan per
+# start; timeout bounds how long it holds the reader, and LockScreen.qml's
+# fprintTimeoutMs mirrors it: change both together. No faillock here: a
+# fingerprint unlocks even while the password is locked out, and failed scans
+# don't count towards that lockout (as GDM's fingerprint service).
+auth     required pam_fprintd.so max-tries=1 timeout=60
+account  required pam_permit.so
+password required pam_deny.so
+session  required pam_permit.so

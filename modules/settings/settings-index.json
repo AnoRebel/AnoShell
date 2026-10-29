@@ -237,6 +237,15 @@
  {
   "page": 0,
   "card": "",
+  "label": "Fingerprint unlock",
+  "sublabel": "Touch the reader instead of typing, when fprintd has your print (fprintd-enroll). The password always works too; after 3 failed scans only the password does",
+  "keys": [
+   "lock.fingerprint.enable"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
   "label": "Notifications on the lock screen",
   "sublabel": "The built-in lock screen lists the ones that arrive while locked",
   "keys": [

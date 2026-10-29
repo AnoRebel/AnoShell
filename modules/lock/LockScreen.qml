@@ -15,7 +15,8 @@ import "."
  *
  * Every screen shows the chosen lock screen (LockScreens: the built-in one or
  * a package, through LockSurfaceHost); they share one password check, PAM's
- * "login" service. Locks on IPC `lock lock` and when logind asks
+ * "login" service, and, when lock.fingerprint is on and fprintd has your
+ * print, a fingerprint check beside it (pam/fprint). Locks on IPC `lock lock` and when logind asks
  * (`loginctl lock-session`, the session menu, idle tools).
  *
  * Preview (IPC `lock preview [id]`, Settings → Atelier): the lock screen in an
@@ -66,6 +67,8 @@ Scope {
         GlobalStates.screenLocked = root.held
         auth.reset()
         if (pam.active) pam.abort()
+        fp.reset()
+        if (root.held) fp.detect()
         if (root.sessionPath) Quickshell.execDetached(["gdbus", "call", "--system", "--dest", "org.freedesktop.login1",
             "--object-path", root.sessionPath, "--method", "org.freedesktop.login1.Session.SetLockedHint", root.held ? "true" : "false"])
     }
@@ -146,6 +149,91 @@ Scope {
         onError: err => { auth.error = `Password check failed: ${PamError.toString(err)}` }
     }
 
+    // ── Fingerprint (beside the password; never instead of it) ──────────
+    // Found once per lock: pam_fprintd installed and a print row in
+    // `fprintd-list` (locale-independent). The scan restarts after each try
+    // until maxTries failed scans; a scan that just timed out doesn't count,
+    // reader errors back off. Any trouble only removes this way in.
+    readonly property int fprintTimeoutMs: 60000 // pam/fprint's timeout
+    QtObject {
+        id: fp
+        readonly property bool wanted: Config.options?.lock?.fingerprint?.enable ?? false
+        readonly property int maxTries: Math.max(1, Config.options?.lock?.fingerprint?.maxTries ?? 3)
+        property bool found: false
+        property string state: "off"   // off | scanning | fail | max | error
+        property int tries: 0
+        property int errors: 0
+        property string message: ""
+        property double startedAt: 0
+        readonly property bool available: fp.wanted && fp.found
+        readonly property var view: ({ available: fp.available, state: fp.state, tries: fp.tries, maxTries: fp.maxTries, message: fp.message })
+        function reset() {
+            if (fprint.active) fprint.abort()
+            fpRetry.stop()
+            fp.state = "off"; fp.tries = 0; fp.errors = 0; fp.message = ""
+        }
+        function detect() {
+            if (!fp.wanted || fpDetect.running) return
+            fp.found = false
+            fpDetect.running = true
+        }
+        function start() {
+            if (!fp.available || !root.held || !sessionLock.secure || fprint.active) return
+            if (fp.state === "max") return
+            fp.startedAt = Date.now()
+            if (fprint.start()) { fp.state = "scanning"; fp.message = "" }
+            else fp.fault("Couldn't start the fingerprint reader")
+        }
+        function fault(msg) {
+            fp.state = "error"; fp.message = msg
+            // 2 s, 10 s, 35 s (past fprintd's idle exit), then every 60 s, 20 times at most
+            if (++fp.errors <= 20) { fpRetry.interval = [2000, 10000, 35000][fp.errors - 1] ?? 60000; fpRetry.restart() }
+        }
+    }
+    Process {
+        id: fpDetect
+        command: ["sh", "-c", '[ -e /usr/lib/security/pam_fprintd.so ] || [ -e /usr/lib64/security/pam_fprintd.so ] || exit 3; exec fprintd-list "$1"',
+            "sh", Quickshell.env("USER") || ""]
+        stdout: StdioCollector { id: fpList }
+        onExited: code => {
+            fp.found = code === 0 && /^\s*-\s+#\d+:/m.test(fpList.text)
+            fp.start()
+        }
+    }
+    Timer { id: fpRetry; onTriggered: fp.start() }
+    Connections { target: sessionLock; function onSecureChanged() { fp.start() } }
+    Connections { target: fp; function onWantedChanged() { if (root.held) { fp.reset(); fp.detect() } } }
+    PamContext {
+        id: fprint
+        config: "fprint"
+        configDirectory: Quickshell.shellPath("modules/lock/pam")
+        property string _error: ""
+        // pam_fprintd only talks ("Place your finger…"); a question means a
+        // stack we don't know: end the try (abort() signals nothing).
+        onPamMessage: if (fprint.responseRequired) { fprint.abort(); fp.fault("The fingerprint check asked for something else") }
+        onCompleted: result => {
+            const err = fprint._error
+            fprint._error = ""
+            if (!root.held) return
+            if (result === PamResult.Success) {
+                if (pam.active) pam.abort()
+                auth.reset()
+                root._unlocked()
+                return
+            }
+            // The scan ran out of time with no finger: start again, uncounted.
+            if (Date.now() - fp.startedAt >= root.fprintTimeoutMs - 5000) { fp.state = "off"; fp.start(); return }
+            if (result === PamResult.Error) { fp.fault(err || "The fingerprint reader isn't answering"); return }
+            fp.errors = 0
+            if (++fp.tries >= fp.maxTries) { fp.state = "max"; fp.message = "Fingerprint tries used up: use your password"; return }
+            fp.state = "fail"
+            fp.message = `Fingerprint not recognised (${fp.tries}/${fp.maxTries})`
+            fpRetry.interval = 1200; fpRetry.restart()
+        }
+        // completed(PamResult.Error) follows and handles it.
+        onError: err => { fprint._error = `Fingerprint check failed: ${PamError.toString(err)}` }
+    }
+
     // ── The lock ────────────────────────────────────────────────────────
     WlSessionLock {
         id: sessionLock
@@ -161,6 +249,7 @@ Scope {
                     screen: surface.screen
                     busy: auth.busy
                     error: auth.error
+                    fingerprint: fp.view
                     onSubmitted: password => auth.submit(password)
                 }
                 Connections { target: auth; function onFailed() { lockHost.ctx.failed() } }

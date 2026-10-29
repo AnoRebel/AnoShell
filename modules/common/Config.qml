@@ -1373,6 +1373,12 @@ Singleton {
                 property JsonObject passwordInput: JsonObject {
                     property bool expandOnFocus: true
                 }
+                // Fingerprint unlock beside the password (fprintd with an
+                // enrolled print; modules/lock/pam/fprint). Off by default.
+                property JsonObject fingerprint: JsonObject {
+                    property bool enable: false
+                    property int maxTries: 3
+                }
             }
 
             // Screen corners (hot corners)

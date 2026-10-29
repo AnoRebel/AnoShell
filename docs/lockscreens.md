@@ -19,6 +19,19 @@ for the built-in one).
 
 Bundled: **Minimal** (a large clock on your wallpaper and one line to type on).
 
+## Fingerprint
+
+With **Fingerprint unlock** on (`lock.fingerprint.enable`, off by default)
+and a print enrolled with fprintd (`fprintd-enroll`), touching the reader
+unlocks too. It runs beside the password check, never instead of it: the
+password always works, and after `lock.fingerprint.maxTries` (3) failed
+scans only the password does until the next lock. A scan that times out with
+no finger starts again; a reader that stops answering is retried with
+growing pauses. The fingerprint check is the shell's own PAM service
+(`modules/lock/pam/fprint`) without faillock, so a finger unlocks even while
+too many wrong passwords have the password locked out, and failed scans don't
+count towards that lockout. Previews never scan.
+
 ## Preview
 
 **Preview** (Settings or the Atelier) or `qs ipc call lock preview <id>` shows a
@@ -61,6 +74,7 @@ file. Its root `Item` fills the screen and gets `ctx`:
 | `user`, `avatar`, `wallpaper` | the user name, `~/.face` and the wallpaper as `file://` URLs |
 | `screen` | the screen this copy covers (one per screen) |
 | `preview` | shown as a preview: nothing is checked |
+| `fingerprint` | `{ available, state, tries, maxTries, message }`: whether a fingerprint also unlocks (`state` `"off"`, `"scanning"`, `"fail"`, `"max"` or `"error"`); to show only, the shell runs the scan |
 
 Give your password field `focus: true`. Unlocking is never the lock screen's
 job: it only draws and calls `ctx.submit()`. The shell holds the lock itself

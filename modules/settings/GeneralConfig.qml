@@ -492,6 +492,13 @@ ColumnLayout {
             onClicked: LockScreens.preview(LockScreens.selected)
         }
         ConfigSwitch {
+            label: "Fingerprint unlock"
+            configKey: "lock.fingerprint.enable"
+            sublabel: "Touch the reader instead of typing, when fprintd has your print (fprintd-enroll). The password always works too; after 3 failed scans only the password does"
+            checked: Config.options?.lock?.fingerprint?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("lock.fingerprint.enable", checked)
+        }
+        ConfigSwitch {
             label: "Notifications on the lock screen"
             configKey: "lock.notifications.enable"
             sublabel: "The built-in lock screen lists the ones that arrive while locked"

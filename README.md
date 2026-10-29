@@ -637,6 +637,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 | Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
+| Fingerprint unlock (niri lock; `lock.fingerprint.enable`, off by default) | `fprintd` (`fprintd-list`, `pam_fprintd.so`) and at least one enrolled print (`fprintd-enroll`); the shell's own `modules/lock/pam/fprint` service, no faillock | password only |
 | Launcher plugins (`search.userPlugins`; bundled `clipboard`) | nothing for the loader; the bundled clipboard plugin needs `cliphist` | the plugin shows nothing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 

@@ -15,6 +15,10 @@ QtObject {
     property bool preview: false
     property bool busy: false          // checking a password
     property string error: ""          // why the last try failed ("" none)
+    // Fingerprint, to show only (the shell runs the scan): available (a
+    // reader with your print, and it's on), state "off"|"scanning"|"fail"|
+    // "max"|"error", tries, maxTries, message ("" none).
+    property var fingerprint: ({ available: false, state: "off", tries: 0, maxTries: 0, message: "" })
     readonly property bool capsLock: LockKeys.capsLock
     readonly property string user: Quickshell.env("USER") || "user"
     readonly property string avatar: `file://${Directories.userAvatarPath}`

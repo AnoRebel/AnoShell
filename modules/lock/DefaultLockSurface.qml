@@ -199,6 +199,26 @@ Item {
             }
         }
 
+        // Fingerprint beside the password (the shell runs the scan).
+        RowLayout {
+            readonly property var fpState: root.ctx?.fingerprint ?? null
+            visible: fpState?.available ?? false
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 6
+            MaterialSymbol {
+                text: ["max", "error"].includes(parent.fpState?.state) ? "fingerprint_off" : "fingerprint"
+                iconSize: 18
+                color: parent.fpState?.state === "fail" ? Appearance.colors.colError : "white"
+                opacity: parent.fpState?.state === "scanning" ? 0.9 : 0.5
+            }
+            StyledText {
+                text: parent.fpState?.message || (parent.fpState?.state === "scanning" ? "Or touch the fingerprint reader" : "")
+                font.pixelSize: Appearance.font.pixelSize.smallie
+                color: parent.fpState?.state === "fail" ? Appearance.colors.colError : "white"
+                opacity: 0.8
+            }
+        }
+
         StyledText {
             text: root.ctx?.error ?? ""
             visible: text.length > 0
