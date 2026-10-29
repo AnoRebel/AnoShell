@@ -59,6 +59,7 @@ ShellRoot {
         void Updates;     // updates IPC; checks only with updates.enable
         void EasyEffects; // easyEffects IPC; reads only with audio.easyEffects.enable
         void MusicRecognition; // musicRecognition IPC; records only when asked
+        void KdeConnect;  // kdeConnect IPC and pairing prompts; runs only with kdeConnect.enable
     }
 
     // ═══════════════════════════════════════════════════════════════════════

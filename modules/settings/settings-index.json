@@ -3214,6 +3214,33 @@
  },
  {
   "page": 8,
+  "card": "KDE Connect",
+  "label": "KDE Connect",
+  "sublabel": "Your phone's battery in the bar (module \\\"Phone\\\"), ring, ping, clipboard and files; needs kdeconnectd running · off by default",
+  "keys": [
+   "kdeConnect"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Enable KDE Connect",
+  "sublabel": "Off: nothing runs",
+  "keys": [
+   "kdeConnect.enable"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Device",
+  "sublabel": "The one the bar shows and actions go to",
+  "keys": [
+   "kdeConnect.device"
+  ]
+ },
+ {
+  "page": 8,
   "card": "VPN",
   "label": "VPN",
   "sublabel": "Connection status + control for tailscale, netbird, warp, wireguard, or a custom CLI. The active provider is the first entry below with `enabled: true`.",

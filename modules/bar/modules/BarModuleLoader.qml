@@ -32,7 +32,8 @@ QtObject {
         "gamemode",
         "nightlight",
         "downloads",
-        "updates"
+        "updates",
+        "kdeconnect"
     ]
 
     // Human-readable labels for the UI. Falls back to the raw ID when
@@ -58,7 +59,8 @@ QtObject {
         "gamemode": "Game mode",
         "nightlight": "Night light",
         "downloads": "Downloads",
-        "updates": "Package updates"
+        "updates": "Package updates",
+        "kdeconnect": "Phone (KDE Connect)"
     })
 
     function isKnownModule(name) {
@@ -94,6 +96,7 @@ QtObject {
             case "nightlight": return nightLightModule
             case "downloads": return downloadsModule
             case "updates": return updatesModule
+            case "kdeconnect": return kdeConnectModule
             default:
                 console.warn(`[BarModuleLoader] Unknown module: ${name}`)
                 return null
@@ -120,4 +123,5 @@ QtObject {
     property Component nightLightModule: Component { NightLightModule {} }
     property Component downloadsModule: Component { DownloadsModule {} }
     property Component updatesModule: Component { UpdatesModule {} }
+    property Component kdeConnectModule: Component { KdeConnectModule {} }
 }

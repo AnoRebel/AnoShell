@@ -22,7 +22,7 @@ ColumnLayout {
         title: "Services"
         subtitle: "AI, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
-            "ai", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn",
+            "ai", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn", "kdeConnect",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
@@ -850,6 +850,36 @@ ColumnLayout {
             value: Config.options?.network?.usage?.historyLength ?? 30
             onValueChanged: Config.setNestedValue("network.usage.historyLength", Math.round(value))
             valueText: `${Math.round(value)} pts`
+        }
+    }
+
+    // ═══ KDE Connect ═══
+    SettingsCard {
+        icon: "smartphone"
+        title: "KDE Connect"
+        subtitle: "Your phone's battery in the bar (module \"Phone\"), ring, ping, clipboard and files; needs kdeconnectd running · off by default"
+        configKeys: ["kdeConnect"]
+
+        ConfigSwitch {
+            label: "Enable KDE Connect"
+            configKey: "kdeConnect.enable"
+            sublabel: !(Config.options?.kdeConnect?.enable ?? false) ? "Off: nothing runs"
+                : KdeConnect.daemon === "hung" ? "kdeconnectd is running but not answering: restart it"
+                : KdeConnect.daemon === "missing" ? "kdeconnectd isn't running (start it from your compositor's autostart)"
+                : `${KdeConnect.devices.filter(d => d.paired).length} paired · ${KdeConnect.devices.filter(d => d.paired && d.reachable).length} reachable`
+            checked: Config.options?.kdeConnect?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("kdeConnect.enable", checked)
+        }
+        ConfigRow {
+            label: "Device"
+            configKey: "kdeConnect.device"
+            sublabel: "The one the bar shows and actions go to"
+            visible: KdeConnect.devices.filter(d => d.paired).length > 1
+            ChoiceRow {
+                model: [{ value: "", label: "First reachable", icon: "smartphone" }].concat(KdeConnect.devices.filter(d => d.paired).map(d => ({ value: d.id, label: d.name, icon: "smartphone" })))
+                current: Config.options?.kdeConnect?.device ?? ""
+                onChose: value => Config.setNestedValue("kdeConnect.device", value)
+            }
         }
     }
 

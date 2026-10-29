@@ -43,6 +43,7 @@ var features = []feature{
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
 	{"VPN (NetBird)", "vpn.enable", []string{"netbird"}},
+	{"KDE Connect (kdeconnectd must be running; file picker: zenity)", "kdeConnect.enable", []string{"kdeconnectd", "busctl", "gdbus", "setpriv"}},
 	{"lock screen fingerprint (also needs an enrolled print: fprintd-enroll)", "lock.fingerprint.enable", []string{"fprintd-list"}},
 	{"device event pills: USB", "deviceEvents.usb", []string{"udevadm", "setpriv"}},
 	{"music recognition", "musicRecognition.enable", []string{"songrec", "pw-record", "notify-send", "wl-copy"}},

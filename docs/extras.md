@@ -69,6 +69,26 @@ says when a drive is plugged in and when it's safe to remove
 (`drives.notify`, Settings → Services). `qs -c ano ipc call drives list`
 prints the state; `mount`, `unmount` and `eject` take a device path.
 
+## KDE Connect
+
+Your phone through KDE Connect, off by default: **Settings → Services → KDE
+Connect** (`kdeConnect.enable`). It needs `kdeconnectd` running (the bundled
+Hyprland and niri configs start it; the shell never does) and a phone paired
+from the KDE Connect app.
+
+- The bar module **Phone** (`kdeconnect`) shows the phone and its battery;
+  its popout lists paired devices with **Ring**, **Ping**, **Clipboard** (send
+  yours) and **File…** (pick one with `zenity`).
+- A pairing request from a phone shows a notification with Accept and Reject.
+- With more than one paired device, `kdeConnect.device` picks the one the bar
+  and actions use (empty: the first reachable one).
+- `qs ipc call kdeConnect status | ring | ping | sendClipboard | refresh`.
+
+The shell follows kdeconnectd's D-Bus signals and asks again only about the
+device a signal names; nothing polls. Every call gives up after 5 s, so a
+kdeconnectd that runs but doesn't answer is shown as "not answering" (restart
+it) and asked again every minute. Off, nothing runs.
+
 ## Privacy indicator
 
 The bar module `privacy` shows a red icon while the microphone, a camera or

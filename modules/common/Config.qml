@@ -1491,6 +1491,14 @@ Singleton {
                 property bool displays: true
             }
 
+            // KDE Connect (services/KdeConnect.qml, bar module "kdeconnect"):
+            // phones paired in kdeconnectd. Off: nothing runs. device: the id
+            // the bar and actions use ("" = the first reachable paired one).
+            property JsonObject kdeConnect: JsonObject {
+                property bool enable: false
+                property string device: ""
+            }
+
             // Pending package updates (services/Updates.qml, bar module "updates")
             property JsonObject updates: JsonObject {
                 property bool enable: false
