@@ -1,0 +1,17 @@
+{
+  "id": "bioma-nucleus",
+  "name": "Nucleus",
+  "description": "The battery: its charge, and the power going in or out (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaNucleusPiece.qml",
+  "size": {
+    "w": 4,
+    "h": 2
+  },
+  "minSize": {
+    "w": 3,
+    "h": 2
+  },
+  "settings": []
+}

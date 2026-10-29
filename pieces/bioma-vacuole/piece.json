@@ -1,0 +1,30 @@
+{
+  "id": "bioma-vacuole",
+  "name": "Vacuole",
+  "description": "Unread notifications, one body per application, in a sac (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaVacuolePiece.qml",
+  "size": {
+    "w": 4,
+    "h": 4
+  },
+  "minSize": {
+    "w": 3,
+    "h": 3
+  },
+  "settings": [
+    {
+      "key": "labels",
+      "type": "bool",
+      "label": "Names and counts on the bodies",
+      "default": true
+    },
+    {
+      "key": "figures",
+      "type": "bool",
+      "label": "Unread count and since when",
+      "default": true
+    }
+  ]
+}

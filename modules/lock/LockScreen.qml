@@ -18,7 +18,7 @@ import "."
  * "login" service. Locks on IPC `lock lock` and when logind asks
  * (`loginctl lock-session`, the session menu, idle tools).
  *
- * Preview (IPC `lock preview [id]`, Settings → Hub): the lock screen in an
+ * Preview (IPC `lock preview [id]`, Settings → Atelier): the lock screen in an
  * ordinary window on the focused screen. Nothing is checked: Escape, a
  * password or 60 s close it.
  */

@@ -1,0 +1,4 @@
+module qs.modules.pieces
+PieceLayer 1.0 PieceLayer.qml
+PieceHost 1.0 PieceHost.qml
+PieceSettings 1.0 PieceSettings.qml

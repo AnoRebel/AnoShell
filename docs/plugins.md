@@ -3,7 +3,7 @@
 Extra results in the launcher, beyond the built-in providers (calculator,
 emoji, packages, actions, schemes, looks). A plugin is a folder with a
 `plugin.json` and a QML file. Every plugin is off until you turn it on in
-**Settings → Modules → App Launcher** (or with **Turn on** in **Settings → Hub
+**Settings → Modules → App Launcher** (or with **Turn on** in **Settings → Atelier
 → Plugins**); the ones that are on are listed by id in `search.userPlugins`.
 Plugins load only while the launcher is open.
 
@@ -26,7 +26,7 @@ Settings with its error and can't be turned on.
 {
   "id": "clipboard",
   "name": "Clipboard history",
-  "description": "Shown in Settings and the Hub",
+  "description": "Shown in Settings and the Atelier",
   "author": "you",
   "version": "1.0.0",
   "entry": "main.qml",
@@ -81,5 +81,5 @@ QtObject {
 
 A plugin can import the shell's modules (`qs.services`, `qs.modules.common`)
 and run processes. **It runs with the shell's rights, unsandboxed**: install
-only plugins you trust. From a catalog, the Hub checks the files first and
-asks (see [Hub](hub.md)).
+only plugins you trust. From a catalog, the Atelier checks the files first and
+asks (see [Atelier](atelier.md)).

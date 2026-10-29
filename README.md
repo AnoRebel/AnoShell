@@ -17,10 +17,10 @@ backend is picked from the session at start.
 - **Looks and colours:** Liquid, Ink, Neo-tech and Clay looks, static themes or
   wallpaper colours (matugen), glass, colour modes, your own looks
   ([looks](docs/looks.md)).
-- **Hub:** themes, looks, widgets, wallpapers (and Wallhaven) and whole-setup
+- **Atelier:** themes, looks, pieces, plugins, lock screens, wallpapers (and Wallhaven) and whole-setup
   rices from built-in, your folders and catalogs, with checksums, a code check
-  and undo ([hub](docs/hub.md)).
-- **Desktop widgets** in pages on a grid, plus your own ([widgets](docs/widgets.md)).
+  and undo ([atelier](docs/atelier.md)).
+- **Pieces** (desktop widgets) in pages on a grid, plus your own ([pieces](docs/pieces.md)).
 - **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
@@ -29,8 +29,8 @@ backend is picked from the session at start.
   with limits, screenshots (freeze-frame regions) and screen recording,
   song recognition, lyrics ([extras](docs/extras.md), [configuration](docs/configuration.md)).
 - **anod and `ano`:** the companion daemon (wallpapers, hooks, keybinds,
-  displays, backups, the Hub, the reader backend) and its CLI: `ano doctor`,
-  `ano backup`, `ano hub`, `ano keybinds` ([anod](docs/anod.md), [CLI](docs/cli.md)).
+  displays, backups, the Atelier, the reader backend) and its CLI: `ano doctor`,
+  `ano backup`, `ano atelier`, `ano keybinds` ([anod](docs/anod.md), [CLI](docs/cli.md)).
 - **Settings** for all of it, as an overlay or a standalone window, with a
   Ctrl+K search over every option.
 
@@ -108,7 +108,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Wallpapers` | The wallpaper folder for the picker, anod palette (hue, stills), favourites, apply via anod. |
 | `Wallhaven` | Wallhaven search + download for the picker; API key in `~/.local/share/anoshell/secrets/wallhaven` (0600). |
 | `AntiFlashbang` | Hyprland GLSL shader that darkens bright screens. IPC-controlled. |
-| `Widgets` | Desktop widget registry (bundled `widgets/` + `~/.config/anoshell/widgets/`, live, broken ones marked) and the per-screen layout; the layer is `modules/widgets` ([docs/widgets.md](docs/widgets.md)). Off by default. |
+| `Pieces` | Desktop piece registry (bundled `pieces/` + `~/.config/anoshell/pieces/`, live, broken ones marked) and the per-screen layout; the layer is `modules/pieces` ([docs/pieces.md](docs/pieces.md)). Off by default. |
 | `NightLight` | wlsunset wrapper. Warm now (the toggle), or automatically from sunset to sunrise or between set times. Opt-in. |
 
 ### Media
@@ -624,14 +624,14 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Qt apps in the palette (`appearance.theme.qt`) | `qt6ct` (and `QT_QPA_PLATFORMTHEME=qt6ct`); `qt5ct` for Qt 5 apps; `kvantum` for the default Kvantum mode | Qt apps keep Qt's default look |
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
-| Bioma organisms (widgets `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
-| Location (Settings → Services → Location: weather, night light's sunset schedule, sun/moon widgets) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
+| Bioma organisms (pieces `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
+| Location (Settings → Services → Location: weather, night light's sunset schedule, the Bioma pieces' sun and moon) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
 | Music recognition (`musicRecognition.enable`) | `songrec` (uses Shazam's unofficial service), `pipewire` (`pw-record`), `libnotify` (`notify-send` ≥ 0.7.10 for the Copy/Search actions), `wl-clipboard` | "Not recognised: songrec gave no answer" |
 | Device event pills (`deviceEvents`) | BlueZ (Bluetooth), PipeWire (audio output), udev's `udevadm` (USB; systemd-udev or eudev) | that kind of event isn't shown |
 | Caps Lock / Num Lock OSD, lock screen Caps Lock warning | Hyprland: the bundled `Caps_Lock`/`Num_Lock` binds (non-consuming) and `hyprctl` (reads the main keyboard, so keyd and other virtual keyboards are fine); elsewhere: keyboard LEDs in `/sys/class/leds` (read only while locked; bind a key to `qs ipc call lockKeys refresh` for the OSD) | no lock-key OSD; no warning |
 | Package updates (`updates.enable`, bar module `updates`) | `pacman-contrib` (`checkupdates`); `paru` or `yay` for AUR counts; a terminal (Settings → Default apps) to run the update | no count / AUR not counted |
-| Hub (Settings → Hub, `ano hub`) | anod running (downloads, checksums and archives in Go, no extra binaries); catalogs need the network | the page says anod isn't running; catalogs show the cached index |
-| News widget (widget `news`) | `curl` to `news.google.com` (RSS, no key; local news sends the place you set); source icons: Google's favicon service (`www.google.com/s2/favicons`, sends only the source's site; off with the widget's "Source icons" setting) | the widget says it couldn't reach Google News; no icons |
+| Atelier (Settings → Atelier, `ano atelier`) | anod running (downloads, checksums and archives in Go, no extra binaries); catalogs need the network | the page says anod isn't running; catalogs show the cached index |
+| News piece (`news`) | `curl` to `news.google.com` (RSS, no key; local news sends the place you set); source icons: Google's favicon service (`www.google.com/s2/favicons`, sends only the source's site; off with the widget's "Source icons" setting) | the widget says it couldn't reach Google News; no icons |
 | Clock | the system clock; keep it synchronised (`systemd-timesyncd`: `sudo timedatectl set-ntp true`, or chrony) — `ano doctor` warns when it isn't | the clock drifts |
 | EasyEffects quick toggle and presets (`audio.easyEffects.enable`) | `easyeffects` ≥ 7 running (its CLI: `-b`, `--bypass-toggle`, `-p`, `-l`); the shell never starts it | the pill stays hidden |
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
@@ -664,7 +664,7 @@ Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanva
 
 ## Credits
 Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
-**Bioma** (GPL-3.0: palette cursors and icon themes, the desktop "organisms" in `widgets/bioma-*` with their support code in `widgets/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader).
+**Bioma** (GPL-3.0: palette cursors and icon themes, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader).
 
 ## Licence
 

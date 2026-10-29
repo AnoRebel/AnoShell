@@ -22,11 +22,11 @@ import Quickshell
 ShellRoot {
     id: settingsRoot
 
-    // `ano hub [type]` starts this with ANO_SETTINGS_PAGE=hub ANO_HUB_TAB=<type>.
-    property int currentPage: Quickshell.env("ANO_SETTINGS_PAGE") === "hub" ? Math.max(0, SettingsRegistry.pages.findIndex(p => p.name === "Hub")) : 0
+    // `ano atelier [type]` starts this with ANO_SETTINGS_PAGE=atelier ANO_ATELIER_TAB=<type>.
+    property int currentPage: Quickshell.env("ANO_SETTINGS_PAGE") === "atelier" ? Math.max(0, SettingsRegistry.pages.findIndex(p => p.name === "Atelier")) : 0
     Component.onCompleted: {
-        const tab = Quickshell.env("ANO_HUB_TAB") ?? ""
-        if (Hub.types.some(t => t.id === tab)) Hub.tab = tab
+        const tab = Quickshell.env("ANO_ATELIER_TAB") ?? ""
+        if (Atelier.types.some(t => t.id === tab)) Atelier.tab = tab
         LockScreens.remote = true // the preview is the shell's, not this window's
     }
 
@@ -180,7 +180,7 @@ ShellRoot {
                             case 8: return comp_services
                             case 9: return comp_displays
                             case 10: return comp_keybinds
-                            case 11: return comp_hub
+                            case 11: return comp_atelier
                             case 12: return comp_about
                             default: return comp_general
                         }
@@ -211,6 +211,6 @@ ShellRoot {
     Component { id: comp_services; ServicesConfig {} }
     Component { id: comp_displays; DisplaysPage {} }
     Component { id: comp_keybinds; KeybindsPage {} }
-    Component { id: comp_hub; HubPage {} }
+    Component { id: comp_atelier; AtelierPage {} }
     Component { id: comp_about; AboutPage {} }
 }

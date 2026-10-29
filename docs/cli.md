@@ -109,7 +109,7 @@ the same subcommands, so scripts can keep calling them directly.
 |---|---|---|
 | `config` | `~/.config/anoshell/config.json`, including anod hooks | yes |
 | `themes` | `~/.config/anoshell/themes` | yes |
-| `widgets` | `~/.config/anoshell/widgets` | yes |
+| `atelier` | `~/.config/anoshell/` `pieces`, `plugins`, `lockscreens`, `looks` and `rices` | yes |
 | `data` | calendar, chats, notes and other shell data (not secrets) | yes |
 | `secrets` | API keys | opt-in |
 | `compositor` | `~/.config/hypr` and `~/.config/niri` | opt-in |

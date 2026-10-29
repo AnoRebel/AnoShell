@@ -73,7 +73,7 @@ var actions = []action{
 	{"Force update", "stash local changes, keep local commits on a backup branch, reset to the remote", []string{"setup", "update", "--force"}, true},
 	{"Refresh", "rebuild, migrate the config, restart (no pull)", []string{"setup", "refresh"}, true},
 	{"Install", "clone the shell if missing, build, run doctor", []string{"setup", "install"}, true},
-	{"Back up", "archive your config, themes, widgets and data (ano backup create)", []string{"backup", "create"}, false},
+	{"Back up", "archive your config, themes, pieces and data (ano backup create)", []string{"backup", "create"}, false},
 	{"Doctor", "check dependencies, config, sockets and crashes", []string{"doctor"}, false},
 }
 

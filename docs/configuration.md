@@ -196,8 +196,8 @@ Event hooks for anod live under `hooks` in the same file. See
 ## Location
 
 `location` (Settings → Services → Location) is where you are, for the bar's
-weather, night light's sunset-to-sunrise schedule and the sun-and-moon
-widgets:
+weather, night light's sunset-to-sunrise schedule and the sun and moon of the
+Bioma pieces:
 
 - `enable` (on): off looks nothing up; the weather then uses
   `bar.weather.city`, or wttr.in's guess from your IP address, and the

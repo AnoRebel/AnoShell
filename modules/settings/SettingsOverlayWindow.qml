@@ -160,7 +160,7 @@ PanelWindow {
                                 case 8: return servicesPage
                                 case 9: return displaysPage
                                 case 10: return keybindsPage
-                                case 11: return hubPage
+                                case 11: return atelierPage
                                 case 12: return aboutPage
                                 default: return generalPage
                             }
@@ -258,8 +258,8 @@ PanelWindow {
         KeybindsPage {}
     }
     Component {
-        id: hubPage
-        HubPage {}
+        id: atelierPage
+        AtelierPage {}
     }
     Component {
         id: aboutPage

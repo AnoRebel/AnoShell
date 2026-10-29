@@ -29,11 +29,11 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "widgets"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "pieces"
         ]
     }
 
-    WidgetsCard {}
+    PiecesCard {}
 
     // ═══ Panel Modules Enable/Disable ═══
     SettingsCard {
@@ -545,7 +545,7 @@ ColumnLayout {
             }
         }
 
-        // Plugin packages (docs/plugins.md): bundled, yours, or from the Hub.
+        // Plugin packages (docs/plugins.md): bundled, yours, or from the Atelier.
         StyledText {
             Layout.fillWidth: true
             Layout.topMargin: 8
@@ -571,7 +571,7 @@ ColumnLayout {
             wrapMode: Text.WordWrap
             opacity: 0.6
             font.pixelSize: Appearance.font.pixelSize.smaller
-            text: "Plugins run with the shell's rights. Add your own in ~/.config/anoshell/plugins/ or get them from Settings → Hub → Plugins."
+            text: "Plugins run with the shell's rights. Add your own in ~/.config/anoshell/plugins/ or get them from Settings → Atelier → Plugins."
         }
     }
 

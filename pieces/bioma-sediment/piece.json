@@ -1,0 +1,41 @@
+{
+  "id": "bioma-sediment",
+  "name": "Sediment",
+  "description": "Recently used files, laid down in strata, the newest on top (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaSedimentPiece.qml",
+  "size": {
+    "w": 4,
+    "h": 4
+  },
+  "minSize": {
+    "w": 3,
+    "h": 3
+  },
+  "settings": [
+    {
+      "key": "depth",
+      "type": "choice",
+      "label": "Files shown",
+      "options": [
+        "8",
+        "16",
+        "32"
+      ],
+      "default": "16"
+    },
+    {
+      "key": "names",
+      "type": "bool",
+      "label": "File names",
+      "default": true
+    },
+    {
+      "key": "figures",
+      "type": "bool",
+      "label": "Figures",
+      "default": true
+    }
+  ]
+}

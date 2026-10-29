@@ -896,29 +896,29 @@
  },
  {
   "page": 1,
-  "card": "Desktop widgets",
-  "label": "Desktop widgets",
+  "card": "Desktop pieces",
+  "label": "Desktop pieces",
   "sublabel": "Cards on the desktop, under your windows, on pages · off by default",
   "keys": [
-   "widgets"
+   "pieces"
   ]
  },
  {
   "page": 1,
   "card": "",
-  "label": "Show desktop widgets",
+  "label": "Show desktop pieces",
   "sublabel": "Clicks on a window never reach them; they pause while a maximised window covers the screen or it's locked",
   "keys": [
-   "widgets.enable"
+   "pieces.enable"
   ]
  },
  {
   "page": 1,
   "card": "",
   "label": "Grid cell",
-  "sublabel": "Widgets snap to a grid of these squares",
+  "sublabel": "Pieces snap to a grid of these squares",
   "keys": [
-   "widgets.cell"
+   "pieces.cell"
   ]
  },
  {
@@ -927,16 +927,16 @@
   "label": "Gap",
   "sublabel": "",
   "keys": [
-   "widgets.gap"
+   "pieces.gap"
   ]
  },
  {
   "page": 1,
   "card": "",
   "label": "Animation frame rate",
-  "sublabel": "For animated widgets (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more",
+  "sublabel": "For animated pieces (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more",
   "keys": [
-   "widgets.fps"
+   "pieces.fps"
   ]
  },
  {
@@ -3004,7 +3004,7 @@
   "page": 8,
   "card": "Location",
   "label": "Location",
-  "sublabel": "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun-and-moon widgets",
+  "sublabel": "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun and moon of the Bioma pieces",
   "keys": [
    "location"
   ]

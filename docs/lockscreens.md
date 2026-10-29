@@ -8,7 +8,7 @@ PAM's `login` service, faillock included. On Hyprland, hyprlock locks the
 session and only the preview below runs in the shell.
 
 The lock screen itself is replaceable: pick one in **Settings → General →
-Lock screen** or **Settings → Hub → Lock screens** (`lock.screen`, `default`
+Lock screen** or **Settings → Atelier → Lock screens** (`lock.screen`, `default`
 for the built-in one).
 
 | Where | |
@@ -21,7 +21,7 @@ Bundled: **Minimal** (a large clock on your wallpaper and one line to type on).
 
 ## Preview
 
-**Preview** (Settings or the Hub) or `qs ipc call lock preview <id>` shows a
+**Preview** (Settings or the Atelier) or `qs ipc call lock preview <id>` shows a
 lock screen on the focused screen without locking. Nothing is checked:
 Escape, any password, or a minute closes it.
 
@@ -88,7 +88,7 @@ Item {
 }
 ```
 
-Like widgets and plugins, a lock screen runs with the shell's rights, so it
+Like pieces and plugins, a lock screen runs with the shell's rights, so it
 could still do anything the shell can: install only ones you trust. From a
-catalog the Hub checks it first, flags code that touches the lock state, the
-session lock or PAM, and asks (see [Hub](hub.md)).
+catalog the Atelier checks it first, flags code that touches the lock state, the
+session lock or PAM, and asks (see [Atelier](atelier.md)).

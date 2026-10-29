@@ -1,0 +1,14 @@
+{
+  "id": "profile",
+  "name": "Profile",
+  "description": "Your picture and name, uptime, a status line, and lock, settings and power",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "ProfilePiece.qml",
+  "size": { "w": 3, "h": 2 },
+  "minSize": { "w": 3, "h": 2 },
+  "settings": [
+    { "key": "status", "type": "string", "label": "Status line", "default": "" },
+    { "key": "picture", "type": "string", "label": "Picture (empty: ~/.face)", "default": "" }
+  ]
+}

@@ -904,7 +904,7 @@ Singleton {
                 property bool adopted: false // the AnoShell cursor went on at first start
             }
             // Where you are (services/Location.qml), for the weather, night light's
-            // sunset-to-sunrise schedule and the sun/moon widgets. mode "auto":
+            // sunset-to-sunrise schedule and the Bioma pieces' sun and moon. mode "auto":
             // GeoClue, else the IP address; "manual": the values below.
             property JsonObject location: JsonObject {
                 property bool enable: true
@@ -914,16 +914,17 @@ Singleton {
                 property real longitude: 0
             }
 
-            // Desktop widgets (modules/widgets, services/Widgets.qml): cards on a
-            // Bottom-layer surface under windows, on a snapping grid, in pages.
-            // Off by default: no surface and no widget code until enabled.
-            property JsonObject widgets: JsonObject {
+            // Pieces, the desktop widgets (modules/pieces, services/Pieces.qml):
+            // cards on a Bottom-layer surface under windows, on a snapping
+            // grid, in pages. Off by default: no surface and no piece code
+            // until enabled.
+            property JsonObject pieces: JsonObject {
                 property bool enable: false
                 property int cell: 96   // grid cell, logical px
                 property int gap: 12    // between cells
-                property int fps: 10    // animated widgets (Bioma organisms): frames a second
+                property int fps: 10    // animated pieces (Bioma organisms): frames a second
                 // Per screen name: { "page": index, "pages": [[{ uid, id, x, y, w, h, settings }]] }
-                // (x/y/w/h in cells). Written by the widget picker and edit mode.
+                // (x/y/w/h in cells). Written by the piece picker and edit mode.
                 property var screens: ({})
             }
             // Keyboard layouts in order, [{ layout, variant }] from the XKB catalogue
@@ -1460,13 +1461,14 @@ Singleton {
                 property bool enable: false
             }
 
-            // "What's playing?" via songrec (services/MusicRecognition.qml)
-            // Hub (Settings → Hub, services/Hub.qml, anod hub.*): online
-            // catalogs (https index.json URLs). The community catalog is added
-            // here once it exists.
-            property JsonObject hub: JsonObject {
+            // Atelier (Settings → Atelier, services/Atelier.qml, anod atelier.*):
+            // online catalogs (https index.json URLs). The community catalog is
+            // added here once it exists.
+            property JsonObject atelier: JsonObject {
                 property var catalogs: []
             }
+
+            // "What's playing?" via songrec (services/MusicRecognition.qml)
 
             property JsonObject musicRecognition: JsonObject {
                 property bool enable: false

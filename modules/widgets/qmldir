@@ -1,4 +1,0 @@
-module qs.modules.widgets
-WidgetLayer 1.0 WidgetLayer.qml
-WidgetHost 1.0 WidgetHost.qml
-WidgetSettings 1.0 WidgetSettings.qml

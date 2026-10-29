@@ -480,7 +480,7 @@ ColumnLayout {
             configKey: "lock.screen"
             sublabel: LockScreens.selected !== "default" && !LockScreens.current
                 ? `"${LockScreens.selected}" doesn't load (${LockScreens.registry.errorsOf(LockScreens.selected).join("; ")}): the built-in one is used`
-                : "More in Settings → Hub → Lock screens, or make your own (docs/lockscreens.md)"
+                : "More in Settings → Atelier → Lock screens, or make your own (docs/lockscreens.md)"
             ChoiceRow {
                 model: [{ value: "default", label: "AnoShell", icon: "lock" }].concat(LockScreens.list.map(e => ({ value: e.id, label: e.name, icon: "style" })))
                 current: LockScreens.selected

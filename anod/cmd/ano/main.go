@@ -42,7 +42,7 @@ const usage = `usage: ano <command> [args]
   welcome                                        run the first-start wizard again
   keybinds list [--json] | apply                 ano's keybind set / regenerate the compositor bind files
   keybinds migrate [--dry-run] | --revert        move the binds out of hyprland.lua / config.kdl into ano (backups first)
-  hub [type] | list|refresh|install|remove|pack   the Hub: open it, or manage catalog content (ano hub help)
+  atelier [type] | list|refresh|install|remove|pack   the Atelier: open it, or manage catalog content (ano atelier help)
   version
 `
 
@@ -82,8 +82,8 @@ func main() {
 		os.Exit(runCmd(args))
 	case "keybinds":
 		os.Exit(keybindsCmd(args))
-	case "hub":
-		os.Exit(hubCmd(args))
+	case "atelier":
+		os.Exit(atelierCmd(args))
 	case "welcome":
 		os.Exit(shellIPC("call", "welcome", "open"))
 	case "help", "-h", "--help":

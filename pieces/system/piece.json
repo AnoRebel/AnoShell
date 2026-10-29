@@ -1,0 +1,14 @@
+{
+  "id": "system",
+  "name": "System",
+  "description": "CPU, memory and battery, with temperature and disk if you want them",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "SystemPiece.qml",
+  "size": { "w": 4, "h": 2 },
+  "minSize": { "w": 2, "h": 2 },
+  "settings": [
+    { "key": "temperature", "type": "bool", "label": "CPU temperature", "default": false },
+    { "key": "disk", "type": "bool", "label": "Disk (/)", "default": false }
+  ]
+}

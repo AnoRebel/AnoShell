@@ -61,20 +61,21 @@ Scope {
         }
     }
 
-    // `ano hub [type]`: the Hub page on a type's tab — in the overlay when it
-    // is open, else in standalone Settings (which reads the env below).
-    IpcHandler {
-        target: "hub"
-        function open(type: string): void {
-            const tab = Hub.types.some(t => t.id === type) ? type : ""
-            const page = SettingsRegistry.pages.findIndex(p => p.name === "Hub")
-            if (GlobalStates.settingsOpen) {
-                if (tab) Hub.tab = tab
-                GlobalStates.settingsPage = page
-                return
-            }
-            Quickshell.execDetached(["env", "ANO_SETTINGS_PAGE=hub", `ANO_HUB_TAB=${tab}`,
-                "qs", "-n", "-p", Quickshell.shellPath("settings.qml")])
+    // `ano atelier [type]`: the Atelier page on a type's tab — in the overlay
+    // when it is open, else in standalone Settings (which reads the env below).
+    function openAtelier(type: string): void {
+        const tab = Atelier.types.some(t => t.id === type) ? type : ""
+        const page = SettingsRegistry.pages.findIndex(p => p.name === "Atelier")
+        if (GlobalStates.settingsOpen) {
+            if (tab) Atelier.tab = tab
+            GlobalStates.settingsPage = page
+            return
         }
+        Quickshell.execDetached(["env", "ANO_SETTINGS_PAGE=atelier", `ANO_ATELIER_TAB=${tab}`,
+            "qs", "-n", "-p", Quickshell.shellPath("settings.qml")])
+    }
+    IpcHandler {
+        target: "atelier"
+        function open(type: string): void { root.openAtelier(type) }
     }
 }

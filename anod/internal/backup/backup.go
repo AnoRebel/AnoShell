@@ -36,7 +36,10 @@ type Category struct {
 var Categories = []Category{
 	{"config", "settings (config.json, including anod hooks)", []string{".config/anoshell/config.json"}, nil, true},
 	{"themes", "your themes", []string{".config/anoshell/themes"}, nil, true},
-	{"widgets", "your desktop widgets", []string{".config/anoshell/widgets"}, nil, true},
+	{"atelier", "your pieces, launcher plugins, lock screens, looks and rices", []string{
+		".config/anoshell/pieces", ".config/anoshell/plugins", ".config/anoshell/lockscreens",
+		".config/anoshell/looks", ".config/anoshell/rices",
+	}, nil, true},
 	{"data", "calendar, chats, notes and other shell data", []string{
 		".config/anoshell/calendar-events.json", ".config/anoshell/calendar-sync.json",
 		".config/anoshell/holidays.json", ".local/share/anoshell",

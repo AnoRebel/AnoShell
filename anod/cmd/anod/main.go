@@ -20,12 +20,12 @@ import (
 	"syscall"
 	"time"
 
+	"ano/anod/internal/atelier"
 	"ano/anod/internal/camera"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/downloads"
 	"ano/anod/internal/hooks"
-	"ano/anod/internal/hub"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/keybinds"
 	"ano/anod/internal/palette"
@@ -478,8 +478,8 @@ func main() {
 		return kbApply(keybinds.Reset(o, req.Chord))
 	})
 
-	// Hub (Settings → Hub): content store, catalogs, rices.
-	hb := hub.New()
+	// Atelier (Settings → Atelier): content store, catalogs, rices.
+	hb := atelier.New()
 	hb.CurrentWallpaper = func() string { return wp.LoadState().Image }
 	hb.SetWallpaper = func(img string) error {
 		_, s := wallpaperSettings()
@@ -497,7 +497,7 @@ func main() {
 		_, err = kbApply(o)
 		return err
 	}
-	registerHub(srv, hb)
+	registerAtelier(srv, hb)
 
 	// Displays (Settings → Displays): live apply, 15 s confirm-or-revert run
 	// here (a shell crash can't strand a bad mode), managed include files, profiles.

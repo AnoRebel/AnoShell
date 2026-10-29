@@ -1,0 +1,17 @@
+{
+  "id": "bioma-photoperiod",
+  "name": "Photoperiod",
+  "description": "The sky over your weather city: the sun's and moon's arcs, daylight left, and the moon's phase (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaPhotoperiodPiece.qml",
+  "size": {
+    "w": 4,
+    "h": 2
+  },
+  "minSize": {
+    "w": 3,
+    "h": 2
+  },
+  "settings": []
+}

@@ -42,7 +42,7 @@ Singleton {
         "wallpaper.set": 120000, "wallpaper.colors": 120000, "wallpaper.focus": 120000,
         "palette.get": 120000, "palette.scan": 120000, "scan": 120000, "scanned": 120000,
         "reader.open": 60000, "cursor.themes": 60000, "keybinds.active": 30000,
-        "hub.refresh": 120000, "hub.prepare": 180000, "hub.commit": 60000, "hub.riceApply": 180000, "hub.riceUndo": 180000, "hub.riceExport": 60000, "hub.wallhaven": 30000, "hub.wallhavenInstall": 150000
+        "atelier.refresh": 120000, "atelier.prepare": 180000, "atelier.commit": 60000, "atelier.riceApply": 180000, "atelier.riceUndo": 180000, "atelier.riceExport": 60000, "atelier.wallhaven": 30000, "atelier.wallhavenInstall": 150000
     })
     // Fire-and-forget shell event (dropped while anod is unavailable).
     function emit(name, data) { root.call("event.emit", { event: name, data: data ?? {} }) }

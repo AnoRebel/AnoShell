@@ -65,16 +65,16 @@ is not restarted.
 | `ano setup install [--repo URL] [--branch B]` | clones the shell into `~/.config/quickshell/ano` if it isn't there, builds anod + ano, then runs `ano doctor` |
 | `ano setup update [--force]` | fast-forwards the checkout from its remote (refuses with uncommitted changes or diverged local commits), then refreshes. `--force` stashes your changes (untracked files too), keeps any local commits on an `ano-backup/<time>` branch, resets to the remote's latest and refreshes; nothing is deleted |
 | `ano setup refresh` | rebuilds anod + ano, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
-| `ano backup categories` | lists what can be backed up: `config`, `themes`, `widgets`, `data` (the defaults), plus opt-in `secrets`, `compositor` (hypr/niri configs), `wallpapers` and `avatar` |
+| `ano backup categories` | lists what can be backed up: `config`, `themes`, `atelier` (your pieces, plugins, lock screens, looks and rices), `data` (the defaults), plus opt-in `secrets`, `compositor` (hypr/niri configs), `wallpapers` and `avatar` |
 | `ano backup create [--only a,b] [--add a,b] [-o FILE]` | archives the default categories, only the ones named, or the defaults plus opt-in ones, to `~/.local/share/anoshell/backups/anoshell-<time>.tar.gz` (mode 0600; secrets keep 0600 inside) |
 | `ano backup list` | lists the backups in that folder with their categories |
 | `ano backup restore FILE [--only a,b] [--dry-run] [--no-snapshot]` | restores every category in the backup, or only the named ones. The files it will replace are first saved to `pre-restore-<time>.tar.gz`. It never writes outside your home, never overwrites a symlink, and follows a symlinked folder (stow-style dotfiles) only if it stays inside your home |
-| `ano hub [type]` | opens Settings on the Hub page (that type's tab): through the running shell (`hub open`), else standalone Settings |
-| `ano hub list [type] [--json]` / `ano hub refresh` | local and catalog items (refresh fetches the catalogs first) |
-| `ano hub install <type> <id> [--catalog URL] [--yes]` | verified install from a catalog; code content (widgets) shows the audit findings and declared hosts/commands and asks y/N unless `--yes` |
-| `ano hub remove <type> <id>` | removes a catalog install (never built-in items or your own files) |
-| `ano hub wallhaven [query…] [--page N] [--purity sfw\|sketchy\|nsfw] [--sorting S]` / `ano hub wallhaven-install <id>` | searches Wallhaven through anod (beyond SFW needs your key, saved with `secret.set` as `wallhaven`), or installs one into `<wallpaper folder>/hub/wallhaven-<id>.<ext>` with a receipt |
-| `ano hub pack <dir\|file> [--type T] [--id ID] [--version V] [--url-base URL] [--out DIR]` | archives an item in the catalog format, checks it would install, prints its index entry with the SHA-256 |
+| `ano atelier [type]` | opens Settings on the Atelier page (that type's tab): through the running shell (`atelier open`), else standalone Settings |
+| `ano atelier list [type] [--json]` / `ano atelier refresh` | local and catalog items (refresh fetches the catalogs first) |
+| `ano atelier install <type> <id> [--catalog URL] [--yes]` | verified install from a catalog; code content (pieces, plugins, lock screens) shows the audit findings and declared hosts/commands and asks y/N unless `--yes` |
+| `ano atelier remove <type> <id>` | removes a catalog install (never built-in items or your own files) |
+| `ano atelier wallhaven [query…] [--page N] [--purity sfw\|sketchy\|nsfw] [--sorting S]` / `ano atelier wallhaven-install <id>` | searches Wallhaven through anod (beyond SFW needs your key, saved with `secret.set` as `wallhaven`), or installs one into `<wallpaper folder>/hub/wallhaven-<id>.<ext>` with a receipt |
+| `ano atelier pack <dir\|file> [--type T] [--id ID] [--version V] [--url-base URL] [--out DIR]` | archives an item in the catalog format, checks it would install, prints its index entry with the SHA-256 |
 | `ano version` | prints the version |
 
 `ano setup` with no command, run in a terminal, opens an interactive menu
@@ -190,21 +190,21 @@ Reader methods (see [reader.md](reader.md)): `reader.open` (`{"kind"}`:
 `url`, token included; slow), `reader.close` (`{"kind"}`), `reader.status`
 and `reader.stop` (ends playback).
 
-Hub methods (Settings → Hub; see `anod/internal/hub`): `hub.list` (`{"type"?}`, cache only:
-`{"revision", "items", "catalog", "catalogs"}`), `hub.refresh` (the same after fetching every catalog
-in `hub.catalogs` with ETags; a failure keeps the cache and marks the catalog `offline`),
-`hub.prepare` (`{"type", "id", "catalog"}`: download, SHA-256 check, staged extraction, static audit
-for code; returns a token valid 10 minutes), `hub.commit` (`{"token"}` → `{"path"}`), `hub.cancel`,
-`hub.remove` (`{"type", "id"}`), `hub.riceApply` (`{"id", "layers"}`), `hub.riceUndo` and
-`hub.riceExport` (`{"name"}` → `{"id", "path"}`), `hub.wallhaven` (`{"query", "page"?, "purity"?, "sorting"?}` →
+Atelier methods (Settings → Atelier; see `anod/internal/atelier`): `atelier.list` (`{"type"?}`, cache only:
+`{"revision", "items", "catalog", "catalogs"}`), `atelier.refresh` (the same after fetching every catalog
+in `atelier.catalogs` with ETags; a failure keeps the cache and marks the catalog `offline`),
+`atelier.prepare` (`{"type", "id", "catalog"}`: download, SHA-256 check, staged extraction, static audit
+for code; returns a token valid 10 minutes), `atelier.commit` (`{"token"}` → `{"path"}`), `atelier.cancel`,
+`atelier.remove` (`{"type", "id"}`), `atelier.riceApply` (`{"id", "layers"}`), `atelier.riceUndo` and
+`atelier.riceExport` (`{"name"}` → `{"id", "path"}`), `atelier.wallhaven` (`{"query", "page"?, "purity"?, "sorting"?}` →
 `{"items": [{"id", "url", "thumb", "resolution", "fileSize", "fileType", "source", "purity", "page", "installed"}],
 "page", "lastPage", "hasKey", "error"?}`; results cached 10 minutes, at most 40 calls a minute, the key sent only as
-`X-API-Key`) and `hub.wallhavenInstall` (`{"id"}` → `{"path"}`: the image location is looked up again on Wallhaven,
+`X-API-Key`) and `atelier.wallhavenInstall` (`{"id"}` → `{"path"}`: the image location is looked up again on Wallhaven,
 only https from `w.wallhaven.cc`, JPEG/PNG/WebP up to 64 MiB). Every change bumps
-`$XDG_STATE_HOME/anoshell/hub/revision`; receipts live in `…/hub/receipts/<type>/<id>.json`.
+`$XDG_STATE_HOME/anoshell/atelier/revision`; receipts live in `…/atelier/receipts/<type>/<id>.json`.
 Archives with links, devices, absolute paths or `..`, more than 500 files or 64 MiB unpacked are
 refused; nothing in an archive is ever run. A rice merges only look keys (`appearance`,
-`panelFamily`, bar/dock styles, background resize/transition, anoSpot size/position, widget layout)
+`panelFamily`, bar/dock styles, background resize/transition, anoSpot size/position, piece layout)
 and applies its keybinds only when that layer is ticked.
 
 From the shell: `qs -c ano ipc call anod status` shows whether the shell is connected.

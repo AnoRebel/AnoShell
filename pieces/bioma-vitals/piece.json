@@ -1,0 +1,28 @@
+{
+  "id": "bioma-vitals",
+  "name": "Vitals",
+  "description": "CPU, memory, GPU and battery as the vitals rings, with their figures (a Bioma organism)",
+  "author": "Bioma, ported to AnoShell",
+  "version": "1.0.0",
+  "entry": "BiomaVitalsPiece.qml",
+  "size": {
+    "w": 4,
+    "h": 2
+  },
+  "minSize": {
+    "w": 3,
+    "h": 2
+  },
+  "settings": [
+    {
+      "key": "layout",
+      "type": "choice",
+      "label": "Layout",
+      "options": [
+        "row",
+        "square"
+      ],
+      "default": "row"
+    }
+  ]
+}

@@ -586,7 +586,7 @@ ColumnLayout {
     SettingsCard {
         icon: "location_on"
         title: "Location"
-        subtitle: "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun-and-moon widgets"
+        subtitle: "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun and moon of the Bioma pieces"
         configKeys: ["location"]
 
         ConfigSwitch {

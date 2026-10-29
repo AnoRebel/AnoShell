@@ -11,7 +11,7 @@ import qs.modules.common
  * lock screens), merged from the shell's bundled folder and the user's
  * ~/.config/anoshell/<kind>/, where the same id overrides a bundled one. A
  * package is a folder with a JSON manifest (`manifest`) and a QML entry file.
- * Folders are watched; the Hub installs a fresh `<id>~<n>` folder per version
+ * Folders are watched; the Atelier installs a fresh `<id>~<n>` folder per version
  * and the id is the part before "~". Each manifest load bumps the entry's
  * revision, part of its QML URL, so an edited package compiles afresh.
  *
@@ -21,7 +21,7 @@ import qs.modules.common
  * whose QML doesn't compile is listed with its errors (errorsOf) and isn't
  * usable; the others are unaffected.
  *
- * ponytail: services/Widgets.qml predates this and keeps its own copy;
+ * ponytail: services/Pieces.qml predates this and keeps its own copy;
  * move it onto this when it next needs work.
  */
 Scope {
