@@ -1,0 +1,9 @@
+{
+  "id": "windows",
+  "name": "Windows",
+  "description": "Type \"! \" and part of a window's title or app; Enter focuses it. Most recently used first, on every compositor.",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "! "
+}

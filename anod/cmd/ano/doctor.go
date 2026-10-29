@@ -64,6 +64,8 @@ var features = []feature{
 	{"removable drives (bar module drives)", "", []string{"udisksctl", "lsblk", "udevadm"}},
 	{"lock screen on niri: locking on loginctl lock-session", "lock.enable", []string{"gdbus"}},
 	{"launcher plugin clipboard history (bundled)", "", []string{"cliphist"}},
+	{"launcher plugin files (bundled)", "", []string{"fd"}},
+	{"launcher plugins kaomoji, unicode, keybinds (bundled; copy)", "", []string{"wl-copy"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.

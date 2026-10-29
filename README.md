@@ -639,7 +639,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
 | KDE Connect (`kdeConnect.enable`, off by default; bar module "Phone") | `kdeconnect` with `kdeconnectd` running (the shell doesn't start it; the bundled Hyprland/niri configs do), `systemd` (`busctl`), `glib2` (`gdbus`), `util-linux` (`setpriv`); sending a file: `zenity` | no pill and no phone actions; a hung kdeconnectd shows as not answering |
 | Fingerprint unlock (niri lock; `lock.fingerprint.enable`, off by default) | `fprintd` (`fprintd-list`, `pam_fprintd.so`) and at least one enrolled print (`fprintd-enroll`); the shell's own `modules/lock/pam/fprint` service, no faillock | password only |
-| Launcher plugins (`search.userPlugins`; bundled `clipboard`) | nothing for the loader; the bundled clipboard plugin needs `cliphist` | the plugin shows nothing |
+| Launcher plugins (`search.userPlugins`; bundled `clipboard`, `websearch`, `files`, `kaomoji`, `unicode`, `keybinds`, `windows`) | nothing for the loader; `clipboard` needs `cliphist`; `files` needs `fd`; `kaomoji`, `unicode` and `keybinds` copy with `wl-copy` (`wl-clipboard`); `keybinds` needs anod | that plugin shows nothing (keybinds says anod isn't running) |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

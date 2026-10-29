@@ -1,0 +1,9 @@
+{
+  "id": "kaomoji",
+  "name": "Kaomoji",
+  "description": "Type \"km \" and a mood (joy, love, sad, angry, cat…); Enter copies it (needs wl-copy). The list is from dhrruvsharma's dotfiles (GPL-3.0).",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "km "
+}

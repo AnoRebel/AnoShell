@@ -13,8 +13,17 @@ Plugins load only while the launcher is open.
 | `~/.config/anoshell/plugins/<id>/` | yours; the same id overrides a bundled one |
 | `~/.config/anoshell/plugins/<id>~<n>/` | installed from a catalog (a fresh folder per version) |
 
-Bundled: **Clipboard history** (`cb ` and part of something you copied;
-Enter copies it again; needs `cliphist`).
+Bundled:
+
+| Plugin | Type | Does |
+|---|---|---|
+| Clipboard history | `cb ` | something you copied; Enter copies it again (`cliphist`) |
+| Web search | `? ` | one result per engine; `? yt …`, `? w …`, `? gh …`, `? aw …` (Arch Wiki), `? aur …`, `? g …`, `? b …` keep one |
+| Files | `f ` | files in your home by name, closest first; Enter opens it (`fd`; ported from Bioma) |
+| Kaomoji | `km ` | by mood (joy, love, cat…); Enter copies it (`wl-copy`; the list is from dhrruvsharma's dotfiles) |
+| Unicode symbols | `u ` | arrows, maths, currency, Greek, box drawing, shapes… by name; Enter copies it |
+| Keybinds | `kb ` | your keybinds by key or action; Enter copies the keys (anod) |
+| Windows | `! ` | open windows, most recent first; Enter focuses it (any compositor) |
 
 Folders are watched: a plugin you add or edit is picked up without a restart.
 One whose manifest is invalid or whose QML doesn't compile is listed in

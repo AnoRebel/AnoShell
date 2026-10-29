@@ -1,0 +1,9 @@
+{
+  "id": "websearch",
+  "name": "Web search",
+  "description": "Type \"? \" and what to look for: one result per engine (DuckDuckGo, Google, YouTube, Wikipedia, GitHub, Arch Wiki, AUR, Brave); start with an engine's key (\"? yt …\") to keep only that one.",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "? "
+}

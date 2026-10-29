@@ -1,0 +1,9 @@
+{
+  "id": "files",
+  "name": "Files",
+  "description": "Type \"f \" and part of a file's name (3 letters or more): files in your home, the closest match first; Enter opens it. Needs fd. Ported from Bioma (GPL-3.0).",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "f "
+}

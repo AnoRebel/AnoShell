@@ -1,0 +1,9 @@
+{
+  "id": "keybinds",
+  "name": "Keybinds",
+  "description": "Type \"kb \" and part of a key or an action: your keybinds (Settings → Keybinds); Enter copies the keys. Needs anod.",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "kb "
+}

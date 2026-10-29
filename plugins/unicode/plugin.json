@@ -1,0 +1,9 @@
+{
+  "id": "unicode",
+  "name": "Unicode symbols",
+  "description": "Type \"u \" and part of a symbol's name (arrow, degree, check mark, euro…); Enter copies it (needs wl-copy). Arrows, maths, punctuation, currency, Greek, box drawing, shapes and dingbats.",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "prefix": "u "
+}
