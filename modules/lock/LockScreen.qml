@@ -336,6 +336,7 @@ Scope {
         function lock(): void { root._lock() }
         function unlock(): void { /* only a password unlocks */ }
         function preview(id: string): void { LockScreens.preview(id) }
+        function endPreview(): void { LockScreens.endPreview() }
         function status(): string {
             return JSON.stringify({ enabled: root.lockEnabled, locked: root.held, secure: sessionLock.secure,
                 screen: LockScreens.selected, using: LockScreens.current?.id ?? "default" })

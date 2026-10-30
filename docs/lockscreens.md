@@ -17,7 +17,9 @@ for the built-in one).
 | `~/.config/anoshell/lockscreens/<id>/` | yours; the same id overrides a bundled one |
 | `~/.config/anoshell/lockscreens/<id>~<n>/` | installed from a catalog |
 
-Bundled: **Minimal** (a large clock on your wallpaper and one line to type on).
+Bundled: **Minimal** (a large clock on your wallpaper and one line to type on)
+and **Bioma Gate** (Bioma's lock screen: a large clock with a minute dial,
+your picture and name, one field; ported from Bioma, GPL-3.0).
 
 ## Fingerprint
 
@@ -36,7 +38,7 @@ count towards that lockout. Previews never scan.
 
 **Preview** (Settings or the Atelier) or `qs ipc call lock preview <id>` shows a
 lock screen on the focused screen without locking. Nothing is checked:
-Escape, any password, or a minute closes it.
+Escape, any password, a minute or `qs ipc call lock endPreview` closes it.
 
 ## Never locked out
 

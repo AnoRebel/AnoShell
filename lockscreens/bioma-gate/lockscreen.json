@@ -1,0 +1,8 @@
+{
+  "id": "bioma-gate",
+  "name": "Bioma Gate",
+  "description": "Bioma's lock screen: a large clock with a minute dial, your picture and name, one field. Ported from Bioma (GPL-3.0).",
+  "author": "Akusen (Bioma), ported by AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml"
+}
