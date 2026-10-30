@@ -42,7 +42,7 @@ ColumnLayout {
     readonly property var takenBy: {
         const e = root.editing
         if (!e || !e.chord || root._chordKey(e.chord) === root._chordKey(e.origChord)) return null
-        return root.binds.find(b => root._chordKey(b.chord) === root._chordKey(e.chord)) ?? null
+        return root.binds.find(b => !b.submap && root._chordKey(b.chord) === root._chordKey(e.chord)) ?? null
     }
     readonly property var shown: {
         const q = root.query.trim().toLowerCase()

@@ -32,7 +32,9 @@ no finger starts again; a reader that stops answering is retried with
 growing pauses. The fingerprint check is the shell's own PAM service
 (`modules/lock/pam/fprint`) without faillock, so a finger unlocks even while
 too many wrong passwords have the password locked out, and failed scans don't
-count towards that lockout. Previews never scan.
+count towards that lockout. Previews never scan. If your PAM `login` stack
+also has `pam_fprintd` (`/etc/pam.d/system-auth`), a password check may find
+the reader busy with this scan; PAM then moves on to the password.
 
 ## Preview
 

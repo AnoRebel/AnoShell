@@ -40,7 +40,8 @@ Singleton {
     property var _queue: []
     property var _current: null
     function _call(path, iface, method, sig, args, cb) {
-        const argv = ["busctl", "--user", "--json=short", "--timeout=5", "call", root._dest, path, iface, method]
+        // "--": busctl reorders arguments, so a value starting with "-" would be read as an option.
+        const argv = ["busctl", "--user", "--json=short", "--timeout=5", "--", "call", root._dest, path, iface, method]
         if (sig) argv.push(sig, ...args.map(a => typeof a === "boolean" ? (a ? "true" : "false") : String(a)))
         root._queue = root._queue.concat([{ argv, cb }])
         root._next()
@@ -60,19 +61,33 @@ Singleton {
         root._queue = root._queue.slice(1)
         caller.command = root._current.argv
         caller.running = true
+        watchdog.restart()
+    }
+    // busctl gives up after 5 s; a call still open at 8 s never started (a
+    // missing busctl never emits exited): end it so the queue keeps moving.
+    Timer {
+        id: watchdog
+        interval: 8000
+        onTriggered: if (root._current) { caller.running = false; root._finish(-1) }
     }
     Process {
         id: caller
         stdout: StdioCollector { id: callOut }
         stderr: StdioCollector { id: callErr }
-        onExited: code => {
+        onExited: code => root._finish(code)
+    }
+    function _finish(code) {
+        {
+            if (!root._current) return
+            watchdog.stop()
             const c = root._current
             root._current = null
             let r = null, err = ""
             if (code === 0) { try { r = JSON.parse(callOut.text) } catch (e) { err = "bad reply" } }
             else err = callErr.text.trim() || `busctl exited ${code}`
+            if (code === -1) err = "busctl couldn't run"
             if (/timed out/i.test(err)) root._hung()
-            try { c?.cb?.(r, err) } catch (e) { console.warn("[KdeConnect]", e) }
+            if (root.enabled) try { c?.cb?.(r, err) } catch (e) { console.warn("[KdeConnect]", e) }
             root._next()
         }
     }
@@ -150,21 +165,27 @@ Singleton {
     function rejectPairing(id) { root._act("", "org.kde.kdeconnect.device", "cancelPairing", "", [], id) }
 
     // A pairing request: a notification with Accept / Reject.
+    // One notification (and process) per request, each answering for its own
+    // device; "--" so a device name starting with "-" isn't read as an option.
     function _askPairing(d) {
-        pairAsk.deviceId = d.id
-        pairAsk.command = ["notify-send", "-a", "AnoShell", "-w", "-A", "accept=Accept", "-A", "reject=Reject",
-            "KDE Connect", `${d.name} wants to pair`]
-        pairAsk.running = true
+        const p = pairAsk.createObject(root, { deviceId: d.id,
+            command: ["notify-send", "-a", "AnoShell", "-w", "-A", "accept=Accept", "-A", "reject=Reject", "--",
+                "KDE Connect", `${d.name} wants to pair`] })
+        p.running = true
     }
-    Process {
+    Component {
         id: pairAsk
-        property string deviceId: ""
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const a = text.trim()
-                if (a === "accept") root.acceptPairing(pairAsk.deviceId)
-                else if (a === "reject") root.rejectPairing(pairAsk.deviceId)
+        Process {
+            id: ask
+            property string deviceId: ""
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    const a = text.trim()
+                    if (a === "accept") root.acceptPairing(ask.deviceId)
+                    else if (a === "reject") root.rejectPairing(ask.deviceId)
+                }
             }
+            onExited: ask.destroy()
         }
     }
 
@@ -194,15 +215,18 @@ Singleton {
         id: monitor
         running: root.enabled
         command: ["setpriv", "--pdeathsig", "TERM", "--", "gdbus", "monitor", "--session", "--dest", root._dest]
-        stdout: SplitParser { onRead: line => root._onLine(line) }
-        onRunningChanged: if (!running && root.enabled) remonitor.start()
+        stdout: SplitParser { onRead: line => { root._monFails = 0; root._onLine(line) } }
+        // gdbus exits if the bus restarts: watch again, giving up after a few
+        // quick failures (no gdbus: ano doctor says so).
+        onRunningChanged: if (!running && root.enabled && ++root._monFails <= 5) remonitor.start()
     }
+    property int _monFails: 0
     Timer { id: remonitor; interval: 5000; onTriggered: monitor.running = root.enabled }
     // A hung daemon: look again now and then (only while it's hung).
     Timer { id: retry; interval: 60000; onTriggered: if (root.enabled && root.daemon === "hung") root.refresh() }
 
     onEnabledChanged: {
-        remonitor.stop(); retry.stop()
+        remonitor.stop(); retry.stop(); root._monFails = 0
         monitor.running = root.enabled
         if (root.enabled) root.refresh()
         else { root.daemon = "off"; root.devices = []; root._queue = [] }

@@ -50,6 +50,13 @@ Scope {
         if (root.held) persist.held = true
         root._booting = false
         GlobalStates.screenLocked = persist.held
+        // Already held (a reload or crash while locked): held won't change,
+        // so do here what onHeldChanged would.
+        if (persist.held) { fp.detect(); root._lockedHint() }
+    }
+    function _lockedHint() {
+        if (root.sessionPath) Quickshell.execDetached(["gdbus", "call", "--system", "--dest", "org.freedesktop.login1",
+            "--object-path", root.sessionPath, "--method", "org.freedesktop.login1.Session.SetLockedHint", root.held ? "true" : "false"])
     }
     function _lock() {
         if (!root.lockEnabled || persist.held) return
@@ -69,8 +76,7 @@ Scope {
         if (pam.active) pam.abort()
         fp.reset()
         if (root.held) fp.detect()
-        if (root.sessionPath) Quickshell.execDetached(["gdbus", "call", "--system", "--dest", "org.freedesktop.login1",
-            "--object-path", root.sessionPath, "--method", "org.freedesktop.login1.Session.SetLockedHint", root.held ? "true" : "false"])
+        root._lockedHint()
     }
     Connections {
         target: GlobalStates

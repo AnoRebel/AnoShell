@@ -349,6 +349,7 @@ ColumnLayout {
         // land before (-1: none). The chips slide aside to show the gap; the
         // order is written only on drop, so a cancelled drag changes nothing.
         property int _hoverIndex: -1
+        Connections { target: dragGhost; function onDraggingChanged() { if (!dragGhost.dragging) section._hoverIndex = -1 } }
         readonly property int _fromIndex: dragGhost.dragging && dragGhost.groupId === section.groupId ? section.modules.indexOf(dragGhost.moduleId) : -1
         function _shift(k) {
             const h = section._hoverIndex, f = section._fromIndex
@@ -393,144 +394,164 @@ ColumnLayout {
         spacing: 6
 
         // Active chip row + add button
-        Flow {
+        Item {
             Layout.fillWidth: true
-            spacing: 6
+            implicitHeight: chipFlow.implicitHeight
 
-            Repeater {
-                model: section.modules
+            Flow {
+                id: chipFlow
+                width: parent.width
+                spacing: 6
 
-                delegate: Rectangle {
-                    id: chip
-                    required property var modelData
-                    required property int index
+                Repeater {
+                    id: chipRepeater
+                    model: section.modules
 
-                    readonly property string moduleId: chip.modelData
-                    readonly property bool isKnown: BarModuleLoader.isKnownModule(chip.moduleId)
-                    readonly property string displayLabel:
-                        chip.isKnown
-                            ? `${chip.index + 1}. ${BarModuleLoader.labelFor(chip.moduleId)}`
-                            : `Unknown: ${chip.moduleId}`
+                    delegate: Rectangle {
+                        id: chip
+                        required property var modelData
+                        required property int index
 
-                    implicitWidth: chipRow.implicitWidth + 14
-                    implicitHeight: 30
-                    opacity: dragGhost.dragging && dragGhost.moduleId === chip.moduleId ? 0.35 : 1
-                    transform: Translate {
-                        x: section._shift(chip.index)
-                        Behavior on x { MotionNumber { curve: "expressiveFastSpatial"; baseDuration: 160 } }
-                    }
+                        readonly property string moduleId: chip.modelData
+                        readonly property bool isKnown: BarModuleLoader.isKnownModule(chip.moduleId)
+                        readonly property string displayLabel:
+                            chip.isKnown
+                                ? `${chip.index + 1}. ${BarModuleLoader.labelFor(chip.moduleId)}`
+                                : `Unknown: ${chip.moduleId}`
 
-                    // Drop here: the dragged chip lands before this one.
-                    DropArea {
-                        anchors.fill: parent
-                        keys: ["barmodule"]
-                        onEntered: section._hoverIndex = chip.index
-                        onExited: if (section._hoverIndex === chip.index) section._hoverIndex = -1
-                        onDropped: {
-                            section._hoverIndex = -1
-                            Qt.callLater(root.moveModuleBefore, dragGhost.moduleId, dragGhost.groupId, section.groupId, chip.index)
+                        implicitWidth: chipRow.implicitWidth + 14
+                        implicitHeight: 30
+                        opacity: dragGhost.dragging && dragGhost.moduleId === chip.moduleId ? 0.35 : 1
+                        transform: Translate {
+                            x: section._shift(chip.index)
+                            Behavior on x { MotionNumber { curve: "expressiveFastSpatial"; baseDuration: 160 } }
                         }
-                    }
 
-                    // Drag the chip onto another group to move the module there.
-                    DragHandler {
-                        id: chipDrag
-                        target: null
-                        cursorShape: Qt.ClosedHandCursor
-                        onActiveChanged: {
-                            if (active) {
-                                dragGhost.moduleId = chip.moduleId
-                                dragGhost.groupId = section.groupId
-                                dragGhost.dragging = true
-                            } else {
-                                dragGhost.Drag.drop()
-                                dragGhost.dragging = false
-                                dragGhost.moduleId = ""
+                        // Drag the chip onto another group to move the module there.
+                        DragHandler {
+                            id: chipDrag
+                            target: null
+                            cursorShape: Qt.ClosedHandCursor
+                            onActiveChanged: {
+                                if (active) {
+                                    dragGhost.moduleId = chip.moduleId
+                                    dragGhost.groupId = section.groupId
+                                    dragGhost.dragging = true
+                                } else {
+                                    dragGhost.Drag.drop()
+                                    dragGhost.dragging = false
+                                    dragGhost.moduleId = ""
+                                }
+                            }
+                            onCentroidChanged: if (active) {
+                                const p = dragGhost.parent.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y)
+                                dragGhost.x = p.x - dragGhost.width / 2
+                                dragGhost.y = p.y - dragGhost.height / 2
                             }
                         }
-                        onCentroidChanged: if (active) {
-                            const p = dragGhost.parent.mapFromItem(null, centroid.scenePosition.x, centroid.scenePosition.y)
-                            dragGhost.x = p.x - dragGhost.width / 2
-                            dragGhost.y = p.y - dragGhost.height / 2
-                        }
-                    }
-                    radius: Appearance?.rounding.small ?? 8
-                    color: chip.isKnown
-                        ? (Appearance?.colors.colSecondaryContainer ?? "#E8DEF8")
-                        : (Appearance?.m3colors.m3errorContainer ?? "#5C1A1A")
-                    border.width: chip.isKnown ? 0 : 1
-                    border.color: Appearance?.m3colors.m3error ?? "#F2B8B5"
+                        radius: Appearance?.rounding.small ?? 8
+                        color: chip.isKnown
+                            ? (Appearance?.colors.colSecondaryContainer ?? "#E8DEF8")
+                            : (Appearance?.m3colors.m3errorContainer ?? "#5C1A1A")
+                        border.width: chip.isKnown ? 0 : 1
+                        border.color: Appearance?.m3colors.m3error ?? "#F2B8B5"
 
-                    RowLayout {
-                        id: chipRow
-                        anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 8 }
-                        spacing: 4
+                        RowLayout {
+                            id: chipRow
+                            anchors { verticalCenter: parent.verticalCenter; left: parent.left; leftMargin: 8 }
+                            spacing: 4
 
-                        StyledText {
-                            text: chip.displayLabel
-                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                            color: chip.isKnown
-                                ? (Appearance?.m3colors.m3onSecondaryContainer ?? "#1D192B")
-                                : (Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC")
-                        }
+                            StyledText {
+                                text: chip.displayLabel
+                                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                                color: chip.isKnown
+                                    ? (Appearance?.m3colors.m3onSecondaryContainer ?? "#1D192B")
+                                    : (Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC")
+                            }
 
-                        // ◂ move-left / ▴ move-up
-                        ToolbarButton {
-                            iconName: "chevron_left"
-                            iconSize: 16
-                            visible: chip.index > 0
-                            toolTipText: "Move earlier"
-                            onClicked: section._moveBy(chip.index, -1)
-                        }
-                        // ▸ move-right / ▾ move-down
-                        ToolbarButton {
-                            iconName: "chevron_right"
-                            iconSize: 16
-                            visible: chip.index < (section.modules.length - 1)
-                            toolTipText: "Move later"
-                            onClicked: section._moveBy(chip.index, 1)
-                        }
-                        // ✕ remove
-                        ToolbarButton {
-                            iconName: "close"
-                            iconSize: 16
-                            toolTipText: "Remove"
-                            onClicked: section._remove(chip.index)
+                            // ◂ move-left / ▴ move-up
+                            ToolbarButton {
+                                iconName: "chevron_left"
+                                iconSize: 16
+                                visible: chip.index > 0
+                                toolTipText: "Move earlier"
+                                onClicked: section._moveBy(chip.index, -1)
+                            }
+                            // ▸ move-right / ▾ move-down
+                            ToolbarButton {
+                                iconName: "chevron_right"
+                                iconSize: 16
+                                visible: chip.index < (section.modules.length - 1)
+                                toolTipText: "Move later"
+                                onClicked: section._moveBy(chip.index, 1)
+                            }
+                            // ✕ remove
+                            ToolbarButton {
+                                iconName: "close"
+                                iconSize: 16
+                                toolTipText: "Remove"
+                                onClicked: section._remove(chip.index)
+                            }
                         }
                     }
                 }
-            }
 
-            // Empty-state hint when the section has no modules
-            Loader {
-                active: (section.modules ?? []).length === 0
-                visible: active
-                sourceComponent: StyledText {
-                    text: "No modules yet — click + to add"
-                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                    color: Appearance?.colors.colSubtext ?? "#CAC4D0"
-                    opacity: 0.7
-                }
-            }
-
-            // + Add module button
-            RippleButton {
-                implicitHeight: 30
-                buttonRadius: Appearance?.rounding.small ?? 8
-                visible: section._availableIds.length > 0
-                contentItem: RowLayout {
-                    spacing: 4
-                    anchors.leftMargin: 10; anchors.rightMargin: 10
-                    MaterialSymbol {
-                        text: section._addingMode ? "expand_less" : "add"
-                        iconSize: 14
-                    }
-                    StyledText {
-                        text: section._addingMode ? "Hide" : "Add"
+                // Empty-state hint when the section has no modules
+                Loader {
+                    active: (section.modules ?? []).length === 0
+                    visible: active
+                    sourceComponent: StyledText {
+                        text: "No modules yet — click + to add"
                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+                        opacity: 0.7
                     }
                 }
-                onClicked: section._addingMode = !section._addingMode
+
+                // + Add module button
+                RippleButton {
+                    implicitHeight: 30
+                    buttonRadius: Appearance?.rounding.small ?? 8
+                    visible: section._availableIds.length > 0
+                    contentItem: RowLayout {
+                        spacing: 4
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        MaterialSymbol {
+                            text: section._addingMode ? "expand_less" : "add"
+                            iconSize: 14
+                        }
+                        StyledText {
+                            text: section._addingMode ? "Hide" : "Add"
+                            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                        }
+                    }
+                    onClicked: section._addingMode = !section._addingMode
+                }
+            }
+
+            // Where a dragged chip would land, from the chips' layout
+            // positions (the slide is a Translate, so these don't move under
+            // the cursor): before the first chip whose middle is past it on
+            // its row, else at the end.
+            DropArea {
+                anchors.fill: chipFlow
+                keys: ["barmodule"]
+                function slot(px, py) {
+                    for (let i = 0; i < chipRepeater.count; i++) {
+                        const c = chipRepeater.itemAt(i)
+                        if (!c) continue
+                        if (py < c.y + c.height && (py < c.y || px < c.x + c.width / 2)) return i
+                    }
+                    return chipRepeater.count
+                }
+                onPositionChanged: drag => section._hoverIndex = slot(drag.x, drag.y)
+                onEntered: drag => section._hoverIndex = slot(drag.x, drag.y)
+                onExited: section._hoverIndex = -1
+                onDropped: drag => {
+                    const at = slot(drag.x, drag.y)
+                    section._hoverIndex = -1
+                    Qt.callLater(root.moveModuleBefore, dragGhost.moduleId, dragGhost.groupId, section.groupId, at)
+                }
             }
         }
 

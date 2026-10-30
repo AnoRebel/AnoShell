@@ -12,7 +12,7 @@ QtObject {
 
     property var groups: []   // [{ group, category, faces }]
     property FileView file: FileView {
-        path: root.active || root.groups.length ? Qt.resolvedUrl("kaomoji.json").toString().replace("file://", "") : ""
+        path: root.active || root.groups.length ? Qt.resolvedUrl("kaomoji.json").toString().replace("file://", "").split("/").map(decodeURIComponent).join("/") : ""
         onLoaded: {
             try {
                 root.groups = [].concat(...JSON.parse(text()).map(g => (g.categories ?? []).map(c => ({ group: g.name, category: c.name, faces: c.emoticons ?? [] }))))

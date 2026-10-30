@@ -500,7 +500,14 @@ Item {
 
                 // Escape empties the field: the one way back from a password
                 // typed wrong, other than typing over it.
-                Keys.onEscapePressed: {
+                // AnoShell: Ctrl+Shift+Escape (the switch to the built-in lock
+                // screen) and Escape on an empty field (closing a preview) go
+                // on to the host.
+                Keys.onEscapePressed: event => {
+                    if ((event.modifiers & Qt.ControlModifier && event.modifiers & Qt.ShiftModifier) || secret.text.length === 0) {
+                        event.accepted = false;
+                        return;
+                    }
                     secret.clear();
                     root.gate.password = "";
                     root.gate.failed = false;

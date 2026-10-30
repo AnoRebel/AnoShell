@@ -24,7 +24,8 @@ QtObject {
         return active && w.join(" ").length >= 3 ? w : []
     }
     onWordsChanged: {
-        if (root.walking) { root.walking.running = false; root.walking = null }
+        // The older walk goes, run or not (without fd it never exits by itself).
+        if (root.walking) { root.walking.running = false; root.walking.destroy(); root.walking = null }
         if (root.words.length === 0) { settle.stop(); root.found = []; return }
         settle.restart()
     }

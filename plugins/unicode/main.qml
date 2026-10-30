@@ -10,7 +10,7 @@ QtObject {
     property string query: ""
     property var symbols: []   // [[char, name]]
     property FileView file: FileView {
-        path: root.active || root.symbols.length ? Qt.resolvedUrl("symbols.tsv").toString().replace("file://", "") : ""
+        path: root.active || root.symbols.length ? Qt.resolvedUrl("symbols.tsv").toString().replace("file://", "").split("/").map(decodeURIComponent).join("/") : ""
         onLoaded: root.symbols = text().split("\n").filter(l => l && !l.startsWith("#")).map(l => l.split("\t"))
     }
 
