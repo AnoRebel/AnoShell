@@ -1,0 +1,14 @@
+{
+  "id": "clock-faces",
+  "name": "Clock faces",
+  "description": "Zen, Plain, Terminal and Cosmos clocks from dhrruvsharma's dotfiles (GPL-3.0), in your colours.",
+  "author": "dhrruvsharma, ported by AnoShell",
+  "version": "1.0.0",
+  "entry": "ClockFaces.qml",
+  "size": { "w": 5, "h": 3 },
+  "minSize": { "w": 2, "h": 1 },
+  "frame": false,
+  "settings": [
+    { "key": "face", "type": "choice", "label": "Face", "default": "Zen", "options": ["Zen", "Plain", "Terminal", "Cosmos"] }
+  ]
+}

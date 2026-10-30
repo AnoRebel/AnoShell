@@ -666,7 +666,7 @@ Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanva
 
 ## Credits
 Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
-**Bioma** (GPL-3.0: palette cursors and icon themes, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader).
+**Bioma** (GPL-3.0: palette cursors and icon themes, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list), **iNiR** theme presets (GPL-3.0: 37 colour themes).
 
 ## Licence
 
