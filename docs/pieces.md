@@ -43,6 +43,7 @@ tiled windows are); the window hides them, but their timers keep running.
 | To-do | your tasks: the sidebar's to-do and `todo.txt`, both ways | |
 | Calendar | the month with your events and holidays | |
 | Clock faces | Zen, Plain, Terminal or Cosmos: clocks from dhrruvsharma's dotfiles (GPL-3.0) in your colours and time format, scaled to the piece | face |
+| Day progress | how far through the day, week, month and year, as bars | week start |
 | News | headlines from Google News RSS (no key; personal use under Google's terms), opened in the browser on click; refreshed every 30 minutes. The local feed sends the place you type to Google | top / topic / local, place, country, language |
 
 The to-do and timer pieces keep their service running while they're placed,
