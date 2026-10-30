@@ -272,6 +272,8 @@ ColumnLayout {
 
     // ═══ Theme Source ═══
     SettingsCard {
+        id: themeFilterHost
+        property string themeFilter: "all"
         icon: "auto_awesome"
         title: "Theme source"
         subtitle: "Dynamic Material You (wallpaper-derived) or pick a static theme"
@@ -378,6 +380,15 @@ ColumnLayout {
         }
 
         // ─── Theme grid (visible only when source = static or while previewing) ───
+        // Dark / light / all: a filter over the grid (not saved).
+        ButtonGroup {
+            visible: appearanceRoot.committedSource === "static" || appearanceRoot.previewing
+            buttons: [
+                GroupButton { label: "All"; toggled: themeFilterHost.themeFilter === "all"; onClicked: themeFilterHost.themeFilter = "all" },
+                GroupButton { label: "Dark"; toggled: themeFilterHost.themeFilter === "dark"; onClicked: themeFilterHost.themeFilter = "dark" },
+                GroupButton { label: "Light"; toggled: themeFilterHost.themeFilter === "light"; onClicked: themeFilterHost.themeFilter = "light" }
+            ]
+        }
         Item {
             Layout.fillWidth: true
             implicitHeight: visible ? grid.implicitHeight + 16 : 0
@@ -393,7 +404,8 @@ ColumnLayout {
                 rowSpacing: 8
 
                 Repeater {
-                    model: ThemeRegistry.themes
+                    model: themeFilterHost.themeFilter === "all" ? ThemeRegistry.themes
+                        : ThemeRegistry.themes.filter(t => t.darkmode === (themeFilterHost.themeFilter === "dark"))
 
                     Rectangle {
                         required property var modelData

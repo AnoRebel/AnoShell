@@ -4,11 +4,11 @@
 # MotionNumber/MotionSpring token) and on Easing types other than BezierSpline
 # (token curves from Appearance.animationCurves) and Linear (spinners, progress).
 # Config.qml is exempt: its `duration` values are config data, not animations.
-# pieces/ is exempt: desktop pieces (the ported Bioma organisms keep Bioma's
-# own Timing tokens, and user pieces are theirs to write).
+# pieces/ and lockscreens/ are exempt: packages (the ported Bioma organisms
+# and Gate keep Bioma's own Timing tokens, and user packages are theirs to write).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-exempt='^modules/common/(Appearance|AnimationConfig|Config)\.qml$|^modules/common/widgets/Motion(Number|Spring)\.qml$|^pieces/'
+exempt='^modules/common/(Appearance|AnimationConfig|Config)\.qml$|^modules/common/widgets/Motion(Number|Spring)\.qml$|^pieces/|^lockscreens/'
 fail=0
 while IFS= read -r f; do
     [[ "$f" =~ $exempt ]] && continue

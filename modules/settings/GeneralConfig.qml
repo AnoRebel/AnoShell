@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -394,6 +395,13 @@ ColumnLayout {
             value: Config.options?.notifications?.maxVisible ?? 5
             onValueChanged: Config.setNestedValue("notifications.maxVisible", Math.round(value))
             valueText: `${Math.round(value)}`
+        }
+
+        // See where and how long a popup shows with these settings.
+        RippleButton {
+            buttonText: "Send a test notification"
+            onClicked: Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Test notification",
+                "This is where notifications appear, and how long they stay."])
         }
     }
 

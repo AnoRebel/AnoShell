@@ -192,6 +192,15 @@ ColumnLayout {
     function setGroups(arr) { Config.setNestedValue("bars.0.groups", arr) }
     function setGroupModules(id, arr) { root.setGroups(BarEdit.patch(root.groups, id, { modules: arr })) }
     function moveModule(moduleId, fromId, toId) { if (fromId !== toId) root.setGroups(BarEdit.moveModule(root.groups, moduleId, fromId, toId)) }
+    // Drop before the chip at `before` in group toId (written once, on drop).
+    function moveModuleBefore(moduleId, fromId, toId, before) {
+        const from = root.groups.find(g => g.id === fromId)?.modules ?? []
+        const i = from.indexOf(moduleId)
+        if (i < 0) return
+        const at = fromId === toId && i < before ? before - 1 : before
+        if (fromId === toId && at === i) return
+        root.setGroups(BarEdit.moveModule(root.groups, moduleId, fromId, toId, at))
+    }
 
     SettingsCard {
         icon: "view_module"
@@ -336,6 +345,19 @@ ColumnLayout {
         property string groupId: ""
         property var modules: []              // current active list
         property bool _addingMode: false      // true while the available palette is shown
+        // While a chip is dragged over this group's chips: the chip it would
+        // land before (-1: none). The chips slide aside to show the gap; the
+        // order is written only on drop, so a cancelled drag changes nothing.
+        property int _hoverIndex: -1
+        readonly property int _fromIndex: dragGhost.dragging && dragGhost.groupId === section.groupId ? section.modules.indexOf(dragGhost.moduleId) : -1
+        function _shift(k) {
+            const h = section._hoverIndex, f = section._fromIndex
+            if (h < 0 || !dragGhost.dragging) return 0
+            const w = dragGhost.width + 6
+            if (f < 0) return k >= h ? w : 0                 // from another group: make room
+            if (f < h) return k > f && k < h ? -w : 0        // moving later: close up behind
+            return k >= h && k < f ? w : 0                   // moving earlier: open up ahead
+        }
 
         readonly property var _allIds: BarModuleLoader.availableModuleIds ?? []
         // Available = catalogue minus what's already active
@@ -393,6 +415,22 @@ ColumnLayout {
                     implicitWidth: chipRow.implicitWidth + 14
                     implicitHeight: 30
                     opacity: dragGhost.dragging && dragGhost.moduleId === chip.moduleId ? 0.35 : 1
+                    transform: Translate {
+                        x: section._shift(chip.index)
+                        Behavior on x { MotionNumber { curve: "expressiveFastSpatial"; baseDuration: 160 } }
+                    }
+
+                    // Drop here: the dragged chip lands before this one.
+                    DropArea {
+                        anchors.fill: parent
+                        keys: ["barmodule"]
+                        onEntered: section._hoverIndex = chip.index
+                        onExited: if (section._hoverIndex === chip.index) section._hoverIndex = -1
+                        onDropped: {
+                            section._hoverIndex = -1
+                            Qt.callLater(root.moveModuleBefore, dragGhost.moduleId, dragGhost.groupId, section.groupId, chip.index)
+                        }
+                    }
 
                     // Drag the chip onto another group to move the module there.
                     DragHandler {

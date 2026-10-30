@@ -36,6 +36,14 @@ ColumnLayout {
         for (const c of root.overrides?.remove ?? []) s[c] = true
         return s
     }
+    // While editing: the bind that already has the captured chord (the order
+    // of the modifiers doesn't matter), shown before Save asks to replace it.
+    function _chordKey(c) { return (c ?? "").toLowerCase().split("+").map(x => x.trim()).sort().join("+") }
+    readonly property var takenBy: {
+        const e = root.editing
+        if (!e || !e.chord || root._chordKey(e.chord) === root._chordKey(e.origChord)) return null
+        return root.binds.find(b => root._chordKey(b.chord) === root._chordKey(e.chord)) ?? null
+    }
     readonly property var shown: {
         const q = root.query.trim().toLowerCase()
         return root.binds.filter(b => !b.submap && (q === "" || b.chord.toLowerCase().includes(q) || b.label.toLowerCase().includes(q)
@@ -270,6 +278,13 @@ ColumnLayout {
                     color: Appearance.m3colors.m3error
                     text: `${root.editing?.chord} is ${root.conflict}`
                 }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: root.conflict === "" && !!root.takenBy
+                    wrapMode: Text.Wrap
+                    color: Appearance.colors.colWarning
+                    text: root.takenBy ? `Also used by: ${root.catalogue[root.takenBy.action]?.label ?? root.takenBy.action}${root.takenBy.args?.length && !root.takenBy.raw ? " " + root.takenBy.args.join(" ") : ""}. Save asks before replacing it.` : ""
+                }
                 RowLayout {
                     spacing: 8
                     RippleButton {
@@ -338,9 +353,12 @@ ColumnLayout {
                     contentItem: MaterialSymbol { text: "delete"; iconSize: 18; horizontalAlignment: Text.AlignHCenter }
                     onClicked: root.remove(row.modelData.chord)
                 }
+                // Hidden by opacity, not visible: the row keeps its place.
                 RippleButton {
                     implicitWidth: 32; implicitHeight: 32
-                    visible: root.changed[row.modelData.chord] ?? false
+                    readonly property bool on: root.changed[row.modelData.chord] ?? false
+                    opacity: on ? 1 : 0
+                    enabled: on
                     contentItem: MaterialSymbol { text: "restart_alt"; iconSize: 18; horizontalAlignment: Text.AlignHCenter }
                     onClicked: root.reset(row.modelData.chord)
                 }
