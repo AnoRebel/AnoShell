@@ -17,15 +17,22 @@ backend is picked from the session at start.
 - **Looks and colours:** Liquid, Ink, Neo-tech and Clay looks, static themes or
   wallpaper colours (matugen), glass, colour modes, your own looks
   ([looks](docs/looks.md)).
-- **Atelier:** themes, looks, pieces, plugins, lock screens, wallpapers (and Wallhaven) and whole-setup
-  rices from built-in, your folders and catalogs, with checksums, a code check
-  and undo ([atelier](docs/atelier.md)).
-- **Pieces** (desktop widgets) in pages on a grid, plus your own ([pieces](docs/pieces.md)).
+- **Atelier:** themes, looks, pieces, launcher plugins, lock screens,
+  wallpapers (and Wallhaven) and whole-setup rices from built-in, your folders
+  and catalogs, with previews, checksums, a code check and undo
+  ([atelier](docs/atelier.md)).
+- **Pieces** (desktop widgets) in pages on a grid: clocks and clock faces, day
+  progress, system, weather, media, calendar, to-do, news, the Bioma
+  organisms, plus your own ([pieces](docs/pieces.md)).
+- **Launcher plugins:** web search, files, kaomoji, unicode symbols, keybinds,
+  windows and clipboard history, plus your own ([plugins](docs/plugins.md)).
+- **Lock screen** on niri with fingerprint unlock and replaceable lock screens
+  (built-in, Minimal, Bioma Gate, your own) ([lock screens](docs/lockscreens.md)).
 - **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
   brightness, night light, power and performance mode, device pills, package
-  updates, removable drives, notifications with DND, lock screen, screen time
+  updates, removable drives, notifications with DND, KDE Connect, screen time
   with limits, screenshots (freeze-frame regions) and screen recording,
   song recognition, lyrics ([extras](docs/extras.md), [configuration](docs/configuration.md)).
 - **anod and `ano`:** the companion daemon (wallpapers, hooks, keybinds,
@@ -34,7 +41,7 @@ backend is picked from the session at start.
 - **Settings** for all of it, as an overlay or a standalone window, with a
   Ctrl+K search over every option.
 
-Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config + themes + lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
+Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config, themes, looks, pieces, plugins, lock screens, rices, lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
 
 ## Quick Start
 
