@@ -147,14 +147,17 @@ Scope {
                     required property string modelData
                     readonly property string edge: modelData
                     screen: excl.modelData
-                    visible: root.reservesArmed
+                    // Stays mapped; only the zone changes (after Ryoku): a
+                    // window mapped and unmapped as bars come and go makes the
+                    // compositor redo the layout twice, a zone change once.
+                    readonly property bool reserve: root.reservesArmed
                         ? PanelRegistry.reserved(excl.modelData?.name ?? "", edge) <= 0
                         : !root._barDeclared(excl.modelData?.name ?? "", edge)
                     WlrLayershell.namespace: "quickshell:frameExclusion"
                     WlrLayershell.layer: WlrLayer.Bottom
                     color: "transparent"
                     mask: Region { item: null }
-                    exclusiveZone: root.frameThickness
+                    exclusiveZone: reserve ? root.frameThickness : 0
                     anchors {
                         top: edge !== "bottom"
                         bottom: edge !== "top"
