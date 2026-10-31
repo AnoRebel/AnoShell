@@ -106,8 +106,9 @@ Scope {
         const r = i < root.providerCount ? providers.results[i] : i >= root.appEnd ? providers.trailing[i - root.appEnd] : null
         if (r) {
             if (r.run() === false) return // e.g. a guarded action: stay and say why
+            // The query is reset once closed (closeReset): cleared now, the
+            // list would swap to the home rows and change height mid-close.
             GlobalStates.searchOpen = false
-            root.query = ""
             return
         }
         root.launch(root.filteredApps[i - root.providerCount])
@@ -123,8 +124,7 @@ Scope {
             recents.unshift(app.id)
             Config.setNestedValue("search.recentApps", recents.slice(0, 10))
         }
-        GlobalStates.searchOpen = false
-        query = ""
+        GlobalStates.searchOpen = false // query reset once closed (closeReset)
     }
 
     Connections {
