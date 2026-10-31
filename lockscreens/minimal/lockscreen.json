@@ -4,5 +4,6 @@
   "description": "A large clock on your wallpaper and a single line to type on.",
   "author": "AnoShell",
   "version": "1.0.0",
-  "entry": "main.qml"
+  "entry": "main.qml",
+  "preview": "preview.png"
 }

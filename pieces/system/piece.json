@@ -5,6 +5,7 @@
   "author": "AnoShell",
   "version": "1.0.0",
   "entry": "SystemPiece.qml",
+  "preview": "preview.png",
   "size": { "w": 4, "h": 2 },
   "minSize": { "w": 2, "h": 2 },
   "settings": [

@@ -5,6 +5,7 @@
   "author": "dhrruvsharma, ported by AnoShell",
   "version": "1.0.0",
   "entry": "ClockFaces.qml",
+  "preview": "preview.png",
   "size": { "w": 5, "h": 3 },
   "minSize": { "w": 2, "h": 1 },
   "frame": false,

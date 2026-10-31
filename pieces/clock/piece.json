@@ -5,6 +5,7 @@
   "author": "AnoShell",
   "version": "1.0.0",
   "entry": "Clock.qml",
+  "preview": "preview.png",
   "size": { "w": 3, "h": 2 },
   "settings": [
     { "key": "seconds", "type": "bool", "label": "Show seconds", "default": false }

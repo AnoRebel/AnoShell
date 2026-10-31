@@ -154,6 +154,8 @@ of a bundled one replaces it.
 
 - `id` must match the folder name (or be left out). `name` is required.
 - `entry` defaults to `main.qml`; it must be a file in the folder.
+- `preview` (optional): a picture in the folder (or an https URL from a
+  catalog) that the Atelier shows on the piece's card.
 - `size` and `minSize` are in grid cells (1–12).
 - `frame: true` (the default) draws the card behind your QML, in the active
   look's colours, with a 12 px inset; `false` gives your QML the whole cell

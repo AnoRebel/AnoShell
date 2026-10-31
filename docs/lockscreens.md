@@ -65,7 +65,8 @@ shows it), which closes your apps.
 ## Making one
 
 A folder with `lockscreen.json` (`id`, `name`, `description`, `author`,
-`version`, `entry`, as for [launcher plugins](plugins.md)) and the entry QML
+`version`, `entry`, as for [launcher plugins](plugins.md); optionally
+`preview`, a picture in the folder for the Atelier's card) and the entry QML
 file. Its root `Item` fills the screen and gets `ctx`:
 
 | `ctx.` | |

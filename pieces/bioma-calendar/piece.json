@@ -5,6 +5,7 @@
   "author": "Bioma, ported to AnoShell",
   "version": "1.0.0",
   "entry": "BiomaCalendarPiece.qml",
+  "preview": "preview.png",
   "size": {
     "w": 4,
     "h": 4

@@ -665,7 +665,8 @@ ColumnLayout {
             anchors.fill: parent
             source: parent.src
             asynchronous: true
-            fillMode: Image.PreserveAspectCrop
+            // Pieces and lock screens whole (a tall piece cropped shows only its middle); pictures fill.
+            fillMode: ["pieces", "lockscreens"].includes(parent.entry?.type) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
             sourceSize.width: 400
             cache: true
         }
