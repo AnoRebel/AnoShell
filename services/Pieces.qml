@@ -263,5 +263,16 @@ Singleton {
         function page(n: int): void { root.setPage(CompositorService.focusedMonitorName, n - 1) }
         function edit(): void { if (Config.options?.pieces?.enable) root.editing = true }
         function done(): void { root.editing = false }
+        // Puts a piece on the focused screen's shown page (the Atelier's Add
+        // to desktop from standalone Settings): "ok", or why not.
+        function add(id: string): string {
+            const scr = CompositorService.focusedMonitorName, g = root.grids[scr]
+            if (!(Config.options?.pieces?.enable ?? false)) return "pieces are off"
+            if (!root.entries[id]) return `no piece "${id}"`
+            if (!g) return `no desktop layer on ${scr}`
+            return root.add(scr, id, g.cols, g.rows) ? "ok" : "no free spot on this page"
+        }
+        // The grid per screen and the focused screen (what placing from the Atelier uses).
+        function grid(): string { return JSON.stringify({ focused: CompositorService.focusedMonitorName, grids: root.grids }) }
     }
 }

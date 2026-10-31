@@ -111,7 +111,7 @@ ColumnLayout {
         const m = Atelier.apply(it)
         const name = it.name || it.id
         root.say(m || (it.type === "plugins" ? `${name} is ${LauncherPlugins.isEnabled(it.id) ? "on: try it in the launcher" : "off"}.`
-            : it.type === "lockscreens" ? `${name} is your lock screen.` : `${name} applied.`), !!m)
+            : it.type === "lockscreens" ? `${name} is your lock screen.` : it.type === "pieces" ? `${name} is on the desktop page you're on.` : `${name} applied.`), !!m)
     }
 
     // On the Pieces tab the registry compile-checks pieces, so a broken one
@@ -136,7 +136,7 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Atelier"
-        subtitle: "Themes, looks, pieces, wallpapers and rices: built-in, yours and from catalogs"
+        subtitle: "Themes, looks, pieces, launcher plugins, lock screens, wallpapers and rices: built-in, yours and from catalogs"
         configRoots: ["atelier"]
     }
 

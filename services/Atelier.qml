@@ -125,7 +125,9 @@ Singleton {
             if (!(Config.options?.pieces?.enable ?? false)) return "Turn on pieces first (Settings → Modules → Desktop pieces)."
             const scr = CompositorService.focusedMonitorName
             const g = Pieces.grids[scr]
-            if (!g) return "Add it from the desktop: right-click the desktop → Edit pieces."
+            // No pieces layer in this process (standalone Settings): the
+            // running shell places it, on its focused screen.
+            if (!g) { Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "pieces", "add", item.id]); return "" }
             return Pieces.add(scr, item.id, g.cols, g.rows) ? "" : "No free spot on this desktop page."
         }
         case "plugins":

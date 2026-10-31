@@ -13,8 +13,9 @@ QtObject {
         Anod.call("keybinds.list", {}, (r, e) => { if (r) root.binds = r.binds ?? [] })
 
     function describe(b) {
-        const args = (b.args ?? []).join(" ")
-        return b.action === "exec" ? `Run ${args}` : args ? `${b.action} ${args}` : b.action
+        const args = b.raw ? "a Lua function" : (b.args ?? []).join(" ")
+        const name = ({ hyprland: "Hyprland action:", niri: "niri action:" })[b.action] ?? b.action
+        return b.action === "exec" ? `Run ${args}` : args ? `${name} ${args}` : name
     }
     readonly property var results: {
         if (!active) return []

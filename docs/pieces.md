@@ -196,4 +196,7 @@ the error (`Broken.qml:2:38: Cannot assign to non-existent property "colr"`)
 and isn't placed; one that fails later shows the reason in its card. The rest
 keep working.
 
-`qs ipc call pieces list` prints every piece with its source and errors.
+`qs ipc call pieces list` prints every piece with its source and errors;
+`qs ipc call pieces add <id>` puts one on the focused screen's shown page
+(what the Atelier's **Add to desktop** does from the standalone Settings
+window); `qs ipc call pieces grid` shows each screen's grid.
