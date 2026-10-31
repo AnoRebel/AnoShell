@@ -574,9 +574,9 @@ func main() {
 			}
 			return true, nil
 		})
-		// Keyboard layouts (Settings → Keyboard): the catalogue, and applying
-		// keyboard.layouts from the config live and into the managed files.
-		srv.Handle("keyboard.catalogue", func(json.RawMessage) (any, error) { return xkb.Catalogue(xkb.Path) })
+		// Keyboard layouts (Settings → Keyboard): applying keyboard.layouts
+		// from the config live and into the managed files (the catalogue is
+		// registered below, on every compositor).
 		srv.Handle("keyboard.apply", func(json.RawMessage) (any, error) {
 			m, err := config.Effective()
 			if err != nil {
@@ -629,7 +629,14 @@ func main() {
 			name, err := disp.OutputsChanged()
 			return map[string]any{"profile": name}, err
 		})
+	} else {
+		// No display backend here (an experimental or generic compositor):
+		// layouts can still be listed, not applied.
+		srv.Handle("keyboard.apply", func(json.RawMessage) (any, error) {
+			return nil, ipc.Errorf(ipc.CodeFailed, "applying keyboard layouts isn't supported on this compositor yet; set them in its own config")
+		})
 	}
+	srv.Handle("keyboard.catalogue", func(json.RawMessage) (any, error) { return xkb.Catalogue(xkb.Path) })
 
 	// Screen time: the shell reports focused time; stored per day, pruned
 	// after screenTime.keepDays (default 30), daily.

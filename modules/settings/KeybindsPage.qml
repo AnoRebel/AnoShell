@@ -283,7 +283,7 @@ ColumnLayout {
                     visible: root.conflict === "" && !!root.takenBy
                     wrapMode: Text.Wrap
                     color: Appearance.colors.colWarning
-                    text: root.takenBy ? `Also used by: ${root.catalogue[root.takenBy.action]?.label ?? root.takenBy.action}${root.takenBy.args?.length && !root.takenBy.raw ? " " + root.takenBy.args.join(" ") : ""}. Save asks before replacing it.` : ""
+                    text: root.takenBy ? `Also used by: ${root.catalogue[root.takenBy.action]?.label ?? ({ hyprland: "Hyprland action:", niri: "niri action:" })[root.takenBy.action] ?? root.takenBy.action}${root.takenBy.raw ? " a Lua function" : root.takenBy.args?.length ? " " + root.takenBy.args.join(" ") : ""}. Save asks before replacing it.` : ""
                 }
                 RowLayout {
                     spacing: 8
