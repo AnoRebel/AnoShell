@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 FocusTime daemon — tracks active window usage per application.
-Compositor-agnostic: supports Hyprland (IPC) and Niri (niri msg).
+Compositor-agnostic: supports Hyprland (IPC) and Niri (its IPC socket).
 Adapted from ilyamiro's focustime for Ano Shell.
 
 Usage: python3 focus_daemon.py
@@ -256,12 +256,21 @@ def listen_hyprland_ipc():
 
 # ─── Niri ─────────────────────────────────────────────────────────────────────
 
+def _niri_request(request):
+    """One request on $NIRI_SOCKET (niri's JSON IPC, no `niri msg` process): the reply's Ok value."""
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        s.settimeout(5)
+        s.connect(os.environ["NIRI_SOCKET"])
+        s.sendall((json.dumps(request) + "\n").encode())
+        reply = json.loads(s.makefile("r").readline())
+    return reply.get("Ok", {})
+
+
 def get_active_window_niri():
     try:
-        output = subprocess.check_output(["niri", "msg", "-j", "focused-window"], text=True)
-        if not output.strip() or output.strip() == "null":
+        data = _niri_request("FocusedWindow").get("FocusedWindow")
+        if not data:
             return "Desktop", "Desktop"
-        data = json.loads(output)
         app_id = data.get("app_id", "")
         title = data.get("title", "")
         if "quickshell" in app_id.lower():
@@ -273,41 +282,26 @@ def get_active_window_niri():
         return "Unknown", "Unknown"
 
 
-def _die_with_parent():
-    # The stream ends with this daemon (killed, or replaced by the next
-    # shell's pkill): without it every restart left a `niri msg` behind.
-    try:
-        import ctypes, signal
-        ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)  # PR_SET_PDEATHSIG
-    except Exception:
-        pass
+
+
+_NIRI_FOCUS_EVENTS = tuple('{"%s"' % e for e in ("WindowFocusChanged", "WindowOpenedOrChanged", "WindowClosed", "WindowsChanged", "WorkspaceActivated"))
 
 
 def listen_niri_events():
     global current_app_class, current_app_title
     while True:
         try:
-            proc = subprocess.Popen(
-                ["niri", "msg", "-j", "event-stream"],
-                stdout=subprocess.PIPE,
-                text=True,
-                preexec_fn=_die_with_parent,
-            )
-            for line in proc.stdout:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    event = json.loads(line)
-                    if "WindowFocusChanged" in event:
-                        cls, clean_title = get_active_window_niri()
-                        current_app_class, current_app_title = cls, clean_title
-                except (json.JSONDecodeError, KeyError):
-                    pass
-            proc.wait()
-            time.sleep(2)  # the stream ended (niri restarted): don't spin
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                s.connect(os.environ["NIRI_SOCKET"])
+                s.sendall(b'"EventStream"\n')
+                # A new window arrives focused in WindowOpenedOrChanged, not
+                # WindowFocusChanged; closing or switching workspace moves focus too.
+                for line in s.makefile("r"):
+                    if line.startswith(_NIRI_FOCUS_EVENTS):
+                        current_app_class, current_app_title = get_active_window_niri()
         except Exception:
-            time.sleep(2)
+            pass
+        time.sleep(2)  # niri restarted, or no socket yet
 
 
 # ─── State dump ───────────────────────────────────────────────────────────────
@@ -506,7 +500,7 @@ def main():
         ipc_thread = threading.Thread(target=listen_niri_events, daemon=True)
         ipc_thread.start()
     else:
-        print(f"[focustime] Unknown compositor, polling hyprctl/niri msg")
+        print("[focustime] No Hyprland or niri IPC: counting everything as Desktop")
         current_app_class, current_app_title = "Desktop", "Desktop"
 
     conn = init_db()
