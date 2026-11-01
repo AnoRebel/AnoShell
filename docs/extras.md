@@ -169,6 +169,18 @@ capture first takes each screen and shows it still while you drag, so the shot
 is the moment you pressed the key, not whatever moved meanwhile (Hyprland and
 other wlroots compositors; niri uses its own picker).
 
+### Text recognition (OCR)
+
+Super+Shift+X, or `qs -c ano ipc call screenshot ocr`: pick a region and its
+text goes on the clipboard. The card then shows the text (selectable) with
+Copy, **Add to note** (the end of the current notepad tab; needs the notepad
+on) and **Pin** (kept with the clipboard pins). It reads with `tesseract` in
+the languages of `screenshot.ocrLanguages` (default `["eng"]`; Settings →
+Modules → Screenshots), each needing its `tesseract-data-<code>` package. The
+picture is deleted once it's read. No text, no tesseract or a missing language
+each give a notification saying which, and leave the clipboard alone;
+`ano doctor` checks tesseract and the languages.
+
 ## Screen recording
 
 `qs -c ano ipc call recorder region|screen|stop|discard` (Super+Shift+R and

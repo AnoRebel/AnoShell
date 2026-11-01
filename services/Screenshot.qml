@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.modules.common
 import qs.services
@@ -17,8 +18,11 @@ import qs.services
  *   niri: its own actions (screenshot / screenshot-window / screenshot-screen
  *     --path); the region is niri's interactive screenshot UI.
  *
- *   qs -c ano ipc call screenshot region|window|screen
+ *   qs -c ano ipc call screenshot region|window|screen|ocr
  *   qs -c ano ipc call screenshot delayed screen 5
+ *
+ * ocr: a region read by tesseract (screenshot.ocrLanguages); the picture is
+ * deleted and the text comes out of recognised() (the card copies it).
  */
 Singleton {
     id: root
@@ -37,9 +41,13 @@ Singleton {
 
     signal captured(string path, string mode)
     signal failed(string mode, string reason)
+    // warning: languages tesseract had no data for (it read with the rest).
+    signal recognised(string text, string warning)
+    // The region is picked (region, and ocr which reads it afterwards).
+    readonly property bool _region: _mode === "region" || _mode === "ocr"
 
     function capture(mode: string, delaySec: int): void {
-        if (root.busy || root.preparing || root.countdown > 0 || !["region", "window", "screen"].includes(mode)) return
+        if (root.busy || root.preparing || root.countdown > 0 || !["region", "window", "screen", "ocr"].includes(mode)) return
         root._mode = mode
         root._cancelled = false
         if (delaySec > 0) { root.countdown = Math.min(60, delaySec); delayTick.start() }
@@ -66,7 +74,7 @@ Singleton {
         root._out = `${root.dir}/Screenshot_${stamp}.png`
         root.busy = true
         if (CompositorService.isNiri) {
-            const act = root._mode === "region" ? "screenshot" : root._mode === "window" ? "screenshot-window" : "screenshot-screen"
+            const act = root._region ? "screenshot" : root._mode === "window" ? "screenshot-window" : "screenshot-screen"
             shot.exec({ command: ["bash", "-c", root._mk + 'niri msg action "$ACT" --path "$OUT"'],
                 environment: ({ DIR: root.dir, ACT: act, OUT: root._out }) })
         } else if (root._mode === "window") {
@@ -83,7 +91,7 @@ Singleton {
                     environment: ({ DIR: root.dir, OUT: root._out, G: g }) })
             })
             if (!asked) { geometryGuard.stop(); root._finish(1) } // this backend can't say which window is focused
-        } else if (root._mode === "region") {
+        } else if (root._region) {
             // slurp alone first (cancel signals it directly), then grim.
             // screenshot.freezeRegion: each screen is captured first and shown
             // still while you pick, so the shot is that moment (grim then
@@ -115,7 +123,7 @@ Singleton {
     property bool _cancelled: false
     // After every freeze capture (also one whose grab failed half way).
     function _unfreeze() {
-        if (!root.freezeRegion || root._mode !== "region") return
+        if (!root.freezeRegion || !root._region) return
         root.frozen = false
         Quickshell.execDetached(["sh", "-c", 'rm -f -- "$1"/.freeze-*.png', "sh", root.dir])
     }
@@ -170,7 +178,7 @@ Singleton {
         interval: 250; repeat: true
         // The region (niri's own UI) waits for you up to 2 min, the others 5 s;
         // cancel() stops waiting.
-        onTriggered: { if (++tries > (root._mode === "region" ? 480 : 20)) { stop(); root._finish(1) } else if (!exists.running) exists.running = true }
+        onTriggered: { if (++tries > (root._region ? 480 : 20)) { stop(); root._finish(1) } else if (!exists.running) exists.running = true }
     }
     Process {
         id: exists
@@ -180,19 +188,61 @@ Singleton {
 
     function _finish(code) {
         root._unfreeze()
+        if (code === 0 && root._mode === "ocr") { root._ocr(); return } // still busy until it's read
         root.busy = false
         if (code === 0) { root.lastFile = root._out; root.captured(root._out, root._mode) }
-        else root.failed(root._mode, root._mode === "region" ? "cancelled" : "capture failed")
+        else root.failed(root._mode, root._region ? "cancelled" : "capture failed")
+    }
+
+    // ── Text recognition ────────────────────────────────────────────────
+    // Language codes as tesseract names them (eng, deu, chi_sim…), joined by +.
+    readonly property string ocrLanguages: {
+        const l = (Config.options?.screenshot?.ocrLanguages ?? ["eng"]).filter(x => /^[A-Za-z_]+$/.test(String(x)))
+        return l.length ? l.join("+") : "eng"
+    }
+    function _ocr() {
+        // A missing binary never makes Process exit: check in the shell first.
+        ocrProc.exec({ command: ["bash", "-c", 'command -v tesseract >/dev/null || { rm -f -- "$F"; exit 127; }; tesseract "$F" - -l "$L"; c=$?; rm -f -- "$F"; exit $c'],
+            environment: ({ F: root._out, L: root.ocrLanguages }) })
+    }
+    Process {
+        id: ocrProc
+        stdout: StdioCollector { id: ocrOut }
+        stderr: StdioCollector { id: ocrErr }
+        onExited: code => {
+            root.busy = false
+            const text = ocrOut.text.replace(/\f/g, "").trim()
+            const langs = (ocrErr.text.match(/Failed loading language '[^']+'/g) ?? []).map(m => m.split("'")[1]) // (no matchAll in Qt's JS)
+            if (code === 0 && text) {
+                root.recognised(text, langs.length ? `Copied · no ${langs.join(", ")} data (tesseract-data-${langs.join(", tesseract-data-")})` : "")
+                return
+            }
+            const lang = langs.join(", ")
+            root.failed("ocr", code === 127 ? "tesseract isn't installed (the tesseract package, and a language such as tesseract-data-eng)"
+                : lang ? `No ${lang} language data for tesseract (install tesseract-data-${langs.join(", tesseract-data-")})`
+                : code === 0 ? "No text found in the region"
+                : `tesseract failed: ${ocrErr.text.trim().split("\n").pop() || "exit " + code}`)
+        }
     }
 
     // Temp shots older than a day go (saved ones were moved out already).
     Component.onCompleted: Quickshell.execDetached(["find", root.dir, "-maxdepth", "1", "-name", "Screenshot_*.png", "-mmin", "+1440", "-delete"])
+
+    // Keybinds (bundled hyprland.lua: Super+Shift+S region, Super+Shift+X text).
+    Loader {
+        active: CompositorService.compositor === "hyprland"
+        sourceComponent: Item {
+            GlobalShortcut { name: "regionScreenshot"; description: "Screenshot a region"; onPressed: root.capture("region", 0) }
+            GlobalShortcut { name: "regionOcr"; description: "Copy the text in a region (OCR)"; onPressed: root.capture("ocr", 0) }
+        }
+    }
 
     IpcHandler {
         target: "screenshot"
         function region(): void { root.capture("region", 0) }
         function window(): void { root.capture("window", 0) }
         function screen(): void { root.capture("screen", 0) }
+        function ocr(): void { root.capture("ocr", 0) }
         function delayed(mode: string, seconds: int): void { root.capture(mode, seconds) }
         function cancel(): void { root.cancel() }
         function last(): string { return root.lastFile }

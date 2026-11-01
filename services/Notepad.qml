@@ -25,6 +25,13 @@ Singleton {
         root.tabs = t
         saveTimer.restart()
     }
+    // Text added to the end of the current tab (OCR, the scratchpad prompt).
+    function appendText(text) {
+        if (!root.enabled || !root.loaded || !text) return false
+        const cur = root.tabs[root.current]?.text ?? ""
+        root.setText(root.current, cur && !cur.endsWith("\n") ? cur + "\n" + text : cur + text)
+        return true
+    }
     function addTab() {
         root.tabs = root.tabs.concat([{ title: "Note", text: "" }])
         root.current = root.tabs.length - 1

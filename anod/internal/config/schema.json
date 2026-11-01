@@ -375,6 +375,7 @@
   "screenTime.keepDays": "int",
   "screenshot.copyOnCapture": "bool",
   "screenshot.freezeRegion": "bool",
+  "screenshot.ocrLanguages": "var",
   "screenshot.onTimeout": "string",
   "screenshot.previewEdge": "string",
   "screenshot.previewSeconds": "int",

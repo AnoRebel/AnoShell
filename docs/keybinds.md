@@ -53,7 +53,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super+1…0 | workspace; with Shift: move there; with Alt: send there |
 | Super+L, Ctrl+Alt+K | lock |
 | Print / Shift+Print / Ctrl+Print / Super+Shift+S | screenshot: screen / region / window / region (a card offers copy, save, edit, delete) |
-| Super+Shift+X, Super+Shift+R | region text (OCR) to clipboard, record a region |
+| Super+Shift+X, Super+Shift+R | region text (OCR) to the clipboard with a card (Add to note, Pin), record a region |
 
 `go run ./cmd/keybinds-import [hyprland.lua niri.kdl]` (from `ano/anod`)
 writes `anod/internal/keybinds/import-report.md`: what a migration of those

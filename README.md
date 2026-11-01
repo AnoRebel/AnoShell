@@ -33,7 +33,7 @@ backend is picked from the session at start.
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
   brightness, night light, power and performance mode, device pills, package
   updates, removable drives, notifications with DND, KDE Connect, screen time
-  with limits, screenshots (freeze-frame regions) and screen recording,
+  with limits, screenshots (freeze-frame regions), text recognition (OCR) and screen recording,
   song recognition, lyrics ([extras](docs/extras.md), [configuration](docs/configuration.md)).
 - **anod and `ano`:** the companion daemon (wallpapers, hooks, keybinds,
   displays, backups, the Atelier, the reader backend) and its CLI: `ano doctor`,
@@ -647,6 +647,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | KDE Connect (`kdeConnect.enable`, off by default; bar module "Phone") | `kdeconnect` with `kdeconnectd` running (the shell doesn't start it; the bundled Hyprland/niri configs do), `systemd` (`busctl`), `glib2` (`gdbus`), `util-linux` (`setpriv`); sending a file: `zenity` | no pill and no phone actions; a hung kdeconnectd shows as not answering |
 | Fingerprint unlock (niri lock; `lock.fingerprint.enable`, off by default) | `fprintd` (`fprintd-list`, `pam_fprintd.so`) and at least one enrolled print (`fprintd-enroll`); the shell's own `modules/lock/pam/fprint` service, no faillock | password only |
 | Launcher plugins (`search.userPlugins`; bundled `clipboard`, `websearch`, `files`, `kaomoji`, `unicode`, `keybinds`, `windows`) | nothing for the loader; `clipboard` needs `cliphist`; `files` needs `fd`; `kaomoji`, `unicode` and `keybinds` copy with `wl-copy` (`wl-clipboard`); `keybinds` needs anod | that plugin shows nothing (keybinds says anod isn't running) |
+| Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

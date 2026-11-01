@@ -13,7 +13,8 @@ import qs.services
  * Copy, Save, Edit (satty or swappy), Delete and Close. It leaves after
  * screenshot.previewSeconds unless the pointer is on it; screenshot.onTimeout
  * then keeps the temp file, saves it or deletes it. Also shows the countdown
- * of a delayed capture.
+ * of a delayed capture. After text recognition (Screenshot.recognised) the
+ * card shows the text instead, copied already, with Add to note and Pin.
  */
 Scope {
     id: root
@@ -23,6 +24,7 @@ Scope {
     readonly property bool onLeft: edge.endsWith("Left")
 
     property string file: ""
+    property string text: ""          // recognised text: the card shows it instead of a picture
     property bool shown: false
     property string note: ""          // "Saved to …", "Copied", errors
 
@@ -34,13 +36,22 @@ Scope {
         function onPreparingChanged() { if (Screenshot.preparing) { root.settlePrevious(); root.close() } }
         function onCaptured(path, mode) {
             root.file = path
+            root.text = ""
             root.note = ""
             if (root.cfg.copyOnCapture ?? true) root.copy(false)
             root.shown = true
             dismiss.restart()
         }
+        function onRecognised(text, warning) {
+            root.file = ""
+            root.text = text
+            root.note = warning || "Copied"
+            root.copyText()
+            root.shown = true
+            dismiss.restart()
+        }
         function onFailed(mode, reason) {
-            if (reason !== "cancelled") Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Screenshot", reason])
+            if (reason !== "cancelled") Quickshell.execDetached(["notify-send", "-a", "AnoShell", mode === "ocr" ? "Text recognition" : "Screenshot", reason])
         }
     }
 
@@ -49,6 +60,9 @@ Scope {
         Quickshell.execDetached({ command: ["bash", "-c", 'wl-copy -t image/png < "$F"'], environment: ({ F: root.file }) })
         if (withNote) root.note = "Copied"
     }
+    function copyText() { Quickshell.execDetached({ command: ["bash", "-c", 'printf "%s" "$T" | wl-copy'], environment: ({ T: root.text }) }) }
+    function addToNote() { root.note = Notepad.appendText(root.text) ? "Added to the note" : "Turn on the notepad first (Settings → Sidebars)" }
+    function pinText() { Cliphist.pinText(root.text); root.note = "Pinned in the clipboard" }
     function save() { saveProc.exec({ command: ["bash", "-c",
         'P=$(xdg-user-dir PICTURES 2>/dev/null); [ -z "$P" ] || [ "$P" = "$HOME" ] && P="$HOME/Pictures"; D="${SAVE:-$P/Screenshots}"; D="${D/#\\~/$HOME}"; mkdir -p -- "$D" && N="${F##*/}" && N="${N%.*}" && N="${N%.*}.png" && mv -- "$F" "$D/$N" && chmod 644 -- "$D/$N" && printf "%s" "$D/$N"'],
         environment: ({ F: root.file, SAVE: root.cfg.saveDir ?? "" }) }) }
@@ -73,7 +87,7 @@ Scope {
     // A new shot while this one's card is up: this one still gets its timeout
     // action (onTimeout "save" would otherwise lose it).
     function settlePrevious() {
-        if (!dismiss.running || !root.file) return
+        if (!dismiss.running || !root.file || root.text) return
         const act = root.cfg.onTimeout ?? "keep"
         if (act === "save") root.save()
         else if (act === "delete") Quickshell.execDetached(["rm", "-f", "--", root.file])
@@ -87,7 +101,7 @@ Scope {
         onTriggered: {
             if ((root.cfg.previewSeconds ?? 6) <= 0) return
             if (hover.hovered) { restart(); return }
-            const act = root.cfg.onTimeout ?? "keep"
+            const act = root.text ? "keep" : (root.cfg.onTimeout ?? "keep")
             if (act === "save") root.save()
             if (act === "delete") root.remove()
             else root.close()
@@ -155,7 +169,33 @@ Scope {
                 id: col
                 anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
                 spacing: 8
+                // Recognised text (selectable; scrolls when long).
                 Rectangle {
+                    visible: root.text !== ""
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.min(180, textView.implicitHeight + 16)
+                    radius: Appearance.rounding.small
+                    color: Appearance.colors.colLayer1
+                    clip: true
+                    Flickable {
+                        anchors.fill: parent; anchors.margins: 8
+                        contentHeight: textView.implicitHeight
+                        boundsBehavior: Flickable.StopAtBounds
+                        TextEdit {
+                            id: textView
+                            width: parent.width
+                            text: root.text
+                            readOnly: true; selectByMouse: true
+                            wrapMode: TextEdit.Wrap
+                            color: Appearance.colors.colOnLayer1
+                            selectionColor: Appearance.colors.colPrimary
+                            font.family: Appearance.font.family.main
+                            font.pixelSize: Appearance.font.pixelSize.small
+                        }
+                    }
+                }
+                Rectangle {
+                    visible: root.text === ""
                     Layout.fillWidth: true
                     Layout.preferredHeight: 180
                     radius: Appearance.rounding.small
@@ -183,10 +223,12 @@ Scope {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 4
-                    ToolbarButton { iconName: "content_copy"; iconSize: 18; toolTipText: "Copy"; onClicked: root.copy(true) }
-                    ToolbarButton { iconName: "save"; iconSize: 18; toolTipText: "Save to Pictures/Screenshots"; onClicked: root.save() }
-                    ToolbarButton { iconName: "edit"; iconSize: 18; toolTipText: "Edit (satty / swappy)"; onClicked: root.edit() }
-                    ToolbarButton { iconName: "delete"; iconSize: 18; toolTipText: "Delete"; onClicked: root.remove() }
+                    ToolbarButton { iconName: "content_copy"; iconSize: 18; toolTipText: "Copy"; onClicked: { if (root.text) { root.copyText(); root.note = "Copied" } else root.copy(true) } }
+                    ToolbarButton { visible: !root.text; iconName: "save"; iconSize: 18; toolTipText: "Save to Pictures/Screenshots"; onClicked: root.save() }
+                    ToolbarButton { visible: !root.text; iconName: "edit"; iconSize: 18; toolTipText: "Edit (satty / swappy)"; onClicked: root.edit() }
+                    ToolbarButton { visible: !root.text; iconName: "delete"; iconSize: 18; toolTipText: "Delete"; onClicked: root.remove() }
+                    ToolbarButton { visible: !!root.text; iconName: "note_add"; iconSize: 18; toolTipText: "Add to note"; onClicked: root.addToNote() }
+                    ToolbarButton { visible: !!root.text; iconName: "push_pin"; iconSize: 18; toolTipText: "Pin"; onClicked: root.pinText() }
                     Item { Layout.fillWidth: true }
                     ToolbarButton { iconName: "close"; iconSize: 18; toolTipText: "Close"; onClicked: root.close() }
                 }

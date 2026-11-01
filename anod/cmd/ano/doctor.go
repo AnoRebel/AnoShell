@@ -36,6 +36,7 @@ var features = []feature{
 	{"screen recording", "", []string{"gpu-screen-recorder|wl-screenrec|wf-recorder"}},
 	{"recording extras (finish thumbnail, discard to trash, system + mic mix)", "", []string{"ffmpeg", "gio", "pactl"}},
 	{"screenshots (Hyprland and other wlroots; niri uses its own)", "", []string{"grim", "slurp"}},
+	{"text recognition (Super+Shift+X; language data: tesseract-data-*)", "", []string{"tesseract"}},
 	{"brightness", "", []string{"brightnessctl"}},
 	{"audio spectrum", "", []string{"cava"}},
 	{"battery sounds", "sounds.battery", []string{"ffplay"}},
@@ -251,6 +252,13 @@ func runChecks() []check {
 		}
 	}
 
+	// Text recognition: the language data screenshot.ocrLanguages names.
+	if have("tesseract") {
+		if missing := missingOcrLanguages(eff); len(missing) > 0 {
+			add("warn", "optional: text recognition", "no tesseract data for %s (install tesseract-data-%s)", strings.Join(missing, ", "), strings.Join(missing, ", tesseract-data-"))
+		}
+	}
+
 	// Palette cursor/icon themes: drawn only once one is chosen.
 	if strings.HasPrefix(config.String(eff, "cursor.theme", ""), "anoshell-") || strings.HasPrefix(config.String(eff, "icons.theme", ""), "anoshell-") {
 		var missing []string
@@ -354,3 +362,36 @@ func runningMatching(names []string) []string {
 func sortStrings(s []string) { sort.Strings(s) }
 
 func fileExists(p string) bool { _, err := os.Stat(p); return err == nil }
+
+// missingOcrLanguages lists the screenshot.ocrLanguages (default eng) that
+// `tesseract --list-langs` doesn't have.
+func missingOcrLanguages(eff map[string]any) []string {
+	want := []string{"eng"}
+	if v, ok := config.Get(eff, "screenshot.ocrLanguages"); ok {
+		if l, ok := v.([]any); ok && len(l) > 0 {
+			want = want[:0]
+			for _, x := range l {
+				if s, ok := x.(string); ok {
+					want = append(want, s)
+				}
+			}
+		}
+	}
+	o, err := exec.Command("tesseract", "--list-langs").Output()
+	if err != nil {
+		return nil
+	}
+	installed := map[string]bool{}
+	for i, line := range strings.Split(string(o), "\n") {
+		if i > 0 { // the first line is a heading
+			installed[strings.TrimSpace(line)] = true
+		}
+	}
+	var missing []string
+	for _, l := range want {
+		if !installed[l] {
+			missing = append(missing, l)
+		}
+	}
+	return missing
+}

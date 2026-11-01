@@ -563,7 +563,7 @@
   "page": 1,
   "card": "Screenshots",
   "label": "Screenshots",
-  "sublabel": "Print, Shift+Print, Ctrl+Print, Super+Shift+S · the card shown after a capture",
+  "sublabel": "Print, Shift+Print, Ctrl+Print, Super+Shift+S, Super+Shift+X (text) · the card shown after a capture",
   "keys": [
    "screenshot"
   ]
@@ -620,6 +620,15 @@
   "sublabel": "The region shot is the moment you started, not what moved meanwhile (Hyprland and other wlroots compositors)",
   "keys": [
    "screenshot.freezeRegion"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Text recognition languages",
+  "sublabel": "Super+Shift+X copies the text in a region. tesseract codes, comma separated (eng, deu, fra, chi_sim…); each needs its tesseract-data package",
+  "keys": [
+   "screenshot.ocrLanguages"
   ]
  },
  {

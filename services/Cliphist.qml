@@ -327,6 +327,16 @@ Singleton {
             pinProc.exec({ command: ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode | head -c 1048576'], environment: ({ ID: id, BIN: root.cliphistBinary }) })
         }
     }
+    // Pin text that isn't in the history (OCR, the scratchpad).
+    function pinText(text) {
+        if (!text) return
+        if (!root._pinsLoaded) {
+            Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Clipboard", "clipboard-pins.json can't be read, so nothing is pinned (fix or remove the file)"])
+            return
+        }
+        if (root.pins.some(q => q.kind === "text" && q.text === text)) return
+        root._savePins([{ key: `${Date.now()}`, kind: "text", text: text }].concat(root.pins))
+    }
     // A text pin is saved once its output is read, an image pin once the
     // file is written (exit and end of output can come in either order).
     Process {

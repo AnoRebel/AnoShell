@@ -442,7 +442,7 @@ ColumnLayout {
     SettingsCard {
         icon: "screenshot_region"
         title: "Screenshots"
-        subtitle: "Print, Shift+Print, Ctrl+Print, Super+Shift+S · the card shown after a capture"
+        subtitle: "Print, Shift+Print, Ctrl+Print, Super+Shift+S, Super+Shift+X (text) · the card shown after a capture"
         configKeys: ["screenshot"]
 
         ConfigSwitch {
@@ -497,6 +497,19 @@ ColumnLayout {
             sublabel: "The region shot is the moment you started, not what moved meanwhile (Hyprland and other wlroots compositors)"
             checked: Config.options?.screenshot?.freezeRegion ?? false
             onCheckedChanged: Config.setNestedValue("screenshot.freezeRegion", checked)
+        }
+        ConfigRow {
+            label: "Text recognition languages"
+            configKey: "screenshot.ocrLanguages"
+            sublabel: "Super+Shift+X copies the text in a region. tesseract codes, comma separated (eng, deu, fra, chi_sim…); each needs its tesseract-data package"
+            StyledTextInput {
+                text: (Config.options?.screenshot?.ocrLanguages ?? ["eng"]).join(", ")
+                onEditingFinished: {
+                    const l = text.split(/[\s,+]+/).filter(x => /^[A-Za-z_]+$/.test(x))
+                    Config.setNestedValue("screenshot.ocrLanguages", l.length ? l : ["eng"])
+                }
+                Layout.preferredWidth: 200
+            }
         }
     }
 

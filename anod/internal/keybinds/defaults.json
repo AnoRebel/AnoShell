@@ -365,7 +365,7 @@
       "chord": "Super+Shift+X",
       "action": "exec",
       "args": [
-        "grim -g \"$(slurp)\" - | tesseract - - 2>/dev/null | wl-copy && notify-send -a AnoShell \"Text copied\" \"$(wl-paste | head -c 200)\""
+        "qs -c ano ipc call screenshot ocr || grim -g \"$(slurp)\" - | tesseract - - 2>/dev/null | wl-copy"
       ]
     },
     {
