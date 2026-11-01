@@ -1,0 +1,3 @@
+module qs.modules.scratchpad
+ScratchpadContent 1.0 ScratchpadContent.qml
+ScratchpadPanel 1.0 ScratchpadPanel.qml

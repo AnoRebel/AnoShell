@@ -36,6 +36,9 @@ With **Grow into** on for a panel, a click grows the pill into that panel
 inline (the same panel, same state) instead of opening it separately; click
 again or press Escape to shrink it back.
 
+The [scratchpad](scratchpad.md) always grows out of the pill (Super+Y, or a
+click action set to `"scratchpad"`), on the focused screen.
+
 On the left and right edges the pill turns into a vertical capsule with a
 stacked clock.
 

@@ -24,6 +24,10 @@ backend is picked from the session at start.
 - **Pieces** (desktop widgets) in pages on a grid: clocks and clock faces, day
   progress, system, weather, media, calendar, to-do, news, the Bioma
   organisms, plus your own ([pieces](docs/pieces.md)).
+- **Scratchpad & Pins:** notes, to-do, clipboard and calendar in one panel
+  that grows from the pill, pinned commands (in a terminal or the background)
+  and a prompt for notes, to-dos, commands, web searches and AI questions
+  ([scratchpad](docs/scratchpad.md)).
 - **Launcher plugins:** web search, files, kaomoji, unicode symbols, keybinds,
   windows and clipboard history, plus your own ([plugins](docs/plugins.md)).
 - **Lock screen** on niri with fingerprint unlock and replaceable lock screens
@@ -647,6 +651,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | KDE Connect (`kdeConnect.enable`, off by default; bar module "Phone") | `kdeconnect` with `kdeconnectd` running (the shell doesn't start it; the bundled Hyprland/niri configs do), `systemd` (`busctl`), `glib2` (`gdbus`), `util-linux` (`setpriv`); sending a file: `zenity` | no pill and no phone actions; a hung kdeconnectd shows as not answering |
 | Fingerprint unlock (niri lock; `lock.fingerprint.enable`, off by default) | `fprintd` (`fprintd-list`, `pam_fprintd.so`) and at least one enrolled print (`fprintd-enroll`); the shell's own `modules/lock/pam/fprint` service, no faillock | password only |
 | Launcher plugins (`search.userPlugins`; bundled `clipboard`, `websearch`, `files`, `kaomoji`, `unicode`, `keybinds`, `windows`) | nothing for the loader; `clipboard` needs `cliphist`; `files` needs `fd`; `kaomoji`, `unicode` and `keybinds` copy with `wl-copy` (`wl-clipboard`); `keybinds` needs anod | that plugin shows nothing (keybinds says anod isn't running) |
+| Scratchpad & Pins (`scratchpad.enable`, off by default) | `wl-clipboard` (copy), `libnotify` (`notify-send`: failed background commands), a terminal (Settings → Default apps) for terminal pins; `??` needs an AI provider (left sidebar) | no copy / no failure notice / terminal pins don't open / `??` says no provider |
 | Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 

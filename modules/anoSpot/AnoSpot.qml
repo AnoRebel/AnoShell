@@ -9,6 +9,7 @@ import qs.modules.common.widgets
 import qs.services
 import qs.modules.mediaControls
 import qs.modules.controlPanel
+import qs.modules.scratchpad
 import qs.modules.calendar
 import "."
 
@@ -86,6 +87,8 @@ Scope {
         else if (button === Qt.RightButton)  target = root.actions.rightClick  ?? "controlPanel";
         else if (button === Qt.MiddleButton) target = root.actions.middleClick ?? "anoview";
         if (target.length === 0) return
+        // The scratchpad always grows out of the pill (Scratchpad.open drives it).
+        if (target === "scratchpad") { Scratchpad.open = !Scratchpad.open; return }
         if (win && root.growsInto(target)) { win.grownTarget = win.grownTarget === target ? "" : target; return }
         Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", target, "toggle"]);
     }
@@ -188,7 +191,25 @@ Scope {
             property string grownTarget: ""
             readonly property bool grown: grownTarget !== ""
             readonly property real _maxH: (modelData?.height ?? 1080) * 0.75
-            readonly property real grownW: ({ mediaControls: 440, controlPanel: 380, calendar: 400 })[grownTarget] ?? 400
+            readonly property real grownW: ({ mediaControls: 440, controlPanel: 380, calendar: 400,
+                scratchpad: Math.min(760, (modelData?.width ?? 1280) - 32) })[grownTarget] ?? 400
+            // The scratchpad (Scratchpad.open) grows out of the pill on the
+            // focused screen, and closing it here closes the service's state.
+            readonly property bool _scratchHere: CompositorService.focusedMonitorName
+                ? CompositorService.focusedMonitorName === (modelData?.name ?? "") : modelData === Quickshell.screens[0]
+            Connections {
+                target: Scratchpad
+                function onOpenChanged() {
+                    if (Scratchpad.open && spotWindow._scratchHere) spotWindow.grownTarget = "scratchpad"
+                    else if (!Scratchpad.open && spotWindow.grownTarget === "scratchpad") spotWindow.grownTarget = ""
+                }
+            }
+            readonly property bool holdsScratchpad: grownTarget === "scratchpad"
+            onHoldsScratchpadChanged: if (!holdsScratchpad) Scratchpad.open = false
+            // The envelope's width while big: the widest grow since it started
+            // (grownTarget empties before the shrink has finished).
+            property real _bigW: 0
+            onGrownTargetChanged: if (grownTarget) _bigW = grownW
             readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
             // Springs between resting and grown geometry.
             // Transient (volume, notification, …): on the focused screen only.
@@ -222,7 +243,7 @@ Scope {
             property bool _big: false
             readonly property real _screenAlong: (root.isVertical ? modelData?.height : modelData?.width) ?? 1080
             readonly property real _maxAlong: Math.min(Math.max(root.widthPx, 460), _screenAlong - 40)
-            readonly property real _envW: !root.isVertical ? _maxAlong : (_big ? _maxAlong : root.heightPx)
+            readonly property real _envW: !root.isVertical ? Math.max(_maxAlong, _big ? _bigW : 0) : (_big ? Math.max(_maxAlong, _bigW) : root.heightPx)
             readonly property real _envH: !root.isVertical ? (_big ? _maxH : root.heightPx) : (_big ? _maxH : _maxAlong)
             // Exclusive while grown, so Escape works right after the click that
             // grew it (OnDemand only focuses on a later click).
@@ -606,7 +627,7 @@ Scope {
                     y: root.position === "bottom" ? parent.height - height - 16 : root.position === "top" ? 16 : Math.round((parent.height - height) / 2)
                     opacity: spotWindow.grown && spotWindow._w >= spotWindow.grownW * 0.85 && spotWindow._h >= spotWindow.grownH * 0.6 ? 1 : 0
                     Behavior on opacity { NumberAnimation { duration: AnimationConfig.scaledDuration(160) } }
-                    sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar })[spotWindow.grownTarget] ?? null
+                    sourceComponent: ({ mediaControls: grownMedia, controlPanel: grownControl, calendar: grownCalendar, scratchpad: grownScratchpad })[spotWindow.grownTarget] ?? null
                 }
                 // Transient: icon + level bar (volume/brightness/mic) or label.
                 GridLayout {
@@ -667,6 +688,7 @@ Scope {
                 Component { id: grownMedia; MediaControlsContent { } }
                 Component { id: grownControl; ControlPanelContent { onCloseRequested: spotWindow.grownTarget = "" } }
                 Component { id: grownCalendar; CalendarContent { } }
+                Component { id: grownScratchpad; ScratchpadContent { onCloseRequested: Scratchpad.open = false } }
             }
         }
       }

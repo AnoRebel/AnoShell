@@ -61,7 +61,7 @@ Scope {
         if (withNote) root.note = "Copied"
     }
     function copyText() { Quickshell.execDetached({ command: ["bash", "-c", 'printf "%s" "$T" | wl-copy'], environment: ({ T: root.text }) }) }
-    function addToNote() { root.note = Notepad.appendText(root.text) ? "Added to the note" : "Turn on the notepad first (Settings → Sidebars)" }
+    function addToNote() { root.note = Notepad.appendText(root.text) ? "Added to the note" : "Turn on the notepad or the scratchpad first (Settings → Sidebars)" }
     function pinText() { Cliphist.pinText(root.text); root.note = "Pinned in the clipboard" }
     function save() { saveProc.exec({ command: ["bash", "-c",
         'P=$(xdg-user-dir PICTURES 2>/dev/null); [ -z "$P" ] || [ "$P" = "$HOME" ] && P="$HOME/Pictures"; D="${SAVE:-$P/Screenshots}"; D="${D/#\\~/$HOME}"; mkdir -p -- "$D" && N="${F##*/}" && N="${N%.*}" && N="${N%.*}.png" && mv -- "$F" "$D/$N" && chmod 644 -- "$D/$N" && printf "%s" "$D/$N"'],

@@ -1598,7 +1598,8 @@
    "todo",
    "pomodoro",
    "stickyNotes",
-   "screenTime"
+   "screenTime",
+   "scratchpad"
   ]
  },
  {
@@ -1617,6 +1618,15 @@
   "sublabel": "Synced both ways with a todo.txt you can edit anywhere",
   "keys": [
    "todo.enable"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Scratchpad & Pins",
+  "sublabel": "Notes, to-do, clipboard and calendar in one panel that grows from the pill (Super+Y), with pinned commands and a prompt; uses the notepad and to-do even when they're off here",
+  "keys": [
+   "scratchpad.enable"
   ]
  },
  {

@@ -37,6 +37,7 @@ var features = []feature{
 	{"recording extras (finish thumbnail, discard to trash, system + mic mix)", "", []string{"ffmpeg", "gio", "pactl"}},
 	{"screenshots (Hyprland and other wlroots; niri uses its own)", "", []string{"grim", "slurp"}},
 	{"text recognition (Super+Shift+X; language data: tesseract-data-*)", "", []string{"tesseract"}},
+	{"scratchpad (copy, failed-command notices)", "scratchpad.enable", []string{"wl-copy", "notify-send"}},
 	{"brightness", "", []string{"brightnessctl"}},
 	{"audio spectrum", "", []string{"cava"}},
 	{"battery sounds", "sounds.battery", []string{"ffplay"}},

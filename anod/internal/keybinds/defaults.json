@@ -111,6 +111,14 @@
       ]
     },
     {
+      "chord": "Super+Y",
+      "action": "shell",
+      "args": [
+        "scratchpad",
+        "toggle"
+      ]
+    },
+    {
       "chord": "Super+I",
       "action": "shell",
       "args": [

@@ -35,6 +35,7 @@ export default defineAppConfig({
       { slug: "looks", group: "guide", title: "Looks and colours", description: "Liquid, Ink, Neo-tech, Clay; your own looks; colour modes." },
       { slug: "atelier", group: "guide", title: "The Atelier", description: "Themes, looks, pieces, plugins, lock screens, wallpapers and rices: built-in, yours and from catalogs." },
       { slug: "pieces", group: "guide", title: "Pieces", description: "Desktop widgets: pages, the grid, writing your own." },
+      { slug: "scratchpad", group: "guide", title: "Scratchpad & Pins", description: "Notes, to-do, clipboard and calendar in one panel, pinned commands and the prompt bar." },
       { slug: "plugins", group: "guide", title: "Launcher plugins", description: "Extra launcher results: the bundled ones and writing your own." },
       { slug: "lockscreens", group: "guide", title: "Lock screens", description: "The niri lock, previews, fallbacks and writing your own lock screen." },
       { slug: "reader", group: "guide", title: "Reader", description: "Novels, manga and anime: sources, library, playback and the Airing tab." },

@@ -4,9 +4,11 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 
-// Notepad (notepad.enable): tabs of plain text, saved as you type.
+// Notepad (notepad.enable): tabs of plain text, saved as you type. Also the
+// scratchpad's Notes tab (taller there: editorHeight).
 Rectangle {
     id: root
+    property real editorHeight: 160
     implicitHeight: col.implicitHeight + 20
     radius: Appearance.rounding.normal
     color: Appearance.colors.colLayer1
@@ -59,7 +61,7 @@ Rectangle {
         }
         StyledTextArea {
             Layout.fillWidth: true
-            Layout.preferredHeight: 160
+            Layout.preferredHeight: root.editorHeight
             placeholderText: "Write something…"
             text: Notepad.tabs[Notepad.current]?.text ?? ""
             readOnly: !Notepad.loaded // nothing typed before the file loads gets replaced

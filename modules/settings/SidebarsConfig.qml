@@ -16,7 +16,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Sidebars"
         subtitle: "Behavior, widget toggles, sliders"
-        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "screenTime"]
+        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "screenTime", "scratchpad"]
     }
 
     // ═══ Sidebar Behavior ═══
@@ -183,7 +183,7 @@ ColumnLayout {
         icon: "task_alt"
         title: "Productivity"
         subtitle: "Notepad, to-do and pomodoro in the right sidebar; a sticky note on the desktop · all off by default"
-        configKeys: ["notepad", "todo", "pomodoro", "stickyNotes", "screenTime"]
+        configKeys: ["notepad", "todo", "pomodoro", "stickyNotes", "screenTime", "scratchpad"]
 
         ConfigSwitch {
             label: "Notepad"; configKey: "notepad.enable"
@@ -196,6 +196,12 @@ ColumnLayout {
             sublabel: "Synced both ways with a todo.txt you can edit anywhere"
             checked: Config.options?.todo?.enable ?? false
             onCheckedChanged: Config.setNestedValue("todo.enable", checked)
+        }
+        ConfigSwitch {
+            label: "Scratchpad & Pins"; configKey: "scratchpad.enable"
+            sublabel: "Notes, to-do, clipboard and calendar in one panel that grows from the pill (Super+Y), with pinned commands and a prompt; uses the notepad and to-do even when they're off here"
+            checked: Config.options?.scratchpad?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("scratchpad.enable", checked)
         }
         ConfigRow {
             visible: Config.options?.todo?.enable ?? false

@@ -68,13 +68,14 @@ Singleton {
         { id: "anoDisplayConfirm", source: "modules/displayManager/DisplayConfirm.qml", listed: false },
         { id: "anoMorphLayer", source: "modules/common/widgets/TopLayerPanel.qml", listed: false, effective: "morphingPanels" },
         { id: "anoPieces", source: "modules/pieces/PieceLayer.qml", key: "pieces.enable", listed: false },
+        { id: "anoScratchpad", source: "modules/scratchpad/ScratchpadPanel.qml", key: "scratchpad.enable", listed: false },
     ]
 
     // Ids each family hosts. Everything not listed here is unavailable in
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen", "anoPolkit",
-        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces"]
+        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote"]
