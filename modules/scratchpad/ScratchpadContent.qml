@@ -47,10 +47,11 @@ ColumnLayout {
         if (!p.text) return
         if (p.kind === "pin") { root.pendingPin = p.text; return }
         const r = Scratchpad.submit(line)
-        if (p.kind === "ai" && r === "Asking…") root.showAnswer = true
+        root.say(r.msg)
+        if (!r.ok) return // the line stays, to fix or retry
+        if (p.kind === "ai") root.showAnswer = true
         if (p.kind === "note") root.tab = 0
         if (p.kind === "todo") root.tab = 1
-        root.say(r)
         prompt.text = ""
     }
     function choosePin(terminal) {

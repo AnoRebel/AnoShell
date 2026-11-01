@@ -92,7 +92,7 @@ Item {
 
         // Pinned items
         Repeater {
-            model: ScriptModel { values: root.showAll ? SystemTray.items.values : TrayService.pinnedItems }
+            model: ScriptModel { values: root.showAll ? TrayService.pinnedItems.concat(TrayService.unpinnedItems) : TrayService.pinnedItems }
 
             delegate: TrayIcon {
                 required property SystemTrayItem modelData

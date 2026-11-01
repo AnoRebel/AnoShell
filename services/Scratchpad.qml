@@ -17,7 +17,7 @@ import qs.services
  * where a non-zero exit notifies with its error output. The command is always
  * a single argument to `sh -c`, never spliced into another script.
  *
- *   qs -c ano ipc call scratchpad toggle|open|close
+ *   qs -c ano ipc call scratchpad toggle|show|close
  *   qs -c ano ipc call scratchpad prompt ">>notify-send hi"
  */
 Singleton {
@@ -35,6 +35,8 @@ Singleton {
         id: pinsFile
         path: root.enabled ? `${Directories.anoData}/scratchpad-pins.json` : ""
         printErrors: false
+        // Off and on again: nothing from before counts until it reads again.
+        onPathChanged: { root._loaded = false; root.pins = [] }
         onLoaded: {
             try {
                 const d = JSON.parse(text())
@@ -64,15 +66,16 @@ Singleton {
     // ── Running ──────────────────────────────────────────────────────────
     // Background: its own unit/session (outlives the shell); a failure
     // notifies with the exit code and the start of the error output.
-    readonly property string _bg: 'err=$(sh -c "$1" 2>&1 >/dev/null); c=$?; '
-        + '[ "$c" -eq 0 ] || notify-send -a AnoShell -- "Command failed (exit $c)" "$1${err:+\n$(printf %s "$err" | tail -c 300)}"'
+    // Only the error output's last 300 bytes are kept; pipefail keeps the command's exit code.
+    readonly property string _bg: 'set -o pipefail; err=$(sh -c "$1" 2>&1 >/dev/null | tail -c 300); c=$?; '
+        + '[ "$c" -eq 0 ] || notify-send -a AnoShell -- "Command failed (exit $c)" "$(printf \'%s\\n%s\' "$1" "$err")"'
     // Terminal: stays open after the command so its output can be read.
     readonly property string _held: 'sh -c "$1"; printf "\\n[exit %s · Enter closes]" "$?"; read -r _'
     function run(command, terminal) {
         const c = String(command ?? "").trim()
         if (!c) return false
         if (terminal) return DefaultApps.run("terminal", ["-e", "sh", "-c", root._held, "sh", c])
-        return DefaultApps.launch(["sh", "-c", root._bg, "sh", c], "", "scratchpad")
+        return DefaultApps.launch(["bash", "-c", root._bg, "bash", c], "", "scratchpad") // bash: pipefail
     }
     function runPin(p) { return root.run(p.command, p.terminal) }
     function copy(text) {
@@ -95,19 +98,22 @@ Singleton {
         return { kind: "note", text: s }
     }
     // Acts on a line, except "pin" (the UI asks first; `terminal` given = no question).
-    // Returns a short status for the prompt bar.
+    // { ok, msg }: msg for the prompt bar; the bar keeps the line when !ok.
     function submit(line, terminal) {
         const p = root.parse(line)
-        if (!p.text) return ""
+        const r = (ok, msg) => ({ ok: ok, msg: msg })
+        if (!p.text) return r(false, "")
         switch (p.kind) {
-        case "run": root.run(p.text, false); return "Running in the background"
+        case "run": return root.run(p.text, false) ? r(true, "Running in the background") : r(false, "Couldn't start it")
         case "pin":
-            if (terminal === undefined) return "ask"
-            return root.pin(p.text, terminal) ? "Pinned" : "Already pinned"
-        case "todo": Todo.add(p.text); return "Added to the to-do list"
-        case "web": return root.webSearch(p.text) ? "Opened in your browser" : "No search engine"
-        case "ai": return root.ask(p.text)
-        default: return Notepad.appendText(p.text) ? "Added to the note" : "The notepad isn't ready"
+            if (terminal === undefined) return r(false, "ask")
+            return root.pin(p.text, terminal) ? r(true, "Pinned") : r(false, "Already pinned")
+        case "todo":
+            if (!Todo.writable) return r(false, "The to-do list isn't ready")
+            Todo.add(p.text); return r(true, "Added to the to-do list")
+        case "web": return root.webSearch(p.text) ? r(true, "Opened in your browser") : r(false, "No search engine")
+        case "ai": { const m = root.ask(p.text); return r(m === "Asking…", m) }
+        default: return Notepad.appendText(p.text) ? r(true, "Added to the note") : r(false, "The notepad isn't ready")
         }
     }
 
@@ -146,7 +152,7 @@ Singleton {
         function toggle(): void { if (root.enabled) root.open = !root.open }
         function show(): void { if (root.enabled) root.open = true }
         function close(): void { root.open = false }
-        function prompt(line: string): string { return root.enabled ? root.submit(line, false) : "off" }
+        function prompt(line: string): string { return root.enabled ? root.submit(line, false).msg : "off" }
         function pins(): string { return root.enabled ? JSON.stringify(root.pins) : "off" }
     }
 }

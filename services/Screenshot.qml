@@ -59,6 +59,7 @@ Singleton {
         else if (freezeGrab.running) root._cancelled = true // finishes when the grab ends
         else if (regionPick.running) regionPick.signal(15) // the region selection (onExited finishes it)
         else if (freezeSettle.running) { freezeSettle.stop(); root._finish(1) }
+        else if (ocrProc.running) { root._cancelled = true; ocrProc.signal(15) } // onExited reports it
     }
 
     Timer {
@@ -202,7 +203,8 @@ Singleton {
     }
     function _ocr() {
         // A missing binary never makes Process exit: check in the shell first.
-        ocrProc.exec({ command: ["bash", "-c", 'command -v tesseract >/dev/null || { rm -f -- "$F"; exit 127; }; tesseract "$F" - -l "$L"; c=$?; rm -f -- "$F"; exit $c'],
+        ocrProc.exec({ command: ["bash", "-c", 'trap \'rm -f -- "$F"\' EXIT; trap \'kill "$p" 2>/dev/null; exit 143\' TERM; '
+            + 'command -v tesseract >/dev/null || exit 127; tesseract "$F" - -l "$L" & p=$!; wait "$p"'],
             environment: ({ F: root._out, L: root.ocrLanguages }) })
     }
     Process {
@@ -211,6 +213,7 @@ Singleton {
         stderr: StdioCollector { id: ocrErr }
         onExited: code => {
             root.busy = false
+            if (root._cancelled) { root.failed("ocr", "cancelled"); return }
             const text = ocrOut.text.replace(/\f/g, "").trim()
             const langs = (ocrErr.text.match(/Failed loading language '[^']+'/g) ?? []).map(m => m.split("'")[1]) // (no matchAll in Qt's JS)
             if (code === 0 && text) {

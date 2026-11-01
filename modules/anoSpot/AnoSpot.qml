@@ -88,7 +88,7 @@ Scope {
         else if (button === Qt.MiddleButton) target = root.actions.middleClick ?? "anoview";
         if (target.length === 0) return
         // The scratchpad always grows out of the pill (Scratchpad.open drives it).
-        if (target === "scratchpad") { Scratchpad.open = !Scratchpad.open; return }
+        if (target === "scratchpad") { if (Scratchpad.enabled) Scratchpad.open = !Scratchpad.open; return }
         if (win && root.growsInto(target)) { win.grownTarget = win.grownTarget === target ? "" : target; return }
         Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", target, "toggle"]);
     }
@@ -209,7 +209,7 @@ Scope {
             // The envelope's width while big: the widest grow since it started
             // (grownTarget empties before the shrink has finished).
             property real _bigW: 0
-            onGrownTargetChanged: if (grownTarget) _bigW = grownW
+            onGrownTargetChanged: if (grownTarget) _bigW = Math.max(_bigW, grownW) // switching targets: still springing from the wider one
             readonly property real grownH: Math.min(_maxH, (grownLoader.item?.implicitHeight ?? 200) + 32)
             // Springs between resting and grown geometry.
             // Transient (volume, notification, …): on the focused screen only.
@@ -226,7 +226,7 @@ Scope {
             onGrownChanged: { if (grown) _big = true; _growing = true; growSettle.restart() }
             onTransientShownChanged: { _growing = true; growSettle.restart() }
             // The tween's length plus a margin (was a 1.4 s guess).
-            Timer { id: growSettle; interval: AnimationConfig.scaledDuration(450) + 60; onTriggered: { spotWindow._growing = false; if (!spotWindow.grown) spotWindow._big = false } }
+            Timer { id: growSettle; interval: AnimationConfig.scaledDuration(450) + 60; onTriggered: { spotWindow._growing = false; if (!spotWindow.grown) { spotWindow._big = false; spotWindow._bigW = 0 } else spotWindow._bigW = spotWindow.grownW } }
             // Always animated (after the first appearance): gating on _growing lost
             // the race with the new size in the same turn, so the morph jumped.
             // Grow on the expressive curve, shrink on the accelerate one.

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -364,6 +365,8 @@ func sortStrings(s []string) { sort.Strings(s) }
 
 func fileExists(p string) bool { _, err := os.Stat(p); return err == nil }
 
+var ocrLang = regexp.MustCompile(`^[A-Za-z_]+$`)
+
 // missingOcrLanguages lists the screenshot.ocrLanguages (default eng) that
 // `tesseract --list-langs` doesn't have.
 func missingOcrLanguages(eff map[string]any) []string {
@@ -372,11 +375,15 @@ func missingOcrLanguages(eff map[string]any) []string {
 		if l, ok := v.([]any); ok && len(l) > 0 {
 			want = want[:0]
 			for _, x := range l {
-				if s, ok := x.(string); ok {
+				// The shell's own filter (Screenshot.qml): other entries are dropped.
+				if s, ok := x.(string); ok && ocrLang.MatchString(s) {
 					want = append(want, s)
 				}
 			}
 		}
+	}
+	if len(want) == 0 {
+		want = []string{"eng"} // what the shell falls back to
 	}
 	o, err := exec.Command("tesseract", "--list-langs").Output()
 	if err != nil {
