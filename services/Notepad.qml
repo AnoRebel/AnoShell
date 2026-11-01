@@ -5,13 +5,16 @@ import Quickshell.Io
 import qs.modules.common
 
 /**
- * Notepad tabs (notepad.enable): [{ title, text }] in
+ * Notepad tabs (notepad.enable, or held by the scratchpad): [{ title, text }] in
  * ~/.local/share/anoshell/notepad.json, saved half a second after the last
  * edit (atomic). Nothing is read or written while the notepad is off.
  */
 Singleton {
     id: root
-    readonly property bool enabled: Config.options?.notepad?.enable ?? false
+    // notepad.enable, or something holding it (the scratchpad: hold(true/false)).
+    property int _holds: 0
+    function hold(on: bool): void { root._holds = Math.max(0, root._holds + (on ? 1 : -1)) }
+    readonly property bool enabled: (Config.options?.notepad?.enable ?? false) || root._holds > 0
     property var tabs: [{ title: "Note", text: "" }]
     property int current: 0
     property bool loaded: false

@@ -60,6 +60,7 @@ ShellRoot {
         void EasyEffects; // easyEffects IPC; reads only with audio.easyEffects.enable
         void MusicRecognition; // musicRecognition IPC; records only when asked
         void KdeConnect;  // kdeConnect IPC and pairing prompts; runs only with kdeConnect.enable
+        void Scratchpad;  // scratchpad IPC; reads its pins only with scratchpad.enable
     }
 
     // ═══════════════════════════════════════════════════════════════════════

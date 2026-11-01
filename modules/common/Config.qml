@@ -863,6 +863,11 @@ Singleton {
                 property bool freezeRegion: false      // the screen stands still while you pick a region
                 property var ocrLanguages: ["eng"]     // tesseract languages for text recognition (Super+Shift+X)
             }
+            // Scratchpad & Pins (services/Scratchpad.qml): notes, to-do, clipboard,
+            // calendar and pinned commands, grown from the pill.
+            property JsonObject scratchpad: JsonObject {
+                property bool enable: false
+            }
             // What the control panel shows (standalone, and grown from the pill).
             property JsonObject controlPanel: JsonObject {
                 property bool tray: true       // a row with the tray's items, while there are any
