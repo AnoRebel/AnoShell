@@ -130,7 +130,21 @@ Item {
             event.accepted = true;
         }
 
+        // A themed icon name your theme doesn't have (and no picture sent)
+        // would draw Qt's magenta "missing" square: a generic symbol instead.
+        readonly property string _themeName: {
+            const m = String(trayIcon.item.icon).match(/^image:\/\/icon\/([^?]+)$/)
+            return m ? decodeURIComponent(m[1]) : ""
+        }
+        readonly property bool _missing: _themeName !== "" && !Quickshell.hasThemeIcon(_themeName)
+        MaterialSymbol {
+            anchors.centerIn: parent
+            visible: trayIcon._missing
+            text: "apps"; iconSize: 18
+            color: Appearance.colors.colOnLayer1
+        }
         IconImage {
+            visible: !trayIcon._missing
             anchors.fill: parent
             source: trayIcon.item.icon
             implicitSize: 24
