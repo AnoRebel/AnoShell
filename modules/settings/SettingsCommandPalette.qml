@@ -39,9 +39,17 @@ Loader {
     signal pageRequested(int index)
     signal closed()
 
+    // Where the keyboard goes back to when it closes (the host's
+    // SettingsKeyHandler): otherwise the destroyed input took focus with it
+    // and no key worked until a click.
+    property Item focusReturn: null
+
     active: GlobalStates.settingsCommandPaletteOpen
     visible: active
-    onActiveChanged: if (active) SettingsRegistry.ensureIndex()
+    onActiveChanged: {
+        if (active) SettingsRegistry.ensureIndex()
+        else root.focusReturn?.forceActiveFocus()
+    }
 
     sourceComponent: paletteComponent
 
@@ -106,6 +114,9 @@ Loader {
                                 paletteList.currentIndex = SettingsRegistry.results.length > 0 ? 0 : -1;
                             }
                             focus: true
+                            // focus: true alone doesn't reach it (the Loader is no focus
+                            // scope that has focus): typing went nowhere until clicked.
+                            Component.onCompleted: Qt.callLater(() => input.forceActiveFocus())
 
                             // Up/Down move the highlighted result; Enter activates;
                             // Esc closes. Plain ASCII Tab/Shift+Tab also move.

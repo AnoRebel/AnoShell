@@ -46,6 +46,7 @@ ShellRoot {
         // jump-to-page, Esc closes the window. focus: true so the handler
         // gets the activeFocusItem when the window opens.
         SettingsKeyHandler {
+            id: keyHandler
             anchors.fill: parent
             focus: true
             currentPage: settingsRoot.currentPage
@@ -196,6 +197,7 @@ ShellRoot {
             pageCount: settingsRoot.pages.length
             flickable: pageFlickable
             activePageItem: pageLoader.item
+            focusReturn: keyHandler
             onPageRequested: idx => settingsRoot.currentPage = idx
         }
     }

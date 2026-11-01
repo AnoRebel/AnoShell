@@ -179,6 +179,7 @@ PanelWindow {
             pageCount: SettingsRegistry.pages.length
             flickable: pageFlickable
             activePageItem: pageLoader.item
+            focusReturn: keyHandler
             onPageRequested: idx => GlobalStates.settingsPage = idx
         }
     }
@@ -201,6 +202,7 @@ PanelWindow {
     // is open (WlrKeyboardFocus.Exclusive grants the panel the focus
     // chain).
     SettingsKeyHandler {
+        id: keyHandler
         anchors.fill: parent
         focus: settingsPanel.visible
         currentPage: GlobalStates.settingsPage
