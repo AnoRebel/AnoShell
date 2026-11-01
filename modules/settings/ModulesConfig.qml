@@ -29,7 +29,7 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "pieces"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "controlPanel", "pieces"
         ]
     }
 
@@ -510,6 +510,28 @@ ColumnLayout {
                 }
                 Layout.preferredWidth: 200
             }
+        }
+    }
+
+    // ═══ Control panel ═══
+    SettingsCard {
+        icon: "tune"
+        title: "Control panel"
+        subtitle: "Extra rows in the control panel, on its own and grown from the pill"
+        configKeys: ["controlPanel"]
+        ConfigSwitch {
+            label: "System tray"
+            sublabel: "The tray's items and menus, while an app has one (also without a tray in the bar)"
+            configKey: "controlPanel.tray"
+            checked: Config.options?.controlPanel?.tray ?? true
+            onCheckedChanged: Config.setNestedValue("controlPanel.tray", checked)
+        }
+        ConfigSwitch {
+            label: "Capture"
+            sublabel: "Screenshot a region, copy the text in a region, or start and stop a region recording"
+            configKey: "controlPanel.capture"
+            checked: Config.options?.controlPanel?.capture ?? true
+            onCheckedChanged: Config.setNestedValue("controlPanel.capture", checked)
         }
     }
 

@@ -10,7 +10,8 @@ import qs.modules.common.widgets.spectrum
 import qs.services
 
 /**
- * Control panel content (header, toggles, sliders, media, system row): shared by the standalone panel and the pill's grow-into.
+ * Control panel content (header, toggles, sliders, media, capture, tray,
+ * system row): shared by the standalone panel and the pill's grow-into.
  */
 ColumnLayout {
     id: root
@@ -104,6 +105,33 @@ ColumnLayout {
         }
     }
 
+    // Capture (controlPanel.capture): each closes the panel first.
+    Rectangle {
+        visible: Config.options?.controlPanel?.capture ?? true
+        Layout.fillWidth: true
+        implicitHeight: captureRow.implicitHeight + 12
+        radius: Appearance?.rounding.normal ?? 12
+        color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
+        RowLayout {
+            id: captureRow
+            anchors { fill: parent; leftMargin: 10; rightMargin: 6; topMargin: 6; bottomMargin: 6 }
+            spacing: 4
+            MaterialSymbol { text: "screenshot_region"; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F" }
+            StyledText { text: "Capture"; font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.DemiBold; Layout.fillWidth: true }
+            CaptureButton { iconName: "crop"; label: "Shot"; onClicked: { root.closeRequested(); Screenshot.capture("region", 0) } }
+            CaptureButton { iconName: "match_case"; label: "Text"; onClicked: { root.closeRequested(); Screenshot.capture("ocr", 0) } }
+            CaptureButton {
+                visible: RecorderStatus.available
+                iconName: RecorderStatus.isRecording ? "stop_circle" : "radio_button_checked"
+                label: RecorderStatus.isRecording ? "Stop" : "Rec"
+                onClicked: { root.closeRequested(); RecorderStatus.toggle("region") }
+            }
+        }
+    }
+
+    // System tray (controlPanel.tray)
+    ControlPanelTray { Layout.fillWidth: true }
+
     // System gauges (compact)
     RowLayout {
         Layout.fillWidth: true; spacing: 8
@@ -132,6 +160,20 @@ ColumnLayout {
         Item { Layout.fillWidth: true }
         ToolbarButton { iconName: "lock"; iconSize: 18; toolTipText: "Lock"; onClicked: { root.closeRequested(); Quickshell.execDetached(["loginctl", "lock-session"]) } }
         ToolbarButton { iconName: "power_settings_new"; iconSize: 18; toolTipText: "Session"; onClicked: { root.closeRequested(); GlobalStates.sessionOpen = true } }
+    }
+
+    component CaptureButton: RippleButton {
+        property string iconName: ""
+        property string label: ""
+        implicitHeight: 30
+        implicitWidth: capRow.implicitWidth + 16
+        buttonRadius: Appearance?.rounding.small ?? 8
+        contentItem: RowLayout {
+            id: capRow
+            spacing: 4
+            MaterialSymbol { text: iconName; iconSize: 16; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5" }
+            StyledText { text: label; font.pixelSize: Appearance.font.pixelSize.smaller }
+        }
     }
 
     component CPToggle: Rectangle {

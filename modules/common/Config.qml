@@ -863,6 +863,11 @@ Singleton {
                 property bool freezeRegion: false      // the screen stands still while you pick a region
                 property var ocrLanguages: ["eng"]     // tesseract languages for text recognition (Super+Shift+X)
             }
+            // What the control panel shows (standalone, and grown from the pill).
+            property JsonObject controlPanel: JsonObject {
+                property bool tray: true       // a row with the tray's items, while there are any
+                property bool capture: true    // Shot · Text · Rec
+            }
             // Screen time (services/ScreenTime.qml → anod screentime.*): local only.
             property JsonObject screenTime: JsonObject {
                 property bool enable: false

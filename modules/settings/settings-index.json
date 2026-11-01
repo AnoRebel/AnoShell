@@ -633,6 +633,33 @@
  },
  {
   "page": 1,
+  "card": "Control panel",
+  "label": "Control panel",
+  "sublabel": "Extra rows in the control panel, on its own and grown from the pill",
+  "keys": [
+   "controlPanel"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "System tray",
+  "sublabel": "The tray's items and menus, while an app has one (also without a tray in the bar)",
+  "keys": [
+   "controlPanel.tray"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Capture",
+  "sublabel": "Screenshot a region, copy the text in a region, or start and stop a region recording",
+  "keys": [
+   "controlPanel.capture"
+  ]
+ },
+ {
+  "page": 1,
   "card": "App Launcher",
   "label": "App Launcher",
   "sublabel": "Extra results above your apps · each off until you turn it on",

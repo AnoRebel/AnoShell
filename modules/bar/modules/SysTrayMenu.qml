@@ -18,6 +18,8 @@ PopupWindow {
     required property QsMenuHandle trayItemMenuHandle
     property string trayItemId: ""
     property var trayItem: null
+    // Fuse into the bar edge in connected mode (not from inside a panel).
+    property bool fuse: true
 
     signal menuClosed
     signal menuOpened(qsWindow: var)
@@ -33,7 +35,7 @@ PopupWindow {
     readonly property string barEdge: PanelRegistry.windowEdge(root._iconWindow)
         || PanelRegistry.windowEdge(root._iconWindow?.anchor?.window) || "top"
     readonly property bool _vertical: root.barEdge === "left" || root.barEdge === "right"
-    readonly property bool _fused: PanelRegistry.enabled && root._iconWindow !== null && root._iconWindow.anchor === undefined
+    readonly property bool _fused: root.fuse && PanelRegistry.enabled && root._iconWindow !== null && root._iconWindow.anchor === undefined
 
     // Constrain the input region to the visible menu card. Without a mask the
     // PopupWindow's input handling is unreliable here and the entries don't
@@ -97,7 +99,8 @@ PopupWindow {
 
             // Connected mode: the frame paints the menu fused into the bar.
             readonly property bool connected: root._fused
-            color: connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
+            // In a panel it covers the panel's own rows: opaque there.
+            color: connected ? "transparent" : !root.fuse ? Appearance.m3colors.m3surfaceContainerHigh : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
             radius: Appearance?.rounding.normal ?? 12
             border.width: connected ? 0 : 1
             border.color: Appearance?.colors.colLayer0Border ?? "#44444488"

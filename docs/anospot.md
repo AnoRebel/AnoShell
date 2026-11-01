@@ -91,6 +91,8 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.growInto.mediaControls` | `false` | Grow into media controls |
 | `anoSpot.growInto.controlPanel` | `false` | Grow into the control panel |
 | `anoSpot.growInto.calendar` | `false` | Grow into the calendar |
+| `controlPanel.tray` | `true` | The control panel (grown or on its own) has a row with every tray item and its menu, while an app has one |
+| `controlPanel.capture` | `true` | The control panel has a Capture row: Shot (a region screenshot), Text (copy the text in a region) and Rec / Stop (a region recording) |
 | `anoSpot.transients.volume` | `true` | Volume capsule |
 | `anoSpot.transients.brightness` | `true` | Brightness capsule |
 | `anoSpot.transients.mic` | `true` | Microphone mute |

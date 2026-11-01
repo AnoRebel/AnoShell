@@ -16,6 +16,8 @@ import Quickshell.Widgets
 Item {
     id: root
     property bool vertical: false
+    // Every item in one row, no overflow (the control panel has the room).
+    property bool showAll: false
     implicitWidth: trayRow.implicitWidth
     implicitHeight: vertical ? trayRow.implicitHeight + 8 : Appearance.sizes.barHeight
 
@@ -37,7 +39,7 @@ Item {
 
         // Overflow button for unpinned items
         Loader {
-            active: TrayService.unpinnedItems.length > 0
+            active: !root.showAll && TrayService.unpinnedItems.length > 0
             visible: active
             Layout.alignment: Qt.AlignCenter
 
@@ -90,7 +92,7 @@ Item {
 
         // Pinned items
         Repeater {
-            model: ScriptModel { values: TrayService.pinnedItems }
+            model: ScriptModel { values: root.showAll ? SystemTray.items.values : TrayService.pinnedItems }
 
             delegate: TrayIcon {
                 required property SystemTrayItem modelData
@@ -154,6 +156,7 @@ Item {
                 trayItemMenuHandle: trayIcon.item.menu
                 trayItemId: trayIcon.item.id
                 trayItem: trayIcon.item
+                fuse: !root.showAll // showAll: it sits in a panel, not on the bar edge
                 anchor {
                     window: trayIcon.QsWindow.window
                     item: trayIcon
