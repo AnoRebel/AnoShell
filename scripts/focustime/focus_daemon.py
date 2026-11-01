@@ -273,6 +273,16 @@ def get_active_window_niri():
         return "Unknown", "Unknown"
 
 
+def _die_with_parent():
+    # The stream ends with this daemon (killed, or replaced by the next
+    # shell's pkill): without it every restart left a `niri msg` behind.
+    try:
+        import ctypes, signal
+        ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)  # PR_SET_PDEATHSIG
+    except Exception:
+        pass
+
+
 def listen_niri_events():
     global current_app_class, current_app_title
     while True:
@@ -281,6 +291,7 @@ def listen_niri_events():
                 ["niri", "msg", "-j", "event-stream"],
                 stdout=subprocess.PIPE,
                 text=True,
+                preexec_fn=_die_with_parent,
             )
             for line in proc.stdout:
                 line = line.strip()
@@ -293,6 +304,8 @@ def listen_niri_events():
                         current_app_class, current_app_title = cls, clean_title
                 except (json.JSONDecodeError, KeyError):
                     pass
+            proc.wait()
+            time.sleep(2)  # the stream ended (niri restarted): don't spin
         except Exception:
             time.sleep(2)
 
