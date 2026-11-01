@@ -26,7 +26,9 @@ Singleton {
     // Toggled via nmcli device wifi hotspot / nmcli connection down.
     property bool hotspotActive: false
     property bool hotspotBusy: hotspotToggleProc.running
-    readonly property list<WifiAccessPoint> wifiNetworks: []
+    // Replaced as a whole on each scan (never edited in place), so no binding
+    // sees an entry that is being destroyed.
+    property list<WifiAccessPoint> wifiNetworks: []
     readonly property WifiAccessPoint active: wifiNetworks.find(n => n.active) ?? null
     readonly property list<var> friendlyWifiNetworks: [...wifiNetworks].sort((a, b) => {
         if (a.active && !b.active) return -1
@@ -287,15 +289,18 @@ Singleton {
                 }
 
                 const wifiNetworks = Array.from(networkMap.values())
-                const rNetworks = root.wifiNetworks
-                const destroyed = rNetworks.filter(rn => !wifiNetworks.find(n => n.frequency === rn.frequency && n.ssid === rn.ssid && n.bssid === rn.bssid))
-                for (const network of destroyed) rNetworks.splice(rNetworks.indexOf(network), 1).forEach(n => n.destroy())
-
+                const old = Array.from(root.wifiNetworks)
+                const same = (a, b) => a.frequency === b.frequency && a.ssid === b.ssid && a.bssid === b.bssid
+                const next = []
                 for (const network of wifiNetworks) {
-                    const match = rNetworks.find(n => n.frequency === network.frequency && n.ssid === network.ssid && n.bssid === network.bssid)
-                    if (match) match.lastIpcObject = network
-                    else rNetworks.push(apComp.createObject(root, { lastIpcObject: network }))
+                    const match = old.find(n => same(n, network))
+                    if (match) { match.lastIpcObject = network; next.push(match) }
+                    else next.push(apComp.createObject(root, { lastIpcObject: network }))
                 }
+                const gone = old.filter(n => !next.includes(n))
+                root.wifiNetworks = next
+                // Destroyed once nothing lists them any more.
+                Qt.callLater(() => gone.forEach(n => n.destroy()))
             }
         }
     }
