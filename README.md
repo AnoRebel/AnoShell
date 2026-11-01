@@ -108,6 +108,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `GameMode` | Follows gamemoded over D-Bus (no polling) and drives performance mode (pauses animations, blur, visualisers and popups while a game runs, a window is fullscreen, or by hand). |
 | `PowerProfilePersistence` | Restores last `power-profiles-daemon` profile on shell start. |
 | `ShellExec` | Shell-runtime detection + safe exec helper. |
+| `KdeConnect` | Paired phones over kdeconnectd's D-Bus (reachability, battery, ring, ping, clipboard, files, pairing prompts). Opt-in. |
 
 ### Theme & appearance
 
@@ -129,6 +130,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `MprisController` | Active Mpris player tracking, duplicate filtering, position polling. |
 | `LyricsService` | Synced `.lrc` parsing — local files first, falls back to LRCLIB / NetEase. Opt-in. |
 | `SpectrumService` | Cava audio spectrum, reference-counted (only runs when something subscribes). |
+| `Screenshot` | Region, window and screen captures (grim/slurp; niri's own actions) and text recognition (`screenshot ocr`, tesseract), with the preview card in `modules/screenshot`. |
 | `RecorderStatus` | Screen recording with gpu-screen-recorder, wl-screenrec or wf-recorder (fps, audio none/system/mic/both, discard, finish preview); state from its own recorder process. |
 
 ### Time, weather, notifications, calendar, AI
@@ -140,7 +142,9 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Notifications` | DBus notification server with persistent storage and popup management. |
 | `CalendarSync` | iCal/CalDAV pull from configured URLs. Opt-in. |
 | `Ai` | AI chat across OpenAI, Gemini, Anthropic, Mistral, OpenRouter, Ollama. Streaming + Anthropic thinking blocks. |
-| `FocusTime` | Daemon lifecycle for the per-app usage tracker (SQLite-backed Python daemon). |
+| `FocusTime` | Daemon lifecycle for the per-app usage tracker (SQLite-backed Python daemon; Hyprland and niri IPC sockets). |
+| `Notepad` / `Todo` | Notepad tabs (JSON) and the to-do list (a `todo.txt` synced both ways). Opt-in. |
+| `Scratchpad` | Pinned commands (terminal or background), the prompt bar's parser, and the tabs over notes, to-do, clipboard and calendar ([docs/scratchpad.md](docs/scratchpad.md)). Opt-in. |
 
 ### AnoSpot
 
