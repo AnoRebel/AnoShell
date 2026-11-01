@@ -132,8 +132,12 @@ Rectangle {
             Layout.bottomMargin: 4
             visible: root.total === 0
             spacing: 2
-            MaterialSymbol { Layout.alignment: Qt.AlignHCenter; text: "task_alt"; iconSize: 28; color: Appearance.colors.colSubtext }
-            StyledText { Layout.alignment: Qt.AlignHCenter; text: "Nothing to do"; color: Appearance.colors.colSubtext }
+            EmptyState {
+                Layout.fillWidth: true
+                icon: "task_alt"
+                title: "Nothing to do"
+                hint: "Add a task below; due:tomorrow, +project and (A) work too"
+            }
         }
 
         ListView {

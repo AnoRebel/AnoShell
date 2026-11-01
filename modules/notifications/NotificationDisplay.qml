@@ -57,10 +57,11 @@ Item {
         Loader {
             Layout.fillWidth: true
             active: Notifications.list.length === 0; visible: active
-            sourceComponent: ColumnLayout {
-                spacing: 8; Layout.topMargin: 20
-                MaterialSymbol { text: "notifications_none"; iconSize: 36; opacity: 0.2; Layout.alignment: Qt.AlignHCenter }
-                StyledText { text: "No notifications"; font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+            sourceComponent: EmptyState {
+                Layout.topMargin: 20
+                icon: "notifications_none"
+                title: "No notifications"
+                hint: Notifications.silent ? "Silent mode is on: new ones wait here without popping up" : "You're all caught up"
             }
         }
 

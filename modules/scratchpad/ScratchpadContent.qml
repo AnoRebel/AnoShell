@@ -169,11 +169,13 @@ ColumnLayout {
                             subtitle: pinned ? "Pinned · click copies" : "Click copies"
                             onActivated: { Cliphist.copyItem(clipRow.modelData); root.say("Copied") }
                         }
-                        StyledText {
+                        EmptyState {
                             anchors.centerIn: parent
+                            width: parent.width - 24
                             visible: clipList.count === 0
-                            text: Cliphist.error || "The clipboard history is empty"
-                            color: Appearance.colors.colSubtext
+                            icon: Cliphist.error ? "content_paste_off" : "content_paste"
+                            title: Cliphist.error ? `Couldn't read the clipboard history: ${Cliphist.error}` : "The clipboard history is empty"
+                            hint: Cliphist.error ? "" : "Copy something and it shows here"
                         }
                     }
                 }
@@ -198,16 +200,14 @@ ColumnLayout {
                             subtitle: `${calRow.when} · click copies`
                             onActivated: { Scratchpad.copy(`${calRow.when} · ${calRow.title}`); root.say("Copied") }
                         }
-                        ColumnLayout {
+                        EmptyState {
                             anchors.centerIn: parent
+                            width: parent.width - 24
                             visible: calList.count === 0
-                            StyledText { Layout.alignment: Qt.AlignHCenter; text: "Nothing in the next two weeks"; color: Appearance.colors.colSubtext }
-                            RippleButton {
-                                Layout.alignment: Qt.AlignHCenter
-                                implicitHeight: 30
-                                buttonText: "Open the calendar"
-                                onClicked: { root.closeRequested(); GlobalStates.calendarOpen = true }
-                            }
+                            icon: "event_available"
+                            title: "Nothing in the next two weeks"
+                            actionText: "Open the calendar"
+                            onAction: { root.closeRequested(); GlobalStates.calendarOpen = true }
                         }
                     }
                 }
@@ -291,19 +291,13 @@ ColumnLayout {
                     }
                     ToolbarButton { iconName: "delete"; iconSize: 16; toolTipText: "Unpin"; onClicked: Scratchpad.unpin(pinRow.modelData.key) }
                 }
-                ColumnLayout {
+                EmptyState {
                     anchors.centerIn: parent
                     width: parent.width - 24
                     visible: pinList.count === 0
-                    MaterialSymbol { Layout.alignment: Qt.AlignHCenter; text: "push_pin"; iconSize: 26; color: Appearance.colors.colSubtext }
-                    StyledText {
-                        Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.Wrap
-                        text: "Type \">command\" below to pin a command"
-                        color: Appearance.colors.colSubtext
-                        font.pixelSize: Appearance.font.pixelSize.smaller
-                    }
+                    icon: "push_pin"
+                    title: "No pinned commands"
+                    hint: "Type \">command\" below to pin one"
                 }
             }
         }

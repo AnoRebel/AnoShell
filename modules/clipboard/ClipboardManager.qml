@@ -181,12 +181,14 @@ Scope {
                         iconName: "content_paste_off"
                         text: `Couldn't read the clipboard history: ${Cliphist.error}`
                     }
-                    StyledText {
+                    EmptyState {
                         visible: root.filteredEntries.length === 0 && Cliphist.error.length === 0
-                        text: root.searchQuery.length > 0 ? "No matching entries" : "Clipboard is empty"
-                        font.pixelSize: Appearance.font.pixelSize.small; opacity: 0.4
+                        width: parent.width - 40
                         anchors.horizontalCenter: parent.horizontalCenter
                         y: 40
+                        icon: root.searchQuery.length > 0 ? "search_off" : "content_paste"
+                        title: root.searchQuery.length > 0 ? "No matching entries" : "The clipboard history is empty"
+                        hint: root.searchQuery.length > 0 ? "Try other words, or fewer" : "Copy something and it shows here"
                     }
 
                     // Keyboard: the search field drives the selection.
