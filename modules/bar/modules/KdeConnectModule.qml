@@ -46,7 +46,7 @@ Item {
 
     BarModulePopout {
         shown: root.shown
-        popupWidth: 300; popupHeight: col.implicitHeight + 24
+        popupWidth: 380; popupHeight: col.implicitHeight + 24
 
         ColumnLayout {
             id: col; anchors.fill: parent; spacing: 10

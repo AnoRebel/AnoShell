@@ -83,7 +83,8 @@ Singleton {
             const c = root._current
             root._current = null
             let r = null, err = ""
-            if (code === 0) { try { r = JSON.parse(callOut.text) } catch (e) { err = "bad reply" } }
+            // A method with no return value prints nothing.
+            if (code === 0) { try { r = callOut.text.trim() ? JSON.parse(callOut.text) : null } catch (e) { err = "bad reply" } }
             else err = callErr.text.trim() || `busctl exited ${code}`
             if (code === -1) err = "busctl couldn't run"
             if (/timed out/i.test(err)) root._hung()
