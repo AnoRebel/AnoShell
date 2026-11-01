@@ -134,7 +134,8 @@ Item {
         // would draw Qt's magenta "missing" square: a generic symbol instead.
         readonly property string _themeName: {
             const m = String(trayIcon.item.icon).match(/^image:\/\/icon\/([^?]+)$/)
-            return m ? decodeURIComponent(m[1]) : ""
+            if (!m) return "" // ?path= / ?fallback= forms and pixmaps: left to the provider
+            try { return decodeURIComponent(m[1]) } catch (e) { return m[1] }
         }
         readonly property bool _missing: _themeName !== "" && !Quickshell.hasThemeIcon(_themeName)
         MaterialSymbol {

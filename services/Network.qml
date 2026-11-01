@@ -168,11 +168,11 @@ Singleton {
         stdout: SplitParser { onRead: line => { getNetworks.running = true } }
         stderr: SplitParser {
             onRead: line => {
-                if (line.includes("Secrets were required")) root.wifiConnectTarget.askingPassword = true
+                if (line.includes("Secrets were required") && root.wifiConnectTarget) root.wifiConnectTarget.askingPassword = true
             }
         }
         onExited: (exitCode, exitStatus) => {
-            root.wifiConnectTarget.askingPassword = (exitCode !== 0)
+            if (root.wifiConnectTarget) root.wifiConnectTarget.askingPassword = (exitCode !== 0)
             root.wifiConnectTarget = null
         }
     }
@@ -290,7 +290,10 @@ Singleton {
 
                 const wifiNetworks = Array.from(networkMap.values())
                 const old = Array.from(root.wifiNetworks)
-                const same = (a, b) => a.frequency === b.frequency && a.ssid === b.ssid && a.bssid === b.bssid
+                // One entry per SSID (the map's key): matching on the BSSID too made a
+                // new object (and destroyed the one being connected to) when the
+                // strongest or active access point changed.
+                const same = (a, b) => a.ssid === b.ssid
                 const next = []
                 for (const network of wifiNetworks) {
                     const match = old.find(n => same(n, network))

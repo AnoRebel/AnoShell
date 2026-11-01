@@ -27,16 +27,16 @@ ColumnLayout {
         opacity: 0.7
     }
     StyledText {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.maximumWidth: root.width > 0 ? root.width : implicitWidth
+        Layout.fillWidth: true
+        Layout.preferredWidth: 0 // the caller sets the width; the text wraps to it
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap
         text: root.title
         color: Appearance.colors.colSubtext
     }
     StyledText {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.maximumWidth: root.width > 0 ? root.width : implicitWidth
+        Layout.fillWidth: true
+        Layout.preferredWidth: 0 // the caller sets the width; the text wraps to it
         visible: root.hint !== ""
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap

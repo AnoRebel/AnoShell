@@ -63,7 +63,9 @@ Singleton {
     property bool settingsRevealAdvanced: false
     // What advanced Settings cards follow: your choice, or a palette jump.
     readonly property bool settingsShowAdvanced: (Config.options.settings?.showAdvanced ?? false) || settingsRevealAdvanced
-    onSettingsOpenChanged: if (!settingsOpen) settingsRevealAdvanced = false
+    // Hidden with the palette up: reopening it would find the palette open but
+    // the keyboard on the page keys (its field only takes focus when created).
+    onSettingsOpenChanged: if (!settingsOpen) { settingsRevealAdvanced = false; settingsCommandPaletteOpen = false }
     property bool regionSelectorOpen: false
     property bool searchOpen: false
     property bool weatherPanelOpen: false

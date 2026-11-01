@@ -262,7 +262,7 @@ def _niri_request(request):
         s.settimeout(5)
         s.connect(os.environ["NIRI_SOCKET"])
         s.sendall((json.dumps(request) + "\n").encode())
-        reply = json.loads(s.makefile("r").readline())
+        reply = json.loads(s.makefile("r", encoding="utf-8", errors="replace").readline())
     return reply.get("Ok", {})
 
 
@@ -296,7 +296,7 @@ def listen_niri_events():
                 s.sendall(b'"EventStream"\n')
                 # A new window arrives focused in WindowOpenedOrChanged, not
                 # WindowFocusChanged; closing or switching workspace moves focus too.
-                for line in s.makefile("r"):
+                for line in s.makefile("r", encoding="utf-8", errors="replace"):
                     if line.startswith(_NIRI_FOCUS_EVENTS):
                         current_app_class, current_app_title = get_active_window_niri()
         except Exception:

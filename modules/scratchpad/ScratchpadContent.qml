@@ -170,6 +170,8 @@ ColumnLayout {
                             onActivated: { Cliphist.copyItem(clipRow.modelData); root.say("Copied") }
                         }
                         EmptyState {
+                            // Not in the list's content item (0 px tall while empty).
+                            parent: clipList.parent
                             anchors.centerIn: parent
                             width: parent.width - 24
                             visible: clipList.count === 0
@@ -201,6 +203,8 @@ ColumnLayout {
                             onActivated: { Scratchpad.copy(`${calRow.when} · ${calRow.title}`); root.say("Copied") }
                         }
                         EmptyState {
+                            // Not in the list's content item (0 px tall while empty).
+                            parent: calList.parent
                             anchors.centerIn: parent
                             width: parent.width - 24
                             visible: calList.count === 0
@@ -292,6 +296,8 @@ ColumnLayout {
                     ToolbarButton { iconName: "delete"; iconSize: 16; toolTipText: "Unpin"; onClicked: Scratchpad.unpin(pinRow.modelData.key) }
                 }
                 EmptyState {
+                    // Not in the list's content item (0 px tall while empty).
+                    parent: pinList.parent
                     anchors.centerIn: parent
                     width: parent.width - 24
                     visible: pinList.count === 0

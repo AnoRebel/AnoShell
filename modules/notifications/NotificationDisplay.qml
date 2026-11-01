@@ -56,9 +56,9 @@ Item {
         // Empty state
         Loader {
             Layout.fillWidth: true
+            Layout.topMargin: 20
             active: Notifications.list.length === 0; visible: active
             sourceComponent: EmptyState {
-                Layout.topMargin: 20
                 icon: "notifications_none"
                 title: "No notifications"
                 hint: Notifications.silent ? "Silent mode is on: new ones wait here without popping up" : "You're all caught up"
