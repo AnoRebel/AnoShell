@@ -286,9 +286,9 @@ ColumnLayout {
                         groupId: groupBox.gid
                         modules: groupBox.modelData.modules ?? []
                         // The bar lays an end zone out from its edge inwards
-                        // (BarContent), so on a horizontal bar its chips run
-                        // right to left too: what you see here is the bar.
-                        mirrored: groupBox.modelData.zone === "end" && !["left", "right"].includes(root.barConfig0?.edge ?? "top")
+                        // (BarContent), so its chips run right to left: the
+                        // chip nearest the end is the module nearest the edge.
+                        mirrored: groupBox.modelData.zone === "end"
                     }
                 }
             }

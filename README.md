@@ -81,6 +81,9 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `HyprlandKeybinds` / `NiriKeybinds` | Parsers for the live keybinds files. Power the cheatsheet. |
 | `AnoSocket` | Auto-reconnecting socket helper used by NiriService. |
 | `MinimizedWindows` | Niri-only minimize emulation registry (Niri has no native minimize concept). |
+| `WindowMru` | Most-recently-used window order for every switcher style, from focus changes (no polling). |
+| `PanelRegistry` | The connected frame's geometry registry: surfaces publish their bodies, the frame fuses them. |
+| `DefaultApps` | Launches your default apps (`apps.*`); binds call it, so changing an app never regenerates binds. |
 
 ### Audio, brightness, input
 
@@ -89,7 +92,9 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Audio` | PipeWire default sink/source. Volume/mute, mic mute, volume protection. |
 | `Brightness` | `brightnessctl` for backlight + `ddcutil` for external monitors via DDC/CI. |
 | `Battery` | UPower charge/health/time-remaining + auto-suspend trigger. |
-| `KeyboardLayoutService` | Active XKB layout on both Hyprland and Niri, plus click-to-cycle on Niri. |
+| `KeyboardLayoutService` | Active XKB layout on both Hyprland and Niri; clicking cycles it where the backend can. |
+| `LockKeys` | Caps Lock / Num Lock state, read on demand (no polling) for the OSD and the lock screen warning. |
+| `EasyEffects` | EasyEffects bypass and output presets through its command line. |
 | `Idle` | Wayland IdleInhibitor toggle (caffeine-style). |
 | `IdleInhibitor` | Per-app inhibit registry. |
 
@@ -109,6 +114,13 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `PowerProfilePersistence` | Restores last `power-profiles-daemon` profile on shell start. |
 | `ShellExec` | Shell-runtime detection + safe exec helper. |
 | `KdeConnect` | Paired phones over kdeconnectd's D-Bus (reachability, battery, ring, ping, clipboard, files, pairing prompts). Opt-in. |
+| `DeviceEvents` | Bluetooth devices, USB plugs, audio output and display changes as short pills (per-kind switches). |
+| `Drives` | Removable drives: partitions, mount/unmount, eject, and whether data is still being written. |
+| `Downloads` | Downloads in progress in the download folder, from anod's watcher (bytes so far, rate). |
+| `Updates` | Pending package updates (checkupdates, plus paru/yay for the AUR). Opt-in. |
+| `PolkitAuth` | The shell's polkit agent (the password prompt is `modules/polkit`). |
+| `Anod` | Client for the anod daemon's socket; without anod its features show as unavailable. |
+| `Location` | Where you are, for weather, night light's sun schedule and sun/moon widgets. |
 
 ### Theme & appearance
 
@@ -119,7 +131,17 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `ThemeRegistry` | Discovers + indexes all available themes (bundled + user). Exposes `themes` ListModel and `themeContents` (parsed JSON cache). |
 | `Wallpapers` | The wallpaper folder for the picker, anod palette (hue, stills), favourites, apply via anod. |
 | `Wallhaven` | Wallhaven search + download for the picker; API key in `~/.local/share/anoshell/secrets/wallhaven` (0600). |
-| `AntiFlashbang` | Hyprland GLSL shader that darkens bright screens. IPC-controlled. |
+| `AntiFlashbang` | Screen shader that darkens bright screens (backends with screen shaders: Hyprland). IPC-controlled. |
+| `ScreenFilters` | Eye-care screen filters: grayscale, sepia, high contrast, protan/deutan/tritan correction (Hyprland). |
+| `Looks` | The switchable looks (Liquid, Ink, Neo-tech, Clay, yours): shape, material, texture, type and motion ([docs/looks.md](docs/looks.md)). |
+| `Glass` | Glass material settings and the wallpaper alignment maths behind it. |
+| `AppColorScheme` | Light/dark for your apps, independent of the shell (freedesktop color-scheme, GTK and Qt). |
+| `PaletteThemes` | Cursor and icon themes drawn in the current palette (built on demand). |
+| `FontService` | Installed font families (`fc-list`) for the Settings font pickers. |
+| `BarStyle` | Pill or classic bar (Ano family), and moving the pill or dock to an edge. |
+| `PillTransient` | The moments the pill morphs into (volume, brightness, mic, layout, notifications, charging, recording, devices). |
+| `Atelier` | The shell side of anod's content store (themes, looks, pieces, plugins, lock screens, wallpapers, rices). |
+| `LauncherPlugins` / `LockScreens` | Launcher plugin and lock screen packages, bundled and yours ([plugins](docs/plugins.md), [lock screens](docs/lockscreens.md)). |
 | `Pieces` | Desktop piece registry (bundled `pieces/` + `~/.config/anoshell/pieces/`, live, broken ones marked) and the per-screen layout; the layer is `modules/pieces` ([docs/pieces.md](docs/pieces.md)). Off by default. |
 | `NightLight` | wlsunset wrapper. Warm now (the toggle), or automatically from sunset to sunrise or between set times. Opt-in. |
 
@@ -131,6 +153,8 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `LyricsService` | Synced `.lrc` parsing — local files first, falls back to LRCLIB / NetEase. Opt-in. |
 | `SpectrumService` | Cava audio spectrum, reference-counted (only runs when something subscribes). |
 | `Screenshot` | Region, window and screen captures (grim/slurp; niri's own actions) and text recognition (`screenshot ocr`, tesseract), with the preview card in `modules/screenshot`. |
+| `MusicRecognition` | "What's playing?" with songrec, one bounded recording of the output or the mic. Opt-in. |
+| `Reader` / `ReaderNovel` / `ReaderManga` / `ReaderAnime` | The reader panels' side of anod's reader backend: novels (FreeWebNovel, NovelArrow), manga, anime ([docs/reader.md](docs/reader.md)). |
 | `RecorderStatus` | Screen recording with gpu-screen-recorder, wl-screenrec or wf-recorder (fps, audio none/system/mic/both, discard, finish preview); state from its own recorder process. |
 
 ### Time, weather, notifications, calendar, AI
@@ -144,6 +168,9 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Ai` | AI chat across OpenAI, Gemini, Anthropic, Mistral, OpenRouter, Ollama. Streaming + Anthropic thinking blocks. |
 | `FocusTime` | Daemon lifecycle for the per-app usage tracker (SQLite-backed Python daemon; Hyprland and niri IPC sockets). |
 | `Notepad` / `Todo` | Notepad tabs (JSON) and the to-do list (a `todo.txt` synced both ways). Opt-in. |
+| `CalendarEvents` / `Holidays` | Your own events with recurrence and reminders; public holidays per country. |
+| `Pomodoro` | Pomodoro, stopwatch and countdown. Opt-in. |
+| `ScreenTime` | Screen time per app and title, idle-aware, with daily and per-app limits. Opt-in. |
 | `Scratchpad` | Pinned commands (terminal or background), the prompt bar's parser, and the tabs over notes, to-do, clipboard and calendar ([docs/scratchpad.md](docs/scratchpad.md)). Opt-in. |
 
 ### AnoSpot
@@ -219,7 +246,7 @@ You can edit the user file directly if you prefer JSON over the GUI. The shell w
 
 ### Settings pages
 
-The Settings UI has 12 pages, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
+The Settings UI has 13 pages, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
@@ -234,32 +261,41 @@ The Settings UI has 12 pages, each owning a set of top-level config keys. The "R
 | Services     | `ai`, `gameMode`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` | Toggle and configure every optional service (see Optional services below) |
 | Displays     | `cursor`, `icons`                                                                        | Monitor arrangement, mode, scale, rotation, VRR and profiles (through anod), cursor and icon themes |
 | Keybinds     | `keyboard`                                                                               | Search, record, add, change or remove binds; keyboard layouts |
+| Atelier      | `atelier`                                                                                | Themes, looks, pieces, plugins, lock screens, wallpapers and rices: browse, preview, install, use, undo |
 | About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, credits, global "Reset every setting" card |
 
 Settings opens via `qs -c ano ipc call settings toggle`, the standalone window via `qs -n -p ~/.config/quickshell/ano/settings.qml`, or `Super+,` (Hyprland default).
 
 ### Bar System
+
+Each bar has a **form** (`full`, `fit`, `islands`, `notch`) and **groups** of
+modules, each in a zone (`start`, `center`, `end`) and attached to the bar
+body or detached as its own island. Switching forms animates live. End zones
+read from the screen edge inwards. Full reference:
+[docs/configuration.md](docs/configuration.md#bar).
+
 ```json
 {
+  "bar": { "style": "classic", "form": "full" },
   "bars": [{
     "id": "main",
     "edge": "top",
-    "modules": { "left": [...], "center": [...], "right": [...] },
-    "autoHide": false,
-    "showBackground": true,
-    "morphingPanel": false,
-    "height": null, "radius": null,
-    "leftSpacing": null, "centerSpacing": null, "rightSpacing": null,
-    "edgePadding": null
-  }],
-  "bar": {
-    "layout": { "height": 42, "radius": 12, "leftSpacing": 8, "centerSpacing": 4, "rightSpacing": 8, "edgePadding": 8, "centerGroupPadding": 5, "centerGroupRadius": 8, "showCenterBackground": true, "showSeparators": false },
-    "actions": { "leftClick": "sidebarLeft", "rightClick": "sidebarRight", "centerClick": "overview", "scrollLeft": "brightness", "scrollRight": "volume", "scrollCenter": "workspace" }
-  }
+    "form": "full",
+    "groups": [
+      { "id": "start",  "zone": "start",  "modules": ["sidebarButton", "activeWindow"], "attached": true },
+      { "id": "center", "zone": "center", "modules": ["workspaces"], "attached": true },
+      { "id": "end",    "zone": "end",    "modules": ["clock", "battery", "network", "tray"], "attached": false }
+    ]
+  }]
 }
 ```
-Per-bar fields (null = use global): `morphingPanel`, `height`, `radius`, all spacing/padding/action fields.
-Available bar modules: `clock`, `workspaces`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `activeWindow`, `sidebarButton`, `weather`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`
+
+A bar without `groups` still reads its older `modules.left/center/right`
+lists. `bar.style: "pill"` (the default in the Ano family) makes the pill the
+bar instead. Edit groups on Settings → Bar (drag chips between groups, detach a
+group) or right-click a group on the bar.
+
+Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`, `weather`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`, plus the ones listed in the add menu (drives, downloads, updates, KDE Connect…).
 
 ### Panel Families
 Switch entire layout presets atomically. A family is the set of modules it hosts, declared in `modules/common/PanelGate.qml` (`familyModules`); switching only loads/unloads the modules that differ. Turning a module off in Settings → Modules (or its own enable key) works in every family:
@@ -295,7 +331,7 @@ The night-light pill has a chevron — tap the body to toggle, tap the chevron t
 Two color sources, switched via `appearance.theme.source`:
 
 - **`materialYou`** (default) — `MaterialThemeLoader` derives Material 3 palette from the active wallpaper via matugen.
-- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/anoshell/themes/<name>.json`). 24 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
+- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/anoshell/themes/<name>.json`). 63 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
 
 Pick from Settings → Appearance → Theme grid (hover-preview, click-to-commit). Themes optionally export `glass_*` keys consumed by `Appearance.glassTokens` for translucent surfaces (RecordingOsd, AnoSpot pill, AnoSpot stash popout).
 
@@ -440,7 +476,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
 | `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
 
-`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 24 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
+`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 63 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
 
 ### Module Enable/Disable
 Every module is toggleable via the `enabledPanels` array (empty = all) or the Modules settings page, in every panel family. A module loads only when its family hosts it, you haven't switched it off, its own feature key (e.g. `dock.enable`, `focusTime.enable`) is on, and the compositor supports it — see `modules/common/PanelGate.qml`. Disabled modules are never even compiled.

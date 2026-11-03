@@ -21,7 +21,7 @@ func TestNovelArrowParse(t *testing.T) {
 	if !narHasNext(html) || narHasNext(`<li class="next disabled">`) || narHasNext("") {
 		t.Fatal("hasNext")
 	}
-	for _, bad := range []string{"freewebnovel:x", "novelarrow:../x", "novelarrow:a/b/c", "novelarrow:a b", "novelarrow:"} {
+	for _, bad := range []string{"freewebnovel:x", "novelarrow:../x", "novelarrow:a/b/c", "novelarrow:a b", "novelarrow:", "novelarrow:.", "novelarrow:s/.."} {
 		if _, _, err := narStrip(bad); err == nil {
 			t.Fatalf("narStrip accepted %q", bad)
 		}

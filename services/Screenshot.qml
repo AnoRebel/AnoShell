@@ -174,12 +174,35 @@ Singleton {
                 const act = root._region ? { Screenshot: { show_pointer: true, path: p } }
                     : root._mode === "window" ? { ScreenshotWindow: { id: null, write_to_disk: true, show_pointer: true, path: p } }
                     : { ScreenshotScreen: { write_to_disk: true, show_pointer: true, path: p } }
-                if (!NiriService.send({ Action: act })) { root._finish(1); return }
-                waitFile.tries = 0; waitFile.start()
+                niriShot.request = JSON.stringify({ Action: act })
+                niriShotGuard.restart()
+                niriShot.connected = true // sends on connect; the reply decides (niriShot)
             }
             else root._finish(code)
         }
     }
+    // The niri action on its own connection, reading niri's reply: an Err
+    // (or no answer) fails the capture at once instead of waiting for a
+    // file that never comes.
+    Socket {
+        id: niriShot
+        property string request: ""
+        path: Quickshell.env("NIRI_SOCKET")
+        parser: SplitParser {
+            onRead: line => {
+                niriShot.connected = false
+                if (!niriShotGuard.running) return // already given up
+                niriShotGuard.stop()
+                let ok = false
+                try { ok = JSON.parse(line)?.Ok !== undefined } catch (e) {}
+                if (!ok) { console.warn("[Screenshot] niri refused the capture:", line); root._finish(1); return }
+                waitFile.tries = 0; waitFile.start()
+            }
+        }
+        onConnectedChanged: if (connected) { write(request + "\n"); flush() }
+    }
+    Timer { id: niriShotGuard; interval: 3000; onTriggered: { niriShot.connected = false; root._finish(1) } }
+
     Timer {
         id: waitFile
         property int tries: 0

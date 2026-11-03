@@ -43,6 +43,16 @@ def _meta(html: str, prop: str) -> str:
     return clean_text(m.group(1)) if m else ""
 
 
+_SLUG = re.compile(r"^[A-Za-z0-9_-][A-Za-z0-9._-]*$")
+
+
+def _slug(part: str) -> str:
+    """An id part from the client, checked before it goes into a URL path."""
+    if not _SLUG.match(part or "") or ".." in part:
+        raise ValueError(f"bad novelarrow id part {part!r}")
+    return quote(part, safe="")
+
+
 def _status(s: str) -> str:
     s = s.lower()
     return "Ongoing" if "ongoing" in s else "Completed" if "complete" in s else ""
@@ -133,7 +143,7 @@ class NovelArrowProvider(NovelProvider):
     # ── Detail + chapter list ─────────────────────────────────────────────
 
     def _info(self, slug: str) -> dict:
-        html = fetch(f"{BASE}/book/{quote(slug)}")
+        html = fetch(f"{BASE}/book/{_slug(slug)}")
 
         desc_m = re.search(
             r'id="novel-description-content"[^>]*>([\s\S]*?)</div>', html)
@@ -147,7 +157,7 @@ class NovelArrowProvider(NovelProvider):
         genres = [g.strip().title() for g in _meta(html, "og:novel:genre").split(",")
                   if g.strip()]
 
-        data = fetch_json(f"{BASE}/api-web/novels/{quote(slug)}/chapters?sort=asc")
+        data = fetch_json(f"{BASE}/api-web/novels/{_slug(slug)}/chapters?sort=asc")
         chapters, numbers = [], []
         for c in data.get("items") or []:
             cid = c.get("chapter_id")
@@ -186,7 +196,7 @@ class NovelArrowProvider(NovelProvider):
 
     def _chapter(self, chapter_id: str) -> dict:
         slug, _, cid = chapter_id.partition("/")
-        data = fetch_json(f"{BASE}/api-web/novels/{quote(slug)}/chapters/{quote(cid)}",
+        data = fetch_json(f"{BASE}/api-web/novels/{_slug(slug)}/chapters/{_slug(cid)}",
                           CHAPTER_HEADERS)
         info = (data.get("item") or {}).get("chapterInfo") or {}
         body = info.get("chapter_content") or ""

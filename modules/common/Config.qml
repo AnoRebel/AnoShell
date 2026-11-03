@@ -232,12 +232,11 @@ Singleton {
     function resetAllToDefaults() {
         root._userDelta = {};
         root._migratedKeys = {};
-        // Adapter is currently the merged state. Force a bundle reload
-        // to re-baseline cleanly — this re-snapshots defaults, then
-        // applies the (now empty) delta, which is a no-op.
-        root._keepDeltaOnReload = true;
-        configFileView.reload();
-        userDeltaWriteTimer.restart();
+        // Back to the bundled defaults from the snapshot (re-reading an
+        // unchanged bundle doesn't reset the adapter), and save now.
+        root._restoreDefaults();
+        userDeltaWriteTimer.stop();
+        root._writeUserDelta();
     }
 
     // Reset multiple dot-paths (or top-level keys) in one shot. Useful
@@ -248,27 +247,21 @@ Singleton {
         let touched = false;
         for (const p of paths) {
             if (typeof p !== "string" || p.length === 0) continue;
-            // Top-level shortcut: delete the whole subtree at once
-            if (!p.includes(".")) {
-                if (root._userDelta[p] !== undefined) {
-                    delete root._userDelta[p];
-                    touched = true;
-                }
-                for (const k of Object.keys(root._migratedKeys))
-                    if (k === p || k.startsWith(p + ".")) delete root._migratedKeys[k];
-            } else {
-                root.resetToDefault(p);
+            if (p.includes(".")) { root.resetToDefault(p); continue; }
+            // Top-level: drop the whole subtree and put its bundled default
+            // back live (from the snapshot, not by re-reading the bundle).
+            if (root._userDelta[p] !== undefined) {
+                delete root._userDelta[p];
                 touched = true;
-                continue; // resetToDefault already restores live + schedules write
             }
+            for (const k of Object.keys(root._migratedKeys))
+                if (k === p || k.startsWith(p + ".")) delete root._migratedKeys[k];
+            if (root._bundleDefaults[p] !== undefined)
+                root._deepMergeInto(root.options, { [p]: root._deepClone(root._bundleDefaults[p]) });
         }
         if (touched) {
-            // Force a bundle reload to re-baseline any top-level subtrees
-            // we just cleared (they need to revert from the merged value
-            // back to the bundle default).
-            root._keepDeltaOnReload = true;
-            configFileView.reload();
-            userDeltaWriteTimer.restart();
+            userDeltaWriteTimer.stop();
+            root._writeUserDelta();
         }
     }
 
@@ -437,12 +430,19 @@ Singleton {
         }
     }
 
+    // options = bundled defaults + your delta, rebuilt from the defaults
+    // snapshot so a key you removed from the file goes back to its default.
     function _applyUserDelta() {
+        root._restoreDefaults();
         if (Object.keys(root._userDelta).length === 0) return;
         root._deepMergeInto(root.options, root._userDelta);
     }
+    function _restoreDefaults() {
+        if (root._bundleSnapped) root._deepMergeInto(root.options, root._deepClone(root._bundleDefaults));
+    }
 
-    property bool _keepDeltaOnReload: false
+    property bool _bundleSnapped: false
+    property string _bundleText: ""
 
     function _writeUserDelta() {
         root.deltaRevision++;
@@ -579,7 +579,16 @@ Singleton {
             // e.g. shell upgrade), then request a user-delta reload —
             // the actual apply (and legacy-key migration) happens in
             // userOverrideFileView.onLoaded, after _userDelta is populated.
-            root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
+            // Snapshot the defaults only when the bundle itself changed (a
+            // shell upgrade): re-reading an unchanged file leaves the adapter
+            // as it was — merged with your delta — so a re-snapshot then
+            // would take your settings for the defaults.
+            const bundleText = configFileView.text();
+            if (!root._bundleSnapped || bundleText !== root._bundleText) {
+                root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
+                root._bundleText = bundleText;
+                root._bundleSnapped = true;
+            }
             userOverrideFileView.reload();
             // ready flips after the delta has been applied (in user-file
             // onLoaded / onLoadFailed handlers).
@@ -587,7 +596,10 @@ Singleton {
         onLoadFailed: error => {
             if (error == FileViewError.FileNotFound) {
                 console.warn(`[Config] bundled config not found at ${root.filePath} — using built-in defaults`);
-                root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
+                if (!root._bundleSnapped) {
+                    root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
+                    root._bundleSnapped = true;
+                }
                 userOverrideFileView.reload();
             }
         }
@@ -1721,19 +1733,15 @@ Singleton {
             bundleReloadTimer.restart();
         }
         onLoaded: {
-            // A reset's re-baseline: the file on disk is older than the
-            // delta in memory (its write is still debounced), so re-reading
-            // it would bring the cleared keys back.
-            if (root._keepDeltaOnReload) root._keepDeltaOnReload = false;
-            else root._loadUserDelta();
+            root._loadUserDelta();
             root._applyUserDelta();
             root._migrateLegacyKeys();
             root.ready = true;
         }
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) {
-                if (root._keepDeltaOnReload) root._keepDeltaOnReload = false;
-                else root._userDelta = {};
+                root._userDelta = {};
+                root._applyUserDelta();
                 root._migrateLegacyKeys();
                 root.ready = true;
             }

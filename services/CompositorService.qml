@@ -83,7 +83,9 @@ Singleton {
     // Windows on the workspace currently visible on an output.
     function windowsOnOutput(outputName) {
         const ws = root.activeWorkspaceOn(outputName)
-        return root.windows.filter(w => w.workspace === ws && (!root.supports.perOutputWorkspaces || w.output === outputName))
+        // workspace 0: the backend can't say (generic, labwc): keep it, by output where known.
+        return root.windows.filter(w => (w.workspace === ws || w.workspace === 0)
+            && (!root.supports.perOutputWorkspaces || !w.output || w.output === outputName))
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -227,9 +229,12 @@ Singleton {
         if (tl) { tl.activate(); return true }
         return false
     }
+    // The backend's id first, as for focus: a toplevel matched by app and
+    // title can be a twin of the window meant (two terminals titled "~").
     function closeWindow(win) {
+        if (win?.id !== undefined && root.backend?.closeWindowById(win.id)) return true
         const tl = win?.toplevel ?? (win?.close ? win : null)
         if (tl) { tl.close(); return true }
-        return root.backend?.closeWindowById(win?.id) ?? false
+        return false
     }
 }

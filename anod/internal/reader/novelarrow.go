@@ -39,7 +39,7 @@ var (
 	narBrRE       = regexp.MustCompile(`<br\s*/?>|\n`)
 	narTitleNumRE = regexp.MustCompile(`(?i)^(?:chapter|ch\.?)\s*(\d+(?:\.\d+)?)`)
 	narSlugNumRE  = regexp.MustCompile(`^chapter-(\d+)`)
-	narSlugRE     = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
+	narSlugRE     = regexp.MustCompile(`^[A-Za-z0-9_-][A-Za-z0-9._-]*$`) // no leading dot: never "." or ".."
 )
 
 type novelArrow struct {
@@ -72,7 +72,10 @@ func (n *novelArrow) image(src string) string {
 	if src == "" {
 		return ""
 	}
-	if !strings.HasPrefix(src, "http") {
+	switch {
+	case strings.HasPrefix(src, "//"):
+		src = "https:" + src
+	case !strings.HasPrefix(src, "http"):
 		src = narBase + src
 	}
 	return n.proxy(src)
@@ -210,7 +213,8 @@ func (n *novelArrow) parseInfo(slug, html string, items []struct {
 	genres := []string{}
 	for _, g := range strings.Split(narMeta(html, "og:novel:genre"), ",") {
 		if g = strings.TrimSpace(g); g != "" {
-			genres = append(genres, strings.ToUpper(g[:1])+strings.ToLower(g[1:]))
+			r := []rune(strings.ToLower(g))
+			genres = append(genres, strings.ToUpper(string(r[:1]))+string(r[1:]))
 		}
 	}
 	// The API's list is already in reading order, while the reader orders

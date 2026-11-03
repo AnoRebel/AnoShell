@@ -136,7 +136,10 @@ function packSlot(descriptor, ctx) {
     // instead (solid there, or off-screen at thickness 0), so a closing
     // panel retracts into its edge rather than squashing into a nub.
     var fc = radii.far;
-    var bury = Math.max(0, 2 * fc - extent);
+    // The far corners are drawn with surfaceRadius (capped at half the
+    // body's width along the edge), which can exceed far.
+    var along = isHorizontal(side) ? b.width : b.height;
+    var bury = Math.max(0, 2 * Math.min(radii.surfaceRadius, along / 2) - extent);
     if (bury > 0) {
         if (side === "top") { b.y -= bury; b.height += bury; }
         else if (side === "bottom") { b.height += bury; }
