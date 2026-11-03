@@ -169,6 +169,25 @@ ShellRoot {
         function set(family: string): void { root.setPanelFamily(family) }
     }
 
+    // A screen whose scale, size or rotation changes under the running shell
+    // keeps its surfaces at the old buffer scale (Qt/Quickshell on a live
+    // fractional-scale change): the pill and dock draw small and off-centre
+    // until a restart. So reload once the change settles. Screens coming or
+    // going are left alone (every module follows Quickshell.screens).
+    readonly property string _screenGeometry: Quickshell.screens.map(s => `${s.name}=${s.width}x${s.height}@${s.devicePixelRatio}`).sort().join(",")
+    property string _lastScreenGeometry: ""
+    on_ScreenGeometryChanged: {
+        const names = g => g.split(",").map(e => e.split("=")[0]).join(",")
+        const before = root._lastScreenGeometry
+        root._lastScreenGeometry = root._screenGeometry
+        if (before && names(before) === names(root._screenGeometry)) scaleReload.restart()
+    }
+    Timer {
+        id: scaleReload
+        interval: 1200
+        onTriggered: { console.info("[Ano] a screen's scale or size changed: reloading"); Quickshell.reload(true) }
+    }
+
     IpcHandler {
         target: "shell"
         function reload(): void { Quickshell.reload(true) }

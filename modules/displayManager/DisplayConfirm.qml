@@ -20,18 +20,25 @@ Scope {
     property real deadline: 0        // ms since epoch
     property int left: 0
 
+    function _take(data) {
+        root.pending = data
+        root.deadline = Date.now() + (data.seconds ?? 15) * 1000
+        root.left = data.seconds ?? 15
+    }
     Connections {
         target: Anod
         function onEvent(name, data) {
-            if (name === "display_pending") {
-                root.pending = data
-                root.deadline = Date.now() + (data.seconds ?? 15) * 1000
-                root.left = data.seconds ?? 15
-            } else if (name === "display_confirmed" || name === "display_reverted") {
-                root.pending = null
-            }
+            if (name === "display_pending") root._take(data)
+            else if (name === "display_confirmed" || name === "display_reverted") root.pending = null
         }
+        // A change still waiting when the shell (re)starts — e.g. the reload
+        // a scale change triggers (shell.qml) — keeps its prompt and countdown.
+        function onAvailableChanged() { root._ask() }
     }
+    function _ask() {
+        if (Anod.available) Anod.call("display.get", {}, (r, e) => { if (r?.pending && (r.pending.seconds ?? 0) > 0) root._take(r.pending) })
+    }
+    Component.onCompleted: _ask()
     // Monitors plugged or unplugged: anod applies the profile saved for the
     // new set (display.outputsChanged) and we name it briefly.
     Connections {
