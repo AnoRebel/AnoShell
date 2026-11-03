@@ -82,6 +82,8 @@ PanelWindow {
                         }
                     }
 
+                    SettingsSearchButton { Layout.bottomMargin: 6 }
+
                     Repeater {
                         model: SettingsRegistry.pages
 

@@ -80,6 +80,8 @@ ShellRoot {
                         }
                     }
 
+                    SettingsSearchButton { Layout.bottomMargin: 6 }
+
                     // Page buttons
                     Repeater {
                         model: settingsRoot.pages

@@ -17,6 +17,7 @@ PresetsCard 1.0 PresetsCard.qml
 ServicesConfig 1.0 ServicesConfig.qml
 SettingsCard 1.0 SettingsCard.qml
 SettingsCommandPalette 1.0 SettingsCommandPalette.qml
+SettingsSearchButton 1.0 SettingsSearchButton.qml
 SettingsKeyHandler 1.0 SettingsKeyHandler.qml
 SettingsOverlay 1.0 SettingsOverlay.qml
 SettingsPageHeader 1.0 SettingsPageHeader.qml

@@ -231,8 +231,14 @@ Singleton {
         }
         // Every token must appear somewhere in the haystack (AND across tokens,
         // case-insensitive substring match — already lower-cased on store).
+        // Punctuation and spacing don't count either: "wifi" finds "Wi-Fi",
+        // "hotcorner" finds "hot corners" (both sides squashed to [a-z0-9]).
+        const squash = t => t.replace(/[^a-z0-9]+/g, "");
+        const sq = tokens.map(squash);
         const matches = root.entries.filter(e => {
-            for (const t of tokens) if (e.haystack.indexOf(t) < 0) return false;
+            if (e._squashed === undefined) e._squashed = squash(e.haystack);
+            for (let i = 0; i < tokens.length; i++)
+                if (e.haystack.indexOf(tokens[i]) < 0 && (sq[i].length === 0 || e._squashed.indexOf(sq[i]) < 0)) return false;
             return true;
         });
         // Rank: shorter key wins (more specific matches surface first).
