@@ -285,6 +285,10 @@ ColumnLayout {
                         Layout.fillWidth: true
                         groupId: groupBox.gid
                         modules: groupBox.modelData.modules ?? []
+                        // The bar lays an end zone out from its edge inwards
+                        // (BarContent), so on a horizontal bar its chips run
+                        // right to left too: what you see here is the bar.
+                        mirrored: groupBox.modelData.zone === "end" && !["left", "right"].includes(root.barConfig0?.edge ?? "top")
                     }
                 }
             }
@@ -344,6 +348,7 @@ ColumnLayout {
         id: section
         property string groupId: ""
         property var modules: []              // current active list
+        property bool mirrored: false         // chips run right to left (an end zone)
         property bool _addingMode: false      // true while the available palette is shown
         // While a chip is dragged over this group's chips: the chip it would
         // land before (-1: none). The chips slide aside to show the gap; the
@@ -402,6 +407,7 @@ ColumnLayout {
                 id: chipFlow
                 width: parent.width
                 spacing: 6
+                layoutDirection: section.mirrored ? Qt.RightToLeft : Qt.LeftToRight
 
                 Repeater {
                     id: chipRepeater
@@ -423,7 +429,7 @@ ColumnLayout {
                         implicitHeight: 30
                         opacity: dragGhost.dragging && dragGhost.moduleId === chip.moduleId ? 0.35 : 1
                         transform: Translate {
-                            x: section._shift(chip.index)
+                            x: section._shift(chip.index) * (section.mirrored ? -1 : 1)
                             Behavior on x { MotionNumber { curve: "expressiveFastSpatial"; baseDuration: 160 } }
                         }
 
@@ -469,21 +475,23 @@ ColumnLayout {
                                     : (Appearance?.m3colors.m3onErrorContainer ?? "#F9DEDC")
                             }
 
-                            // ◂ move-left / ▴ move-up
+                            // ◂ / ▸ move the chip that way (in list order: earlier
+                            // or later, swapped when the row is mirrored)
                             ToolbarButton {
+                                readonly property int delta: section.mirrored ? 1 : -1
                                 iconName: "chevron_left"
                                 iconSize: 16
-                                visible: chip.index > 0
-                                toolTipText: "Move earlier"
-                                onClicked: section._moveBy(chip.index, -1)
+                                visible: chip.index + delta >= 0 && chip.index + delta < section.modules.length
+                                toolTipText: "Move left"
+                                onClicked: section._moveBy(chip.index, delta)
                             }
-                            // ▸ move-right / ▾ move-down
                             ToolbarButton {
+                                readonly property int delta: section.mirrored ? -1 : 1
                                 iconName: "chevron_right"
                                 iconSize: 16
-                                visible: chip.index < (section.modules.length - 1)
-                                toolTipText: "Move later"
-                                onClicked: section._moveBy(chip.index, 1)
+                                visible: chip.index + delta >= 0 && chip.index + delta < section.modules.length
+                                toolTipText: "Move right"
+                                onClicked: section._moveBy(chip.index, delta)
                             }
                             // ✕ remove
                             ToolbarButton {
@@ -540,7 +548,8 @@ ColumnLayout {
                     for (let i = 0; i < chipRepeater.count; i++) {
                         const c = chipRepeater.itemAt(i)
                         if (!c) continue
-                        if (py < c.y + c.height && (py < c.y || px < c.x + c.width / 2)) return i
+                        const before = section.mirrored ? px > c.x + c.width / 2 : px < c.x + c.width / 2
+                        if (py < c.y + c.height && (py < c.y || before)) return i
                     }
                     return chipRepeater.count
                 }

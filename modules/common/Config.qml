@@ -206,7 +206,9 @@ Singleton {
 
     // True when at least one key has been overridden by the user.
     readonly property bool hasUserOverrides: {
-        // Re-evaluate when _userDelta changes
+        // Re-evaluate when _userDelta changes (deletes in place only bump
+        // deltaRevision, at the write).
+        void root.deltaRevision;
         const d = root._userDelta;
         if (!d) return false;
         for (const _ in d) return true;
@@ -217,6 +219,7 @@ Singleton {
     // delta. Used by per-page Settings headers to show/hide their reset
     // affordance based on whether that page has any overridden values.
     function hasOverridesForRoots(roots) {
+        void root.deltaRevision; // a binding calling this re-runs on every write
         const d = root._userDelta;
         if (!d || !roots) return false;
         for (const r of roots)
@@ -232,6 +235,7 @@ Singleton {
         // Adapter is currently the merged state. Force a bundle reload
         // to re-baseline cleanly — this re-snapshots defaults, then
         // applies the (now empty) delta, which is a no-op.
+        root._keepDeltaOnReload = true;
         configFileView.reload();
         userDeltaWriteTimer.restart();
     }
@@ -262,6 +266,7 @@ Singleton {
             // Force a bundle reload to re-baseline any top-level subtrees
             // we just cleared (they need to revert from the merged value
             // back to the bundle default).
+            root._keepDeltaOnReload = true;
             configFileView.reload();
             userDeltaWriteTimer.restart();
         }
@@ -436,6 +441,8 @@ Singleton {
         if (Object.keys(root._userDelta).length === 0) return;
         root._deepMergeInto(root.options, root._userDelta);
     }
+
+    property bool _keepDeltaOnReload: false
 
     function _writeUserDelta() {
         root.deltaRevision++;
@@ -1714,14 +1721,19 @@ Singleton {
             bundleReloadTimer.restart();
         }
         onLoaded: {
-            root._loadUserDelta();
+            // A reset's re-baseline: the file on disk is older than the
+            // delta in memory (its write is still debounced), so re-reading
+            // it would bring the cleared keys back.
+            if (root._keepDeltaOnReload) root._keepDeltaOnReload = false;
+            else root._loadUserDelta();
             root._applyUserDelta();
             root._migrateLegacyKeys();
             root.ready = true;
         }
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) {
-                root._userDelta = {};
+                if (root._keepDeltaOnReload) root._keepDeltaOnReload = false;
+                else root._userDelta = {};
                 root._migrateLegacyKeys();
                 root.ready = true;
             }
