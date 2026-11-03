@@ -39,6 +39,21 @@ count towards that lockout. Previews never scan. If your PAM `login` stack
 also has `pam_fprintd` (`/etc/pam.d/system-auth`), a password check may find
 the reader busy with this scan; PAM then moves on to the password.
 
+## Arranging the built-in one
+
+Settings → General → Lock screen shows the chosen lock screen in miniature.
+For the built-in one, drag the clock, your avatar and name, the status row or
+the password field anywhere on it, and click one to resize it by its round
+handle. They're saved as `lock.layout`, each part's centre as a fraction of
+the screen and its scale:
+
+```json
+"lock": { "layout": { "clock": { "x": 0.2, "y": 0.15, "scale": 1.8 } } }
+```
+
+A part with no entry stays in the centred column, and **Reset layout** clears
+them all. Lock screen packages keep their own layout.
+
 ## Preview
 
 **Preview** (Settings or the Atelier) or `qs ipc call lock preview <id>` shows a

@@ -43,7 +43,9 @@ backend is picked from the session at start.
   displays, backups, the Atelier, the reader backend) and its CLI: `ano doctor`,
   `ano backup`, `ano atelier`, `ano keybinds` ([anod](docs/anod.md), [CLI](docs/cli.md)).
 - **Settings** for all of it, as an overlay or a standalone window, with a
-  Ctrl+K search over every option.
+  search over every option and previews you edit in place: drag the bar's
+  modules, the bar, pill and dock, the lock screen's parts and the
+  notifications; themes and looks drawn in their own colours and shapes.
 
 Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config, themes, looks, pieces, plugins, lock screens, rices, lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
 
@@ -193,7 +195,7 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 | `Ctrl+0` | Jump to last page |
 | `Esc` | Close the panel (overlay) or quit (standalone) |
 
-**Command palette (`Ctrl+K`).** Search every setting by the words you see in Settings (card titles, control labels and descriptions) or by config key — case-insensitive, multi-word (every term must match somewhere). Keys come live from the config; labels come from `modules/settings/settings-index.json` (generated, see *Keeping settings wired* below). Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
+**Search (the field at the top of the page list, or `Ctrl+K`).** Search every setting by the words you see in Settings (card titles, control labels and descriptions) or by config key — case-insensitive, multi-word (every term must match somewhere), punctuation and spaces ignored ("wifi" finds Wi-Fi). Keys come live from the config; labels come from `modules/settings/settings-index.json` (generated, see *Keeping settings wired* below). Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
 
 ```
 Ctrl+K → "event border"   → anoSpot.eventBorder.holdMs   → AnoSpot · Event border animation
@@ -252,7 +254,7 @@ The Settings UI has 13 pages, each owning a set of top-level config keys. The "R
 |--------------|------------------------------------------------------------------------------------------|------------------------|
 | General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
-| Bar          | `bar`, `bars`, `tray`                                                                    | Edge picker (visual), per-section module chip editor, click/scroll actions, layout sliders, weather, tray pinning |
+| Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
 | Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, pinned apps |
 | Sidebars     | `sidebar`                                                                                | Behavior toggles (instant open, keep loaded), right-sidebar widget picker with empty-state warning, quick-slider sub-toggles |
 | AnoSpot      | `anoSpot`                                                                                | Position, per-widget visibility, click bindings, event border animation, drag/drop config + custom drop actions |

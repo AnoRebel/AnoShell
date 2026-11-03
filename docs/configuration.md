@@ -50,11 +50,32 @@ bundled Hyprland config), or as a standalone window with
 | Appearance | `appearance`, `background`, `animations` |
 | Overview | `overview` |
 | Services | `ai`, `gameMode`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` |
+| Displays | `cursor`, `icons` |
+| Keybinds | `keyboard` |
+| Atelier | `atelier` |
 | About | `user` |
 
-- `Ctrl+K` opens a command palette that searches every setting by its label
-  or its config key; Enter jumps to the card that owns it.
+- **Search** at the top of the page list (or `Ctrl+K`) searches every setting
+  by its label, description or config key, ignoring case, punctuation and
+  spaces ("wifi" finds Wi-Fi); Enter jumps to the card that owns it.
 - `Ctrl+1` … `Ctrl+9` jump to a page; `Esc` closes.
+- **Previews you can edit** sit at the top of some pages and change the real
+  shell as you go (written once, when you let go):
+  - **Bar** and **AnoSpot**: a miniature of your screen with the bar, pill and
+    dock as they are. Drag a module within or between groups, or the bar, the
+    pill or the dock to another edge; click a group to find it in the editor.
+  - **Appearance** and **Atelier**: every theme drawn in its own colours and
+    every look in its own shape, material and type, as a small desktop; the
+    Look card can show them in a dark or a light palette.
+  - **General → Lock screen**: the chosen lock screen in miniature. In the
+    built-in one, drag the clock, your name, the status row or the password
+    field anywhere, and resize one by its round handle (`lock.layout`);
+    **Reset layout** puts them back in the centred column.
+  - **General → Notifications** and **Modules → OSD**: drag the notifications
+    to a corner or an edge, their side handle for their width
+    (`notifications.popupWidth`), or the volume OSD up or down.
+
+  [Watch a module dragged in the bar preview (WebM)](images/bar-preview.webm)
 - Each page's **Reset** clears only the keys that page owns from your delta.
   **Reset every setting** on the About page clears the whole delta. Neither
   writes defaults into your file.
