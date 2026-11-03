@@ -194,6 +194,59 @@ Item {
         // and settling then would spring every group in from 0 once it maps.
         if (!root._ready && root.along > 0 && root.visible) settle.restart()
     }
+    // ── Settings' bar preview (BarPreview) ───────────────────────────────
+    // The module under (px, py), in this item's coordinates: { gid, id }.
+    function previewHit(px, py) {
+        for (let i = 0; i < groupRep.count; i++) {
+            const g = groupRep.itemAt(i)
+            if (!g || !g.visible || px < g.x || py < g.y || px > g.x + g.width || py > g.y + g.height) continue
+            for (const m of g.moduleItems()) {
+                const o = m.mapToItem(root, 0, 0)
+                if (px >= o.x && py >= o.y && px <= o.x + m.width && py <= o.y + m.height) return { gid: g.gid, id: m.modelData }
+            }
+            return { gid: g.gid, id: "" }
+        }
+        return null
+    }
+    // A shown module's rect in this item's coordinates ({x, y, w, h}) or null.
+    function previewModuleRect(gid, id) {
+        for (let i = 0; i < groupRep.count; i++) {
+            const g = groupRep.itemAt(i)
+            if (!g || g.gid !== gid) continue
+            for (const m of g.moduleItems()) if (m.modelData === id) {
+                const o = m.mapToItem(root, 0, 0)
+                return { x: o.x, y: o.y, w: m.width, h: m.height }
+            }
+        }
+        return null
+    }
+    // Where a module dropped at (px, py) lands: { gid, before } with `before`
+    // an index into that group's modules list (end zones run edge-inwards, so
+    // their list is reversed on screen), or null off every group.
+    function previewSlot(px, py) {
+        const at = root.isVertical ? py : px
+        let best = null, bestD = Infinity
+        for (let i = 0; i < groupRep.count; i++) {
+            const g = groupRep.itemAt(i)
+            if (!g || !g.visible) continue
+            const a = root.isVertical ? g.y : g.x, len = root.isVertical ? g.height : g.width
+            const d = at < a ? a - at : at > a + len ? at - a - len : 0
+            if (d < bestD) { bestD = d; best = g }
+        }
+        if (!best) return null
+        // The first shown module past the pointer, by id (hidden modules —
+        // weather without data — keep their place in the list).
+        let next = ""
+        for (const m of best.moduleItems()) {
+            const o = m.mapToItem(root, 0, 0)
+            if (at < (root.isVertical ? o.y + m.height / 2 : o.x + m.width / 2)) { next = m.modelData; break }
+        }
+        const list = best.mods
+        if (best.zone === "end") // reversed on screen: left of `next` is after it in the list
+            return { gid: best.gid, before: next ? list.indexOf(next) + 1 : 0 }
+        return { gid: best.gid, before: next ? list.indexOf(next) : list.length }
+    }
+
     onAlongChanged: _relayout()
     // Vertical bars get their width after their length: bodies laid out
     // before it were 0 wide (no background, groups centred on the edge).
@@ -228,6 +281,12 @@ Item {
                 return f
             }
             onFlexChanged: root._relayout()
+            // The module loaders in on-screen order (BarPreview hit tests).
+            function moduleItems() {
+                const out = []
+                for (let i = 0; i < modRep.count; i++) { const m = modRep.itemAt(i); if (m && m.visible && m.width > 0) out.push(m) }
+                return out
+            }
 
             // Along-axis position and separation (0 attached … 1 island).
             property real pos: root._targets[gid] ?? 0

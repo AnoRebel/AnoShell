@@ -37,6 +37,24 @@ ColumnLayout {
 
     readonly property string currentEdge: Config.options?.bars?.[0]?.edge ?? "top"
 
+    // The bar, pill and dock as they are, edited in place (settings-wiring
+    // "Interactive previews in Settings"). A group clicked there lights up
+    // in the editor below.
+    property string highlightGroup: ""
+    Timer { id: highlightClear; interval: 1600; onTriggered: root.highlightGroup = "" }
+    BarPreview {
+        Layout.fillWidth: true
+        onGroupClicked: gid => { root.highlightGroup = gid; highlightClear.restart() }
+    }
+    StyledText {
+        Layout.fillWidth: true
+        Layout.topMargin: -8
+        text: "Drag a module to move it, or the bar, pill or dock to another edge. Click a group to find it below."
+        wrapMode: Text.Wrap
+        color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+    }
+
     // ═══ Bar Position & Style ═══
     SettingsCard {
         icon: "dock_to_bottom"
@@ -233,7 +251,7 @@ ColumnLayout {
                 implicitHeight: groupCol.implicitHeight + 16
                 radius: Appearance?.rounding.normal ?? 12
                 color: drop.containsDrag ? (Appearance?.colors.colLayer2Hover ?? "#3C3947") : (Appearance?.colors.colLayer2 ?? "#2B2930")
-                border.width: drop.containsDrag ? 2 : 0
+                border.width: drop.containsDrag || root.highlightGroup === groupBox.gid ? 2 : 0
                 border.color: Appearance?.colors.colPrimary ?? "#65558F"
                 Behavior on color { ColorAnimation { duration: AnimationConfig.scaledDuration(120) } }
 

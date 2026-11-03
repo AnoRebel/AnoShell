@@ -18,6 +18,8 @@ ServicesConfig 1.0 ServicesConfig.qml
 SettingsCard 1.0 SettingsCard.qml
 SettingsCommandPalette 1.0 SettingsCommandPalette.qml
 SettingsSearchButton 1.0 SettingsSearchButton.qml
+PreviewScreen 1.0 PreviewScreen.qml
+BarPreview 1.0 BarPreview.qml
 SettingsKeyHandler 1.0 SettingsKeyHandler.qml
 SettingsOverlay 1.0 SettingsOverlay.qml
 SettingsPageHeader 1.0 SettingsPageHeader.qml

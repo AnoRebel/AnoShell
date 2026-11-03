@@ -21,6 +21,17 @@ ColumnLayout {
         configRoots: ["anoSpot"]
     }
 
+    // The pill where it is, among the bar and dock: drag it to another edge.
+    BarPreview { Layout.fillWidth: true }
+    StyledText {
+        Layout.fillWidth: true
+        Layout.topMargin: -8
+        text: "Drag the pill (or the dock) to another edge."
+        wrapMode: Text.Wrap
+        color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+        font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+    }
+
     readonly property bool enabled: Config.options?.anoSpot?.enable ?? false
     readonly property string currentPosition: Config.options?.anoSpot?.position ?? "top"
 
