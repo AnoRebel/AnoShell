@@ -22,6 +22,7 @@ PreviewScreen 1.0 PreviewScreen.qml
 BarPreview 1.0 BarPreview.qml
 MiniScene 1.0 MiniScene.qml
 LockPreview 1.0 LockPreview.qml
+NotificationPreview 1.0 NotificationPreview.qml
 SettingsKeyHandler 1.0 SettingsKeyHandler.qml
 SettingsOverlay 1.0 SettingsOverlay.qml
 SettingsPageHeader 1.0 SettingsPageHeader.qml

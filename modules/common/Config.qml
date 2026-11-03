@@ -1096,6 +1096,7 @@ Singleton {
                 property int timeout: 7000  // ms — bundled `notifications.timeout` (NotificationPopup reads this)
                 property string position: "topRight" // top|bottom + Left|Center|Right
                 property int edgeMargin: 8
+                property int popupWidth: 380 // the popups' width (280–640); Settings' preview has a handle for it
                 property bool expressiveAnimations: true
                 property bool silent: false // no popups; notifications still reach the history
                 property int maxVisible: 5 // popups on screen at once

@@ -46,7 +46,7 @@ Scope {
         exclusiveZone: 0
         color: "transparent"
 
-        implicitWidth: 380
+        implicitWidth: Math.max(280, Math.min(640, Config.options?.notifications?.popupWidth ?? 380))
         // Grows at once; shrinks only after the stack has retracted, so the
         // retract isn't cut off (following the spring would resize the surface
         // every frame instead).

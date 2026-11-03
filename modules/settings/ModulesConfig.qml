@@ -178,6 +178,8 @@ ColumnLayout {
             valueText: Format.formatDuration(value)
         }
 
+        NotificationPreview { Layout.fillWidth: true }
+
         ConfigRow {
             label: "OSD position"
             configKey: "osd.position"

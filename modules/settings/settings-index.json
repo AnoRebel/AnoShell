@@ -2429,7 +2429,7 @@
   "page": 6,
   "card": "",
   "label": "Windows sit flush against the frame",
-  "sublabel": "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept).",
+  "sublabel": "",
   "keys": [
    "appearance.connectedCorners.manageGaps"
   ]

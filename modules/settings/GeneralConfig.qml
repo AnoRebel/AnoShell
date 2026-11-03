@@ -326,6 +326,16 @@ ColumnLayout {
         subtitle: "Popup behavior, timeout, and sounds"
         configKeys: ["notifications"]
 
+        // Notifications and the OSD in miniature: drag them where you want them.
+        NotificationPreview { Layout.fillWidth: true }
+        StyledText {
+            Layout.fillWidth: true
+            text: "Drag the notifications to a corner or an edge, their side handle to change their width, or the volume bar up or down."
+            wrapMode: Text.Wrap
+            color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+        }
+
         // Where popups appear: click a spot on the miniature screen.
         ColumnLayout {
             Layout.fillWidth: true
