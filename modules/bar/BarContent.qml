@@ -228,8 +228,9 @@ Item {
         let best = null, bestD = Infinity
         for (let i = 0; i < groupRep.count; i++) {
             const g = groupRep.itemAt(i)
-            if (!g || !g.visible) continue
-            const a = root.isVertical ? g.y : g.x, len = root.isVertical ? g.height : g.width
+            if (!g || g.hiddenCenter) continue
+            // An empty group (len 0, not shown) still takes a drop at its place.
+            const a = g.pos, len = g.visible ? (root.isVertical ? g.height : g.width) : 0
             const d = at < a ? a - at : at > a + len ? at - a - len : 0
             if (d < bestD) { bestD = d; best = g }
         }

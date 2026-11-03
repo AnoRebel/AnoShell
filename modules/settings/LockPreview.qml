@@ -19,7 +19,7 @@ PreviewScreen {
     readonly property var surface: builtin ? (builtinLoader.item ?? null) : null
 
     // A preview context: nothing is checked, submit() does nothing.
-    LockContext { id: previewCtx; preview: true }
+    LockContext { id: previewCtx; preview: true; screen: root.targetScreen }
 
     Loader {
         id: builtinLoader
@@ -27,10 +27,14 @@ PreviewScreen {
         active: root.builtin
         sourceComponent: DefaultLockSurface { ctx: previewCtx; miniature: true }
     }
-    Loader {
-        anchors.fill: parent
-        active: !root.builtin
-        sourceComponent: LockSurfaceHost { packageId: LockScreens.selected; ctx: previewCtx; focus: false }
+    // One per selection: the host picks its package once, when created.
+    Repeater {
+        model: root.builtin ? [] : [LockScreens.selected]
+        LockSurfaceHost {
+            required property string modelData
+            width: root.worldW; height: root.worldH
+            packageId: modelData; ctx: previewCtx; focus: false
+        }
     }
 
     // ── Editing the built-in one ────────────────────────────────────────

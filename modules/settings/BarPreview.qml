@@ -89,6 +89,9 @@ PreviewScreen {
         Loader {
             id: barContent
             anchors.fill: parent
+            // No input of its own: its wheel and click handlers run real
+            // actions (volume, workspaces, brightness).
+            enabled: false
             asynchronous: true
             active: root.classic && root.barCfg !== null
             sourceComponent: BarContent {
@@ -286,6 +289,7 @@ PreviewScreen {
             else if (m === "dock" && e && e !== root.dockEdge) BarStyle.moveEdge("dock", e)
         }
         onCanceled: { active = false; mode = ""; slot = null; edgeBand.edge = "" }
+        onWheel: w => w.accepted = false // the page scrolls
     }
 
     // Where the slot marker sits: between the modules around the slot.

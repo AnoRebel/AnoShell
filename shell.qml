@@ -35,6 +35,7 @@ ShellRoot {
     // Singleton Force-Init
     // ═══════════════════════════════════════════════════════════════════════
     Component.onCompleted: {
+        root._lastScreenGeometry = root._screenGeometry // the scale watcher's baseline
         root._log(`Initializing Ano shell on ${CompositorService.compositor}`);
         root._log(`Shell root: ${Directories.shellRoot}`);
         // Touch autonomous singletons so they instantiate even when no UI
@@ -176,16 +177,34 @@ ShellRoot {
     // going are left alone (every module follows Quickshell.screens).
     readonly property string _screenGeometry: Quickshell.screens.map(s => `${s.name}=${s.width}x${s.height}@${s.devicePixelRatio}`).sort().join(",")
     property string _lastScreenGeometry: ""
+    // When the last such reload ran, in a runtime file (a hard reload keeps no
+    // QML state): a screen whose size keeps flipping reloads at most once
+    // every 10 s.
+    FileView {
+        id: scaleReloadStamp
+        path: `${Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"}/anoshell-scale-reload`
+        blockLoading: true
+        printErrors: false
+    }
     on_ScreenGeometryChanged: {
         const names = g => g.split(",").map(e => e.split("=")[0]).join(",")
         const before = root._lastScreenGeometry
         root._lastScreenGeometry = root._screenGeometry
-        if (before && names(before) === names(root._screenGeometry)) scaleReload.restart()
+        if (before && names(before) === names(root._screenGeometry)) { scaleReload.interval = 1200; scaleReload.restart() }
     }
     Timer {
         id: scaleReload
         interval: 1200
-        onTriggered: { console.info("[Ano] a screen's scale or size changed: reloading"); Quickshell.reload(true) }
+        onTriggered: {
+            scaleReloadStamp.reload()
+            const last = Number(scaleReloadStamp.text()) || 0
+            // Too soon after the last one: later, not never (the screen would
+            // stay at the wrong scale).
+            if (Date.now() - last < 10000) { interval = 10000 - (Date.now() - last) + 200; restart(); return }
+            scaleReloadStamp.setText(String(Date.now()))
+            console.info("[Ano] a screen's scale or size changed: reloading")
+            Quickshell.reload(true)
+        }
     }
 
     IpcHandler {

@@ -47,7 +47,11 @@ Item {
         default property alias inner: content.data
         property alias holder: content
         readonly property var at: blk.layout?.[blk.key] ?? null
-        readonly property bool free: blk.at !== null && typeof blk.at.x === "number" && typeof blk.at.y === "number"
+        readonly property bool free: blk.at !== null && Number.isFinite(blk.at.x) && Number.isFinite(blk.at.y)
+        readonly property real _scale: Number.isFinite(blk.at?.scale) ? Math.max(0.4, Math.min(3, blk.at.scale)) : 1
+        // The centre, kept so the whole block is on this screen (a layout
+        // made on another monitor can be bigger than this one allows).
+        function _centre(f, size, span) { return Math.max(size / 2, Math.min(span - size / 2, f * span)) }
         Layout.alignment: Qt.AlignHCenter
         implicitWidth: blk.free ? 0 : content.implicitWidth
         implicitHeight: blk.free ? 0 : content.implicitHeight
@@ -55,9 +59,9 @@ Item {
             id: content
             parent: blk.free ? blk.freeLayer : blk
             spacing: blk.spacing
-            scale: blk.free ? Math.max(0.4, Math.min(3, blk.at.scale ?? 1)) : 1
-            x: blk.free ? blk.at.x * blk.freeLayer.width - width / 2 : (blk.width - width) / 2
-            y: blk.free ? blk.at.y * blk.freeLayer.height - height / 2 : 0
+            scale: blk.free ? blk._scale : 1
+            x: blk.free ? blk._centre(blk.at.x, width * scale, blk.freeLayer.width) - width / 2 : (blk.width - width) / 2
+            y: blk.free ? blk._centre(blk.at.y, height * scale, blk.freeLayer.height) - height / 2 : 0
         }
     }
 

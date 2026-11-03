@@ -84,7 +84,7 @@ PreviewScreen {
 
     // The six places the stack can snap to, shown while it's dragged.
     Repeater {
-        model: edit.mode === "move" ? ["topLeft", "top", "topRight", "bottomLeft", "bottom", "bottomRight"] : []
+        model: edit.mode === "move" ? ["topLeft", "topCenter", "topRight", "bottomLeft", "bottomCenter", "bottomRight"] : []
         Rectangle {
             required property string modelData
             readonly property bool atTop: modelData.startsWith("top")
@@ -100,7 +100,7 @@ PreviewScreen {
     }
 
     function _snapAt(cx, cy) {
-        const col = cx < root.worldW / 3 ? "Left" : cx > root.worldW * 2 / 3 ? "Right" : ""
+        const col = cx < root.worldW / 3 ? "Left" : cx > root.worldW * 2 / 3 ? "Right" : "Center"
         return (cy < root.worldH / 2 ? "top" : "bottom") + col
     }
     function _in(item, p, pad) { return p.x >= item.x - pad && p.y >= item.y - pad && p.x <= item.x + item.width + pad && p.y <= item.y + item.height + pad }
