@@ -495,9 +495,29 @@ ColumnLayout {
                 onChose: value => LockScreens.select(value)
             }
         }
-        RippleButton {
-            buttonText: "Preview"
-            onClicked: LockScreens.preview(LockScreens.selected)
+        // The chosen lock screen in miniature; the built-in one is arranged
+        // here by dragging its parts (lock.layout).
+        LockPreview { Layout.fillWidth: true }
+        StyledText {
+            Layout.fillWidth: true
+            text: LockScreens.selected === "default" || !LockScreens.current
+                ? "Drag the clock, your name, the status row or the password field anywhere; click one and drag its round handle to resize it."
+                : "A lock screen package keeps its own layout."
+            wrapMode: Text.Wrap
+            color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+        }
+        RowLayout {
+            spacing: 8
+            RippleButton {
+                buttonText: "Preview full screen"
+                onClicked: LockScreens.preview(LockScreens.selected)
+            }
+            RippleButton {
+                buttonText: "Reset layout"
+                visible: Object.keys(Config.options?.lock?.layout ?? {}).length > 0
+                onClicked: Config.setNestedValue("lock.layout", ({}))
+            }
         }
         ConfigSwitch {
             label: "Fingerprint unlock"

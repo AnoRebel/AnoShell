@@ -1385,6 +1385,9 @@ Singleton {
                 property bool enable: true
                 // The lock screen package (LockScreens); "default" is the built-in one.
                 property string screen: "default"
+                // The built-in lock's blocks moved in Settings: { clock|user|status|field:
+                // { x, y, scale } } (centre as fractions of the screen); none = the column.
+                property var layout: ({})
                 property JsonObject notifications: JsonObject {
                     property bool enable: false
                     property int maxItems: 5

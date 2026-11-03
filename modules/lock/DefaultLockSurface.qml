@@ -16,13 +16,57 @@ import "."
 Item {
     id: root
     property var ctx
+    // Drawn in Settings' lock preview (LockPreview): the field never takes
+    // focus or input, nothing dims.
+    property bool miniature: false
+
+    // lock.layout: blocks you moved in Settings (settings-wiring "Interactive
+    // previews in Settings"), each { x, y, scale } — its centre as fractions of
+    // the screen. A block without an entry stays in the centred column, so no
+    // layout looks as it always did.
+    readonly property var layout: Config.options?.lock?.layout ?? ({})
+    // Where each block is drawn, in this item's coordinates (LockPreview).
+    function blockRects() {
+        const out = {}
+        for (const b of [clockBlock, userBlock, statusBlock, fieldBlock]) {
+            const h = b.holder
+            if (!h.visible || h.width <= 0) continue
+            const o = h.mapToItem(root, 0, 0)
+            out[b.key] = { x: o.x, y: o.y, w: h.width * h.scale, h: h.height * h.scale, scale: h.scale }
+        }
+        return out
+    }
+
+    // One movable part of the lock: in the column, or placed on its own.
+    component Block: Item {
+        id: blk
+        required property string key
+        required property Item freeLayer
+        property var layout: ({})
+        property real spacing: 4 // between this block's own lines (the column's was 24)
+        default property alias inner: content.data
+        property alias holder: content
+        readonly property var at: blk.layout?.[blk.key] ?? null
+        readonly property bool free: blk.at !== null && typeof blk.at.x === "number" && typeof blk.at.y === "number"
+        Layout.alignment: Qt.AlignHCenter
+        implicitWidth: blk.free ? 0 : content.implicitWidth
+        implicitHeight: blk.free ? 0 : content.implicitHeight
+        ColumnLayout {
+            id: content
+            parent: blk.free ? blk.freeLayer : blk
+            spacing: blk.spacing
+            scale: blk.free ? Math.max(0.4, Math.min(3, blk.at.scale ?? 1)) : 1
+            x: blk.free ? blk.at.x * blk.freeLayer.width - width / 2 : (blk.width - width) / 2
+            y: blk.free ? blk.at.y * blk.freeLayer.height - height / 2 : 0
+        }
+    }
 
     // Auto-dim after Config.options.lock.dim.idleMs of no input.
     property bool dimmed: false
     Timer {
         id: dimIdleTimer
         interval: Config.options?.lock?.dim?.idleMs ?? 30000
-        running: Config.options?.lock?.dim?.enable ?? true
+        running: !root.miniature && (Config.options?.lock?.dim?.enable ?? true)
         repeat: false
         onTriggered: root.dimmed = true
     }
@@ -90,8 +134,9 @@ Item {
         }
 
         // Clock
-        ColumnLayout {
-            Layout.alignment: Qt.AlignHCenter; spacing: 4
+        Block {
+            id: clockBlock
+            key: "clock"; freeLayer: freeLayer; layout: root.layout
             StyledText {
                 text: DateTime.time
                 font.pixelSize: 72; font.weight: Font.Bold
@@ -105,7 +150,10 @@ Item {
             }
         }
 
-        // Avatar
+        // Avatar and name
+        Block {
+            id: userBlock
+            key: "user"; freeLayer: freeLayer; layout: root.layout; spacing: 24
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
             width: 80; height: 80; radius: 40
@@ -133,13 +181,22 @@ Item {
             font.capitalization: Font.Capitalize
             color: "white"; Layout.alignment: Qt.AlignHCenter
         }
-
-        // Status row (lock.statusRow.enable)
-        LockStatusRow {
-            Layout.alignment: Qt.AlignHCenter
         }
 
-        // Password field; widens on focus (lock.passwordInput.expandOnFocus).
+        // Status row (lock.statusRow.enable)
+        Block {
+            id: statusBlock
+            key: "status"; freeLayer: freeLayer; layout: root.layout
+            LockStatusRow {
+                Layout.alignment: Qt.AlignHCenter
+            }
+        }
+
+        // Password field and what's said about it; widens on focus
+        // (lock.passwordInput.expandOnFocus).
+        Block {
+            id: fieldBlock
+            key: "field"; freeLayer: freeLayer; layout: root.layout; spacing: 24
         Rectangle {
             id: field
             Layout.alignment: Qt.AlignHCenter
@@ -178,9 +235,9 @@ Item {
                     Layout.fillWidth: true
                     echoMode: TextInput.Password
                     font.pixelSize: Appearance.font.pixelSize.normal; color: "white"
-                    focus: true
+                    focus: !root.miniature
                     verticalAlignment: TextInput.AlignVCenter
-                    enabled: !(root.ctx?.busy ?? false)
+                    enabled: !root.miniature && !(root.ctx?.busy ?? false)
                     onAccepted: root.ctx?.submit(text)
                     Text {
                         anchors.fill: parent; verticalAlignment: Text.AlignVCenter
@@ -241,6 +298,7 @@ Item {
             font.pixelSize: Appearance.font.pixelSize.smallie; color: "white"; opacity: 0.5
             Layout.alignment: Qt.AlignHCenter
         }
+        }
 
         // On-screen keyboard (lock.osk.enable)
         LockOSK {
@@ -250,5 +308,12 @@ Item {
             onBackspace: { passwordInput.text = passwordInput.text.slice(0, -1); root._wake() }
             onSubmit: root.ctx?.submit(passwordInput.text)
         }
+    }
+
+    // Blocks placed on their own (lock.layout) live here, over the column.
+    Item {
+        id: freeLayer
+        anchors.fill: parent
+        z: 3
     }
 }
