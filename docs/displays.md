@@ -5,6 +5,8 @@ scale, rotation, variable refresh rate and on/off, on Hyprland and niri. It
 also holds display profiles and the cursor. anod does the work
 ([anod.md](anod.md)), so it has to be running.
 
+![Settings → Displays](images/settings-displays.webp)
+
 ## Changing a monitor
 
 - Drag a monitor in the arrangement to move it. It snaps to the edges of the

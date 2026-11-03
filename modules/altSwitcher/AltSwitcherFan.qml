@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -260,7 +261,7 @@ PanelWindow {
                             IconImage {
                                 required property var modelData
                                 implicitSize: 26
-                                source: `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}`
+                                source: FileUtils.appIcon(modelData.appId)
                             }
                         }
                     }
@@ -301,7 +302,7 @@ PanelWindow {
                         x: thumb.active ? 8 : 0
                         y: thumb.active ? parent.height - 26 : 0
                         implicitSize: thumb.active ? 20 : 48
-                        source: { void DesktopEntries.applications.values.length; return `image://icon/${DesktopEntries.heuristicLookup(card.modelData.appId)?.icon || card.modelData.appId}` }
+                        source: FileUtils.appIcon(card.modelData.appId)
                     }
                     StyledText {
                         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: thumb.active ? 34 : 10; rightMargin: 10; bottomMargin: 7 }

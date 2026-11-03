@@ -4,6 +4,8 @@ The pill is AnoShell's dynamic island: a capsule on a screen edge that shows
 what matters now (workspaces, the track, notifications, the clock), morphs
 briefly for volume or a notification, and grows into panels when you click it.
 
+![The pill on the top, left and right edges](images/pill-edges.webp)
+
 ## Pill bar style
 
 In the Ano layout, `bar.style` decides what the bar is:
@@ -62,6 +64,8 @@ face. Each can be turned off; whatever the pill shows, the separate on-screen
 display doesn't.
 
 ## Settings reference
+
+![Settings → AnoSpot](images/settings-anospot.webp)
 
 Defaults as shipped. Settings → AnoSpot has all of them.
 

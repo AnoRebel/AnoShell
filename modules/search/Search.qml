@@ -7,6 +7,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -292,7 +293,7 @@ Scope {
                                     spacing: 10
                                     IconImage {
                                         implicitWidth: 32; implicitHeight: 32
-                                        source: modelData.icon ? `image://icon/${modelData.icon}` : `image://icon/${modelData.id}`
+                                        source: FileUtils.themedIcon(modelData.icon || modelData.id)
                                     }
                                     ColumnLayout {
                                         Layout.fillWidth: true; spacing: 0

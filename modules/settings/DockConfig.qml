@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "."
@@ -418,7 +419,7 @@ ColumnLayout {
                         // App icon
                         IconImage {
                             implicitWidth: 24; implicitHeight: 24
-                            source: `image://icon/${modelData}`
+                            source: FileUtils.appIcon(modelData)
                         }
 
                         // App ID

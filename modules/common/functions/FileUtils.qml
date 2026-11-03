@@ -33,6 +33,22 @@ Singleton {
         return "image://icon/" + icon;
     }
 
+    // Image source for an app's icon (by app id or desktop-entry icon name):
+    // the desktop entry's icon, else the name itself. A name the icon theme
+    // lacks would draw Qt's magenta "missing" square, so it falls back to a
+    // generic application icon (or nothing, if the theme has none either).
+    function appIcon(appIdOrIcon) {
+        void DesktopEntries.applications.values.length // re-run once entries load
+        const id = typeof appIdOrIcon === "string" ? appIdOrIcon : ""
+        return root.themedIcon(DesktopEntries.heuristicLookup(id)?.icon || id)
+    }
+    function themedIcon(name) {
+        if (typeof name === "string" && (name.startsWith("/") || name.includes("://"))) return root.iconSource(name)
+        if (typeof name === "string" && name.length > 0 && Quickshell.hasThemeIcon(name)) return "image://icon/" + name
+        const generic = ["application-x-executable", "application-default-icon", "applications-other"].find(n => Quickshell.hasThemeIcon(n))
+        return generic ? "image://icon/" + generic : ""
+    }
+
     // Get filename from path
     function basename(path) {
         if (typeof path !== "string") return "";

@@ -11,6 +11,8 @@ so a chord does the same thing on both.
   shortcut are kept as that compositor's own action and generated only there.
   `ano keybinds list` shows which compositor each bind is for.
 
+![Settings → Keybinds](images/settings-keybinds.webp)
+
 ## Keyboard layouts
 
 The **Keyboard layouts** card at the top of Settings → Keybinds lists the

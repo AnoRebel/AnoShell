@@ -9,6 +9,7 @@ import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -321,7 +322,7 @@ Scope {
                                             anchors.centerIn: parent
                                             implicitWidth: root.itemSize * 0.6
                                             implicitHeight: root.itemSize * 0.6
-                                            source: { void DesktopEntries.applications.values.length; return `image://icon/${DesktopEntries.heuristicLookup(modelData.appId)?.icon || modelData.appId}` }
+                                            source: FileUtils.appIcon(modelData.appId)
                                             visible: !(CompositorService.supports.windowCapture && modelData.toplevel)
                                         }
                                     }

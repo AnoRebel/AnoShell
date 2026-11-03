@@ -9,6 +9,8 @@ and a reader or player.
 They are off by default. Turn them on in Settings → Modules → Reader, or set
 `reader.enable: true`.
 
+![The manga panel while its covers load](images/reader.webp)
+
 ## Opening them
 
 | Keybind (bundled configs) | Command | Panel |

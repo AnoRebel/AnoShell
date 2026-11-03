@@ -109,6 +109,8 @@ ano wallpaper status    # what's shown, and the rotation settings
 
 ## The wallpaper folder
 
+![The wallpaper picker](images/wallpaper-picker.webp)
+
 `background.wallpaperDir` (Settings → Appearance → Wallpaper Picker, or the
 picker's gear) is the one folder everything uses: the picker deals from it,
 Wallhaven downloads land in it, rotation picks from it and `ano backup

@@ -5,6 +5,8 @@ a grid in pages. Off by default (`pieces.enable`): until you turn them on in
 **Settings → Modules → Desktop pieces** there is no piece surface and no
 piece code runs.
 
+![Pieces on the desktop: clock, day progress, system, calendar, a Bioma organism and the to-do list](images/pieces.webp)
+
 ## Using them
 
 - **Add**: in edit mode (below), or the Desktop pieces card in Settings, which lists every piece (the bundled ones and

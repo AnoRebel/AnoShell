@@ -10,4 +10,6 @@ test("page links become site paths, other files go to GitHub at the branch", () 
   );
   expect(rewriteLink("https://example.com/a.md", "main")).toBe("https://example.com/a.md");
   expect(rewriteLink("#install", "main")).toBe("#install");
+  expect(rewriteLink("images/scratchpad-grow.webm", "dev")).toBe("/images/scratchpad-grow.webm");
+  expect(rewriteLink("images/../x.sh", "dev")).toBe("https://github.com/AnoRebel/AnoShell/blob/dev/docs/x.sh");
 });

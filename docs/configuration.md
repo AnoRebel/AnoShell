@@ -33,6 +33,8 @@ to date with `ano config migrate` (see [The `ano` CLI](cli.md#config)).
 
 ## Settings
 
+![Settings, General page](images/settings-general.webp)
+
 Open Settings with `ano ipc call settings toggle` (bound to `Super+,` in the
 bundled Hyprland config), or as a standalone window with
 `qs -n -p ~/.config/quickshell/ano/settings.qml`. Both use the same pages.
@@ -58,6 +60,9 @@ bundled Hyprland config), or as a standalone window with
   writes defaults into your file.
 
 ## Bars
+
+![Bar forms, top to bottom: full, fit, islands, notch](images/bar-forms.webp)
+![Settings → Bar: forms, groups and their modules](images/settings-bar.webp)
 
 Bars are defined in the `bars` array. Each bar sits on an edge (`top`,
 `bottom`, `left` or `right`) and has its own modules; `bar.*` holds the

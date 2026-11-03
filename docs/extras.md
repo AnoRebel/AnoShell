@@ -30,6 +30,9 @@ with the reason shown, until you turn on `actions.enableDangerous`.
 
 ## Productivity
 
+![The calendar popup](images/calendar.webp)
+![The HUD](images/hud.webp)
+
 Settings → Sidebars → **Productivity**.
 
 - **Notepad** (`notepad.enable`): tabs of text in the right sidebar, saved
@@ -125,6 +128,8 @@ Settings → General → Password prompt:
 
 ## Clipboard history
 
+![The clipboard manager](images/clipboard.webp)
+
 Alt+V opens the clipboard history (cliphist). Entries show what they are:
 
 - **Images** as thumbnails at their own shape, with type, size and weight.
@@ -153,6 +158,8 @@ the bundled watch lines (`wl-paste --watch … cliphist store`), or your own,
 to run `cliphist store` with the environment intact.
 
 ## Screenshots
+
+![The preview card after a capture](images/capture-preview.webp)
 
 Print (screen), Shift+Print or Super+Shift+S (region), Ctrl+Print (the focused
 window), or `qs -c ano ipc call screenshot region|window|screen`, and
@@ -227,6 +234,8 @@ hand. gamemoded is followed over D-Bus, never polled and never started by the
 shell. Each paused effect has its own switch (`performance.*`).
 
 ## Lock keys and Do Not Disturb
+
+![Notification popups](images/notifications.webp)
 
 The OSD shows Caps Lock and Num Lock changes, and the lock screen says when
 Caps Lock is on. The microphone's volume (not only mute) can show too:

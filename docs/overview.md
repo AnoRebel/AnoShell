@@ -14,7 +14,12 @@ The shell runs as the Quickshell config `ano` (`qs -c ano`) from
 depends on anod: without it, everything native keeps working and daemon
 features show as unavailable.
 
+![The default layout: the pill at the bottom, the dock at the top](images/desktop.webp)
+
 ## Panel families
+
+![The right sidebar: quick sliders and toggles, notifications, calendar](images/sidebar-right.webp)
+![The left sidebar: AI chat, notifications and the translator](images/sidebar-left.webp)
 
 A panel family is the set of modules the shell loads. Switching families only
 loads or unloads the modules that differ.
@@ -34,6 +39,11 @@ on, and the compositor supports it.
 
 ## The connected frame
 
+![Connected mode with the classic bar: the frame and the bar are one surface](images/connected.webp)
+![A sidebar grows out of the frame](images/connected-sidebar.webp)
+
+[Watch the sidebars opening in connected mode (WebM)](images/connected-sidebars.webm)
+
 By default every surface floats with its own background. In **Connected**
 mode (`appearance.connectedCorners.enable`, or Settings → Appearance) the
 screen gets a painted band with rounded inner corners, and every surface that
@@ -52,6 +62,8 @@ covers. When a window goes fullscreen the frame retracts, and the bar and pill
 slide into their edges. How it works is in [Architecture](architecture.md).
 
 ## The pill (AnoSpot)
+
+![The pill grown into the control panel](images/control-panel.webp)
 
 AnoSpot is a floating media and status pill on any screen edge (`top`,
 `bottom`, `left` or `right`). It shows the playing track, incoming

@@ -21,6 +21,9 @@ Bundled: **Minimal** (a large clock on your wallpaper and one line to type on)
 and **Bioma Gate** (Bioma's lock screen: a large clock with a minute dial,
 your picture and name, one field; ported from Bioma, GPL-3.0).
 
+![The built-in lock screen (a preview)](images/lock-default.webp)
+![Minimal (a preview)](images/lock-minimal.webp)
+
 ## Fingerprint
 
 With **Fingerprint unlock** on (`lock.fingerprint.enable`, off by default)

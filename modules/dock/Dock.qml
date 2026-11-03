@@ -7,6 +7,7 @@ import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -68,15 +69,6 @@ Scope {
             if (entry) DefaultApps.launchEntry(entry)
             else DefaultApps.launch([appId], "", appId)
         }
-    }
-
-    // App ids are often not icon names (zen → zen-browser, brave-browser →
-    // brave-desktop): ask the desktop entry first.
-    // Reads the entry list so bindings re-run once desktop entries load (they
-    // load asynchronously; a lookup before that returns null).
-    function iconFor(appId) {
-        void DesktopEntries.applications.values.length
-        return DesktopEntries.heuristicLookup(appId)?.icon || appId
     }
 
     Variants {
@@ -247,7 +239,7 @@ Scope {
                                         anchors.centerIn: parent
                                         implicitWidth: root.iconSize
                                         implicitHeight: root.iconSize
-                                        source: `image://icon/${root.iconFor(modelData.appId)}`
+                                        source: FileUtils.appIcon(modelData.appId)
                                     }
 
                                     MouseArea {

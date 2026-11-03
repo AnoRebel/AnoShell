@@ -29,6 +29,8 @@ Folders are watched: a plugin you add or edit is picked up without a restart.
 One whose manifest is invalid or whose QML doesn't compile is listed in
 Settings with its error and can't be turned on.
 
+![The launcher](images/launcher.webp)
+
 ## plugin.json
 
 ```json

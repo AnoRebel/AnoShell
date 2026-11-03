@@ -17,7 +17,7 @@ import qs.services
  * where a non-zero exit notifies with its error output. The command is always
  * a single argument to `sh -c`, never spliced into another script.
  *
- *   qs -c ano ipc call scratchpad toggle|show|close
+ *   qs -c ano ipc call scratchpad toggle|open|close
  *   qs -c ano ipc call scratchpad prompt ">>notify-send hi"
  */
 Singleton {
@@ -150,7 +150,8 @@ Singleton {
     IpcHandler {
         target: "scratchpad"
         function toggle(): void { if (root.enabled) root.open = !root.open }
-        function show(): void { if (root.enabled) root.open = true }
+        // `open`, not `show`: `qs ipc call <target> show` lists the target instead of calling it.
+        function open(): void { if (root.enabled) root.open = true }
         function close(): void { root.open = false }
         function prompt(line: string): string { return root.enabled ? root.submit(line, false).msg : "off" }
         function pins(): string { return root.enabled ? JSON.stringify(root.pins) : "off" }

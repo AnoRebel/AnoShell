@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 import remarkDocLinks, { REPOSITORY } from "./lib/links";
 
 /**
@@ -56,5 +58,10 @@ export default defineNuxtConfig({
      * container when it starts.
      */
     prerender: { crawlLinks: false, ignore: ["/"] },
+    // The pages' screenshots and clips live in docs/images (so GitHub shows
+    // them too); a page's `images/x.webp` resolves to /images/x.webp here.
+    publicAssets: [
+      { dir: fileURLToPath(new URL("../docs/images", import.meta.url)), baseURL: "/images", maxAge: 60 * 60 * 24 * 7 },
+    ],
   },
 });

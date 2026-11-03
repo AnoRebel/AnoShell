@@ -2,6 +2,8 @@
 
 ## The welcome wizard
 
+![The welcome wizard's first step](images/onboarding.webp)
+
 The first time AnoShell starts with an empty user config, a short wizard
 opens beside the shell. It covers:
 

@@ -14,6 +14,8 @@ With the shell's Settings overlay open, `ano atelier` switches it to the Atelier
 otherwise it opens the standalone Settings window. The Atelier needs anod (the
 AnoShell daemon) running.
 
+![Settings → Atelier: themes from every source, with previews](images/settings-atelier.webp)
+
 ## Where items come from
 
 Each tab merges three sources, and every card says which one it is:

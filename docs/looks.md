@@ -6,6 +6,8 @@ material and texture, the typefaces and the motion. Colours are separate (see
 
 ## Built-in looks
 
+![The right sidebar in Liquid, Ink, Neo-tech and Clay](images/looks.webp)
+
 | Look | Feel |
 |---|---|
 | **Liquid** (default) | One fluid body: droplet pills, meniscus joins, caustic light that moves while you hover a panel. |
@@ -73,6 +75,8 @@ Fonts you set yourself in Settings always win over a look's typography.
 Textures can be switched off in Settings → Appearance → Look → Surface textures.
 
 ## Colour modes
+
+![Settings → Appearance: the wallpaper engine and the looks](images/settings-appearance.webp)
 
 Settings → Appearance → Theme source:
 

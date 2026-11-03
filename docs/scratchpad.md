@@ -10,10 +10,14 @@ Off by default: turn it on in **Settings → Sidebars → Productivity → Scrat
 & Pins** (`scratchpad.enable`). It uses the notepad and the to-do list even
 when their own switches are off.
 
+![The scratchpad grown from the pill: notes, pins and the prompt bar](images/scratchpad.webp)
+
+[Watch the scratchpad growing out of the pill (WebM)](images/scratchpad-grow.webm)
+
 ## Opening it
 
 - **Super+Y** in the bundled keybinds.
-- `qs -c ano ipc call scratchpad toggle` (also `show`, `close`).
+- `qs -c ano ipc call scratchpad toggle` (also `open`, `close`).
 - A pill click: set `anoSpot.actions.leftClick`, `rightClick` or `middleClick`
   to `"scratchpad"`.
 
