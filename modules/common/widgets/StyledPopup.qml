@@ -261,7 +261,14 @@ Item {
                     SurfaceMaterial {
                         id: bg
                         surface: "popout"
-                        anchors.fill: parent
+                        // Bury, don't shrink: shallower than its two corners, the
+                        // card reaches past its anchor edge (clipped by body) so
+                        // the free corners keep their radius as it retracts.
+                        readonly property real _bury: Math.max(0, 2 * radius - (root._vertical ? body.height : body.width))
+                        x: root.edge === "left" ? -_bury : 0
+                        y: root.edge === "top" ? -_bury : 0
+                        width: body.width + (root._vertical ? 0 : _bury)
+                        height: body.height + (root._vertical ? _bury : 0)
                         visible: !area.connectedMode
                         radius: Appearance?.rounding.normal ?? 12
                         color: Appearance?.colors.colLayer0 ?? "#1C1B1F"

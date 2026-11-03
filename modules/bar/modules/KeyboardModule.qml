@@ -8,9 +8,8 @@ import Quickshell
 /**
  * Keyboard layout indicator. Shows a `language` Material Symbol prefix
  * plus the current XKB layout code (e.g. "us", "fr"). Visible only when
- * more than one layout is configured. Clicking the indicator on Niri
- * cycles to the next layout via `niri msg action switch-layout next`;
- * Hyprland-side cycling is left to the user's keybinds.
+ * more than one layout is configured. Clicking cycles the layout through
+ * the compositor backend (right click goes back) where it can.
  *
  * Bar module IDs: "keyboard" (legacy, retained for existing user
  * configs) and "keyboardLayout" (alias added per spec

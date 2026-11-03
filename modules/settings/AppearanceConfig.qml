@@ -930,8 +930,10 @@ ColumnLayout {
         ConfigSwitch {
             label: "Windows sit flush against the frame"
             configKey: "appearance.connectedCorners.manageGaps"
-            sublabel: "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept)."
-            enabled: shellModeCard.connected
+            sublabel: (CompositorService.supports?.outerGaps ?? false)
+                ? "Drops the compositor's outer gap while connected, so windows meet the frame with no second inset (inner gaps between windows are kept)."
+                : `Not available on ${CompositorService.compositor}: set its outer gaps to 0 in its own config`
+            enabled: shellModeCard.connected && (CompositorService.supports?.outerGaps ?? false)
             checked: Config.options?.appearance?.connectedCorners?.manageGaps ?? true
             onCheckedChanged: Config.setNestedValue("appearance.connectedCorners.manageGaps", checked)
         }

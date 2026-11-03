@@ -20,6 +20,7 @@ Singleton {
     function enable(): void {
         if (ScreenFilters.mode !== "none") ScreenFilters.set("none"); // one screen shader at a time
         if (CompositorService.setScreenShader(root.shaderPath)) root.enabled = true;
+        else console.warn(`[AntiFlashbang] not available on ${CompositorService.compositor}: it has no screen shader`);
     }
 
     function disable(): void {

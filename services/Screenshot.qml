@@ -75,9 +75,9 @@ Singleton {
         root._out = `${root.dir}/Screenshot_${stamp}.png`
         root.busy = true
         if (CompositorService.isNiri) {
-            const act = root._region ? "screenshot" : root._mode === "window" ? "screenshot-window" : "screenshot-screen"
-            shot.exec({ command: ["bash", "-c", root._mk + 'niri msg action "$ACT" --path "$OUT"'],
-                environment: ({ DIR: root.dir, ACT: act, OUT: root._out }) })
+            // The folder first (shot), then the action over niri's socket
+            // (no `niri msg` process; onExited sends it).
+            shot.exec({ command: ["bash", "-c", root._mk + 'true'], environment: ({ DIR: root.dir }) })
         } else if (root._mode === "window") {
             // Geometry first (the backend's focused window), then grim. A
             // request the backend drops (socket gone, bad reply) never calls
@@ -169,7 +169,14 @@ Singleton {
         onExited: code => {
             // niri writes the file when its UI is confirmed (the region) or a
             // moment later: wait for it rather than assume.
-            if (CompositorService.isNiri && code === 0) { waitFile.tries = 0; waitFile.start() }
+            if (CompositorService.isNiri && code === 0) {
+                const p = root._out
+                const act = root._region ? { Screenshot: { show_pointer: true, path: p } }
+                    : root._mode === "window" ? { ScreenshotWindow: { id: null, write_to_disk: true, show_pointer: true, path: p } }
+                    : { ScreenshotScreen: { write_to_disk: true, show_pointer: true, path: p } }
+                if (!NiriService.send({ Action: act })) { root._finish(1); return }
+                waitFile.tries = 0; waitFile.start()
+            }
             else root._finish(code)
         }
     }

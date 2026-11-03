@@ -131,7 +131,18 @@ function packSlot(descriptor, ctx) {
     }
 
     var extent = isHorizontal(side) ? b.height : b.width;
-    var fc = Math.min(radii.far, extent);
+    // Bury, don't shrink (Ryoku docs/frame.md): a body shallower than its two
+    // far corners keeps their full radius and reaches back into the ring
+    // instead (solid there, or off-screen at thickness 0), so a closing
+    // panel retracts into its edge rather than squashing into a nub.
+    var fc = radii.far;
+    var bury = Math.max(0, 2 * fc - extent);
+    if (bury > 0) {
+        if (side === "top") { b.y -= bury; b.height += bury; }
+        else if (side === "bottom") { b.height += bury; }
+        else if (side === "left") { b.x -= bury; b.width += bury; }
+        else { b.width += bury; }
+    }
     var omitS = radii.farStartCr > 0;
     var omitE = radii.farEndCr > 0;
 
