@@ -135,6 +135,24 @@ ColumnLayout {
 
         readonly property string chosen: Config.options?.appearance?.look ?? ""
         readonly property string familyDefault: Looks.familyDefaults[Looks.family] ?? "liquid"
+        // Each look drawn in the shell's colours, or in a dark or a light
+        // palette whatever mode the shell is in.
+        property string scenePalette: "current"
+
+        RowLayout {
+            Layout.fillWidth: true
+            StyledText { text: "Preview in"; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7 }
+            Item { Layout.fillWidth: true }
+            Repeater {
+                model: [{ v: "current", l: "Current" }, { v: "dark", l: "Dark" }, { v: "light", l: "Light" }]
+                GroupButton {
+                    required property var modelData
+                    label: modelData.l
+                    toggled: lookCard.scenePalette === modelData.v
+                    onClicked: lookCard.scenePalette = modelData.v
+                }
+            }
+        }
 
         GridLayout {
             Layout.fillWidth: true
@@ -198,6 +216,14 @@ ColumnLayout {
                             visible: tile.valid
                             text: Looks.entries[tile.modelData.id]?.description ?? ""
                             wrapMode: Text.WordWrap; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
+                        }
+                        MiniScene {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            visible: tile.valid
+                            look: Looks.entries[tile.modelData.id]?.look ?? ({})
+                            tokens: lookCard.scenePalette === "dark" ? (ThemeRegistry.themeContents["ano-dark"] ?? ({}))
+                                : lookCard.scenePalette === "light" ? (ThemeRegistry.themeContents["ano-light"] ?? ({})) : ({})
                         }
                         // Error badge: an invalid look is listed but can't be applied.
                         Rectangle {
@@ -470,27 +496,13 @@ ColumnLayout {
                                 }
                             }
 
-                            // Swatch row — primary / surface / surface-container / outline
-                            RowLayout {
+                            // The theme drawn in its own colours, in the current look.
+                            MiniScene {
                                 Layout.fillWidth: true
-                                spacing: 4
-                                Repeater {
-                                    model: [
-                                        modelData.primary,
-                                        modelData.surface,
-                                        modelData.surfaceContainer,
-                                        modelData.outline
-                                    ]
-                                    Rectangle {
-                                        required property string modelData
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: 16
-                                        radius: 4
-                                        color: modelData
-                                        border.width: 1
-                                        border.color: Qt.rgba(0, 0, 0, 0.25)
-                                    }
-                                }
+                                tokens: ThemeRegistry.themeContents[modelData.name] ?? ({ primary: modelData.primary,
+                                    background: modelData.surface, surface_container: modelData.surfaceContainer,
+                                    outline_variant: modelData.outline })
+                                look: Looks.current
                             }
 
                             // Description

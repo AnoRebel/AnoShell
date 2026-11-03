@@ -670,11 +670,12 @@ ColumnLayout {
             sourceSize.width: 400
             cache: true
         }
-        // Themes: their colours (background, surfaces, accents) as stripes.
+        // Themes in their own colours, looks in their own shape and material:
+        // a small bar, popup and notification (MiniScene).
         Loader {
             id: swatches
             anchors.fill: parent
-            active: img.status !== Image.Ready && entry?.type === "themes" && (entry?.path ?? "").endsWith(".json")
+            active: img.status !== Image.Ready && ["themes", "looks"].includes(entry?.type) && (entry?.path ?? "").endsWith(".json")
             sourceComponent: Item {
                 id: sw
                 property var t: ({})
@@ -682,26 +683,17 @@ ColumnLayout {
                     path: entry.path
                     onLoaded: { try { sw.t = JSON.parse(text()) } catch (e) { sw.t = {} } }
                 }
-                Rectangle { anchors.fill: parent; color: parent.t.background ?? "transparent" }
-                Row {
-                    anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 10 }
-                    height: parent.height * 0.35
-                    spacing: 6
-                    Repeater {
-                        model: ["surface_container_high", "primary", "secondary", "tertiary"]
-                        delegate: Rectangle {
-                            required property string modelData
-                            width: (parent.width - 18) / 4; height: parent.height
-                            radius: Appearance.rounding.verysmall
-                            color: swatches.item?.t?.[modelData] ?? "transparent"
-                        }
-                    }
+                MiniScene {
+                    anchors { fill: parent; margins: 8 }
+                    visible: Object.keys(sw.t).length > 0
+                    tokens: entry?.type === "themes" ? sw.t : ({})
+                    look: entry?.type === "looks" ? sw.t : Looks.current
                 }
             }
         }
         MaterialSymbol {
             anchors.centerIn: parent
-            visible: img.status !== Image.Ready && !(swatches.item?.t?.background)
+            visible: img.status !== Image.Ready && Object.keys(swatches.item?.t ?? {}).length === 0
             text: Atelier.types.find(t => t.id === entry?.type)?.icon ?? "extension"
             iconSize: 36
             color: Appearance.colors.colSubtext
