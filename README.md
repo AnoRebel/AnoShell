@@ -272,7 +272,7 @@ Each bar has a **form** (`full`, `fit`, `islands`, `notch`) and **groups** of
 modules, each in a zone (`start`, `center`, `end`) and attached to the bar
 body or detached as its own island. Switching forms animates live. End zones
 read from the screen edge inwards. Full reference:
-[docs/configuration.md](docs/configuration.md#bar).
+[docs/configuration.md](docs/configuration.md#bars).
 
 ```json
 {

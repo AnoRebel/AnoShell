@@ -9,6 +9,9 @@
 // This config replaces waybar/swaync/swayosd with AnoShell.
 // All UI interactions (sidebars, overview, settings, OSD, notifications)
 // go through QuickShell IPC: qs -c ano ipc call <target> <method>
+// Binds edited in Settings → Keybinds land in an ano-managed include after
+// `ano keybinds migrate` (reversible). Docs: https://anoshell.anorebel.net
+// Check what's installed with `ano doctor`.
 // =============================================================================
 
 // ─── Input ───────────────────────────────────────────────────────────────────

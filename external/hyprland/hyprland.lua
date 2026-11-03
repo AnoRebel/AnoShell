@@ -7,6 +7,10 @@
 -- ║   integration preserved 1:1.                                             ║
 -- ║                                                                          ║
 -- ║   User overrides live in custom/*.lua and are sourced at the very end.   ║
+-- ║                                                                          ║
+-- ║   Starts anod and `qs -c ano`. Binds edited in Settings → Keybinds land  ║
+-- ║   in an ano-managed file after `ano keybinds migrate` (reversible).      ║
+-- ║   Docs: https://anoshell.anorebel.net · check deps with `ano doctor`.    ║
 -- ╚═══════════════════════════════════════════════════════════════════════════╝
 
 -- ╶ Locals ────────────────────────────────────────────────────────────────────
@@ -31,7 +35,7 @@ local function qs_ipc(target, ...)
 end
 
 -- For binds that try QuickShell first, fall back to a shell command if the
--- QS process isn't running. TEST_ALIVE exits nonzero when QS isn't up.
+-- QS process isn't running (`qs ipc call` exits nonzero when it isn't up).
 local function qs_or(target, method, fallback)
 	return ("%s || %s"):format(qs_ipc(target, method), fallback)
 end
