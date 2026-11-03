@@ -1,6 +1,7 @@
 # Reader
 
-Three side panels for reading and watching: **novels** (FreeWebNovel),
+Three side panels for reading and watching: **novels** (FreeWebNovel or NovelArrow, picked
+from the source menu at the top of Browse),
 **manga** (WeebCentral) and **anime** (AllAnime; episodes play in mpv). Each
 has Browse (popular, latest, search, filters) and Library tabs, a detail page,
 and a reader or player.
@@ -126,7 +127,7 @@ system-wide. Changes apply the next time the backend starts.
 | `reader.idleTimeout` | `120` | seconds before the backend stops |
 | `reader.cacheMB` | `64` | image cache size |
 | `reader.metaCacheEntries` | `512` | lists, details and chapters kept in memory |
-| `reader.providers.<freewebnovel\|weebcentral\|allanime>.backend` | `go` | `go` or `python` |
+| `reader.providers.<freewebnovel\|weebcentral\|allanime>.backend` | `go` | `go` or `python` (the novel one covers both novel sources) |
 | `reader.python` | `python3` | interpreter for the Python fallback |
 
 The readers come from [novelmangareader](https://github.com/dhrruvsharma/shell)

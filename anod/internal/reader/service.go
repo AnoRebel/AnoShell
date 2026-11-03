@@ -72,6 +72,7 @@ type Service struct {
 	meta     *lru
 	manga    *manga
 	novel    *novel
+	narrow   *novelArrow
 	anime    *anime
 	libMu    sync.Mutex
 	settings Settings
@@ -251,6 +252,7 @@ func (s *Service) start() error {
 	proxy := func(raw string) string { return s.base + "image?url=" + url.QueryEscape(raw) }
 	s.manga = &manga{f: newFetcher(0), cache: s.meta, proxy: proxy}
 	s.novel = &novel{f: newFetcher(fwnInterval), cache: s.meta, proxy: proxy, listDir: filepath.Join(s.CacheDir, "novel-chapters")}
+	s.narrow = &novelArrow{f: newFetcher(narInterval), cache: s.meta, proxy: proxy}
 	s.anime = &anime{f: newFetcher(0), cache: s.meta}
 	s.srv = &http.Server{Handler: s, ReadHeaderTimeout: 10 * time.Second}
 	go func(srv *http.Server) {
@@ -403,7 +405,7 @@ func (s *Service) serveProvider(w http.ResponseWriter, r *http.Request, kind, en
 		err error
 	)
 	s.mu.Lock()
-	m, nv, an := s.manga, s.novel, s.anime
+	m, nv, na, an := s.manga, s.novel, s.narrow, s.anime
 	s.mu.Unlock()
 	switch kind + "/" + endpoint {
 	case "manga/hot":
@@ -425,24 +427,50 @@ func (s *Service) serveProvider(w http.ResponseWriter, r *http.Request, kind, en
 		if id, err = need("chapterId"); err == nil {
 			v, err = m.pages(ctx, id)
 		}
+	// Novel lists come from the source in ?provider= (default FreeWebNovel);
+	// details and chapters from the source their id is prefixed with.
+	case "novel/provider/list":
+		v = novelProviders
+	case "novel/provider/switch": // the client keeps the choice and sends ?provider=
+		v = map[string]any{"ok": true}
 	case "novel/hot":
-		v, err = nv.hot(ctx)
+		if p("provider", fwnName) == narName {
+			v, err = na.hot(ctx)
+		} else {
+			v, err = nv.hot(ctx)
+		}
 	case "novel/latest":
-		v, err = nv.latest(ctx, max(1, n("page", 1)))
+		if p("provider", fwnName) == narName {
+			v, err = na.latest(ctx, max(1, n("page", 1)))
+		} else {
+			v, err = nv.latest(ctx, max(1, n("page", 1)))
+		}
 	case "novel/search":
 		var qs string
 		if qs, err = need("q"); err == nil {
-			v, err = nv.search(ctx, qs)
+			if p("provider", fwnName) == narName {
+				v, err = na.search(ctx, qs, max(1, n("page", 1)))
+			} else {
+				v, err = nv.search(ctx, qs)
+			}
 		}
 	case "novel/info":
 		var id string
 		if id, err = need("id"); err == nil {
-			v, err = nv.info(ctx, id)
+			if strings.HasPrefix(id, narName+":") {
+				v, err = na.info(ctx, id)
+			} else {
+				v, err = nv.info(ctx, id)
+			}
 		}
 	case "novel/chapter":
 		var id string
 		if id, err = need("id"); err == nil {
-			v, err = nv.chapter(ctx, id)
+			if strings.HasPrefix(id, narName+":") {
+				v, err = na.chapter(ctx, id)
+			} else {
+				v, err = nv.chapter(ctx, id)
+			}
 		}
 	case "anime/search":
 		var qs string

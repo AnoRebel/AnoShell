@@ -64,8 +64,12 @@ Singleton {
     property string activeProvider: "freewebnovel"
     property bool isSwitchingProvider: false
     readonly property var availableProviders: [
-        { name: "freewebnovel", label: "FreeWebNovel" }
+        { name: "freewebnovel", label: "FreeWebNovel" },
+        { name: "novelarrow", label: "NovelArrow" }
     ]
+    // Lists name their source (anod's Go backend picks it from this; the
+    // Python one from /provider/switch). Details/chapters go by id prefix.
+    readonly property string _src: "provider=" + encodeURIComponent(root.activeProvider)
 
     function switchProvider(name) {
         if (name === activeProvider || isSwitchingProvider) return
@@ -222,7 +226,7 @@ Singleton {
         novelList = []
         currentSearchText = ""
         currentGenre = ""
-        Reader.get(root.apiUrl + "/hot", function(err, body) {
+        Reader.get(root.apiUrl + "/hot?" + root._src, function(err, body) {
             if (err) { novelError = "Request failed: " + err; isFetchingNovel = false; return }
             _parseNovelResults(body, true)
         })
@@ -234,7 +238,7 @@ Singleton {
         currentSearchText = ""
         isFetchingNovel = true
         novelError = ""
-        Reader.get(root.apiUrl + "/latest?page=" + latestPage, function(err, body) {
+        Reader.get(root.apiUrl + "/latest?page=" + latestPage + "&" + root._src, function(err, body) {
             if (err) { novelError = "Request failed: " + err; isFetchingNovel = false; return }
             _parseNovelResults(body, false)
         })
@@ -248,7 +252,7 @@ Singleton {
         currentStatus = status || "All"
         isFetchingNovel = true
         novelError = ""
-        var url = root.apiUrl + "/search?q=" + encodeURIComponent(query) + "&page=1"
+        var url = root.apiUrl + "/search?q=" + encodeURIComponent(query) + "&page=1&" + root._src
         if (genre)  url += "&genre="  + encodeURIComponent(genre)
         if (status && status !== "All") url += "&status=" + encodeURIComponent(status)
         Reader.get(url, function(err, body) {
@@ -264,7 +268,7 @@ Singleton {
             isFetchingNovel = true
             novelError = ""
             var url = root.apiUrl + "/search?q=" + encodeURIComponent(currentSearchText)
-                + "&page=" + (currentOffset + 1)
+                + "&page=" + (currentOffset + 1) + "&" + root._src
             if (currentGenre)  url += "&genre="  + encodeURIComponent(currentGenre)
             if (currentStatus && currentStatus !== "All")
                 url += "&status=" + encodeURIComponent(currentStatus)
