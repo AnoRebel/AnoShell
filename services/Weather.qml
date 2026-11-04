@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.modules.common
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -130,9 +131,7 @@ Singleton {
         id: fetcher
         command: ["true"]
         onExited: code => {
-            if (code === 6 || code === 7) root.problem = "Couldn't reach wttr.in (offline?)"
-            else if (code === 28) root.problem = "wttr.in didn't answer in time"
-            else if (code !== 0) root.problem = `wttr.in failed (curl exit ${code})`
+            if (code !== 0) root.problem = `wttr.in: ${Format.curlReason(code)}`
         }
         stdout: StdioCollector {
             onStreamFinished: {

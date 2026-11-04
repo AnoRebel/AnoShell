@@ -1,10 +1,12 @@
 package reader
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -350,3 +352,20 @@ HTTPServer(("127.0.0.1", int(os.environ["ANO_READER_PORT"])), H).serve_forever()
 }
 
 func haveBin(b string) bool { _, err := exec.LookPath(b); return err == nil }
+
+func TestFriendlyErr(t *testing.T) {
+	u := "https://weebcentral.com/search/data?text=x"
+	cases := map[string]error{
+		"the connection to weebcentral.com dropped": &url.Error{Op: "Get", URL: u, Err: io.ErrUnexpectedEOF},
+		"couldn't find weebcentral.com (offline?)":  &url.Error{Op: "Get", URL: u, Err: &net.DNSError{Err: "no such host", Name: "weebcentral.com"}},
+		"couldn't reach weebcentral.com (offline?)": &url.Error{Op: "Get", URL: u, Err: &net.OpError{Op: "dial", Err: errors.New("connection refused")}},
+		"weebcentral.com didn't answer in time":     &url.Error{Op: "Get", URL: u, Err: context.DeadlineExceeded},
+		"HTTP 503 from weebcentral.com":             &statusError{Code: 503, URL: u},
+		"plain":                                     errors.New("plain"),
+	}
+	for want, err := range cases {
+		if got := friendlyErr(err); got != want {
+			t.Errorf("friendlyErr(%v) = %q, want %q", err, got, want)
+		}
+	}
+}

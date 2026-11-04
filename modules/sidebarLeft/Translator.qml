@@ -172,12 +172,19 @@ Item {
             StyledTextArea {
                 id: inputArea
                 anchors { fill: parent; margins: 8 }
-                placeholderText: "Type text to translate..."
                 // StyledTextArea already defaults wrapMode to TextArea.Wrap;
                 // referencing the TextArea enum here needs QtQuick.Controls
                 // imported into this file (it isn't) → ReferenceError.
                 background: null
                 onTextChanged: translateTimer.restart()
+            }
+            // ponytail: the TextArea's own placeholder doesn't draw here (it does in AI chat); drawn by hand
+            StyledText {
+                visible: inputArea.text.length === 0
+                anchors { left: inputArea.left; top: inputArea.top; leftMargin: inputArea.leftPadding; topMargin: inputArea.topPadding }
+                text: "Type or paste text to translate"
+                color: Appearance.colors.colSubtext
+                font: inputArea.font
             }
         }
 

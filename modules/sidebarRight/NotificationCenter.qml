@@ -15,7 +15,6 @@ Rectangle {
     implicitHeight: notifCol.implicitHeight + 20
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-    visible: Notifications.list.length > 0
 
     ColumnLayout {
         id: notifCol
@@ -36,6 +35,7 @@ Rectangle {
                 opacity: 0.5
             }
             ToolbarButton {
+                visible: Notifications.list.length > 0
                 iconName: "delete_sweep"; iconSize: 16
                 toolTipText: "Clear all"
                 onClicked: Notifications.discardAllNotifications()

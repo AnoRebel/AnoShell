@@ -12,6 +12,8 @@ TextArea {
         variableAxes: Appearance.font.variableAxes.main
     }
     color: Appearance?.m3colors.m3onBackground ?? "black"
+    // The style's default placeholder colour vanishes on the dark layers.
+    placeholderTextColor: Appearance?.colors.colSubtext ?? "#888888"
     selectionColor: Appearance?.colors.colPrimary ?? "#65558F"
     selectedTextColor: Appearance?.m3colors.m3onPrimary ?? "white"
     selectByMouse: true

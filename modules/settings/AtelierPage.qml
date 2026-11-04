@@ -177,9 +177,17 @@ ColumnLayout {
             }
             RippleButton {
                 buttonText: Atelier.refreshing ? "Checking…" : "Check catalogs"
-                enabled: !Atelier.refreshing && Anod.available
+                enabled: !Atelier.refreshing && Anod.available && (Config.options?.atelier?.catalogs ?? []).length > 0
                 onClicked: Atelier.refresh()
             }
+        }
+        StyledText {
+            Layout.fillWidth: true
+            visible: (Config.options?.atelier?.catalogs ?? []).length === 0
+            wrapMode: Text.Wrap
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.small
+            text: "No catalogs added yet: what's shown is built in or yours. Add a catalog in the Catalogs card below to browse more."
         }
 
         StyledText {
@@ -195,7 +203,10 @@ ColumnLayout {
             wrapMode: Text.Wrap
             color: Appearance.colors.colSubtext
             font.pixelSize: Appearance.font.pixelSize.small
-            text: `Offline: ${root.catalogsOffline.map(c => c.name || c.url).join(", ")} — showing what was fetched last.`
+            // A catalog with a cache shows it; one never fetched has nothing to show.
+            text: root.catalogsOffline.map(c => c.ok
+                ? `${c.name || c.url} couldn't be checked (${c.error || "offline"}): showing what was fetched last.`
+                : `${c.name || c.url} couldn't be loaded: ${c.error || "not fetched yet"}.`).join("\n")
         }
         StyledText {
             Layout.fillWidth: true

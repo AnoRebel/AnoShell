@@ -368,6 +368,33 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// friendlyErr says why a source failed in plain words (the full error goes
+// to the log): which site, and whether it was unreachable, slow or refused.
+func friendlyErr(err error) string {
+	var se *statusError
+	if errors.As(err, &se) {
+		return se.Error()
+	}
+	var ue *url.Error
+	if !errors.As(err, &ue) {
+		return err.Error()
+	}
+	host := hostOf(ue.URL)
+	var dns *net.DNSError
+	var op *net.OpError
+	switch {
+	case ue.Timeout() || errors.Is(err, context.DeadlineExceeded):
+		return host + " didn't answer in time"
+	case errors.As(err, &dns):
+		return "couldn't find " + host + " (offline?)"
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return "the connection to " + host + " dropped"
+	case errors.As(err, &op):
+		return "couldn't reach " + host + " (offline?)"
+	}
+	return "couldn't reach " + host + ": " + ue.Err.Error()
+}
+
 func writeJSON(w http.ResponseWriter, code int, v any) {
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -509,7 +536,7 @@ func (s *Service) serveProvider(w http.ResponseWriter, r *http.Request, kind, en
 		}
 		// One source failing never takes the others down: the panel shows
 		// "source unavailable" for this request only.
-		writeJSON(w, http.StatusBadGateway, map[string]any{"error": err.Error(), "unavailable": true})
+		writeJSON(w, http.StatusBadGateway, map[string]any{"error": friendlyErr(err), "unavailable": true})
 	default:
 		writeJSON(w, http.StatusOK, v)
 	}

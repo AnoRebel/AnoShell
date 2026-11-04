@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.services
 import qs.modules.reader.components
+import qs.modules.common.widgets as W
 
 Item {
     id: browseView
@@ -272,6 +273,17 @@ Item {
                 active: ReaderManga.isFetchingManga && ReaderManga.mangaList.length > 0
             }
 
+            // Nothing came back (and no error)
+            W.EmptyState {
+                anchors.centerIn: parent
+                width: Math.min(parent.width - 40, 320)
+                z: 9
+                visible: !ReaderManga.isFetchingManga && ReaderManga.mangaError.length === 0 && ReaderManga.mangaList.length === 0
+                icon: "search_off"
+                title: ReaderManga.currentSearchText.length > 0 ? `No manga found for "${ReaderManga.currentSearchText}"` : "Nothing to show here"
+                hint: ReaderManga.currentSearchText.length > 0 ? "Try fewer or different words" : "Try another tab, or search"
+            }
+
             // Error state
             Rectangle {
                 anchors.fill: parent
@@ -298,6 +310,11 @@ Item {
                         width: 260
                         horizontalAlignment: Text.AlignHCenter
                         lineHeight: 1.4
+                    }
+                    W.RippleButton {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        buttonText: "Retry"
+                        onClicked: ReaderManga.currentSearchText.length > 0 ? ReaderManga.searchManga(ReaderManga.currentSearchText, true) : ReaderManga.fetchByOrigin(browseView.currentTagId, true)
                     }
                 }
             }

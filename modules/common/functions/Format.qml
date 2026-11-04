@@ -64,6 +64,18 @@ Singleton {
         return root._stripTrailingZeros(h.toFixed(1)) + "h";
     }
 
+    // Why a curl run failed, in plain words, from its exit code ("" for 0).
+    function curlReason(code) {
+        if (code === 0) return "";
+        if (code === 5 || code === 6 || code === 7) return "couldn't reach it (offline?)";
+        if (code === 28) return "it didn't answer in time";
+        if (code === 22) return "the server refused the request";
+        if (code === 18 || code === 52 || code === 55 || code === 56) return "the connection dropped";
+        if (code === 35 || code === 51 || code === 58 || code === 60) return "the secure connection failed";
+        if (code === 23) return "couldn't write the file (disk full?)";
+        return `the request failed (curl exit ${code})`;
+    }
+
     // Internal: drop trailing zeros (and a stranded decimal point) from
     // a fixed-decimal numeric string so we don't render "1.50s".
     function _stripTrailingZeros(s) {

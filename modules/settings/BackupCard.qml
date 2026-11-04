@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "."
@@ -48,18 +49,19 @@ SettingsCard {
         })
     }
     Component.onCompleted: load()
-    Connections { target: Anod; function onAvailableChanged() { card.load() } }
+    Connections { target: Anod; function onAvailableChanged() { if (!Anod.available) card._say(""); card.load() } }
 
     function names(map) { return Object.keys(map).filter(k => map[k]) }
     function create() {
         const only = card.names(card.picked)
         if (!only.length) { card._say("Pick at least one thing to back up.", true); return }
         card.busy = true; card._say("Backing up…")
+        const t0 = Date.now()
         Anod.call("backup.create", { only: only }, (r, e) => {
             if (!card) return // Settings closed meanwhile
             card.busy = false
             if (e) { card._say(e.message, true); return }
-            card._say(`Backed up ${r.files} file(s) to ${r.path}`)
+            card._say(`Backed up ${r.files} file(s) in ${Format.formatDuration(Date.now() - t0)} to ${r.path}`)
             card.refresh()
         })
     }
@@ -74,6 +76,7 @@ SettingsCard {
         const only = card.names(card.restorePick)
         if (!card.chosen || !only.length) { card._say("Pick at least one thing to restore.", true); return }
         card.busy = true; card._say(dryRun ? "Checking…" : "Restoring…")
+        const t0 = Date.now()
         Anod.call("backup.restore", { path: card.chosen.path, only: only, dryRun: dryRun }, (r, e) => {
             if (!card) return // Settings closed meanwhile
             card.busy = false
@@ -84,7 +87,7 @@ SettingsCard {
                 card._say(""); return
             }
             if (r.error) { card._say(`Stopped: ${r.error}. Restored before that: ${r.files.length} file(s)` + (r.snapshot ? `; the previous versions are in ${r.snapshot}` : ""), true); return }
-            card._say(`Restored ${r.files.length} file(s)` + (r.snapshot ? `; the files it replaced are in ${r.snapshot}` : "") + ". Settings apply as the shell reloads them; reload your compositor for its configs.")
+            card._say(`Restored ${r.files.length} file(s) in ${Format.formatDuration(Date.now() - t0)}` + (r.snapshot ? `; the files it replaced are in ${r.snapshot}` : "") + ". Settings apply as the shell reloads them; reload your compositor for its configs.")
             card.chosen = null; card.preview = null
             card.refresh()
         })
@@ -143,6 +146,13 @@ SettingsCard {
     Section {
         visible: Anod.available
         title: card.backups.length ? "Backups" : "No backups yet"
+        StyledText {
+            visible: card.backups.length === 0
+            Layout.fillWidth: true; wrapMode: Text.Wrap
+            text: "Pick what to include above and press Back up now; the archives listed here can be restored whole or in part."
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.small
+        }
         Repeater {
             model: card.backups
             RowLayout {

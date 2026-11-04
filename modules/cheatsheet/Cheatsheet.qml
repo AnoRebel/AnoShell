@@ -17,6 +17,14 @@ Scope {
     id: root
     property bool cheatsheetOpen: false
     property string searchQuery: ""
+    function matches(b) {
+        const q = root.searchQuery.toLowerCase()
+        return (b.keys ?? "").toLowerCase().includes(q)
+            || (b.action ?? "").toLowerCase().includes(q)
+            || (b.description ?? "").toLowerCase().includes(q)
+    }
+    readonly property bool anyMatch: searchQuery.length === 0
+        || (keybindData.children ?? []).some(s => (s.children ?? []).some(b => root.matches(b)))
 
     function toggle() { cheatsheetOpen = !cheatsheetOpen }
     function open() { cheatsheetOpen = true }
@@ -197,6 +205,14 @@ Scope {
                             }
                         }
 
+                        EmptyState {
+                            visible: !root.anyMatch
+                            Layout.fillWidth: true; Layout.topMargin: 60
+                            icon: "search_off"
+                            title: `No shortcut matches "${root.searchQuery}"`
+                            hint: "Search by key (Super+Q), action or description"
+                        }
+
                         Repeater {
                             model: keybindData.children ?? []
 
@@ -210,12 +226,7 @@ Scope {
                                 property var binds: modelData.children ?? []
                                 property var filteredBinds: root.searchQuery.length === 0
                                     ? binds
-                                    : binds.filter(b => {
-                                        const q = root.searchQuery.toLowerCase()
-                                        return (b.keys ?? "").toLowerCase().includes(q)
-                                            || (b.action ?? "").toLowerCase().includes(q)
-                                            || (b.description ?? "").toLowerCase().includes(q)
-                                    })
+                                    : binds.filter(b => root.matches(b))
 
                                 visible: filteredBinds.length > 0
 

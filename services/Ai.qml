@@ -30,8 +30,10 @@ Singleton {
     property string systemPrompt: Config.options?.ai?.systemPrompt ?? "You are a helpful assistant integrated into a Linux desktop shell called Ano."
     property QtObject tokenCount: QtObject { property int input: -1; property int output: -1; property int total: -1 }
 
-    // Models — loaded from config
-    property var models: Config.options?.ai?.models ?? ({
+    // Models: the built-in ones plus ai.models from the config (same id = override).
+    // Ollama/OpenRouter ones are added at runtime (addModel).
+    property var models: Object.assign({}, root.builtinModels, Config.options?.ai?.models ?? {})
+    readonly property var builtinModels: ({
         "gemini-2.5-flash": {
             "name": "Gemini 2.5 Flash", "icon": "neurology",
             "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse",
@@ -218,7 +220,11 @@ Singleton {
 
     // Model/key management
     function setModel(modelId) {
-        if (!models[modelId]) { addMessage(`Unknown model: ${modelId}`, interfaceRole); return }
+        if (!models[modelId]) {
+            const list = Object.keys(models).map(id => `- \`${id}\`: ${models[id].name}`).join("\n")
+            addMessage((modelId ? `Unknown model: ${modelId}\n\n` : "") + `Pick one with \`/model <id>\`:\n${list}`, interfaceRole)
+            return
+        }
         currentModelId = modelId
         addMessage(`Model set to: ${models[modelId].name}`, interfaceRole)
     }
@@ -322,7 +328,12 @@ Singleton {
     function sendUserMessage(text) {
         if (pendingRequest) return
         if (!currentModelId || !models[currentModelId]) { addMessage("No model selected. Use /model MODEL_ID", interfaceRole); return }
-        if (!currentModelHasApiKey) { addMessage("No API key. Use /key YOUR_API_KEY", interfaceRole); return }
+        if (!currentModelHasApiKey) {
+            const m = models[currentModelId]
+            addMessage(`${m?.name ?? "This model"} needs an API key` + (m?.key_get_link ? ` (get one at ${m.key_get_link})` : "")
+                + ": set it with `/key YOUR_API_KEY`, or pick another model with `/model`.", interfaceRole)
+            return
+        }
 
         addMessage(text, "user")
 
@@ -550,9 +561,9 @@ Singleton {
             const m = j.error?.message ?? j[0]?.error?.message ?? j.message
             if (m) return m
         } catch (e) {}
-        if (code === 6 || code === 7) return "Couldn't reach the API (offline?)"
+        if (code === 5 || code === 6 || code === 7) return "Couldn't reach the API (offline?)"
         if (raw.trim()) return raw.trim().slice(0, 300)
-        return code !== 0 ? `The request failed (curl exit ${code})` : "The model sent an empty reply"
+        return code !== 0 ? `The request failed: ${Format.curlReason(code)}` : "The model sent an empty reply"
     }
 
     // Load API keys from file on startup

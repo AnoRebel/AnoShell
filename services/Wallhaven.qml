@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.services
 
 /**
@@ -189,7 +190,7 @@ Singleton {
         }
         onExited: exitCode => {
             if (exitCode !== 0 || root._cancelled) {
-                root.downloadError = root._cancelled ? "" : `Download failed (curl exit ${exitCode})`
+                root.downloadError = root._cancelled ? "" : `Download failed: ${Format.curlReason(exitCode)}`
                 if (!root._cancelled) console.warn(`[Wallhaven] ${root.downloadError}: ${root._dest}`)
                 Quickshell.execDetached(["rm", "-f", "--", root._part])
                 root.downloadingId = ""

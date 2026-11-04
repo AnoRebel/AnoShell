@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.services
 import qs.modules.reader.components
+import qs.modules.common.widgets as W
 
 Item {
     id: browseView
@@ -398,6 +399,17 @@ Item {
                 active: ReaderNovel.isFetchingNovel && ReaderNovel.novelList.length > 0
             }
 
+            // Nothing came back (and no error)
+            W.EmptyState {
+                anchors.centerIn: parent
+                width: Math.min(parent.width - 40, 320)
+                z: 9
+                visible: !ReaderNovel.isFetchingNovel && !ReaderNovel.isSwitchingProvider && ReaderNovel.novelError.length === 0 && ReaderNovel.novelList.length === 0
+                icon: "search_off"
+                title: ReaderNovel.currentSearchText.length > 0 ? `No novels found for "${ReaderNovel.currentSearchText}"` : "Nothing to show here"
+                hint: ReaderNovel.currentSearchText.length > 0 ? "Try fewer or different words" : "Try another tab, or search"
+            }
+
             // Error overlay
             Rectangle {
                 anchors.fill: parent; color: Appearance.colors.colLayer0Base; z: 9
@@ -410,6 +422,11 @@ Item {
                         text: ReaderNovel.novelError; color: Appearance.m3colors.m3onSurfaceVariant
                         font.pixelSize: 12; font.family: browseView.fontBody
                         wrapMode: Text.Wrap; width: 260; horizontalAlignment: Text.AlignHCenter; lineHeight: 1.4
+                    }
+                    W.RippleButton {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        buttonText: "Retry"
+                        onClicked: ReaderNovel.currentSearchText.length > 0 ? ReaderNovel.searchNovels(ReaderNovel.currentSearchText, ReaderNovel.currentGenre, ReaderNovel.currentStatus, true) : browseView.currentFilter === "hot" ? ReaderNovel.fetchHot() : ReaderNovel.fetchLatest(true)
                     }
                 }
             }

@@ -6,6 +6,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.services
 import qs.modules.reader.components
+import qs.modules.common.widgets as W
 
 Item {
     id: browseView
@@ -310,6 +311,17 @@ Item {
                 active: ReaderAnime.isFetchingAnime && ReaderAnime.animeList.length > 0
             }
 
+            // Nothing came back (and no error)
+            W.EmptyState {
+                anchors.centerIn: parent
+                width: Math.min(parent.width - 40, 320)
+                z: 9
+                visible: !ReaderAnime.isFetchingAnime && ReaderAnime.animeError.length === 0 && ReaderAnime.animeList.length === 0
+                icon: "search_off"
+                title: ReaderAnime.currentSearchText.length > 0 ? `No anime found for "${ReaderAnime.currentSearchText}"` : "Nothing to show here"
+                hint: ReaderAnime.currentSearchText.length > 0 ? "Try fewer or different words" : "Try another tab, or search"
+            }
+
             // Error
             Rectangle {
                 anchors.fill: parent; color: Appearance.colors.colLayer0Base
@@ -329,6 +341,11 @@ Item {
                         font.family: browseView.fontBody
                         wrapMode: Text.Wrap; width: 260
                         horizontalAlignment: Text.AlignHCenter; lineHeight: 1.4
+                    }
+                    W.RippleButton {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        buttonText: "Retry"
+                        onClicked: ReaderAnime.currentView === "search" && ReaderAnime.currentSearchText.length > 0 ? ReaderAnime.searchAnime(ReaderAnime.currentSearchText, true) : ReaderAnime.currentView === "latest" ? ReaderAnime.fetchLatest(true) : ReaderAnime.fetchPopular(true)
                     }
                 }
             }
