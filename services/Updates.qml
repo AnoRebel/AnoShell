@@ -47,8 +47,8 @@ Singleton {
 
     Process {
         id: checker
-        // Fixed script; exit 2 from checkupdates means "none".
-        command: ["sh", "-c", "checkupdates; c=$?; [ $c -le 2 ] || echo \"!checkupdates failed ($c)\"; echo '---'; "
+        // Fixed script; checkupdates exits 0 (updates), 2 (none) or 1 (couldn't fetch).
+        command: ["sh", "-c", "checkupdates; c=$?; [ $c -eq 0 ] || [ $c -eq 2 ] || echo \"!couldn't check for updates (offline? checkupdates exit $c)\"; echo '---'; "
             + "for h in paru yay; do command -v $h >/dev/null 2>&1 && { $h -Qua 2>/dev/null; break; }; done; true"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -56,6 +56,8 @@ Singleton {
                 const lines = s => (s ?? "").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("!"))
                 const fail = (repo ?? "").split("\n").find(l => l.startsWith("!"))
                 root.error = fail ? fail.slice(1) : ""
+                // A failed check keeps the last counts rather than reading as "none".
+                if (fail) { root.checking = false; return }
                 const r = lines(repo), a = lines(aur)
                 root.repoCount = r.length
                 root.aurCount = a.length

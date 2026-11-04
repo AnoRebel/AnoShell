@@ -988,6 +988,28 @@ Item {
             }
             MouseArea { id: folderMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.setSettingsOpen(true) }
         }
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.online && Wallhaven.error !== "" && !Wallhaven.fetching
+            width: retryRow.implicitWidth + 32 * root.u
+            height: 40 * root.u
+            radius: height / 2
+            color: retryMa.containsMouse ? Qt.lighter(tintColors.accent, 1.08) : tintColors.accent
+            Row {
+                id: retryRow
+                anchors.centerIn: parent
+                spacing: 8 * root.u
+                MaterialSymbol { anchors.verticalCenter: parent.verticalCenter; text: "refresh"; iconSize: 18 * root.u; color: tintColors.accentInk }
+                StyledText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Retry"
+                    font.pixelSize: (Appearance?.font.pixelSize.small ?? 15) * root.u
+                    font.weight: Font.DemiBold
+                    color: tintColors.accentInk
+                }
+            }
+            MouseArea { id: retryMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Wallhaven.fetch(true) }
+        }
     }
 
     DeckSettings {

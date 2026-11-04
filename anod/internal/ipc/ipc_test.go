@@ -193,3 +193,10 @@ func TestSlowMethodDoesNotBlockConnection(t *testing.T) {
 		t.Fatalf("replies = %q, want ping (id 2) first, then the scan", got)
 	}
 }
+
+func TestCallNotRunning(t *testing.T) {
+	_, err := Call(filepath.Join(t.TempDir(), "none.sock"), "status", nil)
+	if !errors.Is(err, ErrNotRunning) {
+		t.Fatalf("Call on a missing socket = %v, want ErrNotRunning", err)
+	}
+}

@@ -331,6 +331,9 @@ func (s *Server) Broadcast(name string, data any) {
 	}
 }
 
+// ErrNotRunning: nothing is listening on anod's socket.
+var ErrNotRunning = errors.New("anod isn't running: your compositor starts it at login, or run `anod &` (see `ano doctor`)")
+
 // Call is the client side: one request on a fresh connection, events skipped.
 func Call(path, method string, params any) (json.RawMessage, error) {
 	return CallTimeout(path, method, params, 10*time.Second)
@@ -340,6 +343,9 @@ func Call(path, method string, params any) (json.RawMessage, error) {
 func CallTimeout(path, method string, params any, d time.Duration) (json.RawMessage, error) {
 	c, err := net.DialTimeout("unix", path, time.Second)
 	if err != nil {
+		if errors.Is(err, syscall.ENOENT) || errors.Is(err, syscall.ECONNREFUSED) {
+			return nil, ErrNotRunning
+		}
 		return nil, err
 	}
 	defer c.Close()
