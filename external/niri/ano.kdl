@@ -346,7 +346,7 @@ binds {
 
     Ctrl+Shift+Escape { spawn "kitty" "-e" "btop"; }
     Ctrl+Alt+U { spawn "pavucontrol"; }
-    Mod+Shift+O { spawn "kitty" "-e" "avim" "/home/ano/.config/niri/ano.kdl"; }
+    Mod+Shift+O { spawn-sh "ano run terminal -e \"${EDITOR:-nano}\" ~/.config/niri/ano.kdl"; }
 
     // ══════════════════════════════════════════════════════════════════════
     // FOCUS NAVIGATION
