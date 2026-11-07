@@ -29,7 +29,10 @@ export default defineAppConfig({
     pages: [
       { slug: "overview", group: "guide", title: "Overview", description: "What AnoShell is: panel families, the connected frame and the pill." },
       { slug: "installation", group: "guide", title: "Installation", description: "Clone the shell, install anod and the ano CLI, pick a release channel." },
+      { slug: "onboarding", group: "guide", title: "Welcome and presets", description: "The first-start wizard, layout presets and customizing from there." },
       { slug: "configuration", group: "guide", title: "Configuration", description: "Your config delta, the Settings pages, bar forms and groups." },
+      { slug: "keybinds", group: "guide", title: "Keybinds", description: "One keybind set for every compositor, edited in Settings or the file." },
+      { slug: "displays", group: "guide", title: "Displays and cursor", description: "Arrange monitors, modes, scale, rotation, VRR, display profiles and the cursor." },
       { slug: "anospot", group: "guide", title: "The pill", description: "AnoSpot: pill bar style, faces, grow-into, transients, every setting." },
       { slug: "wallpaper", group: "guide", title: "Wallpapers", description: "The wallpaper pipeline, rotation, hooks and migrating from awww scripts." },
       { slug: "looks", group: "guide", title: "Looks and colours", description: "Liquid, Ink, Neo-tech, Clay; your own looks; colour modes." },
@@ -37,6 +40,7 @@ export default defineAppConfig({
       { slug: "pieces", group: "guide", title: "Pieces", description: "Desktop widgets: pages, the grid, writing your own." },
       { slug: "scratchpad", group: "guide", title: "Scratchpad & Pins", description: "Notes, to-do, clipboard and calendar in one panel, pinned commands and the prompt bar." },
       { slug: "plugins", group: "guide", title: "Launcher plugins", description: "Extra launcher results: the bundled ones and writing your own." },
+      { slug: "extras", group: "guide", title: "Launcher providers and productivity", description: "Optional launcher results and productivity tools, all off until you turn them on." },
       { slug: "lockscreens", group: "guide", title: "Lock screens", description: "The niri lock, previews, fallbacks and writing your own lock screen." },
       { slug: "reader", group: "guide", title: "Reader", description: "Novels, manga and anime: sources, library, playback and the Airing tab." },
       { slug: "cli", group: "guide", title: "The ano CLI", description: "status, doctor, config, setup, backup and looks from a terminal." },
