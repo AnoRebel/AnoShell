@@ -28,8 +28,8 @@ Scope {
     readonly property bool isLeft: position === "left"
     readonly property bool isPillStyle: (Config.options?.dock?.style ?? "pill") === "pill"
     readonly property bool isMacosStyle: (Config.options?.dock?.style ?? "pill") === "macos"
-    readonly property real dockHeight: Config.options?.dock?.height ?? 56
-    readonly property real iconSize: Config.options?.dock?.iconSize ?? 40
+    readonly property real dockHeight: Config.options?.dock?.height ?? 44
+    readonly property real iconSize: Config.options?.dock?.iconSize ?? 28
     readonly property var pinnedApps: Config.options?.dock?.pinnedApps ?? ["kitty", "nemo", "zen-browser", "brave-browser"]
     readonly property real globalMargin: Config.options?.appearance?.bezel ?? 0
 
@@ -82,7 +82,7 @@ Scope {
             id: dockWindow
             required property var modelData
             screen: modelData
-            visible: GlobalStates.shellSettled && !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? true)
+            visible: GlobalStates.shellSettled && !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? false)
 
             readonly property bool hoverToReveal: Config.options?.dock?.hoverToReveal ?? true
             readonly property bool screenFullscreen: {

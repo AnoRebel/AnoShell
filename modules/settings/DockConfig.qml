@@ -27,7 +27,7 @@ ColumnLayout {
     readonly property string currentPosition: BarStyle.dockEdge
     readonly property bool positionAuto: (Config.options?.dock?.position ?? "auto") === "auto"
     readonly property string currentStyle: Config.options?.dock?.style ?? "pill"
-    readonly property bool dockEnabled: Config.options?.dock?.enable ?? true
+    readonly property bool dockEnabled: Config.options?.dock?.enable ?? false
 
     // ═══ Enable / Disable ═══
     SettingsCard {
@@ -291,12 +291,12 @@ ColumnLayout {
             color: Appearance?.colors.colLayer2 ?? "#2B2930"
             radius: Appearance?.rounding.small ?? 8
 
-            property real sizePreviewHeight: Math.max(60, (Config.options?.dock?.height ?? 56) + 16)
+            property real sizePreviewHeight: Math.max(60, (Config.options?.dock?.height ?? 44) + 16)
 
             Rectangle {
                 anchors.centerIn: parent
                 width: previewIcons.implicitWidth + 24
-                height: Config.options?.dock?.height ?? 56
+                height: Config.options?.dock?.height ?? 44
                 radius: root.currentStyle === "pill" ? height / 2 : Appearance?.rounding.normal ?? 12
                 color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
                 border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
@@ -307,8 +307,8 @@ ColumnLayout {
                     Repeater {
                         model: 5
                         Rectangle {
-                            width: Config.options?.dock?.iconSize ?? 40
-                            height: Config.options?.dock?.iconSize ?? 40
+                            width: Config.options?.dock?.iconSize ?? 28
+                            height: Config.options?.dock?.iconSize ?? 28
                             radius: root.currentStyle === "pill" ? width / 2 : Appearance?.rounding.small ?? 8
                             color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
 
@@ -329,7 +329,7 @@ ColumnLayout {
             configKey: "dock.height"
             sublabel: "Total height of the dock container"
             from: 36; to: 96; stepSize: 2
-            value: Config.options?.dock?.height ?? 56
+            value: Config.options?.dock?.height ?? 44
             onValueChanged: Config.setNestedValue("dock.height", Math.round(value))
             valueText: `${Math.round(value)}px`
         }
@@ -339,7 +339,7 @@ ColumnLayout {
             configKey: "dock.iconSize"
             sublabel: "Size of individual app icons inside the dock"
             from: 24; to: 72; stepSize: 2
-            value: Config.options?.dock?.iconSize ?? 40
+            value: Config.options?.dock?.iconSize ?? 28
             onValueChanged: Config.setNestedValue("dock.iconSize", Math.round(value))
             valueText: `${Math.round(value)}px`
         }

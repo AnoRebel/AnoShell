@@ -41,10 +41,10 @@ PreviewScreen {
     readonly property string pillEdge: BarStyle.pillEdge
     readonly property bool pillVertical: pillEdge === "left" || pillEdge === "right"
     readonly property int pillThickness: Config.options?.anoSpot?.heightPx ?? 36
-    readonly property bool dockShown: PanelGate.enabled("anoDock") && (Config.options?.dock?.enable ?? true)
+    readonly property bool dockShown: PanelGate.enabled("anoDock") && (Config.options?.dock?.enable ?? false)
     readonly property string dockEdge: BarStyle.dockEdge === "auto" ? "bottom" : BarStyle.dockEdge
     readonly property bool dockVertical: dockEdge === "left" || dockEdge === "right"
-    readonly property real dockIcon: Config.options?.dock?.iconSize ?? 40
+    readonly property real dockIcon: Config.options?.dock?.iconSize ?? 28
 
     // What a reserved edge pushes in by (the bar holds its edge).
     function inset(edge) { return root.classic && edge === root.barEdge ? root.barThickness + root.formMargin : root.frameThickness }
