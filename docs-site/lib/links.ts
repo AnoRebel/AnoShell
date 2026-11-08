@@ -23,12 +23,33 @@ interface Node {
   type: string;
   url?: string;
   children?: Node[];
+  data?: Record<string, unknown>;
+}
+
+/*
+ * A link to a clip in images/ plays inline on the site. As a link the router
+ * took /images/x.webm for a page and showed its 404; GitHub keeps the link.
+ */
+function videoOf(node: Node): Node | undefined {
+  if (node.type !== "link" || !/^\/images\/[\w.-]+\.(webm|mp4)$/.test(node.url ?? "")) return;
+  const label = node.children?.map((child) => (child as { value?: string }).value ?? "").join("") ?? "";
+  return {
+    type: "video",
+    data: {
+      hName: "video",
+      hProperties: { src: node.url, controls: true, muted: true, loop: true, playsinline: true, preload: "metadata", ariaLabel: label, className: ["rounded-md", "w-full", "my-4"] },
+    },
+    children: [],
+  };
 }
 
 function walk(node: Node, branch: string) {
   if ((node.type === "link" || node.type === "definition") && node.url)
     node.url = rewriteLink(node.url, branch);
-  node.children?.forEach((child) => walk(child, branch));
+  node.children = node.children?.map((child) => {
+    walk(child, branch);
+    return videoOf(child) ?? child;
+  });
 }
 
 /** Remark plugin: `{ branch }` names the branch links into the repository point at. */
