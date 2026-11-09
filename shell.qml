@@ -65,6 +65,7 @@ ShellRoot {
         void Scratchpad;  // scratchpad IPC; reads its pins only with scratchpad.enable
         Sounds.greet();   // the login sound, once per session (sounds.login)
         void Chrono;      // clock IPC; alarms ring with the Clock panel closed
+        void Undo;        // `undo last` IPC (removals push to it)
     }
 
     // ═══════════════════════════════════════════════════════════════════════

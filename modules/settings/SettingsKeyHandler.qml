@@ -1,6 +1,7 @@
 import QtQuick
 import qs
 import qs.modules.common
+import qs.services
 import "."
 
 /**
@@ -56,7 +57,9 @@ Item {
 
         // Ctrl+Z — undo the last change made while Settings is open (a
         // focused text field takes Ctrl+Z for its own text first).
+        // A removal still offering Undo (its toast is up) goes back first.
         if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Z) {
+            if (Undo.current) { Undo.undoLast(); event.accepted = true; return; }
             root.undone(Config.undo());
             event.accepted = true;
             return;
