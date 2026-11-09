@@ -49,13 +49,23 @@ Item {
                 focus: true
                 echoMode: TextInput.Password
                 passwordCharacter: "•"
-                color: "white"
+                // Another screen's field has focus: show its length (ctx.typedLength).
+                readonly property bool mirroring: !activeFocus && (root.ctx?.typedLength ?? 0) > 0
+                color: mirroring ? "transparent" : "white"
                 font.pixelSize: 24
                 enabled: !(root.ctx?.busy ?? false)
                 onAccepted: root.ctx?.submit(text)
+                onTextChanged: if (activeFocus || text.length === 0) root.ctx?.reportTyped?.(text.length)
+                onActiveFocusChanged: if (activeFocus) root.ctx?.reportTyped?.(text.length)
                 Keys.onPressed: event => { if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) event.accepted = true } // a key held through resume must not type or submit (faillock)
                 Text {
-                    visible: field.text.length === 0
+                    visible: field.mirroring
+                    text: "•".repeat(Math.min(root.ctx?.typedLength ?? 0, 64))
+                    color: "white"
+                    font.pixelSize: 24
+                }
+                Text {
+                    visible: field.text.length === 0 && !field.mirroring
                     text: `Password for ${root.ctx?.user ?? ""}`
                     color: Qt.rgba(1, 1, 1, 0.35)
                     font.pixelSize: 24

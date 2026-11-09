@@ -27,11 +27,22 @@ QtObject {
         return p.length ? (p.startsWith("file://") ? p : "file://" + p) : ""
     }
 
+    // How many characters are in the focused screen's field, shared by every
+    // screen's copy so the others can mirror it as dots. Only the length
+    // ever leaves the field, never the text. The host binds it.
+    property int typedLength: 0
+
     signal failed()                    // a wrong password: clear the field, shake
     signal submitted(string password)  // the host's; lock screens call submit()
+    signal typedLengthReported(int length) // the host's; lock screens call reportTyped()
 
     function submit(password) {
         if (typeof password !== "string" || password.length === 0 || ctx.busy) return
         ctx.submitted(password)
+    }
+    // Call from the field that has focus when its text changes (and when it
+    // gains focus) with its length.
+    function reportTyped(length) {
+        if (typeof length === "number") ctx.typedLengthReported(Math.max(0, Math.floor(length)))
     }
 }

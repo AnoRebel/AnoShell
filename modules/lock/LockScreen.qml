@@ -70,7 +70,10 @@ Scope {
         markerProc.running = true
     }
     Process { id: markerProc }
+    // The focused surface's field length, mirrored on every screen (ctx.typedLength).
+    property int typedLength: 0
     onHeldChanged: {
+        root.typedLength = 0
         GlobalStates.screenLocked = root.held
         auth.reset()
         if (pam.active) pam.abort()
@@ -272,7 +275,9 @@ Scope {
                     busy: auth.busy
                     error: auth.error
                     fingerprint: fp.view
+                    typedLength: root.typedLength
                     onSubmitted: password => auth.submit(password)
+                    onTypedLengthReported: length => root.typedLength = length
                 }
                 Connections { target: auth; function onFailed() { lockHost.ctx.failed() } }
             }

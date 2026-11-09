@@ -246,16 +246,31 @@ Item {
                     id: passwordInput
                     Layout.fillWidth: true
                     echoMode: TextInput.Password
-                    font.pixelSize: Appearance.font.pixelSize.normal; color: "white"
+                    font.pixelSize: Appearance.font.pixelSize.normal
+                    // Without focus (another screen's field has it) it shows
+                    // that field's length instead of its own text.
+                    readonly property bool mirroring: !activeFocus && (root.ctx?.typedLength ?? 0) > 0
+                    color: mirroring ? "transparent" : "white"
                     focus: !root.miniature
                     verticalAlignment: TextInput.AlignVCenter
                     enabled: !root.miniature && !(root.ctx?.busy ?? false)
                     onAccepted: root.ctx?.submit(text)
+                    // Only the length is shared, never the text. A cleared field
+                    // reports too (every screen clears on a wrong password).
+                    onTextChanged: if (activeFocus || text.length === 0) root.ctx?.reportTyped(text.length)
+                    onActiveFocusChanged: if (activeFocus) root.ctx?.reportTyped(text.length)
                     Keys.onPressed: event => { if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) event.accepted = true } // a key held through resume must not type or submit (faillock)
                     Text {
                         anchors.fill: parent; verticalAlignment: Text.AlignVCenter
                         text: "Password"; color: "white"; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.normal
-                        visible: passwordInput.text.length === 0
+                        visible: passwordInput.text.length === 0 && !passwordInput.mirroring
+                    }
+                    Text {
+                        anchors.fill: parent; verticalAlignment: Text.AlignVCenter
+                        visible: passwordInput.mirroring
+                        text: passwordInput.passwordCharacter.repeat(Math.min(root.ctx?.typedLength ?? 0, 64))
+                        elide: Text.ElideLeft
+                        color: "white"; font: passwordInput.font
                     }
                 }
                 MaterialSymbol {
