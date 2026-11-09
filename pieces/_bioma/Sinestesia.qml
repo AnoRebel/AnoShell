@@ -29,9 +29,12 @@ Singleton {
             root.holders = root.holders.filter(h => h !== owner);
     }
 
-    onActiveChanged: root.active ? Ano.SpectrumService.registerComponent("bioma-sinestesia")
-                                 : Ano.SpectrumService.unregisterComponent("bioma-sinestesia")
-    Component.onDestruction: Ano.SpectrumService.unregisterComponent("bioma-sinestesia")
+    // Per instance: the piece can sit on several screens or pages.
+    readonly property string _sid: "bioma-sinestesia:" + Math.random().toString(36).slice(2)
+    onActiveChanged: root.active ? Ano.SpectrumService.registerComponent(root._sid)
+                                 : Ano.SpectrumService.unregisterComponent(root._sid)
+    Component.onDestruction: Ano.SpectrumService.unregisterComponent(root._sid)
+    Component.onCompleted: if (root.active) Ano.SpectrumService.registerComponent(root._sid)
 
     // How every band draws the sound: `bars`, `plasma`, `vesicles` or `eardrum`
     // (Band.qml).
