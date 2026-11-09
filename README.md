@@ -335,7 +335,7 @@ The night-light pill has a chevron — tap the body to toggle, tap the chevron t
 Two color sources, switched via `appearance.theme.source`:
 
 - **`materialYou`** (default) — `MaterialThemeLoader` derives Material 3 palette from the active wallpaper via matugen.
-- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/anoshell/themes/<name>.json`). 63 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir, plus Angel and Aurora).
+- **`static`** — `StaticThemeLoader` reads `assets/themes/<name>.json` (or user override `~/.config/anoshell/themes/<name>.json`). 65 themes ship in the bundle (dark + light variants of Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Inir and Crystal Neuo, plus Angel and Aurora).
 
 Pick from Settings → Appearance → Theme grid (hover-preview, click-to-commit). Themes optionally export `glass_*` keys consumed by `Appearance.glassTokens` for translucent surfaces (RecordingOsd, AnoSpot pill, AnoSpot stash popout).
 
@@ -482,7 +482,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
 | `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
 
-`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 63 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel — most with dark/light variants).
+`appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 65 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel, Crystal Neuo — most with dark/light variants).
 
 ### Module Enable/Disable
 Every module is toggleable via the `enabledPanels` array (empty = all) or the Modules settings page, in every panel family. A module loads only when its family hosts it, you haven't switched it off, its own feature key (e.g. `dock.enable`, `focusTime.enable`) is on, and the compositor supports it — see `modules/common/PanelGate.qml`. Disabled modules are never even compiled.
