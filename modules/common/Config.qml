@@ -1809,6 +1809,10 @@ Singleton {
                 property bool showClockWeather: true
                 property bool showBattery: true
                 property bool showWorkspace: true
+                // Live activities on the status face: a running timer
+                // (services/Pomodoro), the camera/microphone in use (services/Privacy).
+                property bool showTimer: true
+                property bool showPrivacy: true
                 property int notificationTimeoutMs: 4000
                 property JsonObject actions: JsonObject {
                     property string leftClick: "mediaControls"
@@ -1853,6 +1857,8 @@ Singleton {
                     property bool charging: true
                     property bool recording: true
                     property bool device: true
+                    property bool download: true
+                    property bool screenshot: true
                 }
                 property JsonObject growInto: JsonObject {
                     property bool mediaControls: false

@@ -50,7 +50,10 @@ Swipe between them; the capsule resizes to each. Status is always first; the
 others appear when they have something to show.
 
 - **Status**: workspaces, the track, recording, the latest notification,
-  clock and weather, battery (and the tray as the bar).
+  clock and weather, battery (and the tray as the bar). Live activities sit
+  here too: a running timer (countdown, pomodoro or stopwatch, with the time
+  left; click opens it) and a green or orange dot while the camera or the
+  microphone is in use (hover for the app).
 - **Media**: title, artist and transport.
 - **Spectrum**: an audio visualiser. cava runs only while this face is in view.
 - **Lyrics**: the current line of time-synced lyrics (Settings → Services →
@@ -59,9 +62,15 @@ others appear when they have something to show.
 ## Transient states
 
 The pill briefly morphs into a volume, brightness or microphone level capsule,
-the keyboard layout, a notification, charging or recording, then returns to its
-face. Each can be turned off; whatever the pill shows, the separate on-screen
-display doesn't.
+the keyboard layout, a notification, charging or recording, a finished
+download or a screenshot, then returns to its face. Each can be turned off;
+whatever the pill shows, the separate on-screen display doesn't.
+
+"Recording saved", a finished download and "Screenshot taken" stay as long as
+a notification; click the pill then to open the file. A transient isn't
+replaced by a less important one: a notification waits behind them, and
+charging behind them too; your own volume, brightness or layout change always
+shows at once.
 
 ## Settings reference
 
@@ -88,6 +97,8 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.showNotification` | `true` | Latest notification |
 | `anoSpot.showClockWeather` | `true` | Clock and weather |
 | `anoSpot.showBattery` | `true` | Battery (hidden without one) |
+| `anoSpot.showTimer` | `true` | A running countdown, pomodoro or stopwatch; click opens it |
+| `anoSpot.showPrivacy` | `true` | Camera / microphone in use: a dot, the app on hover |
 | `anoSpot.showLyrics` | `false` | Current lyric line in place of the track title |
 | `anoSpot.accordion` | `true` | Track, notification and battery collapse to icons and open on hover |
 | `anoSpot.modules` | `[]` | Bar modules (`drives`, `privacy`, …) on the status face, after the zones above; the same modules the bars use |
@@ -106,7 +117,9 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.transients.keyboard` | `true` | Keyboard layout |
 | `anoSpot.transients.notification` | `true` | Incoming notifications |
 | `anoSpot.transients.charging` | `true` | Plugged in / on battery |
-| `anoSpot.transients.recording` | `true` | Recording started / saved |
+| `anoSpot.transients.recording` | `true` | Recording started / saved (click opens it) |
+| `anoSpot.transients.download` | `true` | A download finished (click opens it; needs anod) |
+| `anoSpot.transients.screenshot` | `true` | A screenshot taken (click opens it) |
 | `anoSpot.actions.leftClick` | `"mediaControls"` | Any panel IPC target |
 | `anoSpot.actions.rightClick` | `"controlPanel"` | |
 | `anoSpot.actions.middleClick` | `"anoview"` | |

@@ -561,6 +561,8 @@
     "showClockWeather": true,
     "showBattery": true,
     "showWorkspace": true,
+    "showTimer": true,
+    "showPrivacy": true,
     "notificationTimeoutMs": 4000,
     "actions": {
       "leftClick": "mediaControls",
@@ -597,7 +599,9 @@
       "notification": true,
       "charging": true,
       "recording": true,
-      "device": true
+      "device": true,
+      "download": true,
+      "screenshot": true
     },
     "growInto": {
       "mediaControls": false,

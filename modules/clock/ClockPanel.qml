@@ -20,6 +20,11 @@ Scope {
 
     readonly property bool open: GlobalStates.clockOpen
     property string tab: "alarms" // alarms | world | timer | stopwatch
+    // Opened on a tab (the pill's timer activity).
+    Connections {
+        target: GlobalStates
+        function onClockTabChanged() { if (GlobalStates.clockTab) { root.tab = GlobalStates.clockTab; GlobalStates.clockTab = "" } }
+    }
 
     function hms(s) {
         s = Math.max(0, Math.floor(s))

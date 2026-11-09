@@ -46,6 +46,8 @@ Singleton {
 
     property bool isRecording: recorder.running
     property string lastFile: ""
+    // A recording finished and kept (not discarded, not failed).
+    signal saved(string path)
     property real recordingStartTime: 0
     property int elapsedSeconds: 0
 
@@ -201,8 +203,10 @@ Singleton {
                 Quickshell.execDetached(["sh", "-c", 'gio trash -- "$1" || notify-send -a AnoShell -i video-x-generic "Couldn\'t move the recording to the trash" "$1"', "sh", file])
                 return
             }
-            if (code === 0 || code === 130 || code === 2) Quickshell.execDetached(["sh", "-c", root._finishedScript, "sh", file])
-            else Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-i", "video-x-generic", "Recording failed", file])
+            if (code === 0 || code === 130 || code === 2) {
+                Quickshell.execDetached(["sh", "-c", root._finishedScript, "sh", file])
+                root.saved(file)
+            } else Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-i", "video-x-generic", "Recording failed", file])
         }
     }
     // The finished recording: a first-frame thumbnail in the notification,

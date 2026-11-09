@@ -159,7 +159,7 @@ Item {
         RowLayout {
             id: statusRow
             spacing: 10
-            readonly property bool anyOpen: [accMpris, accNotif, accBattery].some(a => a.visible && a.enabled && a._w > a.collapsedWidth + 0.5)
+            readonly property bool anyOpen: [accMpris, accNotif, accBattery, accPrivacy.item].some(a => a && a.visible && a.enabled && a._w > a.collapsedWidth + 0.5)
             onImplicitWidthChanged: if (!anyOpen) root._restLength = implicitWidth
             onAnyOpenChanged: if (!anyOpen) root._restLength = implicitWidth
             AnoSpotWorkspace  { visible: !root.barMode && (Config.options?.anoSpot?.showWorkspace ?? true) }
@@ -174,6 +174,25 @@ Item {
                 AnoSpotMpris { }
             }
             AnoSpotRecording  { visible: (Config.options?.anoSpot?.showRecording ?? true) && AnoSpotState.recording.active }
+            // Live activities: a running timer, the camera/microphone in use.
+            // Loaded only while switched on (Privacy binds PipeWire links).
+            Loader {
+                active: Config.options?.anoSpot?.showTimer ?? true
+                visible: (item?.active ?? false)
+                sourceComponent: AnoSpotTimer { }
+            }
+            Loader {
+                id: accPrivacy
+                active: Config.options?.anoSpot?.showPrivacy ?? true
+                // Not item.visible: that reads false while this Loader is hidden, and would stick.
+                visible: item?.shown ?? false
+                sourceComponent: AnoSpotAccordion {
+                    readonly property bool shown: priv.active
+                    enabled: root.accordion
+                    maxWidth: root.maxLength - root._restLength + collapsedWidth
+                    AnoSpotPrivacy { id: priv }
+                }
+            }
             AnoSpotAccordion {
                 id: accNotif
                 enabled: root.accordion
@@ -212,6 +231,19 @@ Item {
                 readonly property var _hm: (AnoSpotState.clockWeather.time ?? "").split(/[:.]/)
                 StyledText { Layout.alignment: Qt.AlignHCenter; text: parent._hm[0] ?? ""; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance.font.family.numbers }
                 StyledText { Layout.alignment: Qt.AlignHCenter; text: (parent._hm[1] ?? "").slice(0, 2); font.pixelSize: Appearance.font.pixelSize.small; font.family: Appearance.font.family.numbers; opacity: 0.8 }
+            }
+            // Live activities, compact: the timer's icon, the privacy dots.
+            Loader {
+                Layout.alignment: Qt.AlignHCenter
+                active: Config.options?.anoSpot?.showTimer ?? true
+                visible: item?.active ?? false
+                sourceComponent: AnoSpotTimer { vertical: true }
+            }
+            Loader {
+                Layout.alignment: Qt.AlignHCenter
+                active: Config.options?.anoSpot?.showPrivacy ?? true
+                visible: item?.active ?? false
+                sourceComponent: AnoSpotPrivacy { compact: true }
             }
             MaterialSymbol {
                 Layout.alignment: Qt.AlignHCenter

@@ -493,8 +493,12 @@ Scope {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                     enabled: !handleArea.containsMouse && !spotWindow.grown
                     // Ctrl+right-click: Customize the pill (CustomizeSheet).
-                    onTapped: (point, button) => (button === Qt.RightButton && (point.modifiers & Qt.ControlModifier))
-                        ? GlobalStates.customizeSurface = "pill" : root._dispatchClick(button, spotWindow)
+                    onTapped: (point, button) => {
+                        if (button === Qt.RightButton && (point.modifiers & Qt.ControlModifier)) GlobalStates.customizeSurface = "pill"
+                        // A job-done transient (download, screenshot, recording): open its file.
+                        else if (button === Qt.LeftButton && spotWindow.transientShown && PillTransient.target) PillTransient.openTarget()
+                        else root._dispatchClick(button, spotWindow)
+                    }
                 }
 
                 // Drop target — files/URIs dragged from any Wayland source
@@ -655,7 +659,9 @@ Scope {
                             notification: "notifications",
                             charging: PillTransient.muted ? "battery_5_bar" : "battery_charging_full",
                             recording: PillTransient.muted ? "stop_circle" : "fiber_manual_record",
-                            device: PillTransient.icon || "devices"
+                            device: PillTransient.icon || "devices",
+                            download: "download_done",
+                            screenshot: "screenshot_monitor"
                         })[PillTransient.kind] ?? "info"
                     }
                     Rectangle {
@@ -682,6 +688,12 @@ Scope {
                         font.pixelSize: Appearance.font.pixelSize.small
                         elide: Text.ElideRight
                         Layout.maximumWidth: 280
+                    }
+                    // Tap opens it.
+                    MaterialSymbol {
+                        visible: PillTransient.target !== "" && !root.isVertical
+                        text: "open_in_new"; iconSize: 14; opacity: 0.6
+                        color: Appearance.colors.colOnLayer0
                     }
                 }
 

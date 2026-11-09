@@ -218,7 +218,7 @@ ColumnLayout {
         icon: "widgets"
         title: "Widgets"
         subtitle: "Which slots to render"
-        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.workspaceHoverPreview", "anoSpot.showBattery", "anoSpot.showLyrics", "anoSpot.accordion"]
+        configKeys: ["anoSpot.showMpris", "anoSpot.showNotification", "anoSpot.showRecording", "anoSpot.showTimer", "anoSpot.showPrivacy", "anoSpot.showClockWeather", "anoSpot.showWorkspace", "anoSpot.workspaceHoverPreview", "anoSpot.showBattery", "anoSpot.showLyrics", "anoSpot.accordion"]
 
         ConfigSwitch {
             label: "Collapse to icons"
@@ -245,6 +245,20 @@ ColumnLayout {
             configKey: "anoSpot.showRecording"
             checked: Config.options?.anoSpot?.showRecording ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.showRecording", checked)
+        }
+        ConfigSwitch {
+            label: "Running timer"
+            configKey: "anoSpot.showTimer"
+            sublabel: "Countdown, pomodoro or stopwatch time left while one runs; click opens it"
+            checked: Config.options?.anoSpot?.showTimer ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showTimer", checked)
+        }
+        ConfigSwitch {
+            label: "Camera & microphone in use"
+            configKey: "anoSpot.showPrivacy"
+            sublabel: "A green (camera) or orange (microphone) dot; hover for the app"
+            checked: Config.options?.anoSpot?.showPrivacy ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.showPrivacy", checked)
         }
         ConfigSwitch {
             label: "Clock & weather"
@@ -444,9 +458,23 @@ ColumnLayout {
         ConfigSwitch {
             label: "Recording"
             configKey: "anoSpot.transients.recording"
-            sublabel: "Started / saved"
+            sublabel: "Started / saved (click opens the file)"
             checked: Config.options?.anoSpot?.transients?.recording ?? true
             onCheckedChanged: Config.setNestedValue("anoSpot.transients.recording", checked)
+        }
+        ConfigSwitch {
+            label: "Download finished"
+            configKey: "anoSpot.transients.download"
+            sublabel: "Click opens the file (needs anod)"
+            checked: Config.options?.anoSpot?.transients?.download ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.download", checked)
+        }
+        ConfigSwitch {
+            label: "Screenshot taken"
+            configKey: "anoSpot.transients.screenshot"
+            sublabel: "Click opens the picture"
+            checked: Config.options?.anoSpot?.transients?.screenshot ?? true
+            onCheckedChanged: Config.setNestedValue("anoSpot.transients.screenshot", checked)
         }
         ConfigSwitch {
             label: "Device events"

@@ -11,3 +11,5 @@ AnoSpotWorkspace 1.0 AnoSpotWorkspace.qml
 AnoSpotFaces 1.0 AnoSpotFaces.qml
 AnoSpotEdgePicker 1.0 AnoSpotEdgePicker.qml
 AnoSpotAccordion 1.0 AnoSpotAccordion.qml
+AnoSpotTimer 1.0 AnoSpotTimer.qml
+AnoSpotPrivacy 1.0 AnoSpotPrivacy.qml

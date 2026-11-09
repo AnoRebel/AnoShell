@@ -355,7 +355,17 @@ Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notif
   "showClockWeather": true,
   "showWorkspace": true,
   "showBattery": true,
+  "showTimer": true,             // live activity: a running countdown/pomodoro/stopwatch (click opens it)
+  "showPrivacy": true,           // live activity: camera (green) / microphone (orange) dot, app name on hover
   "notificationTimeoutMs": 4000,
+
+  // Brief morphs, each switchable: volume, brightness, mic, keyboard,
+  // notification, charging, recording, device, download, screenshot.
+  // Job-done ones (recording saved, download finished, screenshot taken)
+  // open their file on click. Rank: one on show is only replaced by one of
+  // at least its rank (levels < notification/device < charging < job-done;
+  // the volume etc. always show at once).
+  "transients": { "download": true, "screenshot": true /* , … */ },
 
   // Click bindings — each value is the IPC target opened by `qs -c ano ipc call <target> toggle`
   "actions": {
@@ -652,6 +662,10 @@ Each AnoSpot widget/action and the underlying tool that makes it work:
 | Battery widget           | UPower D-Bus (standard on every Linux desktop with a battery) |
 | Workspace widget         | `CompositorService` → Hyprland or Niri IPC                 |
 | Clock/Weather widget     | Built-in `DateTime` + `Weather` services                   |
+| Timer activity           | Built-in `Pomodoro` service (Clock panel, timer piece, sidebar card) |
+| Privacy activity         | PipeWire (Quickshell); `anod` for cameras opened directly  |
+| Download transient       | `anod` (downloads watcher); `xdg-open` to open the file    |
+| Screenshot / recording transient | the screenshot / recorder services; `xdg-open` to open the file |
 | Click bindings           | QuickShell IPC (`qs -c ano ipc call …`); no external deps  |
 | Drag handle              | Qt `MouseArea`; no external deps                           |
 | Drop target              | QML `DropArea` (Wayland data-device protocol)              |
