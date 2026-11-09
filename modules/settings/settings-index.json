@@ -303,19 +303,11 @@
  {
   "page": 1,
   "card": "",
-  "label": "Silent apps",
-  "sublabel": "Comma-separated app names: kept in the history, no popup",
+  "label": "Per-app",
+  "sublabel": "Silent: kept in the history, no popup. Blocked: dropped.",
   "keys": [
+   "notifications.blockedApps",
    "notifications.silentApps"
-  ]
- },
- {
-  "page": 1,
-  "card": "",
-  "label": "Blocked apps",
-  "sublabel": "Comma-separated app names: their notifications are dropped",
-  "keys": [
-   "notifications.blockedApps"
   ]
  },
  {
@@ -1687,6 +1679,7 @@
   "sublabel": "Auto-hide, hover reveal, and desktop-only visibility",
   "keys": [
    "dock.pinnedOnStartup",
+   "dock.magnify",
    "dock.hoverToReveal",
    "dock.revealDelay",
    "dock.showOnDesktop"
@@ -1699,6 +1692,15 @@
   "sublabel": "Dock is always visible when shell starts (no auto-hide initially)",
   "keys": [
    "dock.pinnedOnStartup"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Magnify on hover",
+  "sublabel": "Icons swell as the pointer passes, neighbours a little less, and lift off the edge",
+  "keys": [
+   "dock.magnify"
   ]
  },
  {
