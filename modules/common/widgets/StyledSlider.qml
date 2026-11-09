@@ -56,6 +56,28 @@ Slider {
         Behavior on color { animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this) }
     }
 
+    // Wheel over the slider steps it (stepSize, or 5% of the range); it only
+    // gets the wheel while under the pointer, so lists still scroll past it.
+    // Slider's own wheelEnabled steps 0.1 in value units whatever the range.
+    WheelHandler {
+        enabled: root.enabled
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        property real _acc: 0
+        onWheel: event => {
+            const d = event.angleDelta.y !== 0 ? event.angleDelta.y : -event.angleDelta.x
+            _acc += (event.inverted ? -d : d) / 120
+            const steps = Math.trunc(_acc)
+            if (steps === 0) return
+            _acc -= steps
+            const step = root.stepSize > 0 ? root.stepSize : (root.to - root.from) * 0.05
+            const lo = Math.min(root.from, root.to), hi = Math.max(root.from, root.to)
+            const next = Math.max(lo, Math.min(hi, root.value + steps * step * (root.to >= root.from ? 1 : -1)))
+            if (next === root.value) return
+            root.value = next
+            root.moved()
+        }
+    }
+
     MouseArea {
         anchors.fill: parent
         onPressed: (mouse) => mouse.accepted = false

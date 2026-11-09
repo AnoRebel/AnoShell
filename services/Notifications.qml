@@ -82,6 +82,17 @@ Singleton {
     property bool popupInhibited: (GlobalStates?.sidebarRightOpen ?? false) || silent
     property var latestTimeForApp: ({})
 
+    // Per-app rules (notifications.silentApps / blockedApps): matched,
+    // case-insensitively, against the desktop entry or the app name.
+    // "blocked" drops it; "silent" keeps it in the history only.
+    function ruleFor(n) {
+        const ids = [n.desktopEntry, n.appName].filter(s => s).map(s => String(s).toLowerCase())
+        const has = list => Array.from(list ?? []).some(a => ids.includes(String(a).trim().toLowerCase()))
+        if (has(Config.options?.notifications?.blockedApps)) return "blocked"
+        if (has(Config.options?.notifications?.silentApps)) return "silent"
+        return ""
+    }
+
     Component { id: notifComponent; Notif {} }
     Component { id: notifTimerComponent; NotifTimer {} }
 
@@ -147,6 +158,8 @@ Singleton {
         persistenceSupported: true
 
         onNotification: notification => {
+            const rule = root.ruleFor(notification)
+            if (rule === "blocked") return // untracked: the server discards it
             notification.tracked = true
             const newNotifObject = notifComponent.createObject(root, {
                 "notificationId": notification.id + root.idOffset,
@@ -155,7 +168,7 @@ Singleton {
             })
             root.list = [...root.list, newNotifObject]
 
-            if (!root.popupInhibited) {
+            if (rule !== "silent" && !root.popupInhibited) {
                 newNotifObject.popup = true
                 if (notification.expireTimeout !== 0) {
                     newNotifObject.timer = notifTimerComponent.createObject(root, {
@@ -165,7 +178,7 @@ Singleton {
                 }
                 root.unread++
             }
-            root.notify(newNotifObject)
+            if (rule !== "silent") root.notify(newNotifObject)
             notifFileView.setText(stringifyList(root.list))
         }
     }
@@ -248,7 +261,8 @@ Singleton {
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) {
                 root.list = []
-                notifFileView.setText(stringifyList(root.list))
+                // A write from inside the load handler is dropped; defer it.
+                Qt.callLater(() => notifFileView.setText(stringifyList(root.list)))
             }
         }
     }

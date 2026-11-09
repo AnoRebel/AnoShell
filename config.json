@@ -191,7 +191,9 @@
     "timeout": 7000,
     "position": "topRight",
     "edgeMargin": 8,
-    "expressiveAnimations": true
+    "expressiveAnimations": true,
+    "silentApps": [],
+    "blockedApps": []
   },
   "osd": {
     "timeout": 1500,

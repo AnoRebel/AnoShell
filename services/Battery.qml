@@ -16,7 +16,17 @@ Singleton {
     property bool available: UPower.displayDevice.isLaptopBattery
     property var chargeState: UPower.displayDevice.state
     property bool isCharging: chargeState === UPowerDeviceState.Charging
-    property bool isPluggedIn: isCharging || chargeState === UPowerDeviceState.PendingCharge || chargeState === UPowerDeviceState.FullyCharged
+    // UPower's line-power flag: a charge limit (state "pending-charge" or
+    // "discharging" at the threshold on some firmware) still counts as plugged in.
+    property bool isPluggedIn: !UPower.onBattery
+    // Readings before the device is ready (startup, resume) are defaults, so
+    // warnings wait until it is ready and has settled for 2 s.
+    property bool settled: false
+    Timer {
+        running: UPower.displayDevice.ready
+        interval: 2000
+        onTriggered: root.settled = true
+    }
     // Whole percents (0..1 in 0.01 steps): UPower reports fractional changes every
     // few seconds while charging, and each one re-animated every battery ring.
     property real percentage: Math.round((UPower.displayDevice?.percentage ?? 1) * 100) / 100
@@ -28,10 +38,10 @@ Singleton {
     property bool isSuspending: available && (percentage <= Config.options.battery.suspend / 100)
     property bool isFull: available && (percentage >= Config.options.battery.full / 100)
 
-    property bool isLowAndNotCharging: isLow && !isCharging
-    property bool isCriticalAndNotCharging: isCritical && !isCharging
-    property bool isSuspendingAndNotCharging: allowAutomaticSuspend && isSuspending && !isCharging
-    property bool isFullAndCharging: isFull && isCharging
+    property bool isLowAndNotCharging: settled && isLow && !isPluggedIn
+    property bool isCriticalAndNotCharging: settled && isCritical && !isPluggedIn
+    property bool isSuspendingAndNotCharging: settled && allowAutomaticSuspend && isSuspending && !isPluggedIn
+    property bool isFullAndCharging: settled && isFull && isCharging
 
     property real energyRate: UPower.displayDevice.changeRate
     property real timeToEmpty: UPower.displayDevice.timeToEmpty
@@ -77,7 +87,7 @@ Singleton {
     }
 
     onIsPluggedInChanged: {
-        if (!root.available || !root.soundEnabled) return
+        if (!root.available || !root.settled || !root.soundEnabled) return
         Audio.playSystemSound(isPluggedIn ? "power-plug" : "power-unplug")
     }
 }

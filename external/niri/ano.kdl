@@ -477,6 +477,9 @@ binds {
 window-rule {
     geometry-corner-radius 6
     clip-to-geometry true
+    // The focus ring and border otherwise fill the area behind the window,
+    // which shows through the translucent apps below as a coloured tint.
+    draw-border-with-background false
     background-effect {
         blur true
         xray true

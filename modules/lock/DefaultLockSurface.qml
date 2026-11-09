@@ -243,6 +243,7 @@ Item {
                     verticalAlignment: TextInput.AlignVCenter
                     enabled: !root.miniature && !(root.ctx?.busy ?? false)
                     onAccepted: root.ctx?.submit(text)
+                    Keys.onPressed: event => { if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) event.accepted = true } // a key held through resume must not type or submit (faillock)
                     Text {
                         anchors.fill: parent; verticalAlignment: Text.AlignVCenter
                         text: "Password"; color: "white"; opacity: 0.3; font.pixelSize: Appearance.font.pixelSize.normal

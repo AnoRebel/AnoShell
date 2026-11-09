@@ -83,8 +83,7 @@ Scope {
         enabled: root.enableBrightness
         target: Brightness
         function onBrightnessChanged() {
-            const focusedName = CompositorService.focusedMonitorName
-            const monitor = Brightness.monitors.find(m => focusedName === m.screen.name)
+            const monitor = Brightness.focusedMonitor()
             if (monitor) root.show("brightness", monitor.brightness, false)
         }
     }

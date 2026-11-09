@@ -77,10 +77,32 @@ Singleton {
         return []
     }
 
+    function _cycle(): void {
+        if (!proc.running) return
+        proc.running = false
+        Qt.callLater(() => proc.running = Qt.binding(() => Config.ready && root.args.length > 0))
+    }
+
+    // The compositor drops wlsunset's gamma control when outputs change (a
+    // charger plugged in can re-probe the panel) and wlsunset carries on with
+    // nothing to warm, so restart it then, and when it says so on stderr.
+    property real _lastStderrRestart: 0
+    Timer { id: restartTimer; interval: 1000; onTriggered: root._cycle() }
+    Connections { target: Battery; function onIsPluggedInChanged() { restartTimer.restart() } }
+    Connections { target: Quickshell; function onScreensChanged() { restartTimer.restart() } }
+
     Process {
         id: proc
         command: root.args
         running: Config.ready && root.args.length > 0
-        onCommandChanged: if (running) { running = false; Qt.callLater(() => running = Qt.binding(() => Config.ready && root.args.length > 0)) }
+        onCommandChanged: root._cycle()
+        stderr: SplitParser {
+            onRead: line => {
+                // At most every 10 s: another tool holding the gamma would loop.
+                if (!/gamma/i.test(line) || Date.now() - root._lastStderrRestart < 10000) return
+                root._lastStderrRestart = Date.now()
+                restartTimer.restart()
+            }
+        }
     }
 }

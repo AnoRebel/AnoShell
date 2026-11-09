@@ -474,6 +474,13 @@ Singleton {
             updatedWindows = [...currentList, window]
         }
 
+        // niri sends no separate unfocus for the previously focused window.
+        if (window.is_focused) {
+            updatedWindows = updatedWindows.map(w => (w.id !== window.id && w.is_focused)
+                ? Object.assign({}, w, { is_focused: false }) : w)
+            activeWindow = window
+        }
+
         scheduleWindowsUpdate(updatedWindows)
     }
 

@@ -40,16 +40,17 @@ Button {
         (root.hovered ? colBackgroundHover : colBackground)
     property color rippleColor: root.toggled ? colRippleToggled : colRipple
 
+    // The ripple (a gradient and its animations) is built on the first press:
+    // most buttons in a panel are never pressed.
     function startRipple(x, y) {
+        rippleLoader.active = true
+        const r = rippleLoader.item
         const stateY = buttonBackground.y
-        rippleAnim.x = x
-        rippleAnim.y = y - stateY
         const dist = (ox, oy) => ox * ox + oy * oy
         const stateEndY = stateY + buttonBackground.height
-        rippleAnim.radius = Math.sqrt(Math.max(dist(0, stateY), dist(0, stateEndY), dist(width, stateY), dist(width, stateEndY)))
-        rippleFadeAnim.complete()
-        rippleAnim.restart()
+        r.start(x, y - stateY, Math.sqrt(Math.max(dist(0, stateY), dist(0, stateEndY), dist(width, stateY), dist(width, stateEndY))))
     }
+    function fadeRipple() { rippleLoader.item?.fade() }
 
     component RippleAnim: NumberAnimation {
         duration: rippleDuration
@@ -75,22 +76,9 @@ Button {
             if (root.releaseAction) root.releaseAction()
             Qt.callLater(root.click)
             if (!root.rippleEnabled) return
-            rippleFadeAnim.restart()
+            root.fadeRipple()
         }
-        onCanceled: { root.down = false; if (root.rippleEnabled) rippleFadeAnim.restart() }
-    }
-
-    RippleAnim { id: rippleFadeAnim; duration: rippleDuration * 2; target: ripple; property: "opacity"; to: 0 }
-
-    SequentialAnimation {
-        id: rippleAnim
-        property real x; property real y; property real radius
-        PropertyAction { target: ripple; property: "x"; value: rippleAnim.x }
-        PropertyAction { target: ripple; property: "y"; value: rippleAnim.y }
-        PropertyAction { target: ripple; property: "opacity"; value: 1 }
-        ParallelAnimation {
-            RippleAnim { target: ripple; properties: "implicitWidth,implicitHeight"; from: 0; to: rippleAnim.radius * 2 }
-        }
+        onCanceled: { root.down = false; if (root.rippleEnabled) root.fadeRipple() }
     }
 
     background: Rectangle {
@@ -102,26 +90,52 @@ Button {
 
         // The mask only clips the ripple: an offscreen layer per button, redrawn
         // on every hover colour change, cost frames in panels full of buttons.
-        layer.enabled: ripple.visible && ripple.opacity > 0
+        layer.enabled: !!rippleLoader.item && rippleLoader.item.visible && rippleLoader.item.opacity > 0
         layer.effect: OpacityMask {
             maskSource: Rectangle { width: buttonBackground.width; height: buttonBackground.height; radius: root.buttonEffectiveRadius }
         }
 
-        Item {
-            id: ripple
-            width: ripple.implicitWidth; height: ripple.implicitHeight
-            opacity: 0; visible: width > 0 && height > 0
-            property real implicitWidth: 0; property real implicitHeight: 0
-            Behavior on opacity { animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this) }
-            RadialGradient {
-                anchors.fill: parent
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: root.rippleColor }
-                    GradientStop { position: 0.3; color: root.rippleColor }
-                    GradientStop { position: 0.5; color: Qt.rgba(root.rippleColor.r, root.rippleColor.g, root.rippleColor.b, 0) }
+        Loader {
+            id: rippleLoader
+            active: false
+            sourceComponent: Item {
+                id: ripple
+                width: ripple.implicitWidth; height: ripple.implicitHeight
+                opacity: 0; visible: width > 0 && height > 0
+                property real implicitWidth: 0; property real implicitHeight: 0
+                Behavior on opacity { animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this) }
+
+                function start(x, y, radius) {
+                    rippleAnim.x = x
+                    rippleAnim.y = y
+                    rippleAnim.radius = radius
+                    rippleFadeAnim.complete()
+                    rippleAnim.restart()
                 }
+                function fade() { rippleFadeAnim.restart() }
+
+                RippleAnim { id: rippleFadeAnim; duration: root.rippleDuration * 2; target: ripple; property: "opacity"; to: 0 }
+                SequentialAnimation {
+                    id: rippleAnim
+                    property real x; property real y; property real radius
+                    PropertyAction { target: ripple; property: "x"; value: rippleAnim.x }
+                    PropertyAction { target: ripple; property: "y"; value: rippleAnim.y }
+                    PropertyAction { target: ripple; property: "opacity"; value: 1 }
+                    ParallelAnimation {
+                        RippleAnim { target: ripple; properties: "implicitWidth,implicitHeight"; from: 0; to: rippleAnim.radius * 2 }
+                    }
+                }
+
+                RadialGradient {
+                    anchors.fill: parent
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: root.rippleColor }
+                        GradientStop { position: 0.3; color: root.rippleColor }
+                        GradientStop { position: 0.5; color: Qt.rgba(root.rippleColor.r, root.rippleColor.g, root.rippleColor.b, 0) }
+                    }
+                }
+                transform: Translate { x: -ripple.width / 2; y: -ripple.height / 2 }
             }
-            transform: Translate { x: -ripple.width / 2; y: -ripple.height / 2 }
         }
     }
 

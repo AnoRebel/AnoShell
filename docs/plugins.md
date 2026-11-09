@@ -54,6 +54,7 @@ Settings with its error and can't be turned on.
 | `entry` | the QML file in the folder (default `main.qml`) |
 | `prefix` | the plugin answers only queries that start with it, and gets the rest |
 | `minLength` | without a prefix: the shortest query it answers (default 2) |
+| `keywords` | words that also activate it when typed first with a space (`["g"]`: `g cats`); it then gets the whole query, keyword included |
 | `position` | `top` (default): above your apps; `bottom`: below them, so Enter on a plain word still opens the app |
 
 ## The QML

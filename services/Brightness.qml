@@ -24,15 +24,19 @@ Singleton {
         return monitors.find(m => m.screen === screen)
     }
 
-    function increaseBrightness(): void {
+    // `screen?`: a monitor unplugged a moment ago is still listed with no screen.
+    function focusedMonitor(): var {
         const focusedName = CompositorService.focusedMonitorName
-        const monitor = monitors.find(m => focusedName === m.screen.name)
+        return monitors.find(m => m.screen?.name === focusedName) ?? null
+    }
+
+    function increaseBrightness(): void {
+        const monitor = focusedMonitor()
         if (monitor) monitor.setBrightness(monitor.brightness + 0.05)
     }
 
     function decreaseBrightness(): void {
-        const focusedName = CompositorService.focusedMonitorName
-        const monitor = monitors.find(m => focusedName === m.screen.name)
+        const monitor = focusedMonitor()
         if (monitor) monitor.setBrightness(monitor.brightness - 0.05)
     }
 
@@ -200,7 +204,7 @@ Singleton {
         function decrement(): void { root.decreaseBrightness() }
         // Per screen: { screen, percent, ddc } (read-only, for scripts and tests).
         function status(): string {
-            return JSON.stringify(root.monitors.map(m => ({ screen: m.screen.name, percent: Math.round(m.brightness * 100), ddc: m.isDdc })))
+            return JSON.stringify(root.monitors.map(m => ({ screen: m.screen?.name ?? "", percent: Math.round(m.brightness * 100), ddc: m.isDdc })))
         }
     }
 
