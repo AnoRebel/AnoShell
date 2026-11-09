@@ -226,12 +226,54 @@ nothing is blocked or closed.
 While a game holds GameMode (started with `gamemoderun` or a libgamemode
 game), the shell pauses its animations, blur, audio visualisers and
 notification popups (critical ones, like low battery, still pop up);
-notifications still reach the notification centre.
+notifications still reach the notification centre. It also turns off shadows,
+puts the desktop pieces away and reads CPU, memory and network every
+`performance.pollInterval` ms (10 s) instead of every few seconds.
 `performance.onFullscreen` also turns it on for any fullscreen window, and
-the quick toggle, Settings → Services → Performance mode or
+`performance.apps` while a window of one of those apps is open: app ids with
+`*` and `?` as wildcards, case ignored (`["steam_app_*", "blender"]`).
+The quick toggle, the bar's `gamemode` module (click),
+Settings → Services → Performance mode or
 `qs -c ano ipc call performance toggle` (`on`, `off`, `status`) turn it on by
-hand. gamemoded is followed over D-Bus, never polled and never started by the
+hand; that stays on across restarts (`performance.manual`). Turned off by hand
+while a game or app holds it, it stays off until they are all gone.
+gamemoded is followed over D-Bus, never polled and never started by the
 shell. Each paused effect has its own switch (`performance.*`).
+
+## Sound effects
+
+All off until you turn them on in Settings → General → Sound effects. Each kind
+has its own switch, with one volume (`sounds.volume`, 60 %) for all of them:
+
+- `sounds.login`: when the desktop first appears, once per session (a restart
+  of the shell doesn't play it again).
+- `sounds.notifications`: for each notification that pops up. An app that
+  brings its own sound (the `sound-name` or `sound-file` hints) gets its own
+  sound instead; one that asks for silence (`suppress-sound`) gets none.
+  Nothing plays while popups are held (Do Not Disturb, performance mode).
+- `sounds.panels`: a panel opening and closing (sidebars, launcher, overview,
+  control panel, …). Switching from one panel to another plays only the open.
+- `sounds.alerts`: CPU or memory use going over `sounds.alertThreshold`
+  (90 %), or the battery reaching its critical level while unplugged. Once on
+  the way in; a value must stay under the limit `sounds.alertGap` seconds
+  (300) before it can sound again. Nothing sounds in the first 15 seconds.
+
+Sounds play with `pw-play` (PipeWire). The battery sounds (`sounds.battery`)
+use the same player and come from the sound theme in `sounds.theme`
+(`freedesktop` by default, in `/usr/share/sounds`). The bundled sounds are
+Bioma's (GPL-3.0). Try one: `qs -c ano ipc call sounds play notification`.
+
+## Startup applications
+
+anod starts the apps in Settings → Services → Startup applications once per
+login, on Hyprland and niri alike (`autostart.entries`). Each entry is an
+installed app (`{"desktopId": "firefox"}`) or a command run with `sh -c`
+(`{"command": "syncthing serve --no-browser"}`), with `enabled` and an
+optional `delayMs` wait. Each app gets its own systemd scope
+(`systemd-run --user --scope`), or its own session (`setsid`) without a
+systemd user manager. Restarting anod or the shell doesn't start them again;
+the play button in Settings starts one now. Apps in `~/.config/autostart` are
+listed there but not started unless you add them. This needs anod running.
 
 ## Lock keys and Do Not Disturb
 

@@ -124,7 +124,7 @@ Singleton {
             previousNetworkStats = { received: totalReceived, transmitted: totalTransmitted }
 
             root.updateHistories()
-            interval = Config.options?.resources?.updateInterval ?? 3000
+            interval = GameMode.slowPolling ? GameMode.pollInterval : (Config.options?.resources?.updateInterval ?? 3000)
         }
     }
 

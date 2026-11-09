@@ -46,6 +46,84 @@
  },
  {
   "page": 0,
+  "card": "Sound effects",
+  "label": "Sound effects",
+  "sublabel": "Short sounds for logging in, notifications, panels and alerts, played with pw-play. All off until you turn them on. Needs `pipewire` (pw-play).",
+  "keys": [
+   "sounds.volume",
+   "sounds.login",
+   "sounds.notifications",
+   "sounds.panels",
+   "sounds.alerts",
+   "sounds.alertThreshold",
+   "sounds.alertGap"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Volume",
+  "sublabel": "For every sound effect and the battery sounds, under the system volume",
+  "keys": [
+   "sounds.volume"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "When the desktop first appears",
+  "sublabel": "Once per session, not when the shell restarts",
+  "keys": [
+   "sounds.login"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Notifications",
+  "sublabel": "An app's own sound (sound-name, sound-file) plays instead; apps that ask for silence get none. Nothing plays while popups are held.",
+  "keys": [
+   "sounds.notifications"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Panels opening and closing",
+  "sublabel": "Sidebars, launcher, overview, control panel and the other panels",
+  "keys": [
+   "sounds.panels"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Alerts",
+  "sublabel": "CPU or memory use going over the limit below, or the battery reaching its critical level while unplugged",
+  "keys": [
+   "sounds.alerts"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Alert above",
+  "sublabel": "",
+  "keys": [
+   "sounds.alertThreshold"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Quiet time between alerts",
+  "sublabel": "How long a value must stay under the limit before it can sound again",
+  "keys": [
+   "sounds.alertGap"
+  ]
+ },
+ {
+  "page": 0,
   "card": "Battery",
   "label": "Battery",
   "sublabel": "Warning thresholds, auto-suspend, and power notifications",
@@ -2906,7 +2984,7 @@
   "page": 8,
   "card": "Performance mode",
   "label": "Performance mode",
-  "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur and audio visualisers, and holds notification popups (they still reach the notification centre).",
+  "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre).",
   "keys": [
    "performance"
   ]
@@ -2927,6 +3005,15 @@
   "sublabel": "Videos and presentations count too",
   "keys": [
    "performance.onFullscreen"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "While these apps are open",
+  "sublabel": "App ids, comma-separated; * and ? match anything, case doesn't matter (e.g. steam_app_*, blender)",
+  "keys": [
+   "performance.apps"
   ]
  },
  {
@@ -2963,6 +3050,42 @@
   "sublabel": "",
   "keys": [
    "performance.holdPopups"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Turn off shadows",
+  "sublabel": "",
+  "keys": [
+   "performance.stopShadows"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Put desktop pieces away",
+  "sublabel": "",
+  "keys": [
+   "performance.hidePieces"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Read CPU, memory and network less often",
+  "sublabel": "",
+  "keys": [
+   "performance.slowPolling"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Read them every",
+  "sublabel": "",
+  "keys": [
+   "performance.pollInterval"
   ]
  },
  {
@@ -3421,6 +3544,15 @@
    "shell.preferred"
   ],
   "advanced": true
+ },
+ {
+  "page": 8,
+  "card": "Startup applications",
+  "label": "Startup applications",
+  "sublabel": "Started once when you log in, by anod (not again when the shell or anod restarts)",
+  "keys": [
+   "autostart"
+  ]
  },
  {
   "page": 9,

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 
 import qs.modules.common
 import qs
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -165,6 +166,8 @@ Singleton {
                 }
                 root.unread++
             }
+            // A sound only for one that pops up (not silent, not held by performance mode).
+            if (newNotifObject.popup && root.popupList.includes(newNotifObject)) Sounds.notification(notification)
             root.notify(newNotifObject)
             notifFileView.setText(stringifyList(root.list))
         }

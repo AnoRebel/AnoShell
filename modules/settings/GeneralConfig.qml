@@ -19,7 +19,9 @@ ColumnLayout {
     SettingsPageHeader {
         title: "General"
         subtitle: "Audio, battery, time, notifications, scrolling, sounds"
-        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session", "polkit", "lock"]
+        configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "sounds.volume",
+            "sounds.login", "sounds.notifications", "sounds.panels", "sounds.alerts", "sounds.alertThreshold", "sounds.alertGap",
+            "session", "polkit", "lock"]
     }
 
     // ═══ Audio ═══
@@ -94,6 +96,79 @@ ColumnLayout {
             value: Config.options?.audio?.protection?.maxAllowed ?? 100
             onValueChanged: Config.setNestedValue("audio.protection.maxAllowed", Math.round(value))
             valueText: `${Math.round(value)}%`
+        }
+    }
+
+    // ═══ Sound effects ═══
+    SettingsCard {
+        icon: "music_note"
+        title: "Sound effects"
+        subtitle: "Short sounds for logging in, notifications, panels and alerts, played with pw-play. All off until you turn them on. Needs `pipewire` (pw-play)."
+        configKeys: ["sounds.volume", "sounds.login", "sounds.notifications", "sounds.panels", "sounds.alerts", "sounds.alertThreshold", "sounds.alertGap"]
+
+        ConfigSlider {
+            label: "Volume"
+            configKey: "sounds.volume"
+            sublabel: "For every sound effect and the battery sounds, under the system volume"
+            from: 0; to: 100; stepSize: 5
+            value: Math.round((Config.options?.sounds?.volume ?? 0.6) * 100)
+            onValueChanged: Config.setNestedValue("sounds.volume", Math.round(value) / 100)
+            valueText: `${Math.round(value)}%`
+        }
+        ConfigRow {
+            label: "Try it"
+            sublabel: "Plays the notification sound at this volume"
+            RippleButton {
+                buttonText: "Play"
+                onClicked: Sounds.play("notification")
+            }
+        }
+        ConfigSwitch {
+            label: "When the desktop first appears"
+            configKey: "sounds.login"
+            sublabel: "Once per session, not when the shell restarts"
+            checked: Config.options?.sounds?.login ?? false
+            onCheckedChanged: Config.setNestedValue("sounds.login", checked)
+        }
+        ConfigSwitch {
+            label: "Notifications"
+            configKey: "sounds.notifications"
+            sublabel: "An app's own sound (sound-name, sound-file) plays instead; apps that ask for silence get none. Nothing plays while popups are held."
+            checked: Config.options?.sounds?.notifications ?? false
+            onCheckedChanged: Config.setNestedValue("sounds.notifications", checked)
+        }
+        ConfigSwitch {
+            label: "Panels opening and closing"
+            configKey: "sounds.panels"
+            sublabel: "Sidebars, launcher, overview, control panel and the other panels"
+            checked: Config.options?.sounds?.panels ?? false
+            onCheckedChanged: Config.setNestedValue("sounds.panels", checked)
+        }
+        ConfigSwitch {
+            label: "Alerts"
+            configKey: "sounds.alerts"
+            sublabel: "CPU or memory use going over the limit below, or the battery reaching its critical level while unplugged"
+            checked: Config.options?.sounds?.alerts ?? false
+            onCheckedChanged: Config.setNestedValue("sounds.alerts", checked)
+        }
+        ConfigSlider {
+            label: "Alert above"
+            configKey: "sounds.alertThreshold"
+            enabled: Config.options?.sounds?.alerts ?? false
+            from: 50; to: 100; stepSize: 5
+            value: Config.options?.sounds?.alertThreshold ?? 90
+            onValueChanged: Config.setNestedValue("sounds.alertThreshold", Math.round(value))
+            valueText: `${Math.round(value)}%`
+        }
+        ConfigSlider {
+            label: "Quiet time between alerts"
+            configKey: "sounds.alertGap"
+            sublabel: "How long a value must stay under the limit before it can sound again"
+            enabled: Config.options?.sounds?.alerts ?? false
+            from: 0; to: 1800; stepSize: 30
+            value: Config.options?.sounds?.alertGap ?? 300
+            onValueChanged: Config.setNestedValue("sounds.alertGap", Math.round(value))
+            valueText: Math.round(value) >= 60 ? `${(Math.round(value) / 60).toFixed(Math.round(value) % 60 ? 1 : 0)} min` : `${Math.round(value)} s`
         }
     }
 

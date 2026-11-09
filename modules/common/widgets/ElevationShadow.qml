@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.services
 import QtQuick
 import Quickshell
 
@@ -42,7 +43,7 @@ Item {
     property real sourceWidth: width
     property real sourceHeight: height
 
-    readonly property bool shadowEnabled: (Config.options?.appearance?.shadows?.enable ?? false)
+    readonly property bool shadowEnabled: (Config.options?.appearance?.shadows?.enable ?? false) && !GameMode.stopShadows
     readonly property real _intensity: Config.options?.appearance?.shadows?.intensity ?? 1.0
     readonly property real _opacityMult: Config.options?.appearance?.shadows?.opacity ?? 1.0
 

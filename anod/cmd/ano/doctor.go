@@ -20,7 +20,7 @@ import (
 // feature: binaries the shell spawns for it, checked when When is true.
 type feature struct {
 	Name string
-	When string // config bool path that enables it; "" = always on
+	When string // config bool path that enables it (a|b: any of them); "" = always on
 	Bins []string
 }
 
@@ -41,7 +41,8 @@ var features = []feature{
 	{"scratchpad (copy, failed-command notices)", "scratchpad.enable", []string{"wl-copy", "notify-send"}},
 	{"brightness", "", []string{"brightnessctl"}},
 	{"audio spectrum", "", []string{"cava"}},
-	{"battery sounds", "sounds.battery", []string{"ffplay"}},
+	{"sound effects and battery sounds", "sounds.battery|sounds.login|sounds.notifications|sounds.panels|sounds.alerts", []string{"pw-play"}},
+	{"startup applications (anod; else setsid)", "", []string{"systemd-run|setsid"}},
 	{"weather", "bar.weather.enable", []string{"curl"}},
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},
@@ -101,6 +102,16 @@ func doctor(args []string) int {
 		return 1
 	}
 	return 0
+}
+
+// anyBool: one of the |-separated bool paths is true.
+func anyBool(m map[string]any, paths string) bool {
+	for _, p := range strings.Split(paths, "|") {
+		if config.Bool(m, p, false) {
+			return true
+		}
+	}
+	return false
 }
 
 // have reports whether bin is on PATH ("a|b": either).
@@ -240,7 +251,7 @@ func runChecks() []check {
 
 	// Optional dependencies of enabled features.
 	for _, f := range features {
-		if f.When != "" && !config.Bool(eff, f.When, false) {
+		if f.When != "" && !anyBool(eff, f.When) {
 			continue
 		}
 		var missing []string

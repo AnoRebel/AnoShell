@@ -51,7 +51,7 @@ Item {
     // is excluded — it's the outermost surface, so a ring shadow would just bleed
     // inward over windows). That makes the shadow valid at any frame thickness:
     // the bar/sidebars cast onto the desktop, the ring casts nothing.
-    property bool shadowEnabled: Config.options?.appearance?.shadows?.enable ?? false
+    property bool shadowEnabled: (Config.options?.appearance?.shadows?.enable ?? false) && !GameMode.stopShadows
     property real shadowIntensity: Config.options?.appearance?.shadows?.intensity ?? 1.0
     property real shadowOpacity: Config.options?.appearance?.shadows?.opacity ?? 1.0
     property color shadowColor: "#000000"

@@ -146,7 +146,7 @@ Rectangle {
             label: GameMode.performance ? "Perf" : "Normal"
             tooltip: GameMode.performance
                 ? (GameMode.manual ? "Performance mode on by hand · tap to turn off"
-                    : `Performance mode on while ${GameMode.performanceReason} · tap to keep it on afterwards`)
+                    : `Performance mode on while ${GameMode.performanceReason} · tap to turn off until it ends`)
                 : "Performance mode off · tap to pause motion, blur and visualisers"
             active: GameMode.performance
             activeColor: Appearance.colors.colWarning
