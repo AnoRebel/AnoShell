@@ -117,7 +117,11 @@ Item {
                 id: thumb
                 anchors.fill: parent
                 captureSource: thumbContainer.wHandle
-                live: false
+                // overview.liveThumbnails: stream the hovered tile, or the first 12.
+                live: {
+                    const m = Config.options?.overview?.liveThumbnails ?? "off"
+                    return m === "all" ? thumbContainer.order < 12 : m === "hovered" && thumbContainer.hovered
+                }
                 paintCursor: false
                 visible: thumbContainer.wHandle && hasContent
 

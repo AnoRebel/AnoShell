@@ -124,7 +124,12 @@ Scope {
                                         id: tvThumb
                                         anchors.fill: parent
                                         captureSource: modelData.win?.toplevel ?? null
-                                        live: false; paintCursor: false
+                                        // overview.liveThumbnails (the view only exists while open).
+                                        live: {
+                                            const m = Config.options?.overview?.liveThumbnails ?? "off"
+                                            return m === "all" ? index < 12 : m === "hovered" && tvItemMA.containsMouse
+                                        }
+                                        paintCursor: false
                                         layer.enabled: true
                                         // Sized by id: the mask Rectangle has no parent, so parent.width was 0 (blank thumbnails).
                                         layer.effect: OpacityMask { maskSource: Rectangle { width: tvThumb.width; height: tvThumb.height; radius: 12 } }

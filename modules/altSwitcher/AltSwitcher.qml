@@ -275,6 +275,7 @@ Scope {
                             model: root.filteredWindows
 
                             Rectangle {
+                                id: winItem
                                 required property var modelData
                                 required property int index
                                 Layout.fillWidth: true
@@ -312,7 +313,12 @@ Scope {
                                             sourceComponent: ScreencopyView {
                                                 anchors.fill: parent
                                                 captureSource: modelData.toplevel
-                                                live: false; paintCursor: false
+                                                // overview.liveThumbnails; only while the list is up.
+                                                live: {
+                                                    const m = Config.options?.overview?.liveThumbnails ?? "off"
+                                                    return root.panelVisible && (m === "all" ? winItem.index < 12 : m === "hovered" && (winItem.isSelected || itemMA.containsMouse))
+                                                }
+                                                paintCursor: false
                                             }
                                         }
 

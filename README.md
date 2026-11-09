@@ -473,6 +473,8 @@ The pill renders a gradient halo behind itself that pulses when configured event
 ### Overview (AnoView)
 Layouts: `smartgrid`, `justified`, `bands`, `masonry`, `hero`, `spiral`, `satellite`, `staggered`, `columnar`, `vortex`, `random`
 
+`overview.liveThumbnails` (Settings → Overview): `off` (default, one still frame per window), `hovered` (only the hovered or selected window streams) or `all` (the first 12 stream). Covers the overview, the task view and the Alt+Tab list, and streams only while the view is open; the fan switcher is always live.
+
 ### AI Chat
 Providers: **Gemini** (2.5 Flash, 3 Flash), **Anthropic** (Claude Sonnet 4, Haiku 3.5), **OpenAI** (GPT-4.1 Mini), **Mistral** (Medium 3), **OpenRouter** (dynamic free models), **Ollama** (local auto-detect). Commands: `/model`, `/key`, `/temp`, `/prompt`, `/save`, `/load`, `/clear`
 

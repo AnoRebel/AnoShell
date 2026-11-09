@@ -3141,7 +3141,52 @@
   "label": "AnoView Layout",
   "sublabel": "Choose how windows are arranged in the overview",
   "keys": [
-   "overview"
+   "overview.layout"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Live Thumbnails",
+  "label": "Live Thumbnails",
+  "sublabel": "Overview, task view and the Alt+Tab list",
+  "keys": [
+   "overview.liveThumbnails"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Live thumbnails",
+  "sublabel": "Off shows one still frame per window. Streaming costs GPU time while the view is open.",
+  "keys": [
+   "overview.liveThumbnails"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Off",
+  "sublabel": "",
+  "keys": [
+   "overview.liveThumbnails"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Hovered",
+  "sublabel": "",
+  "keys": [
+   "overview.liveThumbnails"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "All (up to 12)",
+  "sublabel": "",
+  "keys": [
+   "overview.liveThumbnails"
   ]
  },
  {
