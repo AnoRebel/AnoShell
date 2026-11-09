@@ -246,12 +246,26 @@ Singleton {
             root.refreshZones()
         }
     }
+    // Zones others show (the world clock piece) besides the panel's own:
+    // resolved and kept fresh the same way. Unknown names land in badZones.
+    property var extraZones: []
+    property var badZones: ({}) // zone -> true
+    function watchZones(list): void {
+        const add = (list ?? []).filter(z => root._zoneRe.test(z) && !root.zones.includes(z) && !root.extraZones.includes(z))
+        if (!add.length) return
+        root.extraZones = root.extraZones.concat(add)
+        root._queue = root._queue.concat(add)
+        root._nextZone()
+    }
     property var _queue: []
-    function refreshZones(): void { root._queue = root.zones.slice(); root._nextZone() }
+    function refreshZones(): void { root._queue = root.zones.concat(root.extraZones); root._nextZone() }
     function _nextZone(): void {
         if (!root._queue.length || tzProc.running) return
         tzProc.zone = root._queue[0]
-        tzProc.exec({ command: ["date", "+%z"], environment: { TZ: `:${tzProc.zone}` } })
+        // glibc falls back to UTC for a name it doesn't know, so the zone file
+        // is checked first (the zone is an argument, never part of the script).
+        tzProc.exec({ command: ["sh", "-c", '[ -f "/usr/share/zoneinfo/$1" ] && exec date +%z', "sh", tzProc.zone],
+                      environment: { TZ: `:${tzProc.zone}` } })
     }
     Process {
         id: tzProc
@@ -263,6 +277,8 @@ Singleton {
                     const o = Object.assign({}, root.offsets)
                     o[tzProc.zone] = (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3]))
                     root.offsets = o
+                } else if (!root.badZones[tzProc.zone]) {
+                    const b = Object.assign({}, root.badZones); b[tzProc.zone] = true; root.badZones = b
                 }
                 root._queue = root._queue.filter(z => z !== tzProc.zone)
                 Qt.callLater(root._nextZone)

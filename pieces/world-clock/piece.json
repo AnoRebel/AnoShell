@@ -1,0 +1,14 @@
+{
+  "id": "world-clock",
+  "name": "World clock",
+  "description": "The time in several places, with the day offset and a day/night hint",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "WorldClockPiece.qml",
+  "preview": "preview.png",
+  "size": { "w": 3, "h": 2 },
+  "minSize": { "w": 2, "h": 1 },
+  "settings": [
+    { "key": "zones", "type": "string", "label": "Places (Area/City=Label, comma-separated; empty: the Clock panel's)", "default": "America/New_York=New York, Europe/London=London, Asia/Tokyo=Tokyo" }
+  ]
+}
