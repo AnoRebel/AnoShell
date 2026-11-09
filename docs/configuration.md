@@ -160,6 +160,10 @@ dock for a moment shows its windows (up to six) as live thumbnails with their
 titles, above the icon (beside it on a side dock). Click one to focus it,
 middle-click to close it. The dock stays up while the pointer is on them.
 
+Pinned apps (`dock.pinnedApps`) keep the order you give them: press a pinned
+icon and drag it along the dock (a short wobble still counts as a click), or
+use the up/down arrows in Settings → Dock → Pinned Apps.
+
 ## Network panel
 
 `network.panelStyle` picks what the network and Bluetooth entry points open:
