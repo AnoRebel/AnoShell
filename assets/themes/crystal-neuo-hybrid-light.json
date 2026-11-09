@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "name": "Crystal Neuo (Light)",
-    "description": "Crystal Neuo's Refraction material: calm cool neutrals, an iris accent and a teal second accent, frosted glass with a rim light (crystal-neuo.anorebel.net).",
+    "name": "Crystal Neuo Hybrid (Light)",
+    "description": "Crystal Neuo's Hybrid material: refraction's palette and glass chrome with tactile's ink edges. (crystal-neuo.anorebel.net)",
     "darkmode": false
   },
   "background": "#EEF0F5",
@@ -17,7 +17,7 @@
   "on_surface": "#11131A",
   "on_background": "#11131A",
   "on_surface_variant": "#4B5262",
-  "outline": "#7C8392",
+  "outline": "#11131A",
   "outline_variant": "#DDE0E8",
   "inverse_surface": "#11131A",
   "inverse_on_surface": "#EEF0F5",
@@ -27,22 +27,22 @@
   "primary_container": "#E6E5FB",
   "on_primary_container": "#4440C9",
   "secondary": "#4b4d96",
-  "on_secondary": "#FFFFFF",
+  "on_secondary": "#EEF0F5",
   "secondary_container": "#d5d7ef",
   "on_secondary_container": "#11131A",
   "tertiary": "#0F766E",
-  "on_tertiary": "#ffffff",
+  "on_tertiary": "#EEF0F5",
   "tertiary_container": "#cae1df",
-  "on_tertiary_container": "#084641",
+  "on_tertiary_container": "#11131A",
   "error": "#C42B36",
-  "on_error": "#FFFFFF",
+  "on_error": "#EEF0F5",
   "error_container": "#f3d5d7",
-  "on_error_container": "#B4232F",
+  "on_error_container": "#11131A",
   "scrim": "#000000",
   "shadow": "#000000",
   "surface_tint": "#4A46D6",
   "glass_opacity": 0.62,
   "glass_blur": 18,
-  "glass_border_color": "#DDE0E8",
-  "glass_border_width": 1
+  "glass_border_color": "#11131A",
+  "glass_border_width": 2
 }
