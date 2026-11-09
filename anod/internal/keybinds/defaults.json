@@ -119,6 +119,14 @@
       ]
     },
     {
+      "chord": "Super+Alt+P",
+      "action": "shell",
+      "args": [
+        "livePins",
+        "pick"
+      ]
+    },
+    {
       "chord": "Super+I",
       "action": "shell",
       "args": [

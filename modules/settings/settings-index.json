@@ -729,6 +729,33 @@
  },
  {
   "page": 1,
+  "card": "Live pins",
+  "label": "Live pins",
+  "sublabel": "Super+Alt+P: pick a window, drag over a part of it, and that part stays on screen, live. Drag a pin to move it, its corner to resize; hover for the layer and close buttons (Hyprland)",
+  "keys": [
+   "livePins"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Frames a second",
+  "sublabel": "Per pin; each frame is a window capture, so lower is lighter. Paused while hidden, locked or covered",
+  "keys": [
+   "livePins.fps"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "New pins open",
+  "sublabel": "Each pin's hover button moves it between the two",
+  "keys": [
+   "livePins.layer"
+  ]
+ },
+ {
+  "page": 1,
   "card": "Control panel",
   "label": "Control panel",
   "sublabel": "Extra rows in the control panel, on its own and grown from the pill",

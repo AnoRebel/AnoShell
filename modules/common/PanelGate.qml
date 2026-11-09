@@ -55,6 +55,7 @@ Singleton {
         { id: "anoScreenCorners", name: "Hot Corners", icon: "fullscreen", desc: "Screen corner triggers", category: "Utilities", source: "modules/screenCorners/ScreenCorners.qml", key: "screenCorners.enable" },
         { id: "anoFocusTime", name: "Focus Time", icon: "timer", desc: "App usage tracker with daily/weekly stats", category: "Utilities", source: "modules/focusTime/FocusTimePanel.qml", key: "focusTime.enable" },
         { id: "anoReader", name: "Reader", icon: "auto_stories", desc: "Novel, manga and anime panels (anod's reader backend)", category: "Utilities", source: "modules/reader/ReaderHost.qml", key: "reader.enable" },
+        { id: "anoLivePins", name: "Live Pins", icon: "picture_in_picture", desc: "Pin part of a window on screen as a live view (Super+Alt+P)", category: "Utilities", source: "modules/livePins/LivePins.qml", capability: "windowCapture" },
         { id: "anoStickyNote", name: "Sticky Note", icon: "sticky_note_2", desc: "A note on the desktop, kept in a file (click-through toggle)", category: "Utilities", source: "modules/stickyNotes/StickyNote.qml", key: "stickyNotes.enable" },
         { id: "anoDisplayManager", name: "Display Manager", icon: "desktop_windows", desc: "Monitor arrangement, mode and scale", category: "Utilities", source: "modules/displayManager/DisplayManager.qml", key: "displayManager.enable", capability: "outputConfig" },
         { id: "anoPolkit", name: "Password Prompt", icon: "admin_panel_settings", desc: "Built-in polkit agent: asks for your password when an app needs permission", category: "Utilities", source: "modules/polkit/PolkitPrompt.qml", key: "polkit.enable" },
@@ -79,7 +80,7 @@ Singleton {
         "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
-        "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote"]
+        "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote", "anoLivePins"]
     readonly property var familyModules: ({
         "ano": _core.concat(_sidebars, _rich, ["anoFocusTime", "anoDisplayManager"]),
         "hefty": _core.concat(_sidebars, _rich),

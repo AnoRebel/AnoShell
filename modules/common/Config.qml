@@ -924,6 +924,11 @@ Singleton {
                 property bool freezeRegion: false      // the screen stands still while you pick a region
                 property var ocrLanguages: ["eng"]     // tesseract languages for text recognition (Super+Shift+X)
             }
+            // Live pins (modules/livePins): parts of windows kept on screen, live.
+            property JsonObject livePins: JsonObject {
+                property int fps: 10                   // frames a second per pin (1-30)
+                property string layer: "top"           // where new pins open: top (above windows) | bottom (desktop)
+            }
             // Scratchpad & Pins (services/Scratchpad.qml): notes, to-do, clipboard,
             // calendar and pinned commands, grown from the pill.
             property JsonObject scratchpad: JsonObject {

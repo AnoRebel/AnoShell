@@ -58,6 +58,32 @@ Settings → Sidebars → **Productivity**.
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
 
+## Live pins
+
+Keep part of a window on screen, live: a video in a corner, a build log's
+last lines, a chat while you work elsewhere. **Super+Alt+P** (or
+`qs -c ano ipc call livePins pick`) shows your windows; click one, then drag
+a rectangle over its preview. The pin opens where you drew it, at the
+window's own size (at most 60% of the screen).
+
+- Drag a pin to move it, its bottom-right corner to resize it (the shape is
+  kept). Double-click it to focus the window it shows.
+- Hover it for two buttons: move it between **above windows** and **on the
+  desktop**, and close it. New pins open where `livePins.layer` says
+  (`top` or `bottom`).
+- Each pin captures the window `livePins.fps` times a second (default 10,
+  Settings → Modules → Live pins). It stops capturing while pins are hidden,
+  the screen is locked, or (desktop pins) a window covers the screen, or
+  (pins above windows) a fullscreen window is up.
+- When the window closes, its pin closes too and a notification says so.
+- Pins last until you close them or the shell restarts.
+
+`qs -c ano ipc call livePins pick | clear | toggle | list` (`toggle` hides
+and shows every pin; `list` prints them as JSON). It needs window capture,
+which only the Hyprland backend has today (Hyprland's toplevel export);
+elsewhere Settings shows the module as unavailable. Turn it off in Settings →
+Modules → Enabled Modules.
+
 ## Removable drives
 
 The module `drives` (add it to any bar in Settings → Bar, or to the pill in

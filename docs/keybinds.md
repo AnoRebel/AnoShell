@@ -47,6 +47,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super+B / N / I / O / X | left sidebar / right sidebar / control panel / media / session |
 | Super+Y | Scratchpad & Pins (when on) |
 | Super+Ctrl+X | actions ring (your macros, Settings → Actions) |
+| Super+Alt+P | live pin: keep part of a window on screen (Hyprland) |
 | Super+Comma, Super+Slash | Settings, cheatsheet |
 | Super+Return, Super+E, Super+Z, Super+D | terminal, files, browser (your default apps), vicinae |
 | Super+Q, Super+Shift+Q | close |

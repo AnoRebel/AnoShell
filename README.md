@@ -703,6 +703,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 | Actions (Settings → Actions, the ring on Super+Ctrl+X, `actions` IPC) | per step: open file/URL `xdg-utils` (`xdg-open`); shell command `sh`; brightness as for brightness (`brightnessctl`, or `ddcutil` for external monitors); power profile `power-profiles-daemon`; wallpaper anod (else `awww`) | that step fails, a notification names it, and the steps after it don't run |
+| Live pins (Super+Alt+P, `livePins`) | window capture: Hyprland (hyprland-toplevel-export) | not offered on other compositors |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
 
