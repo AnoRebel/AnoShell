@@ -49,7 +49,7 @@ Scope {
     IpcHandler {
         target: "livePins"
         function pick(): void { root.picking = true }
-        function clear(): void { root.pins = [] }
+        function clear(): void { root.picking = false; root.pins = [] }
         function toggle(): void { root.shown = !root.shown }
         function list(): string {
             return JSON.stringify(root.pins.map(p => ({ title: p.title, appId: p.toplevel?.appId ?? "",

@@ -78,7 +78,7 @@ window's own size (at most 60% of the screen).
 - When the window closes, its pin closes too and a notification says so.
 - Pins last until you close them or the shell restarts.
 
-`qs -c ano ipc call livePins pick | clear | toggle | list` (`toggle` hides
+`qs -c ano ipc call livePins pick | clear | toggle | list` (`clear` also cancels an open picker; `toggle` hides
 and shows every pin; `list` prints them as JSON). It needs window capture,
 which only the Hyprland backend has today (Hyprland's toplevel export);
 elsewhere Settings shows the module as unavailable. Turn it off in Settings →
