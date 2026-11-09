@@ -1,6 +1,8 @@
 package keybinds
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -139,5 +141,22 @@ func Reset(o Overrides, chord string) Overrides {
 			rm = append(rm, c)
 		}
 	}
-	return Overrides{Binds: keep, Remove: rm}
+	o.Binds, o.Remove = keep, rm // the Lua helpers stay
+	return o
+}
+
+// Unremove undoes a removal of chord (Set with a nil bind) made on prev: prev
+// comes back whole, but only while cur is exactly what that removal left, so
+// an undo never drops a change made since.
+func Unremove(d Defaults, prev, cur Overrides, chord string) (Overrides, error) {
+	after, err := Set(d, prev, chord, "", nil, false)
+	if err != nil {
+		return cur, err
+	}
+	a, _ := json.Marshal(after)
+	c, _ := json.Marshal(cur)
+	if !bytes.Equal(a, c) {
+		return cur, fmt.Errorf("the keybinds changed since; nothing undone")
+	}
+	return prev, nil
 }

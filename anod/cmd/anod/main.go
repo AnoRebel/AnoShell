@@ -476,6 +476,34 @@ func main() {
 		}
 		return kbApply(o)
 	})
+	// Undo of a removal (Settings → Keybinds): the overrides from before it
+	// come back, only while nothing else changed since.
+	srv.Handle("keybinds.unremove", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Chord string             `json:"chord"`
+			Prev  keybinds.Overrides `json:"prev"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil || req.Chord == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {chord, prev}")
+		}
+		unlock, err := keybinds.Lock(keybinds.DefaultPaths())
+		if err != nil {
+			return nil, err
+		}
+		defer unlock()
+		d, err := keybinds.LoadDefaults()
+		if err != nil {
+			return nil, err
+		}
+		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
+		if err != nil {
+			return nil, err
+		}
+		if o, err = keybinds.Unremove(d, req.Prev, o, req.Chord); err != nil {
+			return nil, ipc.Errorf("conflict", "%v", err)
+		}
+		return kbApply(o)
+	})
 	// The cheatsheet: what the running compositor binds, plus ano actions left unbound.
 	srv.HandleSlow("keybinds.active", func(p json.RawMessage) (any, error) {
 		var req struct {

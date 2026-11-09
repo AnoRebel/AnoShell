@@ -105,7 +105,21 @@ ColumnLayout {
         })
     }
 
-    function remove(chord) { Anod.call("keybinds.set", { chord: chord, bind: null }, () => root.reload()) }
+    // Removed at once; Undo puts the overrides from before back (anod refuses
+    // if anything changed since).
+    function remove(chord) {
+        const prev = JSON.parse(JSON.stringify(root.overrides))
+        Anod.call("keybinds.set", { chord: chord, bind: null }, (r, e) => {
+            root.reload()
+            if (e) { root.message = e.message; return }
+            Undo.push({ label: `Removed ${chord}`, restore: () => {
+                Anod.call("keybinds.unremove", { chord: chord, prev: prev }, (r2, e2) => {
+                    if (e2) Undo.say(`Can't undo: ${e2.message}`)
+                    try { root.reload() } catch (_) {} // the page may be closed by now
+                })
+            } })
+        })
+    }
     function reset(chord) { Anod.call("keybinds.reset", { chord: chord }, () => root.reload()) }
 
     // A key press → "Super+Shift+Left" (niri/xkb key names, as anod stores them).

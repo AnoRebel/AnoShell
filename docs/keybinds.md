@@ -91,7 +91,9 @@ to (`"only": "hyprland"` or `"niri"` limits it). `remove` takes a chord away.
 anod's socket offers the same to Settings: `keybinds.list`, `keybinds.set`
 (`{"chord", "bind" | null, "replace"?}`; a chord already in use answers a
 `conflict` error naming what is bound there, unless `replace` is set) and
-`keybinds.reset` (`{"chord"?}`; no chord resets everything).
+`keybinds.reset` (`{"chord"?}`; no chord resets everything) and
+`keybinds.unremove` (`{"chord", "prev"}`: the Undo after a removal puts the
+overrides `prev` back, only while nothing else changed since).
 
 The cheatsheet (Super+/) asks anod for `keybinds.active`: what the running
 compositor binds right now (ano's set once migrated, else your own config,

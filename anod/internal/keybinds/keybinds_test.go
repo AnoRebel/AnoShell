@@ -290,8 +290,38 @@ func TestSetConflictReset(t *testing.T) {
 	if u := ChordUsers(Effective(d, o), "Super+Q", ""); len(u) != 1 || u[0].Action != "window.close" {
 		t.Fatal("reset one")
 	}
+	if Reset(Overrides{HyprHelpers: "local m = 1"}, "Super+Q").HyprHelpers == "" {
+		t.Fatal("resetting one chord dropped the Lua helpers")
+	}
 	if eff := Effective(d, Reset(o, "")); len(eff) != len(d.Binds) {
 		t.Fatal("reset all")
+	}
+}
+
+// Undoing a removal brings the overrides back exactly, and only while
+// nothing else changed since.
+func TestUnremove(t *testing.T) {
+	d := Defaults{Binds: []Bind{{Chord: "Super+Q", Action: "window.close"}}}
+	prev := Overrides{Binds: []Bind{
+		{Chord: "Super+A", Action: "exec", Args: []string{"a"}, Only: "hyprland"},
+		{Chord: "Super+A", Action: "exec", Args: []string{"b"}, Only: "niri"},
+		{Chord: "Super+B", Action: "exec", Args: []string{"c"}},
+	}, HyprHelpers: "local m = 1"}
+	cur, _ := Set(d, prev, "Super+A", "", nil, false)
+	got, err := Unremove(d, prev, cur, "Super+A")
+	if err != nil || len(got.Binds) != 3 || got.Binds[1].Args[0] != "b" || got.HyprHelpers == "" || len(got.Remove) != 0 {
+		t.Fatalf("unremove: %+v %v", got, err)
+	}
+	// A default chord: its removal and undo.
+	cur, _ = Set(d, Overrides{}, "Super+Q", "", nil, false)
+	if got, err := Unremove(d, Overrides{}, cur, "Super+Q"); err != nil || len(got.Remove) != 0 {
+		t.Fatalf("default: %+v %v", got, err)
+	}
+	// Something else changed since: refused, cur kept.
+	cur, _ = Set(d, prev, "Super+A", "", nil, false)
+	cur, _ = Set(d, cur, "Super+C", "", &Bind{Action: "exec", Args: []string{"x"}}, false)
+	if got, err := Unremove(d, prev, cur, "Super+A"); err == nil || len(got.Binds) != 2 {
+		t.Fatalf("changed since: %+v %v", got, err)
 	}
 }
 
