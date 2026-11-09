@@ -350,7 +350,7 @@ ColumnLayout {
         icon: "tune"
         title: "Behavior"
         subtitle: "Auto-hide, hover reveal, and desktop-only visibility"
-        configKeys: ["dock.pinnedOnStartup", "dock.hoverToReveal", "dock.revealDelay", "dock.showOnDesktop"]
+        configKeys: ["dock.pinnedOnStartup", "dock.magnify", "dock.hoverToReveal", "dock.revealDelay", "dock.showOnDesktop"]
         visible: root.dockEnabled
 
         ConfigSwitch {
@@ -359,6 +359,14 @@ ColumnLayout {
             sublabel: "Dock is always visible when shell starts (no auto-hide initially)"
             checked: Config.options?.dock?.pinnedOnStartup ?? false
             onCheckedChanged: Config.setNestedValue("dock.pinnedOnStartup", checked)
+        }
+
+        ConfigSwitch {
+            label: "Magnify on hover"
+            configKey: "dock.magnify"
+            sublabel: "Icons swell as the pointer passes, neighbours a little less, and lift off the edge"
+            checked: Config.options?.dock?.magnify ?? true
+            onCheckedChanged: Config.setNestedValue("dock.magnify", checked)
         }
 
         ConfigSwitch {
