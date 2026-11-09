@@ -73,6 +73,7 @@ var features = []feature{
 	{"launcher plugin clipboard history (bundled)", "", []string{"cliphist"}},
 	{"launcher plugin files (bundled)", "", []string{"fd"}},
 	{"launcher plugins kaomoji, unicode, keybinds (bundled; copy)", "", []string{"wl-copy"}},
+	{"screen-share picker (Hyprland; region: slurp; fallback: hyprland-share-picker)", "sharePicker.enable", []string{"hyprland-share-picker", "slurp"}},
 }
 
 // Other wallpaper rotators fight anod/awww over the wallpaper.
@@ -265,6 +266,18 @@ func runChecks() []check {
 		}
 		if len(missing) > 0 {
 			add("warn", "optional: "+f.Name, "missing %s", strings.Join(missing, ", "))
+		}
+	}
+
+	// Screen-share picker: the portal only runs it once xdph.conf names it.
+	if comp == "hyprland" && config.Bool(eff, "sharePicker.enable", true) {
+		switch st, cur := xdphPickerStatus(xdphConfPath(), defaultPickerPath()); st {
+		case "ano":
+			add("ok", "screen-share picker", "xdph.conf uses %s", cur)
+		case "other":
+			add("info", "screen-share picker", "xdph.conf uses another picker (%s); Settings → Services → Screen sharing sets AnoShell's", cur)
+		default:
+			add("info", "screen-share picker", "not set in xdph.conf (stock picker); Settings → Services → Screen sharing, or ano share-pick install")
 		}
 	}
 

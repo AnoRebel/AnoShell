@@ -39,6 +39,8 @@ const usage = `usage: ano <command> [args]
   reader anime|manga|novel [open|close|toggle]   show a reader panel (default: toggle)
   reader status [--json]                         the reader backend (anod)
   run [--print] terminal|browser|files [args…]   open your default app (apps.*; falls back to an installed one)
+  share-pick [--allow-token] | status | install [--picker P] [--dry-run]
+                                                 Hyprland screen-share picker (xdph's custom_picker_binary)
   welcome                                        run the first-start wizard again
   keybinds list [--json] | apply                 ano's keybind set / regenerate the compositor bind files
   keybinds migrate [--dry-run] | --revert        move the binds out of hyprland.lua / config.kdl into ano (backups first)
@@ -80,6 +82,8 @@ func main() {
 		os.Exit(readerCmd(args))
 	case "run":
 		os.Exit(runCmd(args))
+	case "share-pick":
+		os.Exit(sharePickCmd(args))
 	case "keybinds":
 		os.Exit(keybindsCmd(args))
 	case "atelier":

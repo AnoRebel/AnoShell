@@ -1,0 +1,8 @@
+#!/bin/sh
+# xdg-desktop-portal-hyprland's custom_picker_binary (~/.config/hypr/xdph.conf):
+# AnoShell's screen-share picker. `ano share-pick` falls back to the stock
+# hyprland-share-picker when the shell can't show it; so does this script
+# when ano itself is missing (xdph's PATH may not include ~/.local/bin).
+A=$(command -v ano || echo "$HOME/.local/bin/ano")
+[ -x "$A" ] && exec "$A" share-pick "$@"
+exec hyprland-share-picker "$@"
