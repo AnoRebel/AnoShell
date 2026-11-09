@@ -47,8 +47,11 @@ type Settings struct {
 	Mode       string // dark | light
 	SchemeType string // matugen scheme without the "scheme-" prefix
 	Prefer     string // matugen --prefer
-	FixedColor bool   // appearance.theme.colorMode fixed (or a static theme): skip colour hooks
-	SkipColors bool   // another output's image already set the colours this cycle
+	FixedColor bool   // appearance.theme.colorMode fixed: skip GTK and colour hooks
+	// StaticTheme: a static theme owns the colours (theme.apply wrote its
+	// palette): a wallpaper leaves colors.json, GTK and colour hooks alone.
+	StaticTheme bool
+	SkipColors  bool // another output's image already set the colours this cycle
 	// ColorOutput: the output whose wallpaper sets the colours (a chosen or
 	// the focused monitor); a wallpaper applied only to other outputs leaves
 	// colours and hooks alone. "": every wallpaper set does.
@@ -189,7 +192,12 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		res.Steps = append(res.Steps, StepResult{Name: "matugen", Skipped: "colours come from " + s.ColorOutput})
 	}
 
-	// 2. colours (also in fixed mode: switching back then has them ready)
+	// 2. colours (also in fixed mode: switching back then has them ready;
+	// not under a static theme, whose palette colors.json holds for the apps)
+	if s.StaticTheme && !s.SkipColors {
+		s.SkipColors = true
+		res.Steps = append(res.Steps, StepResult{Name: "matugen", Skipped: "static theme"})
+	}
 	if !s.SkipColors {
 		st := p.matugen(ctx, src, s)
 		res.Steps = append(res.Steps, st)
@@ -237,6 +245,9 @@ func (p *Pipeline) hooks(ctx context.Context, s Settings, img, src string, theme
 		case s.FixedColor:
 			steps = append(steps, StepResult{Name: name, Skipped: "fixed colour mode"})
 			continue
+		case s.StaticTheme:
+			steps = append(steps, StepResult{Name: name, Skipped: "static theme"})
+			continue
 		case theme && readsImage(h):
 			steps = append(steps, StepResult{Name: name, Skipped: "reads the wallpaper, not the theme"})
 			continue
@@ -277,7 +288,7 @@ func (p *Pipeline) hooks(ctx context.Context, s Settings, img, src string, theme
 func (p *Pipeline) ApplyPalette(ctx context.Context, colors []byte, mode string, s Settings) (Result, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	s.FixedColor, s.Mode = false, mode
+	s.FixedColor, s.StaticTheme, s.Mode = false, false, mode
 	res := Result{Colors: p.ColorsPath, Scheme: Choice{Mode: mode}}
 	st := StepResult{Name: "colors"}
 	if err := writeAtomic(p.ColorsPath, colors); err != nil {

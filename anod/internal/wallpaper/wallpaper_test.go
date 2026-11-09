@@ -134,6 +134,22 @@ func TestApplyPaletteRunsColourHooks(t *testing.T) {
 	}
 }
 
+// Under a static theme a new wallpaper leaves the theme's colors.json alone.
+func TestStaticThemeKeepsPalette(t *testing.T) {
+	bin, home, p := setup(t)
+	fakeBin(t, bin, "wal", "exit 0")
+	os.MkdirAll(filepath.Dir(p.ColorsPath), 0o755)
+	os.WriteFile(p.ColorsPath, []byte(`{"primary":"#123456"}`), 0o644)
+	res, _ := p.Apply(context.Background(), Request{Image: image(t, home, "a.jpg")}, Settings{StaticTheme: true,
+		Hooks: []Hook{{Name: "pywal", Enable: true, Command: []string{"wal", "-i", "{image}"}}}})
+	if b, _ := os.ReadFile(p.ColorsPath); string(b) != `{"primary":"#123456"}` {
+		t.Fatalf("colors.json overwritten: %s", b)
+	}
+	if last := res.Steps[len(res.Steps)-1]; last.Skipped != "static theme" {
+		t.Fatalf("%+v", res.Steps)
+	}
+}
+
 func TestHookTimeout(t *testing.T) {
 	bin, home, p := setup(t)
 	fakeBin(t, bin, "slow", "/usr/bin/sleep 5")
