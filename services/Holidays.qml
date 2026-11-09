@@ -189,6 +189,7 @@ Singleton {
     FileView {
         id: _cache
         path: Qt.resolvedUrl(root.cachePath)
+        printErrors: false // no cache yet on a first start: not an error
         onLoaded: {
             try {
                 const data = JSON.parse(_cache.text())

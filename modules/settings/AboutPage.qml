@@ -273,6 +273,50 @@ ColumnLayout {
         }
     }
 
+    // ═══ System Details ═══
+    SettingsCard {
+        icon: "computer"
+        title: "System Details"
+        subtitle: "Runtime environment and paths"
+        configKeys: []
+
+        Repeater {
+            model: [
+                { label: "Compositor", value: CompositorService.compositor },
+                { label: "Daemon (anod)", value: Anod.available ? `connected · ${Anod.version}`
+                    : Anod.error || "not running: wallpaper pipeline and hooks unavailable (see docs/anod.md)" },
+                { label: "Shell root", value: Directories.shellRoot },
+                { label: "Config file", value: Directories.userConfigPath },
+                { label: "Uptime", value: DateTime.uptime },
+                { label: "User", value: Quickshell.env("USER") || "unknown" },
+                { label: "Hostname", value: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "localhost" },
+                { label: "Desktop", value: Quickshell.env("XDG_CURRENT_DESKTOP") || "unknown" },
+                { label: "Session", value: Quickshell.env("XDG_SESSION_TYPE") || "unknown" },
+            ]
+
+            RowLayout {
+                required property var modelData
+                Layout.fillWidth: true
+                spacing: 12
+                StyledText {
+                    text: modelData.label
+                    font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                    opacity: 0.5
+                    Layout.preferredWidth: 140 // fits "Daemon (anod)"
+                }
+                StyledText {
+                    text: modelData.value
+                    font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                    elide: Text.ElideMiddle
+                    Layout.fillWidth: true
+                }
+            }
+        }
+    }
+
+    PresetsCard {}
+
     // ═══ Errors ═══
     // QML warnings and errors the running shell logged since it started
     // (services/ShellErrors.qml). Shown as plain text: log lines can carry
@@ -366,50 +410,6 @@ ColumnLayout {
             }
         }
     }
-
-    // ═══ System Details ═══
-    SettingsCard {
-        icon: "computer"
-        title: "System Details"
-        subtitle: "Runtime environment and paths"
-        configKeys: []
-
-        Repeater {
-            model: [
-                { label: "Compositor", value: CompositorService.compositor },
-                { label: "Daemon (anod)", value: Anod.available ? `connected · ${Anod.version}`
-                    : Anod.error || "not running: wallpaper pipeline and hooks unavailable (see docs/anod.md)" },
-                { label: "Shell root", value: Directories.shellRoot },
-                { label: "Config file", value: Directories.userConfigPath },
-                { label: "Uptime", value: DateTime.uptime },
-                { label: "User", value: Quickshell.env("USER") || "unknown" },
-                { label: "Hostname", value: Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "localhost" },
-                { label: "Desktop", value: Quickshell.env("XDG_CURRENT_DESKTOP") || "unknown" },
-                { label: "Session", value: Quickshell.env("XDG_SESSION_TYPE") || "unknown" },
-            ]
-
-            RowLayout {
-                required property var modelData
-                Layout.fillWidth: true
-                spacing: 12
-                StyledText {
-                    text: modelData.label
-                    font.pixelSize: Appearance?.font.pixelSize.small ?? 14
-                    opacity: 0.5
-                    Layout.preferredWidth: 140 // fits "Daemon (anod)"
-                }
-                StyledText {
-                    text: modelData.value
-                    font.pixelSize: Appearance?.font.pixelSize.small ?? 14
-                    font.family: Appearance?.font.family.mono ?? "monospace"
-                    elide: Text.ElideMiddle
-                    Layout.fillWidth: true
-                }
-            }
-        }
-    }
-
-    PresetsCard {}
 
     // ═══ Reset everything ═══
     // Global "wipe the user delta" — only visible when at least one key

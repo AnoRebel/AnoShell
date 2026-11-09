@@ -26,16 +26,16 @@
  },
  {
   "page": 0,
-  "card": "Errors",
-  "label": "Errors",
-  "sublabel": "No QML warnings or errors since the shell started",
+  "card": "System Details",
+  "label": "System Details",
+  "sublabel": "Runtime environment and paths",
   "keys": []
  },
  {
   "page": 0,
-  "card": "System Details",
-  "label": "System Details",
-  "sublabel": "Runtime environment and paths",
+  "card": "Errors",
+  "label": "Errors",
+  "sublabel": "No QML warnings or errors since the shell started",
   "keys": []
  },
  {
