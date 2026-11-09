@@ -198,6 +198,22 @@ The `downloads` event carries the same on every change. Sizes in bytes,
 rate in bytes a second; a partial that stops growing drops out after a
 minute.
 
+Weather warnings (`bar.weather.alerts.*`; see `anod/internal/alerts`): the
+shell sends its location with `alerts.where` (`{"lat", "lon"}`); anod looks
+the country up once per place (Nominatim reverse geocode) and polls that
+country's official feed every 20 minutes (backing off to 2 hours while it
+fails): NWS (US), MET Norway (Norway), DWD through Bright Sky (Germany),
+MeteoAlarm (the rest of Europe, matched by area name). Nowhere else has a
+feed. Each new alert (by id, remembered across restarts in
+`$XDG_CACHE_HOME/anoshell/weather-alerts.json`) is a desktop notification:
+minor → low urgency, moderate and severe → normal, extreme → critical. In
+quiet hours (`quiet`, `quietFrom`–`quietTo`) it carries the
+`x-anoshell-silent` hint: the shell keeps it in the history without a popup
+(extreme warnings still pop). `alerts.list` returns `{"alerts": [{"id",
+"source", "event", "headline", "description", "instruction", "severity",
+"area", "onset", "expires"}], "feed", "country", "updated", "error"}`;
+the `weather_alerts` event carries the same. `alerts.refresh` polls now.
+
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),
 written atomically; an empty value removes it. The shell reads the file

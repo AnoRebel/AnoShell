@@ -1527,6 +1527,61 @@
  },
  {
   "page": 3,
+  "card": "",
+  "label": "Official weather warnings",
+  "sublabel": "",
+  "keys": [
+   "bar.weather.alerts.enable"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Rain soon",
+  "sublabel": "One notification when rain is likely within the next hours (wttr.in's hourly chance of rain)",
+  "keys": [
+   "bar.weather.alerts.rain"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Rain chance",
+  "sublabel": "",
+  "keys": [
+   "bar.weather.alerts.rainThreshold"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Rain within",
+  "sublabel": "",
+  "keys": [
+   "bar.weather.alerts.rainHours"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Quiet hours",
+  "sublabel": "Warnings and rain notices go to the notification history without a popup (extreme warnings still pop up)",
+  "keys": [
+   "bar.weather.alerts.quiet"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Quiet from – to",
+  "sublabel": "24-hour HH:MM; may span midnight",
+  "keys": [
+   "bar.weather.alerts.quietFrom",
+   "bar.weather.alerts.quietTo"
+  ]
+ },
+ {
+  "page": 3,
   "card": "System Tray",
   "label": "System Tray",
   "sublabel": "Tray icon filtering and pin management",

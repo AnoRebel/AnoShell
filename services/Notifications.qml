@@ -95,6 +95,8 @@ Singleton {
         const has = list => Array.from(list ?? []).some(a => ids.includes(String(a).trim().toLowerCase()))
         if (has(Config.options?.notifications?.blockedApps)) return "blocked"
         if (has(Config.options?.notifications?.silentApps)) return "silent"
+        // The shell's own quiet-hours notices (anod's weather warnings, rain soon).
+        if (n.hints?.["x-anoshell-silent"]) return "silent"
         return ""
     }
 

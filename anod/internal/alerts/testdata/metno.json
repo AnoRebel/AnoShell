@@ -1,0 +1,183 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       -10.0,
+       70.0
+      ],
+      [
+       -5.0,
+       70.0
+      ],
+      [
+       0.0,
+       70.0
+      ],
+      [
+       0.0,
+       72.5
+      ],
+      [
+       -10.0,
+       72.5
+      ],
+      [
+       -10.0,
+       70.0
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "altitude_above_sea_level": 0,
+    "area": "D2",
+    "awarenessResponse": "Be aware",
+    "awarenessSeriousness": "Challenging situation",
+    "awareness_level": "2; yellow; Moderate",
+    "awareness_type": "1; Wind",
+    "ceiling_above_sea_level": 2743,
+    "certainty": "Likely",
+    "consequences": "Moderately high waves: Waves with breaking crests forming spindrift. Considerable airborne spray.",
+    "contact": "https://www.met.no/en/contact-us",
+    "county": [],
+    "description": "Northeast occasionally gale 8",
+    "event": "gale",
+    "eventAwarenessName": "Gale Force",
+    "eventEndingTime": "2026-11-11T00:00:00+00:00",
+    "geographicDomain": "marine",
+    "id": "2.49.0.1.578.0.261109220000.0852_1_0",
+    "instruction": "Do not go out in a small boat: High risk of dangerous situations when in a small boat at sea",
+    "resources": [
+     {
+      "description": "CAP file",
+      "mimeType": "application/xml",
+      "uri": "https://api.met.no/weatherapi/metalerts/2.0/current?cap=2.49.0.1.578.0.261109220000.0852_1_0"
+     }
+    ],
+    "riskMatrixColor": "Yellow",
+    "severity": "Moderate",
+    "status": "Actual",
+    "title": "Gale Force, D2, 10 November 22:00 UTC to 11 November 00:00 UTC.",
+    "triggerLevel": "17.2 m/s",
+    "type": "Update",
+    "web": "\n      https://www.met.no/vaer-og-klima/Ekstremvaervarsler-og-andre-farevarsler\n    "
+   },
+   "type": "Feature",
+   "when": {
+    "interval": [
+     "2026-11-10T22:00:00+00:00",
+     "2026-11-11T00:00:00+00:00"
+    ]
+   }
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       15.5,
+       80.75
+      ],
+      [
+       11.0,
+       80.4
+      ],
+      [
+       11.0,
+       80.0
+      ],
+      [
+       15.9692,
+       80.0
+      ],
+      [
+       16.26,
+       80.06
+      ],
+      [
+       18.3,
+       80.35
+      ],
+      [
+       20.0,
+       80.54
+      ],
+      [
+       22.8,
+       80.5
+      ],
+      [
+       27.0,
+       80.2
+      ],
+      [
+       30.0,
+       80.2
+      ],
+      [
+       30.0,
+       81.6
+      ],
+      [
+       19.5,
+       81.2
+      ],
+      [
+       15.5,
+       80.75
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "altitude_above_sea_level": 0,
+    "area": "BnS",
+    "awarenessResponse": "Be prepared",
+    "awarenessSeriousness": "Severe situation",
+    "awareness_level": "3; orange; Severe",
+    "awareness_type": "7; coastalevent",
+    "ceiling_above_sea_level": 2743,
+    "certainty": "Likely",
+    "consequences": "High risk of small boats sinking: Strong ice buildup is expected on the front/bridge of the boat. There’s a high risk that the boat will lose stability, capsize, and sink. Strong ice accumulation can make it difficult to remove ice quickly enough to prevent an accident. Heavy ice buildup on surfaces: There is a high risk of significant ice buildup on surfaces of boats in the area. Ice will cause slippery decks, railings, and ladders, and outdoor operations will be difficult. Rescue equipment may be affected: Ice buildup on rescue equipment may occur, and ice could damage communication and navigation equipment. Heavy ice accumulation will pose a significant safety risk.",
+    "contact": "https://www.met.no/en/contact-us",
+    "county": [],
+    "description": "Risk of severe icing.",
+    "event": "icing",
+    "eventAwarenessName": "Severe icing on ships",
+    "eventEndingTime": "2026-11-10T20:00:00+00:00",
+    "geographicDomain": "marine",
+    "id": "2.49.0.1.578.0.261109220000.52077_7_0",
+    "instruction": "Heavy ice buildup on surfaces: Rapidly remove ice from the boat.",
+    "resources": [
+     {
+      "description": "CAP file",
+      "mimeType": "application/xml",
+      "uri": "https://api.met.no/weatherapi/metalerts/2.0/current?cap=2.49.0.1.578.0.261109220000.52077_7_0"
+     }
+    ],
+    "riskMatrixColor": "Orange",
+    "severity": "Severe",
+    "status": "Actual",
+    "title": "Severe icing on ships, orange level, BnS, 10 November 17:00 UTC to 10 November 20:00 UTC.",
+    "triggerLevel": "1.34 cm/h",
+    "type": "Update",
+    "web": "\n      https://www.met.no/vaer-og-klima/Ekstremvaervarsler-og-andre-farevarsler\n    "
+   },
+   "type": "Feature",
+   "when": {
+    "interval": [
+     "2026-11-10T17:00:00+00:00",
+     "2026-11-10T20:00:00+00:00"
+    ]
+   }
+  }
+ ],
+ "lang": "en",
+ "lastChange": "2026-11-09T22:16:15+00:00",
+ "type": "FeatureCollection"
+}

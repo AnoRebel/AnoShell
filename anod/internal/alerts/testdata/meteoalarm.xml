@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:cap="urn:oasis:names:tc:emergency:cap:1.2">
+  <link rel="hub" href="https://pubsubhubbub.appspot.com/"/>
+  <link type="application/atom+xml" rel="self" href="https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-germany"/>
+  <link type="text/html" rel="alternate" href="https://meteoalarm.org"/>
+  <rights>Copyright © 2026 MeteoAlarm.Org. Licensed under terms equivalent to CC BY 4.0, with additional requirements for redistributing outlined in our Terms and Conditions.</rights>
+  <generator>MeteoAlarm Producer Server</generator>
+  <logo>https://feeds.meteoalarm.org/images/logo.svg</logo>
+  <author>
+    <name>meteoalarm.org</name>
+    <uri>https://meteoalarm.org</uri>
+    <email>meteoalarm@geosphere.at</email>
+  </author>
+  <id>tag:meteoalarm.org,2021-02-19:DE</id>
+  <title>MeteoAlarm - Alerting Europe for Extreme Weather</title>
+  <updated>2026-11-09T22:05:23.000144Z</updated>
+    <entry>
+    <cap:geocode>
+      <valueName>EMMA_ID</valueName>
+      <value>DE083</value>
+    </cap:geocode>
+    <link title="Kreis Wittmund - Küste" href="https://meteoalarm.org?geocode=EMMA_ID:DE083" hreflang="en"/>
+    <cap:areaDesc>Kreis Wittmund - Küste</cap:areaDesc>
+    <cap:event>fog</cap:event>
+    <cap:sent>2026-11-09T21:21:00+00:00</cap:sent>
+    <cap:expires>2026-11-10T11:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-09T21:21:00+00:00</cap:onset>
+    <cap:certainty>Likely</cap:certainty>
+    <cap:severity>Minor</cap:severity>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:scope>Public</cap:scope>
+    <cap:message_type>Alert</cap:message_type>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>2.49.0.0.276.0.DWD.PVW.1794259260000.5a9e9b47-ac6a-4a6b-bcd6-c69f7d037dcd.MUL</cap:identifier>
+    <link type="application/cap+xml" href="https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1"/>
+    <link title="Germany" rel="related" href="https://meteoalarm.org?region=DE" hreflang="en"/>
+    <author>
+      <name>meteoalarm.org</name>
+      <uri>https://meteoalarm.org</uri>
+    </author>
+    <published>2026-11-09T21:21:00Z</published>
+    <id>https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1?index_info=1&amp;index_area=5&amp;index_geocode=0</id>
+    <title>Yellow Fog Warning issued for Germany - Kreis Wittmund - Küste</title>
+    <updated>2026-11-09T21:21:00Z</updated>
+  </entry>
+  <entry>
+    <cap:geocode>
+      <valueName>EMMA_ID</valueName>
+      <value>DE053</value>
+    </cap:geocode>
+    <link title="Kreis Wittmund - Binnenland" href="https://meteoalarm.org?geocode=EMMA_ID:DE053" hreflang="en"/>
+    <cap:areaDesc>Kreis Wittmund - Binnenland</cap:areaDesc>
+    <cap:event>fog</cap:event>
+    <cap:sent>2026-11-09T21:21:00+00:00</cap:sent>
+    <cap:expires>2026-11-10T11:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-09T21:21:00+00:00</cap:onset>
+    <cap:certainty>Likely</cap:certainty>
+    <cap:severity>Minor</cap:severity>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:scope>Public</cap:scope>
+    <cap:message_type>Alert</cap:message_type>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>2.49.0.0.276.0.DWD.PVW.1794259260000.5a9e9b47-ac6a-4a6b-bcd6-c69f7d037dcd.MUL</cap:identifier>
+    <link type="application/cap+xml" href="https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1"/>
+    <link title="Germany" rel="related" href="https://meteoalarm.org?region=DE" hreflang="en"/>
+    <author>
+      <name>meteoalarm.org</name>
+      <uri>https://meteoalarm.org</uri>
+    </author>
+    <published>2026-11-09T21:21:00Z</published>
+    <id>https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1?index_info=1&amp;index_area=4&amp;index_geocode=0</id>
+    <title>Yellow Fog Warning issued for Germany - Kreis Wittmund - Binnenland</title>
+    <updated>2026-11-09T21:21:00Z</updated>
+  </entry>
+  <entry>
+    <cap:geocode>
+      <valueName>EMMA_ID</valueName>
+      <value>DE104</value>
+    </cap:geocode>
+    <link title="Kreis Friesland - Küste" href="https://meteoalarm.org?geocode=EMMA_ID:DE104" hreflang="en"/>
+    <cap:areaDesc>Kreis Friesland - Küste</cap:areaDesc>
+    <cap:event>fog</cap:event>
+    <cap:sent>2026-11-09T21:21:00+00:00</cap:sent>
+    <cap:expires>2026-11-10T11:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-09T21:21:00+00:00</cap:onset>
+    <cap:certainty>Likely</cap:certainty>
+    <cap:severity>Minor</cap:severity>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:scope>Public</cap:scope>
+    <cap:message_type>Alert</cap:message_type>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>2.49.0.0.276.0.DWD.PVW.1794259260000.5a9e9b47-ac6a-4a6b-bcd6-c69f7d037dcd.MUL</cap:identifier>
+    <link type="application/cap+xml" href="https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1"/>
+    <link title="Germany" rel="related" href="https://meteoalarm.org?region=DE" hreflang="en"/>
+    <author>
+      <name>meteoalarm.org</name>
+      <uri>https://meteoalarm.org</uri>
+    </author>
+    <published>2026-11-09T21:21:00Z</published>
+    <id>https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany/3b915bd6-5fe6-4db5-b4dd-a943990d6db1?index_info=1&amp;index_area=3&amp;index_geocode=0</id>
+    <title>Yellow Fog Warning issued for Germany - Kreis Friesland - Küste</title>
+    <updated>2026-11-09T21:21:00Z</updated>
+  </entry>
+</feed>

@@ -945,6 +945,18 @@ Singleton {
                     property string city: ""
                     property bool useUSCS: false
                     property int fetchInterval: 15
+                    // Official warnings (anod: NWS, MET Norway, DWD, MeteoAlarm)
+                    // and a "rain soon" notice from wttr.in's hourly chance of rain.
+                    // Quiet hours: notifications go to the history without a popup.
+                    property JsonObject alerts: JsonObject {
+                        property bool enable: true
+                        property bool rain: false
+                        property int rainThreshold: 60   // %
+                        property int rainHours: 3
+                        property bool quiet: false
+                        property string quietFrom: "22:00"
+                        property string quietTo: "07:00"
+                    }
                 }
             }
 

@@ -83,6 +83,18 @@ Scope {
                     }
                 }
 
+                // Official warnings (anod), most severe first as the feed sends them
+                Repeater {
+                    model: Weather.shownAlerts
+                    NoticeBox {
+                        required property var modelData
+                        level: ["severe", "extreme"].includes(modelData.severity) ? "error" : modelData.severity === "moderate" ? "warning" : "info"
+                        iconName: "warning"
+                        text: (modelData.headline || modelData.event)
+                            + (modelData.expires ? ` · until ${Qt.formatDateTime(new Date(modelData.expires), "ddd " + Config.options.time.format)}` : "")
+                    }
+                }
+
                 // Stats grid
                 Rectangle {
                     Layout.fillWidth: true

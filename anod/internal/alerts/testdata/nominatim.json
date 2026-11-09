@@ -1,0 +1,29 @@
+{
+ "place_id": 137515774,
+ "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+ "osm_type": "relation",
+ "osm_id": 454863,
+ "lat": "50.5514658",
+ "lon": "9.6762161",
+ "category": "boundary",
+ "type": "administrative",
+ "place_rank": 16,
+ "importance": 0.5888214504225584,
+ "addresstype": "town",
+ "name": "Fulda",
+ "display_name": "Fulda, Landkreis Fulda, Hessen, Deutschland",
+ "address": {
+  "town": "Fulda",
+  "county": "Landkreis Fulda",
+  "state": "Hessen",
+  "ISO3166-2-lvl4": "DE-HE",
+  "country": "Deutschland",
+  "country_code": "de"
+ },
+ "boundingbox": [
+  "50.4995434",
+  "50.6294052",
+  "9.5661411",
+  "9.7329825"
+ ]
+}

@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"ano/anod/internal/alerts"
 	"ano/anod/internal/atelier"
 	"ano/anod/internal/autostart"
 	"ano/anod/internal/camera"
@@ -292,6 +293,32 @@ func main() {
 			json.Unmarshal(raw, &p)
 			dls.Clear(p.Path)
 			return dls.State(), nil
+		})
+	}
+
+	// Official weather warnings for the place the shell reports (alerts.where).
+	{
+		wa := &alerts.Watcher{
+			CachePath: filepath.Join(xdgCache(), "anoshell", "weather-alerts.json"),
+			Settings:  alertSettings,
+			Announce:  announceAlert,
+			Notify:    srv.Broadcast,
+			Logf:      log.Printf,
+		}
+		go wa.Run(ctx)
+		srv.Handle("alerts.list", func(json.RawMessage) (any, error) { return wa.State(), nil })
+		srv.Handle("alerts.refresh", func(json.RawMessage) (any, error) { wa.Refresh(); return true, nil })
+		srv.Handle("alerts.where", func(p json.RawMessage) (any, error) {
+			var req struct {
+				Lat *float64 `json:"lat"`
+				Lon *float64 `json:"lon"`
+			}
+			if err := json.Unmarshal(p, &req); err != nil || req.Lat == nil || req.Lon == nil ||
+				*req.Lat < -90 || *req.Lat > 90 || *req.Lon < -180 || *req.Lon > 180 {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {lat, lon}")
+			}
+			wa.SetPlace(*req.Lat, *req.Lon)
+			return true, nil
 		})
 	}
 
@@ -950,6 +977,48 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 func notify(title, body string) {
 	if err := exec.Command("notify-send", "-a", "anod", "-u", "critical", title, body).Run(); err != nil {
 		log.Printf("notify: %v", err)
+	}
+}
+
+// alertSettings reads bar.weather.alerts.* (live, before each poll).
+func alertSettings() alerts.Settings {
+	m, err := config.Effective()
+	if err != nil {
+		return alerts.Settings{Enable: true}
+	}
+	return alerts.Settings{
+		Enable:    config.Bool(m, "bar.weather.alerts.enable", true),
+		Quiet:     config.Bool(m, "bar.weather.alerts.quiet", false),
+		QuietFrom: config.String(m, "bar.weather.alerts.quietFrom", "22:00"),
+		QuietTo:   config.String(m, "bar.weather.alerts.quietTo", "07:00"),
+	}
+}
+
+// announceAlert: minor → low, moderate/severe → normal, extreme → critical.
+// In quiet hours the shell keeps it in the history without a popup
+// (x-anoshell-silent); an extreme warning (danger to life) pops anyway.
+func announceAlert(a alerts.Alert, quiet bool) {
+	urgency, icon := "normal", "dialog-warning"
+	switch a.Severity {
+	case "minor":
+		urgency, icon = "low", "dialog-information"
+	case "extreme":
+		urgency, icon, quiet = "critical", "dialog-error", false
+	}
+	title := a.Headline
+	if title == "" {
+		title = a.Event
+	}
+	body := a.Description
+	if a.Instruction != "" {
+		body = strings.TrimSpace(body + "\n\n" + a.Instruction)
+	}
+	args := []string{"-a", "Weather warnings", "-u", urgency, "-i", icon}
+	if quiet {
+		args = append(args, "-h", "boolean:x-anoshell-silent:true")
+	}
+	if err := exec.Command("notify-send", append(args, "--", title, body)...).Run(); err != nil {
+		log.Printf("weather alert notify: %v", err)
 	}
 }
 

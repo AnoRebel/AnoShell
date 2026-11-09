@@ -252,3 +252,22 @@ Bioma pieces:
   `longitude` as you set them.
 
 `qs ipc call location get` prints what's known; `refresh` looks again.
+
+## Weather warnings
+
+`bar.weather.alerts` (Settings → Bar → Weather):
+
+- `enable` (on): anod fetches official warnings for your location and
+  notifies each new one; active ones show as a badge by the bar's weather
+  and in the weather panel. Feeds (free, no key): NWS (US), MET Norway,
+  DWD via Bright Sky (Germany), MeteoAlarm (the rest of Europe, matched by
+  area name). Nowhere else has one. The country comes from a Nominatim
+  (OpenStreetMap) reverse geocode, once per place: it sends your
+  coordinates there, and the feed's request sends them to that service.
+  Needs anod and a known location.
+- `rain` (off), `rainThreshold` (60 %), `rainHours` (3): one notification
+  when wttr.in's hourly chance of rain reaches the threshold within that
+  many hours.
+- `quiet` (off), `quietFrom` / `quietTo` (`"22:00"`–`"07:00"`): in quiet
+  hours both go to the notification history without a popup; extreme
+  warnings still pop up.

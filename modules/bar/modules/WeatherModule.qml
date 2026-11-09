@@ -18,6 +18,14 @@ Item {
         id: row; anchors.centerIn: parent; spacing: 4
         MaterialSymbol { text: "thermostat"; iconSize: Appearance?.font.pixelSize.normal ?? 18; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; Layout.alignment: Qt.AlignVCenter }
         StyledText { text: Weather.data.temp || "--"; font.pixelSize: Appearance?.font.pixelSize.small ?? 14; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; Layout.alignment: Qt.AlignVCenter }
+        // An official warning is in force (the most severe one's colour).
+        MaterialSymbol {
+            visible: Weather.shownAlerts.length > 0
+            text: "warning"; fill: 1
+            iconSize: Appearance?.font.pixelSize.small ?? 14
+            color: Weather.alertColor(["extreme", "severe", "moderate", "minor"].find(s => Weather.shownAlerts.some(a => a.severity === s)) ?? "minor")
+            Layout.alignment: Qt.AlignVCenter
+        }
     }
 
     MouseArea {
@@ -67,6 +75,17 @@ Item {
                 RowLayout { spacing: 4
                     MaterialSymbol { text: "wb_twilight"; iconSize: 14; color: Appearance.colors.colTertiary; rotation: 180 }
                     StyledText { text: Weather.data.sunset || "--"; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" } }
+            }
+
+            // Official warnings
+            Repeater {
+                model: Weather.shownAlerts
+                RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true; spacing: 6
+                    MaterialSymbol { text: "warning"; fill: 1; iconSize: 14; color: Weather.alertColor(modelData.severity) }
+                    StyledText { text: modelData.headline || modelData.event; elide: Text.ElideRight; Layout.fillWidth: true; font.pixelSize: Appearance.font.pixelSize.smaller }
+                }
             }
 
             StyledText { text: "Click for full weather"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3; Layout.alignment: Qt.AlignHCenter }

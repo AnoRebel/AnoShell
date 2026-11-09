@@ -999,6 +999,75 @@ ColumnLayout {
             onValueChanged: Config.setNestedValue("bar.weather.fetchInterval", Math.round(value))
             valueText: `${Math.round(value)} min`
         }
+
+        ConfigSwitch {
+            label: "Official weather warnings"
+            configKey: "bar.weather.alerts.enable"
+            sublabel: Anod.available
+                ? "Notifies new warnings for your location (Settings → Services → Location) and shows them by the weather: NWS (US), MET Norway, DWD (Germany), MeteoAlarm (rest of Europe); elsewhere there is no feed"
+                : "Needs anod running"
+            checked: Config.options?.bar?.weather?.alerts?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("bar.weather.alerts.enable", checked)
+        }
+
+        ConfigSwitch {
+            label: "Rain soon"
+            configKey: "bar.weather.alerts.rain"
+            sublabel: "One notification when rain is likely within the next hours (wttr.in's hourly chance of rain)"
+            checked: Config.options?.bar?.weather?.alerts?.rain ?? false
+            onCheckedChanged: Config.setNestedValue("bar.weather.alerts.rain", checked)
+        }
+
+        ConfigSlider {
+            visible: Config.options?.bar?.weather?.alerts?.rain ?? false
+            label: "Rain chance"
+            configKey: "bar.weather.alerts.rainThreshold"
+            from: 10; to: 100; stepSize: 5
+            value: Config.options?.bar?.weather?.alerts?.rainThreshold ?? 60
+            onValueChanged: Config.setNestedValue("bar.weather.alerts.rainThreshold", Math.round(value))
+            valueText: `≥ ${Math.round(value)}%`
+        }
+
+        ConfigSlider {
+            visible: Config.options?.bar?.weather?.alerts?.rain ?? false
+            label: "Rain within"
+            configKey: "bar.weather.alerts.rainHours"
+            from: 1; to: 12; stepSize: 1
+            value: Config.options?.bar?.weather?.alerts?.rainHours ?? 3
+            onValueChanged: Config.setNestedValue("bar.weather.alerts.rainHours", Math.round(value))
+            valueText: `${Math.round(value)} h`
+        }
+
+        ConfigSwitch {
+            label: "Quiet hours"
+            configKey: "bar.weather.alerts.quiet"
+            sublabel: "Warnings and rain notices go to the notification history without a popup (extreme warnings still pop up)"
+            checked: Config.options?.bar?.weather?.alerts?.quiet ?? false
+            onCheckedChanged: Config.setNestedValue("bar.weather.alerts.quiet", checked)
+        }
+
+        ConfigRow {
+            visible: Config.options?.bar?.weather?.alerts?.quiet ?? false
+            label: "Quiet from – to"
+            configKey: "bar.weather.alerts.quietFrom"
+            sublabel: "24-hour HH:MM; may span midnight"
+            RowLayout {
+                spacing: 6
+                StyledTextInput {
+                    text: Config.options?.bar?.weather?.alerts?.quietFrom ?? "22:00"
+                    validator: RegularExpressionValidator { regularExpression: /^([01]?\d|2[0-3]):[0-5]\d$/ }
+                    onEditingFinished: Config.setNestedValue("bar.weather.alerts.quietFrom", text.trim())
+                    Layout.preferredWidth: 64
+                }
+                StyledText { text: "–" }
+                StyledTextInput {
+                    text: Config.options?.bar?.weather?.alerts?.quietTo ?? "07:00"
+                    validator: RegularExpressionValidator { regularExpression: /^([01]?\d|2[0-3]):[0-5]\d$/ }
+                    onEditingFinished: Config.setNestedValue("bar.weather.alerts.quietTo", text.trim())
+                    Layout.preferredWidth: 64
+                }
+            }
+        }
     }
 
     // ═══ System Tray ═══
