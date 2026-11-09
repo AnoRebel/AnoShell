@@ -27,6 +27,8 @@ ColumnLayout {
     readonly property string committedSource: Config.options?.appearance?.theme?.source ?? "materialYou"
     readonly property string committedStatic: Config.options?.appearance?.theme?.name ?? ""
     readonly property bool materialYou: committedSource === "materialYou"
+    // Apps (GTK, Qt, terminals) take the wallpaper's or a static theme's colours; the fixed brand palette leaves them alone.
+    readonly property bool appColorsFollow: !materialYou || (Config.options?.appearance?.theme?.colorMode ?? "") !== "fixed"
     // Colour picks (Wallpapers.pickColors): remembered per wallpaper, see appearance.colors.
     readonly property var _colors: Config.options?.appearance?.colors
     readonly property bool _separateDefaults: (_colors?.perWallpaper ?? true) && !(_colors?.pickSetsDefault ?? true)
@@ -377,7 +379,7 @@ ColumnLayout {
         ConfigSwitch {
             label: "Colour GTK apps"
             configKey: "appearance.theme.gtk"
-            visible: appearanceRoot.materialYou
+            visible: appearanceRoot.appColorsFollow
             sublabel: "GTK 3 and 4 (libadwaita) apps opened from now on use the palette; your own gtk.css rules are kept"
             checked: Config.options?.appearance?.theme?.gtk ?? true
             onCheckedChanged: if (checked !== (Config.options?.appearance?.theme?.gtk ?? true)) {
@@ -388,7 +390,7 @@ ColumnLayout {
         ConfigRow {
             label: "Qt apps"
             configKey: "appearance.theme.qt"
-            visible: appearanceRoot.materialYou
+            visible: appearanceRoot.appColorsFollow
             sublabel: (Config.options?.appearance?.theme?.qt ?? "palette") === "palette"
                 ? "Breeze (or Fusion) on the palette: open apps change colour with the wallpaper (needs qt6ct)"
                 : (Config.options?.appearance?.theme?.qt ?? "palette") === "kvantum"
@@ -402,7 +404,7 @@ ColumnLayout {
                 onChose: value => { Config.setNestedValue("appearance.theme.qt", value); qtSoon.restart() }
             }
             // after the config is on disk: the script reads it from there
-            Timer { id: qtSoon; interval: 1000; onTriggered: Wallpapers.refreshApps() }
+            Timer { id: qtSoon; interval: 1000; onTriggered: StaticThemeLoader.refreshApps() }
         }
 
         // ─── Theme grid (visible only when source = static or while previewing) ───
@@ -549,6 +551,9 @@ ColumnLayout {
             iconName: "preview"
         }
     }
+
+    // ═══ Theme studio ═══
+    ThemeStudioCard { schemeChoices: appearanceRoot.schemeChoices }
 
     // ═══ Wallpaper colours ═══
     // One bordered box per option, so each reads as its own section.

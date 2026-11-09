@@ -144,13 +144,53 @@ Singleton {
             MaterialThemeLoader.reapplyTheme()
     }
 
+    // ─── App colours (GTK, Qt, terminals) ───
+    // A static theme's palette goes to the apps through anod (theme.apply:
+    // colors.json, GTK, the colour hooks); leaving it for Material You
+    // redoes the wallpaper's. Whoever changes the theme (this page, the
+    // Atelier, search, a rice), this follows the config, not the caller.
+    readonly property string _appsKey: source === "static" ? "static:" + staticName : source
+    property string _appsApplied: ""
+    function applyApps(name: string): void {
+        _appsApplied = "static:" + name
+        Anod.call("theme.apply", { name: name }, (r, e) => {
+            if (e) console.warn("[StaticThemeLoader] theme.apply:", e.message)
+        })
+    }
+    // Apps again for whatever owns the colours now (the GTK/Qt switches).
+    function refreshApps(): void {
+        if (source === "static" && staticName.length > 0) applyApps(staticName)
+        else Wallpapers.refreshApps()
+    }
+    on_AppsKeyChanged: appsSoon.restart()
+    Connections {
+        target: Config
+        function onReadyChanged() { if (Config.ready) root._appsApplied = root._appsKey } // startup: already applied
+    }
+    Timer {
+        id: appsSoon
+        interval: 1000 // after the config is on disk: anod reads it from there
+        onTriggered: {
+            const key = root._appsKey, was = root._appsApplied
+            if (!Config.ready || key === was) return
+            if (key.startsWith("static:") && root.staticName.length > 0) root.applyApps(root.staticName)
+            else {
+                root._appsApplied = key
+                if (was.startsWith("static:")) Wallpapers.refreshApps()
+            }
+        }
+    }
+
     // React to config changes — re-resolve and reload when source/name flips.
     onSourceChanged: _resolve()
     onStaticNameChanged: _resolve()
     // staticName can change before `active` does, so resolve again here;
     // leaving fixed/static mode hands the colours back to Material You.
     onActiveChanged: active ? _resolve() : reapplyTheme()
-    Component.onCompleted: _resolve()
+    Component.onCompleted: {
+        if (Config.ready) _appsApplied = _appsKey
+        _resolve()
+    }
 
     onResolvedPathChanged: {
         if (!active || resolvedPath.length === 0) return

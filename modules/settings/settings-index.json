@@ -2736,6 +2736,16 @@
   ]
  },
  {
+  "page": 6,
+  "card": "Theme studio",
+  "label": "Theme studio",
+  "sublabel": "Make a static theme from your own colours; apps follow it like a wallpaper's",
+  "keys": [
+   "appearance.theme.source",
+   "appearance.theme.name"
+  ]
+ },
+ {
   "page": 7,
   "card": "AnoView Layout",
   "label": "AnoView Layout",

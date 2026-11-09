@@ -31,6 +31,7 @@ var features = []feature{
 	{"watchers (nmcli monitor, wlsunset, cava, udevadm) end with the shell", "", []string{"setpriv"}},
 	{"clipboard history", "", []string{"cliphist", "wl-copy"}},
 	{"wallpaper + dynamic colours", "", []string{"awww", "matugen"}},
+	{"Theme studio (schemes from your own colours)", "", []string{"matugen"}},
 	{"launcher calculator", "search.plugins.calculator.enable", []string{"qalc"}},
 	{"launcher package search", "search.plugins.packages.enable", []string{"paru|yay"}},
 	{"translator (else AI fallback)", "", []string{"trans"}},

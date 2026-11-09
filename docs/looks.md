@@ -86,6 +86,25 @@ Settings → Appearance → Theme source:
 - **Fixed**: the AnoShell palette. Changing the wallpaper leaves the shell's and
   your apps' colours alone.
 
+**Static** themes (the grid under Theme source) colour your apps too: picking
+one sends its palette to GTK, Qt and your terminals through the same hooks a
+wallpaper uses (hooks that read the wallpaper image, like pywal and cava, are
+skipped). Going back to Material You redoes the wallpaper's colours.
+
+### Theme studio
+
+Settings → Appearance → Theme studio makes a static theme from your own
+colours. Pick a primary seed (hex, or hue, saturation and lightness), and
+optionally secondary and tertiary seeds, which take over those colour
+families; choose dark or light and a scheme. The preview updates as you go and
+nothing is applied until you save. A few roles (primary, surface, outline …)
+can be overridden with an exact hex. **Save** writes
+`~/.config/anoshell/themes/<name>.json`, listed with the other static themes
+(and in the Atelier); **Save and apply** also makes it the static theme. Your
+studio themes are listed at the bottom of the card to edit or delete; the
+studio never overwrites or deletes a theme it didn't make. It needs anod and
+matugen.
+
 **Apps** sets light or dark for your applications independently of the shell
 (GTK's color-scheme, and Qt apps through the desktop portal). A GTK theme you
 picked yourself is never replaced; only adw-gtk3 is switched between its light
