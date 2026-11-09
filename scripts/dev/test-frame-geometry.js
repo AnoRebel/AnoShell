@@ -40,4 +40,8 @@ const osdY=G.packSlot({side:'bottom',x:500,y:790,w:300,h:10,progress:0.3},fc);
 a(osdY.k[0]===osdY.k[3]&&osdY.k[1]===osdY.k[2]&&osdY.k[3]>18,'young body: same k top and bottom of each side');
 const osdF=G.packSlot({side:'bottom',x:500,y:740,w:300,h:60},fc);
 a(osdF.k[0]===12&&osdF.k[3]===18,'open body: far fc, near connectedRadius');
+// Floating notch (farFillet:false): far corners stay convex, no fillet into
+// the window's far edge (they flared outward, like feet).
+const notch=G.packSlot({side:'top',x:480,y:0,w:330,h:28,farFillet:false},ctx);
+a(notch.k[2]===0&&notch.k[3]===0&&notch.corner[2]>0&&notch.k[0]>0,'floating notch: convex far corners, near junctions kept');
 console.log('geometry ok');

@@ -369,8 +369,12 @@ PanelWindow {
                 surfaceOpacity: (Appearance?.colors.colLayer0 ?? Qt.rgba(0, 0, 0, 1)).a
                 surfaces: barRoot.bodies.map(b => ({
                     side: barRoot.edge, x: b.x, y: b.y, w: b.w, h: b.h,
-                    detached: barRoot._detached(b), neckK: barRoot._neckK(b),
-                    surfaceRadius: barRoot.barRadius, progress: 1 }))
+                    detached: barRoot._detached(b),
+                    // No frame here: only an island's neck (its liquid detach)
+                    // blends. Others blending into the window's edges flared
+                    // the notch's far corners and filled fit's margin.
+                    neckK: b.island ? barRoot._neckK(b) : 0,
+                    surfaceRadius: barRoot.barRadius, progress: 1, farFillet: false }))
             }
         }
 

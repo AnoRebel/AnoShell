@@ -167,6 +167,9 @@ function packSlot(descriptor, ctx) {
     // corner of a joined end takes the same k: one smooth blend per side.
     var fS = (youngK > 0 && !omitS && !descriptor.omitStartConnector) ? Math.max(fc, youngK) : fc;
     var fE = (youngK > 0 && !omitE && !descriptor.omitEndConnector) ? Math.max(fc, youngK) : fc;
+    // farFillet: false (the floating bar): the window's far edge is not a
+    // frame, and blending into it flared the far corners outward.
+    if (descriptor.farFillet === false) { fS = 0; fE = 0; }
 
     var ks, cr;
     if (side === "top") {
