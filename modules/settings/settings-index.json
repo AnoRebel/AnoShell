@@ -164,6 +164,24 @@
  },
  {
   "page": 0,
+  "card": "",
+  "label": "Silent apps",
+  "sublabel": "Comma-separated app names: kept in the history, no popup",
+  "keys": [
+   "notifications.silentApps"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Blocked apps",
+  "sublabel": "Comma-separated app names: their notifications are dropped",
+  "keys": [
+   "notifications.blockedApps"
+  ]
+ },
+ {
+  "page": 0,
   "card": "Session",
   "label": "Session",
   "sublabel": "Confirmation for logout and shutdown",

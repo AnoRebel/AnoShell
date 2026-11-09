@@ -407,6 +407,30 @@ ColumnLayout {
             valueText: `${Math.round(value)}`
         }
 
+        ConfigRow {
+            label: "Silent apps"
+            configKey: "notifications.silentApps"
+            sublabel: "Comma-separated app names: kept in the history, no popup"
+            StyledTextInput {
+                text: Array.from(Config.options?.notifications?.silentApps ?? []).join(", ")
+                Layout.fillWidth: true
+                onEditingFinished: Config.setNestedValue("notifications.silentApps",
+                    text.split(",").map(s => s.trim()).filter(s => s.length > 0))
+            }
+        }
+
+        ConfigRow {
+            label: "Blocked apps"
+            configKey: "notifications.blockedApps"
+            sublabel: "Comma-separated app names: their notifications are dropped"
+            StyledTextInput {
+                text: Array.from(Config.options?.notifications?.blockedApps ?? []).join(", ")
+                Layout.fillWidth: true
+                onEditingFinished: Config.setNestedValue("notifications.blockedApps",
+                    text.split(",").map(s => s.trim()).filter(s => s.length > 0))
+            }
+        }
+
         // See where and how long a popup shows with these settings.
         RippleButton {
             buttonText: "Send a test notification"

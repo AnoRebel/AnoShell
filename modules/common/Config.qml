@@ -1136,6 +1136,10 @@ Singleton {
                 property bool expressiveAnimations: true
                 property bool silent: false // no popups; notifications still reach the history
                 property int maxVisible: 5 // popups on screen at once
+                // Desktop entries or app names (any case): silent ones only reach
+                // the history (no popup, unread or lock-screen entry); blocked ones are dropped.
+                property var silentApps: []
+                property var blockedApps: []
             }
 
             // ═══════════════════════════════════════════════════════════════
