@@ -252,6 +252,27 @@ Singleton {
                     modified: folderModel.get(i, "fileModified")?.getTime?.() ?? 0, size: folderModel.get(i, "fileSize") ?? 0 })
             }
             root.entries = arr
+            if (!root._missingChecked && folderModel.status === FolderListModel.Ready && Config.ready) {
+                root._missingChecked = true
+                const cur = Config.options?.background?.wallpaperPath ?? ""
+                if (cur !== "") missingCheck.exec(["test", "-e", cur])
+            }
+        }
+    }
+
+    // Once at start: a wallpaper whose file is gone (moved, deleted, a folder
+    // renamed) is replaced by the first image in the folder.
+    property bool _missingChecked: false
+    Connections { target: Config; function onReadyChanged() { if (Config.ready) rebuild.restart() } }
+    Process {
+        id: missingCheck
+        onExited: code => {
+            if (code === 0) return
+            const first = root.entries.find(e => !root.isVideoFile(e.name.toLowerCase()))
+            if (!first) return
+            root.apply(first.path)
+            Quickshell.execDetached(["notify-send", "-a", "Ano Shell", "Wallpaper",
+                `The wallpaper file is gone; switched to ${first.name}.`])
         }
     }
 
