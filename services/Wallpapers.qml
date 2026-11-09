@@ -268,14 +268,18 @@ Singleton {
         interval: 30
         onTriggered: {
             const arr = []
-            for (let i = 0; i < folderModel.count; i++) {
+            // A folder that doesn't exist makes FolderListModel fall back to
+            // the working directory (often $HOME): list nothing then.
+            const shown = decodeURIComponent(String(folderModel.folder).replace(/^file:\/\//, "")).replace(/\/+$/, "")
+            const ours = shown === root.effectiveDirectory.replace(/\/+$/, "")
+            for (let i = 0; ours && i < folderModel.count; i++) {
                 const path = folderModel.get(i, "filePath")
                 if (!path) continue
                 arr.push({ name: folderModel.get(i, "fileName"), path: path, url: String(folderModel.get(i, "fileUrl")),
                     modified: folderModel.get(i, "fileModified")?.getTime?.() ?? 0, size: folderModel.get(i, "fileSize") ?? 0 })
             }
             root.entries = arr
-            if (!root._missingChecked && folderModel.status === FolderListModel.Ready && Config.ready) {
+            if (ours && !root._missingChecked && folderModel.status === FolderListModel.Ready && Config.ready) {
                 root._missingChecked = true
                 const cur = Config.options?.background?.wallpaperPath ?? ""
                 if (cur !== "") missingCheck.exec(["test", "-e", cur])
