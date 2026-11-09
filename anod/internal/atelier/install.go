@@ -390,6 +390,8 @@ func (h *Store) Commit(tok string) (string, error) {
 	}
 	p.timer.Stop()
 	defer os.RemoveAll(p.stage)
+	h.itemMu.Lock()
+	defer h.itemMu.Unlock()
 	typ, id := p.Type, p.ID
 	old := h.receipt(typ, id)
 	if (old != nil) != p.Update || old != nil && old.Version != p.installedVersion {
@@ -414,18 +416,31 @@ func (h *Store) Commit(tok string) (string, error) {
 		if old != nil {
 			seq = old.Seq + 1
 		}
-		for {
-			dst = filepath.Join(dir, fmt.Sprintf("%s~%d", id, seq))
-			if _, err := os.Lstat(dst); errors.Is(err, os.ErrNotExist) {
-				break
-			}
-			seq++
-		}
+		dst, seq = freshDir(dir, id, seq)
 	case "rices":
 		dst = filepath.Join(dir, id)
 	}
 	if fi, err := os.Lstat(dst); err == nil && fi.Mode()&os.ModeSymlink != 0 {
 		return "", fmt.Errorf("refusing to replace symlink %s", dst)
+	}
+	// Code: the version being replaced moves aside until the new one has
+	// loaded once (Confirm deletes it, Rollback brings it back). If the
+	// installed version never loaded either, the one before it stays the
+	// fallback and the unconfirmed one goes.
+	var prev *Receipt
+	if isCode(typ) && old != nil {
+		if old.Previous != nil {
+			prev = old.Previous
+		} else if _, err := os.Lstat(old.Path); err == nil && h.inUserDir(typ, old.Path) {
+			pp := h.prevPath(typ, id)
+			os.RemoveAll(pp)
+			if err := os.Rename(old.Path, pp); err != nil {
+				return "", err
+			}
+			c := *old
+			c.Path = pp
+			prev = &c
+		}
 	}
 	var trash string
 	if typ == "rices" {
@@ -440,6 +455,9 @@ func (h *Store) Commit(tok string) (string, error) {
 		if trash != "" {
 			os.Rename(trash, dst)
 		}
+		if prev != nil && old.Previous == nil {
+			os.Rename(prev.Path, old.Path)
+		}
 		return "", err
 	}
 	if trash != "" {
@@ -453,7 +471,7 @@ func (h *Store) Commit(tok string) (string, error) {
 		return "", err
 	}
 	r := Receipt{Catalog: p.Catalog, Version: p.entry.Version, InstalledAt: time.Now().UTC(), Path: dst,
-		Files: files, Hosts: orEmpty(p.entry.Hosts), Commands: orEmpty(p.entry.Commands), Seq: seq}
+		Files: files, Hosts: orEmpty(p.entry.Hosts), Commands: orEmpty(p.entry.Commands), Seq: seq, Previous: prev}
 	if err := h.writeReceipt(typ, id, r); err != nil {
 		return "", err
 	}
@@ -480,6 +498,8 @@ func (h *Store) Remove(typ, id string) error {
 	if err := checkType(typ); err != nil {
 		return err
 	}
+	h.itemMu.Lock()
+	defer h.itemMu.Unlock()
 	r := h.receipt(typ, id)
 	if r == nil {
 		for _, it := range h.localItems(typ) {
@@ -499,9 +519,148 @@ func (h *Store) Remove(typ, id string) error {
 	if err := os.RemoveAll(r.Path); err != nil {
 		return err
 	}
+	if isCode(typ) {
+		os.RemoveAll(h.prevPath(typ, id))
+	}
 	if err := os.Remove(h.receiptPath(typ, id)); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	h.bump()
 	return nil
 }
+
+// ── Keep, confirm, roll back (code types) ──────────────────────────────
+
+const prevPrefix = ".atelier-prev-"
+
+// prevPath is where the version before an unconfirmed update waits: a dot
+// folder, so the shell's registries don't list it.
+func (h *Store) prevPath(typ, id string) string {
+	return filepath.Join(h.userDir(typ), prevPrefix+id)
+}
+
+func (h *Store) inUserDir(typ, p string) bool {
+	return strings.HasPrefix(p, h.userDir(typ)+string(filepath.Separator))
+}
+
+// freshDir is the first <dir>/<id>~<n> (n >= seq) that doesn't exist yet.
+func freshDir(dir, id string, seq int) (string, int) {
+	for {
+		dst := filepath.Join(dir, fmt.Sprintf("%s~%d", id, seq))
+		if _, err := os.Lstat(dst); errors.Is(err, os.ErrNotExist) {
+			return dst, seq
+		}
+		seq++
+	}
+}
+
+func codeReceipt(h *Store, typ, id string) (*Receipt, error) {
+	if err := checkType(typ); err != nil {
+		return nil, err
+	}
+	if !isCode(typ) {
+		return nil, fmt.Errorf("%s have no versions to confirm or roll back", typ)
+	}
+	if !ValidID(id) {
+		return nil, fmt.Errorf("invalid id %q", id)
+	}
+	r := h.receipt(typ, id)
+	if r == nil {
+		return nil, fmt.Errorf("%s/%s is not installed from a catalog", typ, id)
+	}
+	return r, nil
+}
+
+// Confirm: the installed version of typ/id loaded, so the previous one kept
+// for a rollback goes. path, when set, is the folder that loaded: a report
+// about another version is ignored. True when a previous version was dropped.
+func (h *Store) Confirm(typ, id, path string) (bool, error) {
+	h.itemMu.Lock()
+	defer h.itemMu.Unlock()
+	r, err := codeReceipt(h, typ, id)
+	if err != nil {
+		return false, err
+	}
+	if r.Previous == nil || path != "" && path != r.Path {
+		return false, nil
+	}
+	if pp := h.prevPath(typ, id); r.Previous.Path == pp {
+		if err := os.RemoveAll(pp); err != nil {
+			return false, err
+		}
+	}
+	r.Previous = nil
+	return true, h.writeReceipt(typ, id, *r)
+}
+
+// Rollback: the installed version of typ/id failed to load, so the previous
+// one comes back (into a fresh <id>~<n> folder) with its receipt, and the
+// failed one is deleted. It returns the version now installed.
+func (h *Store) Rollback(typ, id, path string) (string, error) {
+	h.itemMu.Lock()
+	defer h.itemMu.Unlock()
+	r, err := codeReceipt(h, typ, id)
+	if err != nil {
+		return "", err
+	}
+	if path != "" && path != r.Path {
+		return "", fmt.Errorf("%s is not the installed version of %s/%s", path, typ, id)
+	}
+	pp := h.prevPath(typ, id)
+	if r.Previous == nil || r.Previous.Path != pp {
+		return "", fmt.Errorf("%s/%s has no previous version to go back to", typ, id)
+	}
+	if _, err := os.Lstat(pp); err != nil {
+		r.Previous = nil
+		h.writeReceipt(typ, id, *r)
+		return "", fmt.Errorf("the previous version of %s/%s is gone", typ, id)
+	}
+	dst, seq := freshDir(h.userDir(typ), id, max(r.Seq, r.Previous.Seq)+1)
+	if err := os.Rename(pp, dst); err != nil {
+		return "", err
+	}
+	if h.inUserDir(typ, r.Path) {
+		os.RemoveAll(r.Path)
+	}
+	back := *r.Previous
+	back.Path, back.Seq, back.Previous = dst, seq, nil
+	if err := h.writeReceipt(typ, id, back); err != nil {
+		return "", err
+	}
+	h.bump()
+	return back.Version, nil
+}
+
+// recoverPrevious tidies after a crash: a kept folder whose update never got
+// its receipt goes back in place (and the half-installed newer folder goes);
+// one no receipt waits on any more is deleted. An update still waiting for
+// its first load keeps both folders.
+func (h *Store) recoverPrevious() {
+	for typ := range codeManifest {
+		dir := h.userDir(typ)
+		ents, _ := os.ReadDir(dir)
+		for _, e := range ents {
+			id, ok := strings.CutPrefix(e.Name(), prevPrefix)
+			if !ok || !ValidID(id) {
+				continue
+			}
+			pp := filepath.Join(dir, e.Name())
+			r := h.receipt(typ, id)
+			switch {
+			case r != nil && r.Previous != nil && r.Previous.Path == pp:
+				// pending: the shell confirms or rolls back
+			case r != nil && h.inUserDir(typ, r.Path) && !exists(r.Path):
+				for _, n := range ents { // the newer folder the crash left without a receipt
+					if nid, seq := StripSeq(n.Name()); nid == id && seq > r.Seq {
+						os.RemoveAll(filepath.Join(dir, n.Name()))
+					}
+				}
+				os.Rename(pp, r.Path)
+			default:
+				os.RemoveAll(pp)
+			}
+		}
+	}
+}
+
+func exists(p string) bool { _, err := os.Lstat(p); return err == nil }

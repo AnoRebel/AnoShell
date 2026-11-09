@@ -118,6 +118,18 @@ item and on the update confirmation, and `ano atelier install` prints it.
    and lock screens get a fresh folder per installed version (`<id>~<n>`), so an update never runs
    old cached code.
 
+**If an update doesn't load, the previous version comes back.** An update of
+a piece, plugin or lock screen keeps the version it replaces (in
+`.atelier-prev-<id>` next to it, hidden from the shell) until the new one has
+loaded once. When it loads, the kept copy is deleted; when its manifest or QML
+fails, the shell asks anod to roll back, the previous version returns with its
+receipt and a notification says so (the update is offered again, so you can
+retry once the author fixes it). If you update twice before the first update
+ever loads, the last version that did load stays the fallback. After a crash
+or restart in between, both folders stay and the check runs again on the next
+load. Pieces are checked when they are on the desktop or the Pieces tab is
+open, plugins and lock screens whenever the shell lists them.
+
 Nothing from an item is ever executed while installing: there are no install
 scripts. If you changed an installed item's files, an update tells you which
 ones before replacing them. A catalog can revoke an item: it can't be

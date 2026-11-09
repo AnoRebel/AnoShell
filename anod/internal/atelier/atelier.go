@@ -100,6 +100,7 @@ type Store struct {
 	pending  map[string]*pending
 	fetchErr map[string]string // catalog url -> last refresh error
 	hashes   map[string]hashMemo
+	itemMu   sync.Mutex // Commit, Remove, Confirm and Rollback move item folders
 }
 
 type hashMemo struct {
@@ -180,6 +181,7 @@ func (h *Store) Init() error {
 	for _, t := range Types {
 		h.cleanStaging(h.stageParent(t))
 	}
+	h.recoverPrevious()
 	return nil
 }
 
@@ -218,6 +220,9 @@ type Receipt struct {
 	Hosts       []string          `json:"hosts"`
 	Commands    []string          `json:"commands"`
 	Seq         int               `json:"seq,omitempty"` // code types: the ~<n> of the folder
+	// Code types, after an update until the new version first loads: the
+	// version before it, kept in <type folder>/.atelier-prev-<id> (see Confirm, Rollback).
+	Previous *Receipt `json:"previous,omitempty"`
 }
 
 func (h *Store) receiptPath(typ, id string) string {

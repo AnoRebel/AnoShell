@@ -5,6 +5,7 @@ import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.services
 
 /**
  * PackageRegistry: the folders of one kind of QML package (launcher plugins,
@@ -93,8 +94,10 @@ Scope {
 
     // Compiling is the first point where a package's code is touched; it
     // only creates the component, never an object.
+    // The result of an Atelier install goes to anod, which keeps or rolls
+    // back the update (Anod.reportLoad).
     function _check(e): void {
-        if (e.errors.length) return
+        if (e.errors.length) { if (e.source === "user") Anod.reportLoad(root.kind, e.id, e.dir, e.name, e.errors.join("; ")); return }
         const c = Qt.createComponent(e.url, Component.Asynchronous)
         const done = () => {
             if (c.status === Component.Loading) return
@@ -106,6 +109,7 @@ Scope {
             if (live.has(e.url)) {
                 q[e.url] = c.status === Component.Error ? c.errorString().trim().split(`file://${e.dir}/`).join("").replace(/\?r=\d+/g, "") : ""
                 if (q[e.url]) console.warn(`[${root.kind}] ${e.id}: ${q[e.url]}`)
+                if (e.source === "user") Anod.reportLoad(root.kind, e.id, e.dir, e.name, q[e.url])
             }
             root.qmlErrors = q
             c.destroy()
