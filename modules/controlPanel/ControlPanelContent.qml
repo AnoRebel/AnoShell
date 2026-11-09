@@ -65,6 +65,7 @@ ColumnLayout {
 
             RowLayout {
                 spacing: 8
+                visible: !!Brightness.primary // no screen we can dim: no slider
                 MaterialSymbol { text: "brightness_6"; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F" }
                 StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Brightness.primary?.brightness ?? 0; onMoved: Brightness.primary?.setBrightness(value); stopIndicatorValues: [] }
             }

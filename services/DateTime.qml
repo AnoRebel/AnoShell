@@ -28,33 +28,28 @@ Singleton {
     property string collapsedCalendarFormat: Qt.locale().toString(clock.date, "dddd, MMMM dd")
     property string uptime: "0h, 0m"
 
+    // /proc/uptime is re-read each minute; the text is parsed once it has
+    // loaded (reload() is asynchronous, so reading straight after gave 0m).
     Timer {
-        interval: 10
+        interval: 60000
         running: true
         repeat: true
-        onTriggered: {
-            fileUptime.reload()
-            const textUptime = fileUptime.text()
-            const uptimeSeconds = Number(textUptime.split(" ")[0] ?? 0)
-
-            const days = Math.floor(uptimeSeconds / 86400)
-            const hours = Math.floor((uptimeSeconds % 86400) / 3600)
-            const minutes = Math.floor((uptimeSeconds % 3600) / 60)
-
-            let formatted = ""
-            if (days > 0)
-                formatted += `${days}d`
-            if (hours > 0)
-                formatted += `${formatted ? ", " : ""}${hours}h`
-            if (minutes > 0 || !formatted)
-                formatted += `${formatted ? ", " : ""}${minutes}m`
-            uptime = formatted
-            interval = 60000 // uptime is shown to the minute
-        }
+        onTriggered: fileUptime.reload()
     }
 
     FileView {
         id: fileUptime
         path: "/proc/uptime"
+        onLoaded: {
+            const uptimeSeconds = Number(text().split(" ")[0] ?? 0)
+            const days = Math.floor(uptimeSeconds / 86400)
+            const hours = Math.floor((uptimeSeconds % 86400) / 3600)
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60)
+            let formatted = ""
+            if (days > 0) formatted += `${days}d`
+            if (hours > 0) formatted += `${formatted ? ", " : ""}${hours}h`
+            if (minutes > 0 || !formatted) formatted += `${formatted ? ", " : ""}${minutes}m`
+            root.uptime = formatted
+        }
     }
 }
