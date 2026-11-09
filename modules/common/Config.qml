@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.modules.common.functions
+import "ConfigDelta.js" as ConfigDelta
 
 Singleton {
     id: root
@@ -34,8 +35,18 @@ Singleton {
         const [parent, leaf] = root._walkPath(root._userDelta, nestedKey, false)
         return (parent !== null && parent !== undefined && leaf in parent) ? "user" : "default"
     }
-    // Suppresses the file-changed echo when we're the one writing.
-    property bool _writingUserDelta: false
+    // Changes since the last write, replayed onto the file when it changed on
+    // disk meanwhile (ConfigDelta.applyOps), so neither side is lost.
+    property var _pendingOps: []
+    // The user file's text as last read or written: a reload that finds the
+    // same text is our own write's echo (or nothing new) and is skipped.
+    property string _diskText: ""
+    // The file changed on disk and the reload hasn't landed: writing now
+    // would overwrite that edit, so the reload merges and writes instead.
+    property bool _diskStale: false
+    // A bundle (re)load resets the adapter, so the next user load applies even
+    // when the user file is unchanged.
+    property bool _forceUserApply: false
 
     // Walk a dot-path on `obj`, creating empty objects as needed for
     // intermediate segments. Returns [parent, leafKey] so the caller can
@@ -101,6 +112,7 @@ Singleton {
             p[leaf] = convertedValue;
             root.options[keys[0]] = arr;
             root._userDelta[keys[0]] = JSON.parse(JSON.stringify(arr));
+            root._pendingOps = root._pendingOps.concat([{ key: keys[0], value: arr }]);
             userDeltaWriteTimer.restart();
             return;
         }
@@ -119,6 +131,7 @@ Singleton {
         // 2. User delta mutation — persists to disk
         const [deltaParent, deltaLeaf] = root._walkPath(root._userDelta, nestedKey, true);
         deltaParent[deltaLeaf] = convertedValue;
+        root._pendingOps = root._pendingOps.concat([{ key: nestedKey, value: convertedValue }]);
 
         userDeltaWriteTimer.restart();
     }
@@ -231,6 +244,7 @@ Singleton {
     // default. Triggers one disk write; the user file becomes "{}\n".
     function resetAllToDefaults() {
         root._userDelta = {};
+        root._pendingOps = root._pendingOps.concat([{ all: true }]);
         root._migratedKeys = {};
         // Back to the bundled defaults from the snapshot (re-reading an
         // unchanged bundle doesn't reset the adapter), and save now.
@@ -252,6 +266,7 @@ Singleton {
             // back live (from the snapshot, not by re-reading the bundle).
             if (root._userDelta[p] !== undefined) {
                 delete root._userDelta[p];
+                root._pendingOps = root._pendingOps.concat([{ key: p, reset: true }]);
                 touched = true;
             }
             for (const k of Object.keys(root._migratedKeys))
@@ -280,6 +295,7 @@ Singleton {
             trail.push(next);
         }
         delete trail[trail.length - 1][segments[segments.length - 1]];
+        root._pendingOps = root._pendingOps.concat([{ key: nestedKey, reset: true }]);
         for (let i = trail.length - 1; i > 0; --i) {
             if (Object.keys(trail[i]).length === 0) {
                 delete trail[i - 1][segments[i - 1]];
@@ -446,13 +462,33 @@ Singleton {
 
     function _writeUserDelta() {
         root.deltaRevision++;
-        root._writingUserDelta = true;
+        // An outside edit is still being read: its onLoaded merges the
+        // pending changes into it and writes then.
+        if (root._diskStale) return;
         const text = JSON.stringify(root._userDelta, null, 2) + "\n";
+        root._pendingOps = [];
+        if (text === root._diskText) return; // nothing changed
+        root._diskText = text;
         userOverrideFileView.setText(text);
-        // Clear the echo-suppress flag after the file-watcher has had a
-        // chance to fire. The watcher will fire ~10ms after setText; we
-        // wait one readWriteDelay to be safe.
-        echoClearTimer.restart();
+    }
+
+    // Called from the user file's onLoaded / onLoadFailed with what is on disk.
+    function _userFileLoaded(text) {
+        root._diskStale = false;
+        if (!root._bundleSnapped) return; // the bundle's load reloads this file
+        if (text === root._diskText && !root._forceUserApply) {
+            if (root._pendingOps.length) userDeltaWriteTimer.restart();
+            return;
+        }
+        root._forceUserApply = false;
+        root._diskText = text;
+        const pending = root._pendingOps;
+        root._loadUserDelta();
+        if (pending.length) root._userDelta = ConfigDelta.applyOps(root._userDelta, pending);
+        root._applyUserDelta();
+        root._migrateLegacyKeys();
+        root.ready = true;
+        if (pending.length) userDeltaWriteTimer.restart();
     }
 
     Timer {
@@ -471,13 +507,11 @@ Singleton {
         onTriggered: root._writeUserDelta()
     }
 
-    // After a setText call, swallow exactly one onFileChanged echo so we
-    // don't reload-loop on our own writes.
     Timer {
-        id: echoClearTimer
-        interval: root.readWriteDelay * 4
+        id: userReloadTimer
+        interval: root.readWriteDelay
         repeat: false
-        onTriggered: root._writingUserDelta = false
+        onTriggered: userOverrideFileView.reload()
     }
 
     // One-shot migration of legacy config keys.
@@ -589,6 +623,7 @@ Singleton {
                 root._bundleText = bundleText;
                 root._bundleSnapped = true;
             }
+            root._forceUserApply = true;
             userOverrideFileView.reload();
             // ready flips after the delta has been applied (in user-file
             // onLoaded / onLoadFailed handlers).
@@ -600,6 +635,7 @@ Singleton {
                     root._bundleDefaults = root._snapshotAdapter(configOptionsJsonAdapter);
                     root._bundleSnapped = true;
                 }
+                root._forceUserApply = true;
                 userOverrideFileView.reload();
             }
         }
@@ -1713,13 +1749,12 @@ Singleton {
     // User per-machine config delta at ~/.config/anoshell/config.json.
     // The Settings UI writes here (via setNestedValue → _writeUserDelta).
     // External edits (text editor, git pull, scp from another machine) are
-    // picked up via watchChanges and trigger a bundle reload, which then
-    // re-applies the delta on top of bundle defaults.
+    // picked up via watchChanges: the reload re-applies the delta on top of
+    // the bundled-defaults snapshot.
     //
-    // Echo suppression: when WE write the file, the watcher would fire and
-    // cause a reload loop. We set _writingUserDelta=true around our own
-    // writes; the onFileChanged handler skips a reload while it's set,
-    // and echoClearTimer clears the flag a few ms later.
+    // Echoes: our own write fires the watcher too; the reload finds the text
+    // we wrote (_diskText) and stops there. An outside edit that lands while
+    // a write is pending is merged with it (_userFileLoaded), not overwritten.
     FileView {
         id: userOverrideFileView
         path: root.userOverridePath
@@ -1729,26 +1764,14 @@ Singleton {
         printErrors: false
         // Writes go via setText() in _writeUserDelta — never via an adapter.
         onFileChanged: {
-            // Echo from our own setText — already applied in memory.
-            if (root._writingUserDelta) return;
-            // External edit: reload bundle to reset adapter to defaults,
-            // then this view's onLoaded re-applies the (possibly smaller)
-            // delta on top.
-            bundleReloadTimer.restart();
+            // Hold writes until the reload has read (and merged) it.
+            root._diskStale = true;
+            userReloadTimer.restart();
         }
-        onLoaded: {
-            root._loadUserDelta();
-            root._applyUserDelta();
-            root._migrateLegacyKeys();
-            root.ready = true;
-        }
+        onLoaded: root._userFileLoaded(userOverrideFileView.text() || "")
         onLoadFailed: error => {
-            if (error === FileViewError.FileNotFound) {
-                root._userDelta = {};
-                root._applyUserDelta();
-                root._migrateLegacyKeys();
-                root.ready = true;
-            }
+            if (error === FileViewError.FileNotFound) root._userFileLoaded("")
+            else root._diskStale = false;
         }
     }
 
