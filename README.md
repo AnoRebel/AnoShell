@@ -761,8 +761,8 @@ Wallpapers are applied by anod: `ano wallpaper set IMAGE` (awww, matugen colours
 
 ## Widget Library (50+ components)
 **Foundation**: StyledText, MaterialSymbol, Circle, PointingHandInteraction, FadeLoader, Revealer, StyledImage, WavyLine, DragManager, RoundCorner
-**Controls**: RippleButton, StyledSlider, StyledSwitch, StyledProgressBar, CircularProgress, CombinedCircularProgress, Graph, StyledScrollBar, StyledFlickable, Tooltips, StyledTextInput/Area
-**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ConfigTextInput (placeholder + validator + inline errors), ChoiceRow (single-select icon-row picker), RestartRequiredBadge (clickable reload-now pill), ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade, StyledPopup, SettingsCard (with `configKeys` for command-palette resolution), SettingsPageHeader (per-page reset), SettingsCommandPalette (Ctrl+K dynamic-search overlay)
+**Controls**: RippleButton, StyledSlider, StyledSwitch, StyledProgressBar, CircularProgress, CombinedCircularProgress, Graph, StyledScrollBar, StyledFlickable (fades its top/bottom edge where content is cut off; `edgeFade: false` opts out), Tooltips, StyledTextInput/Area
+**Composite**: ToolbarButton, Toolbar, GroupButton, ButtonGroup, ConfigRow/Switch/Slider, ConfigTextInput (placeholder + validator + inline errors), ChoiceRow (single-select icon-row picker), RestartRequiredBadge (clickable reload-now pill), ContentSection, NoticeBox, KeyboardKey, CalendarView, NotificationItem, StyledBlurEffect, StyledDropShadow, ScrollEdgeFade (gradient edge fade for any Flickable/ListView, colour taken from the background behind it), StyledPopup, SettingsCard (with `configKeys` for command-palette resolution), SettingsPageHeader (per-page reset), SettingsCommandPalette (Ctrl+K dynamic-search overlay)
 **Animation**: Anim, CAnim, AbstractChoreographable, FlyFadeEnterChoreographable, ChoreographerLayout
 **Morph**: ShapeCanvas, MorphedPanel, TopLayerPanel, BarWidgetPopout, BarModulePopout (16 JS shape files)
 **Spectrum**: LinearSpectrum, MirroredSpectrum

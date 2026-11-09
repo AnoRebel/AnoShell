@@ -14,6 +14,12 @@ Flickable {
 
     ScrollBar.vertical: StyledScrollBar {}
 
+    // Top/bottom fade where content is cut off; set false to opt out, or
+    // edgeFadeColor when the auto-detected background is wrong.
+    property bool edgeFade: true
+    property alias edgeFadeColor: edgeFadeItem.fadeColor
+    ScrollEdgeFade { id: edgeFadeItem; target: root; visible: root.edgeFade }
+
     MouseArea {
         visible: Config?.options.interactions.scrolling.fasterTouchpadScroll
         anchors.fill: parent

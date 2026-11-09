@@ -177,6 +177,7 @@ Loader {
                         keyNavigationEnabled: false  // input handles keys
                         boundsBehavior: Flickable.StopAtBounds
                         spacing: 2
+                        ScrollEdgeFade { target: paletteList; fadeHeight: 16 }
 
                         delegate: Rectangle {
                             id: paletteDelegate
