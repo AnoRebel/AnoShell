@@ -1245,6 +1245,7 @@ ColumnLayout {
                     GroupButton { label: "Crossfade"; toggled: (Config.options?.background?.transition?.type ?? "crossfade") === "crossfade"; onClicked: Config.setNestedValue("background.transition.type", "crossfade") },
                     GroupButton { label: "Slide"; toggled: (Config.options?.background?.transition?.type ?? "crossfade") === "slideRight"; onClicked: Config.setNestedValue("background.transition.type", "slideRight") },
                     GroupButton { label: "Zoom"; toggled: (Config.options?.background?.transition?.type ?? "crossfade") === "zoom"; onClicked: Config.setNestedValue("background.transition.type", "zoom") },
+                    GroupButton { label: "Paint"; toggled: (Config.options?.background?.transition?.type ?? "crossfade") === "paint"; onClicked: Config.setNestedValue("background.transition.type", "paint") },
                     GroupButton { label: "None"; toggled: (Config.options?.background?.transition?.type ?? "crossfade") === "none"; onClicked: Config.setNestedValue("background.transition.type", "none") }
                 ]
             }
