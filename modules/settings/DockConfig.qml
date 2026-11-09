@@ -8,6 +8,7 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "."
+import "root:modules/dock/reorder.js" as Reorder
 
 /**
  * Dock settings — elaborate with visual position preview, style selector
@@ -409,7 +410,7 @@ ColumnLayout {
     SettingsCard {
         icon: "push_pin"
         title: "Pinned Apps"
-        subtitle: "Apps that always appear in the dock, even when not running"
+        subtitle: "Apps that always appear in the dock, even when not running; drag them along the dock to reorder"
         configKeys: ["dock.pinnedApps"]
 
         // Current pinned apps list
@@ -455,6 +456,20 @@ ColumnLayout {
                             font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                             font.family: Appearance?.font.family.mono ?? "monospace"
                             Layout.fillWidth: true
+                        }
+
+                        // Order (also by dragging the icons along the dock)
+                        ToolbarButton {
+                            iconName: "arrow_upward"; iconSize: 16
+                            toolTipText: "Move earlier"
+                            enabled: index > 0
+                            onClicked: Config.setNestedValue("dock.pinnedApps", Reorder.move(Config.options?.dock?.pinnedApps ?? [], index, index - 1))
+                        }
+                        ToolbarButton {
+                            iconName: "arrow_downward"; iconSize: 16
+                            toolTipText: "Move later"
+                            enabled: index < (Config.options?.dock?.pinnedApps ?? []).length - 1
+                            onClicked: Config.setNestedValue("dock.pinnedApps", Reorder.move(Config.options?.dock?.pinnedApps ?? [], index, index + 1))
                         }
 
                         // Remove button

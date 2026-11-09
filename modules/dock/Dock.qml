@@ -10,6 +10,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
+import "reorder.js" as Reorder
 
 /**
  * Multi-style dock — supports "pill" and "macos" styles.
@@ -116,6 +117,15 @@ Scope {
             // pointer is on them (they are their own popup surface, so the
             // dock's hover area loses the pointer).
             property int _previewsOpen: 0
+
+            // Dragging a pinned icon along the dock reorders the pins: the
+            // dragged one follows the pointer, the ones it passes slide over,
+            // and the order is written on release.
+            property int dragFrom: -1
+            property int dragTo: -1
+            property real dragDelta: 0
+            readonly property real slot: root.isVertical ? root.iconSize + 12 + dockLayout.rowSpacing
+                                                         : root.iconSize + 8 + dockLayout.columnSpacing
             // The window list is leased while the dock shows, so it is already
             // filled when a preview opens.
             readonly property bool _wantWindows: visible && reveal && root.previews
@@ -253,8 +263,20 @@ Scope {
                             Item {
                                 id: dockItem
                                 required property var modelData
+                                required property int index
                                 Layout.preferredWidth: root.iconSize + 8
                                 Layout.preferredHeight: root.iconSize + 12
+
+                                readonly property bool dragged: dockWindow.dragFrom === dockItem.index
+                                readonly property real _dragShift: dockItem.dragged ? dockWindow.dragDelta
+                                    : Reorder.shift(dockItem.index, dockWindow.dragFrom, dockWindow.dragTo, dockWindow.slot)
+                                z: dockItem.dragged ? 1 : 0
+                                transform: Translate {
+                                    x: root.isVertical ? 0 : dockItem._dragShift
+                                    y: root.isVertical ? dockItem._dragShift : 0
+                                    Behavior on x { enabled: !dockItem.dragged; MotionSpring { token: "snappy" } }
+                                    Behavior on y { enabled: !dockItem.dragged; MotionSpring { token: "snappy" } }
+                                }
 
                                 // Magnification (dock.magnify): the icon under the
                                 // pointer swells most, its neighbours less by distance,
@@ -310,8 +332,38 @@ Scope {
                                         id: iconMA
                                         anchors.fill: parent
                                         hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.activateApp(modelData.appId)
+                                        cursorShape: dockItem.dragged ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+                                        preventStealing: true
+                                        // Press position, in the layout (it doesn't move
+                                        // with the icon, which follows the pointer).
+                                        property point _press
+                                        property bool _wasDrag: false
+                                        function _endDrag() {
+                                            dockWindow.dragFrom = -1; dockWindow.dragTo = -1; dockWindow.dragDelta = 0
+                                        }
+                                        onPressed: mouse => { _press = mapToItem(dockLayout, mouse.x, mouse.y); _wasDrag = false }
+                                        onPositionChanged: mouse => {
+                                            if (!pressed || !dockItem.modelData.pinned) return
+                                            const p = mapToItem(dockLayout, mouse.x, mouse.y)
+                                            const d = root.isVertical ? p.y - _press.y : p.x - _press.x
+                                            if (!dockItem.dragged) {
+                                                // Threshold: a click that wobbles stays a click.
+                                                if (Math.abs(d) < 8 || dockWindow.dragFrom >= 0) return
+                                                dockWindow.dragFrom = dockItem.index
+                                            }
+                                            dockWindow.dragDelta = d
+                                            dockWindow.dragTo = Reorder.target(dockItem.index, d, dockWindow.slot, root.pinnedApps.length)
+                                        }
+                                        onReleased: {
+                                            if (!dockItem.dragged) return
+                                            _wasDrag = true
+                                            const from = dockWindow.dragFrom, to = dockWindow.dragTo
+                                            _endDrag()
+                                            // Later: the write rebuilds the icons, this one included.
+                                            if (to !== from) Qt.callLater(() => Config.setNestedValue("dock.pinnedApps", Reorder.move(root.pinnedApps, from, to)))
+                                        }
+                                        onCanceled: if (dockItem.dragged) _endDrag()
+                                        onClicked: if (!_wasDrag) root.activateApp(modelData.appId)
                                     }
 
                                     StyledToolTip {

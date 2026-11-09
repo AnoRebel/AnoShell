@@ -1744,7 +1744,7 @@
   "page": 4,
   "card": "Pinned Apps",
   "label": "Pinned Apps",
-  "sublabel": "Apps that always appear in the dock, even when not running",
+  "sublabel": "Apps that always appear in the dock, even when not running; drag them along the dock to reorder",
   "keys": [
    "dock.pinnedApps"
   ]
