@@ -24,6 +24,15 @@ func keybindsCmd(args []string) int {
 		return 1
 	}
 	fail := func(err error) int { fmt.Fprintln(os.Stderr, "ano:", err); return 1 }
+	// apply and migrate read, change and write keybinds.json: hold the lock
+	// anod holds for Settings, so neither loses the other's change.
+	if args[0] != "list" {
+		unlock, err := keybinds.Lock(p)
+		if err != nil {
+			return fail(err)
+		}
+		defer unlock()
+	}
 	switch args[0] {
 	case "list":
 		o, err := keybinds.LoadOverrides(p.Overrides)

@@ -426,6 +426,11 @@ func main() {
 		if err := json.Unmarshal(p, &req); err != nil || req.Chord == "" {
 			return nil, ipc.Errorf(ipc.CodeBadInput, "want {chord, bind|null, replace?, submap?}")
 		}
+		unlock, err := keybinds.Lock(keybinds.DefaultPaths())
+		if err != nil {
+			return nil, err
+		}
+		defer unlock()
 		d, err := keybinds.LoadDefaults()
 		if err != nil {
 			return nil, err
@@ -475,6 +480,11 @@ func main() {
 			Chord string `json:"chord"` // "" resets everything
 		}
 		json.Unmarshal(p, &req)
+		unlock, err := keybinds.Lock(keybinds.DefaultPaths())
+		if err != nil {
+			return nil, err
+		}
+		defer unlock()
 		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
 		if err != nil {
 			return nil, err
@@ -494,6 +504,11 @@ func main() {
 		return err
 	}
 	hb.KeybindsChanged = func() error {
+		unlock, err := keybinds.Lock(keybinds.DefaultPaths())
+		if err != nil {
+			return err
+		}
+		defer unlock()
 		o, err := keybinds.LoadOverrides(keybinds.DefaultPaths().Overrides)
 		if err != nil {
 			return err
