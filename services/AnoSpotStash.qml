@@ -139,24 +139,24 @@ Singleton {
     }
 
     function _runRuleOnce(rule, isShell, items) {
-        const subst = (str) => {
-            let s = String(str);
-            const first = items[0] || { filePath: "", name: "", isDir: false };
-            const allPaths = items.map(i => i.filePath).join("\n");
-            const allNames = items.map(i => i.name).join("\n");
-            const dir = first.filePath.replace(/\/[^\/]*$/, "");
-            const ext = (first.name.match(/\.([^.]+)$/) || [, ""])[1];
-            return s
-                .replace(/\{path\}/g, first.filePath)
-                .replace(/\{name\}/g, first.name)
-                .replace(/\{dir\}/g, dir)
-                .replace(/\{ext\}/g, ext)
-                .replace(/\{paths\}/g, allPaths)
-                .replace(/\{names\}/g, allNames);
+        const first = items[0] || { filePath: "", name: "", isDir: false };
+        const vals = {
+            path: first.filePath, name: first.name,
+            dir: first.filePath.replace(/\/[^\/]*$/, ""),
+            ext: (first.name.match(/\.([^.]+)$/) || [, ""])[1],
+            paths: items.map(i => i.filePath).join("\n"),
+            names: items.map(i => i.name).join("\n")
         };
+        const subst = (str) => String(str).replace(/\{(paths|names|path|name|dir|ext)\}/g, (_, k) => vals[k]);
         if (isShell) {
-            customProc.command = ["bash", "-c", subst(rule.command)];
+            // Shell mode: the values travel as environment variables, never as
+            // shell text, so a file called `$(cmd).png` stays a name.
+            const env = {};
+            for (const k in vals) env["ANO_" + k.toUpperCase()] = vals[k];
+            customProc.environment = env;
+            customProc.command = ["bash", "-c", String(rule.command).replace(/\{(paths|names|path|name|dir|ext)\}/g, (_, k) => "${ANO_" + k.toUpperCase() + "}")];
         } else {
+            customProc.environment = ({});
             // Exec mode: split on whitespace, substitute each arg.
             const argv = String(rule.command).trim().split(/\s+/).map(subst);
             customProc.command = argv;

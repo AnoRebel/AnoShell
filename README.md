@@ -442,7 +442,7 @@ Placeholder substitution:
 
 Action modes:
 - **`exec`** — Splits `command` on whitespace, substitutes each arg individually, runs the resulting argv directly. No shell, no globs, no pipes. Safe for paths with spaces or special characters.
-- **`shell`** — Substitutes the whole `command` string then runs via `bash -c`. Pipes, redirects, and globs work. You quote your paths.
+- **`shell`** — Runs `command` via `bash -c`; pipes, redirects, and globs work. Each placeholder becomes a variable (`{path}` → `${ANO_PATH}`, also `ANO_NAME`, `ANO_DIR`, `ANO_EXT`, `ANO_PATHS`, `ANO_NAMES`), so a file name is never run as shell code. Quote it (`"{path}"`) for names with spaces.
 
 Edit the rule list in Settings → AnoSpot → "Custom drop actions" — fields, add, remove, and a built-in placeholder cheat-sheet.
 
