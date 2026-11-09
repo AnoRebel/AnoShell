@@ -115,6 +115,7 @@ ShellRoot {
                                     font.weight: settingsRoot.currentPage === index ? Font.DemiBold : Font.Normal
                                     Layout.fillWidth: true
                                 }
+                                SettingsErrorBadge { visible: modelData.name === "About" && count > 0 }
                             }
 
                             onClicked: settingsRoot.currentPage = index
