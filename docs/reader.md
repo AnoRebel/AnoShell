@@ -9,7 +9,7 @@ and a reader or player.
 They are off by default. Turn them on in Settings → Modules → Reader, or set
 `reader.enable: true`.
 
-![The manga panel while its covers load](images/reader.webp)
+![The manga panel (Hot) and the anime panel (Popular), browsing](images/reader.webp)
 
 ## Opening them
 
