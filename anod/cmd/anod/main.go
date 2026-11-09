@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"ano/anod/internal/atelier"
+	"ano/anod/internal/autostart"
 	"ano/anod/internal/camera"
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
@@ -73,6 +74,8 @@ func main() {
 	}
 
 	srv.Handle("ping", func(json.RawMessage) (any, error) { return "pong", nil })
+	starter := &autostart.Launcher{Logf: log.Printf}
+	registerAutostart(srv, starter)
 	registerBackup(srv)
 	srv.Handle("version", func(json.RawMessage) (any, error) {
 		return map[string]any{"version": version.Version, "api": version.API}, nil
@@ -721,6 +724,7 @@ func main() {
 		log.Fatalf("anod: %v", err)
 	}
 	log.Printf("anod %s listening on %s (supervise=%v)", version.Version, *socket, *supervise)
+	go autostartOnce(starter, session) // startup applications, once per session
 	if sup != nil {
 		go func() {
 			st := sup.Run(ctx)

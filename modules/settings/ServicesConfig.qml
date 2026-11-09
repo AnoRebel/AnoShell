@@ -20,9 +20,9 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
+        subtitle: "AI, Startup applications, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
         configRoots: [
-            "ai", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn", "kdeConnect",
+            "ai", "autostart", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn", "kdeConnect",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
             "shell", "weather", "recording", "screenFilter", "drives"
         ]
@@ -357,6 +357,8 @@ ColumnLayout {
         }
     }
 
+    AutostartCard {}
+
     // ═══ GameMode ═══
     SettingsCard {
         icon: "videogame_asset"
@@ -390,15 +392,16 @@ ColumnLayout {
     SettingsCard {
         icon: "speed"
         title: "Performance mode"
-        subtitle: "Frees the GPU and CPU for a game: pauses the shell's animations, blur and audio visualisers, and holds notification popups (they still reach the notification centre)."
+        subtitle: "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre)."
         configKeys: ["performance"]
 
         ConfigRow {
             label: "Now"
-            sublabel: GameMode.performance ? `On: ${GameMode.performanceReason}` : "Off"
+            sublabel: GameMode.performance ? `On: ${GameMode.performanceReason}`
+                : GameMode.refused ? "Off by hand until the game or app closes" : "Off"
             RippleButton {
-                buttonText: GameMode.manual ? "Turn off" : "Turn on"
-                toggled: GameMode.manual
+                buttonText: GameMode.performance ? "Turn off" : "Turn on"
+                toggled: GameMode.performance
                 onClicked: GameMode.toggle()
             }
         }
@@ -414,6 +417,16 @@ ColumnLayout {
             configKey: "performance.onFullscreen"
             checked: Config.options?.performance?.onFullscreen ?? false
             onCheckedChanged: Config.setNestedValue("performance.onFullscreen", checked)
+        }
+        ConfigRow {
+            label: "While these apps are open"
+            configKey: "performance.apps"
+            sublabel: "App ids, comma-separated; * and ? match anything, case doesn't matter (e.g. steam_app_*, blender)"
+            StyledTextInput {
+                text: (Config.options?.performance?.apps ?? []).join(", ")
+                onEditingFinished: Config.setNestedValue("performance.apps", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
+                Layout.fillWidth: true
+            }
         }
         ConfigSwitch {
             label: "Pause animations"
@@ -438,6 +451,33 @@ ColumnLayout {
             configKey: "performance.holdPopups"
             checked: Config.options?.performance?.holdPopups ?? true
             onCheckedChanged: Config.setNestedValue("performance.holdPopups", checked)
+        }
+        ConfigSwitch {
+            label: "Turn off shadows"
+            configKey: "performance.stopShadows"
+            checked: Config.options?.performance?.stopShadows ?? true
+            onCheckedChanged: Config.setNestedValue("performance.stopShadows", checked)
+        }
+        ConfigSwitch {
+            label: "Put desktop pieces away"
+            configKey: "performance.hidePieces"
+            checked: Config.options?.performance?.hidePieces ?? true
+            onCheckedChanged: Config.setNestedValue("performance.hidePieces", checked)
+        }
+        ConfigSwitch {
+            label: "Read CPU, memory and network less often"
+            configKey: "performance.slowPolling"
+            checked: Config.options?.performance?.slowPolling ?? true
+            onCheckedChanged: Config.setNestedValue("performance.slowPolling", checked)
+        }
+        ConfigSlider {
+            label: "Read them every"
+            configKey: "performance.pollInterval"
+            enabled: Config.options?.performance?.slowPolling ?? true
+            from: 2000; to: 30000; stepSize: 1000
+            value: Config.options?.performance?.pollInterval ?? 10000
+            onValueChanged: Config.setNestedValue("performance.pollInterval", Math.round(value))
+            valueText: `${Math.round(value / 1000)} s`
         }
     }
 
