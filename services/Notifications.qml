@@ -74,9 +74,9 @@ Singleton {
     // notifications.silent: no popups (history still records them);
     // notifications.maxVisible: newest N popups on screen at once.
     // Performance mode holds popups; they still reach the centre.
-    // (critical ones, like low battery, still show while held)
-    property var popupList: (Config.options?.notifications?.silent ?? false) ? []
-        : list.filter(notif => notif.popup && (!GameMode.holdPopups || root.isCritical(notif)))
+    // Critical ones (low battery, …) still show, under DND too.
+    readonly property bool dnd: root.silent || (Config.options?.notifications?.silent ?? false)
+    property var popupList: list.filter(notif => notif.popup && (root.isCritical(notif) || (!root.dnd && !GameMode.holdPopups)))
             .slice(-Math.max(1, Config.options?.notifications?.maxVisible ?? 5))
     // urgency is kept as text: the enum's string (a number) or a name from older files
     function isCritical(n) { return String(n?.urgency) === String(NotificationUrgency.Critical) || /critical/i.test(String(n?.urgency)) }
@@ -169,7 +169,7 @@ Singleton {
             })
             root.list = [...root.list, newNotifObject]
 
-            if (rule !== "silent" && !root.popupInhibited) {
+            if (rule !== "silent" && (!root.popupInhibited || (root.isCritical(notification) && !(GlobalStates?.sidebarRightOpen ?? false)))) {
                 newNotifObject.popup = true
                 if (notification.expireTimeout !== 0) {
                     newNotifObject.timer = notifTimerComponent.createObject(root, {
