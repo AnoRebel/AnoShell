@@ -184,7 +184,8 @@ ShellRoot {
                             case 9: return comp_displays
                             case 10: return comp_keybinds
                             case 11: return comp_atelier
-                            case 12: return comp_about
+                            case 12: return comp_actions
+                            case 13: return comp_about
                             default: return comp_general
                         }
                     }
@@ -216,5 +217,6 @@ ShellRoot {
     Component { id: comp_displays; DisplaysPage {} }
     Component { id: comp_keybinds; KeybindsPage {} }
     Component { id: comp_atelier; AtelierPage {} }
+    Component { id: comp_actions; ActionsPage {} }
     Component { id: comp_about; AboutPage {} }
 }

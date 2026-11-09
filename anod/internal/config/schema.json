@@ -1,5 +1,6 @@
 {
  "leaves": {
+  "actions.macros": "var",
   "ai.defaultModel": "string",
   "ai.extraModels": "var",
   "ai.models": "var",
@@ -441,6 +442,7 @@
   "vpn.providers": "var"
  },
  "objects": [
+  "actions",
   "ai",
   "altSwitcher",
   "animations",

@@ -27,6 +27,7 @@ ColumnLayout {
     property alias text: input.text
     property alias readOnly: input.readOnly
     property alias echoMode: input.echoMode
+    readonly property alias inputFocused: input.activeFocus
     property string placeholderText: ""
     property var validator: null
     property string iconAction: ""

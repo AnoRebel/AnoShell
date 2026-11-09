@@ -256,6 +256,9 @@
     "width": 280,
     "height": 220
   },
+  "actions": {
+    "macros": []
+  },
   "settings": {
     "showAdvanced": false
   },

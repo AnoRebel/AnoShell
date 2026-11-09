@@ -3479,6 +3479,48 @@
  },
  {
   "page": 11,
+  "card": "Wallhaven",
+  "label": "Wallhaven",
+  "sublabel": "Search wallhaven.cc and install a wallpaper into your wallpaper folder (atelier/). Safe-for-work only unless your Wallhaven key is set.",
+  "keys": [
+   "background.wallhaven"
+  ]
+ },
+ {
+  "page": 11,
+  "card": "Your setup",
+  "label": "Your setup",
+  "sublabel": "Undo the last rice, or save what you have now as one",
+  "keys": []
+ },
+ {
+  "page": 11,
+  "card": "Catalogs",
+  "label": "Catalogs",
+  "sublabel": "Online lists of themes, pieces and more. Anyone can publish one: add only those you trust",
+  "keys": [
+   "atelier.catalogs"
+  ]
+ },
+ {
+  "page": 12,
+  "card": "Your actions",
+  "label": "Your actions",
+  "sublabel": "In ring order",
+  "keys": [
+   "actions",
+   "actions.macros"
+  ]
+ },
+ {
+  "page": 12,
+  "card": "${root.current.name}",
+  "label": "${root.current.name}",
+  "sublabel": "Steps run top to bottom; one that fails stops the rest and tells you which",
+  "keys": []
+ },
+ {
+  "page": 13,
   "card": "User Profile",
   "label": "User Profile",
   "sublabel": "Avatar, display name, and account settings",
@@ -3487,7 +3529,7 @@
   ]
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "",
   "label": "Custom avatar path",
   "sublabel": "Override ~/.face with a custom path (leave empty for default)",
@@ -3496,42 +3538,42 @@
   ]
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "Ano Shell",
   "label": "Ano Shell",
   "sublabel": "A comprehensive QuickShell desktop shell",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "System Details",
   "label": "System Details",
   "sublabel": "Runtime environment and paths",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "Features",
   "label": "Features",
   "sublabel": "What this shell can do",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "Credits & Sources",
   "label": "Credits & Sources",
   "sublabel": "Built from patterns across the QuickShell community",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "Presets",
   "label": "Presets",
   "sublabel": "Try a whole setup live, then keep it or go back",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 13,
   "card": "Backup & restore",
   "label": "Backup & restore",
   "sublabel": "Your settings, themes, widgets and data in an archive; restore all of it or some",
