@@ -375,12 +375,30 @@ Item {
         target: root._pairTarget
         function onPairedChanged() {
             const d = root._pairTarget
-            if (d && d.paired) { root._pairTarget = null; d.connect() }
+            if (!d || !d.paired) return
+            root._pairTarget = null
+            // BlueZ keeps the pairing link up for a moment; connect() on it is a
+            // no-op, so wait (up to 15 s) for that link to drop first.
+            if (d.connected) { root._linkDropTarget = d; linkDropTimer.restart() }
+            else d.connect()
         }
         function onPairingChanged() {
             const d = root._pairTarget
             if (d && !d.pairing && !d.paired) { root._pairTarget = null; root.fail(d.address, "Pairing failed") }
         }
+    }
+
+    property var _linkDropTarget: null
+    function _connectAfterPair() {
+        const d = root._linkDropTarget
+        root._linkDropTarget = null
+        linkDropTimer.stop()
+        if (d) d.connect()
+    }
+    Timer { id: linkDropTimer; interval: 15000; onTriggered: root._connectAfterPair() }
+    Connections {
+        target: root._linkDropTarget
+        function onConnectedChanged() { if (!root._linkDropTarget?.connected) root._connectAfterPair() }
     }
 
     function connectNode(id) {
