@@ -138,10 +138,22 @@ Singleton {
         recorder.running = true
         root._audioOnce = false
     }
-    function stop() { if (recorder.running) recorder.signal(2) }  // SIGINT: finalise the file
+    function stop() { if (recorder.running) { recorder.signal(2); stopEscalation.step = 0; stopEscalation.restart() } }  // SIGINT: finalise the file
     // Stop and throw the recording away (to the trash, not deleted).
     property bool _discard: false
-    function discard() { if (recorder.running) { root._discard = true; recorder.signal(2) } }
+    function discard() { if (recorder.running) { root._discard = true; recorder.signal(2); stopEscalation.step = 0; stopEscalation.restart() } }
+    // A recorder that ignores SIGINT (stuck encoder, lost device) gets TERM
+    // after 5 s, then KILL, so "recording" never sticks.
+    Timer {
+        id: stopEscalation
+        property int step: 0
+        interval: 5000
+        onTriggered: {
+            if (!recorder.running) return
+            recorder.signal(step === 0 ? 15 : 9)
+            if (step++ === 0) restart()
+        }
+    }
     function toggle(mode) { if (root.isRecording) root.stop(); else root.start(mode ?? "region") }
 
     Process {
