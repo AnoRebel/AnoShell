@@ -180,6 +180,17 @@ ColumnLayout {
             valueText: Format.formatDuration(value)
         }
 
+        ConfigSlider {
+            label: "Reveal after resting"
+            configKey: "bar.autoHide.revealDelay"
+            sublabel: "How long the pointer rests at the edge before the bar shows (passing over doesn't count)"
+            enabled: Config.options?.bar?.autoHide?.enable ?? false
+            from: 0; to: 800; stepSize: 50
+            value: Config.options?.bar?.autoHide?.revealDelay ?? 150
+            onValueChanged: Config.setNestedValue("bar.autoHide.revealDelay", Math.round(value))
+            valueText: Format.formatDuration(value)
+        }
+
         ConfigSwitch {
             label: "Show background"
             configKey: "bar.showBackground"

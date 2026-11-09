@@ -54,14 +54,31 @@ PanelWindow {
 
     // Auto-hide hover tracking: stays shown for bar.autoHide.delay after the
     // pointer leaves, so brushing past the edge doesn't flicker it away.
-    property bool mustShow: hoverArea.containsMouse || hideDelay.running
+    // A hidden bar shows only once the pointer has rested at the edge for
+    // bar.autoHide.revealDelay (passing over it doesn't count).
+    property bool mustShow: _hoverShown || hideDelay.running
+    property bool _hoverShown: false
     Timer {
         id: hideDelay
         interval: Config.options?.bar?.autoHide?.delay ?? 1000
     }
+    Timer {
+        id: revealRest
+        interval: Config.options?.bar?.autoHide?.revealDelay ?? 150
+        onTriggered: barRoot._hoverShown = hoverArea.containsMouse
+    }
     Connections {
         target: hoverArea
-        function onContainsMouseChanged() { if (!hoverArea.containsMouse) hideDelay.restart() }
+        function onContainsMouseChanged() {
+            if (hoverArea.containsMouse) {
+                if (barRoot.effectiveHidden) revealRest.restart()
+                else barRoot._hoverShown = true
+            } else {
+                revealRest.stop()
+                if (barRoot._hoverShown) hideDelay.restart()
+                barRoot._hoverShown = false
+            }
+        }
     }
 
     // Hide the bar while a window is fullscreen on this bar's screen (unless the

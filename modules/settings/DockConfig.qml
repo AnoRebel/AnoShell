@@ -350,7 +350,7 @@ ColumnLayout {
         icon: "tune"
         title: "Behavior"
         subtitle: "Auto-hide, hover reveal, and desktop-only visibility"
-        configKeys: ["dock.pinnedOnStartup", "dock.hoverToReveal", "dock.showOnDesktop"]
+        configKeys: ["dock.pinnedOnStartup", "dock.hoverToReveal", "dock.revealDelay", "dock.showOnDesktop"]
         visible: root.dockEnabled
 
         ConfigSwitch {
@@ -367,6 +367,17 @@ ColumnLayout {
             sublabel: "Show dock when mouse enters the dock edge area"
             checked: Config.options?.dock?.hoverToReveal ?? true
             onCheckedChanged: Config.setNestedValue("dock.hoverToReveal", checked)
+        }
+
+        ConfigSlider {
+            label: "Reveal after resting"
+            configKey: "dock.revealDelay"
+            sublabel: "How long the pointer rests at the edge before the dock shows"
+            enabled: Config.options?.dock?.hoverToReveal ?? true
+            from: 0; to: 800; stepSize: 50
+            value: Config.options?.dock?.revealDelay ?? 150
+            onValueChanged: Config.setNestedValue("dock.revealDelay", Math.round(value))
+            valueText: Format.formatDuration(value)
         }
 
         ConfigSwitch {

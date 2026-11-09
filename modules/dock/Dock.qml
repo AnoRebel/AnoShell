@@ -85,6 +85,22 @@ Scope {
             visible: GlobalStates.shellSettled && !GlobalStates.screenLocked && (Config.options?.dock?.enable ?? false)
 
             readonly property bool hoverToReveal: Config.options?.dock?.hoverToReveal ?? true
+            // Shows once the pointer has rested at the edge for dock.revealDelay
+            // (a pass over it doesn't count); stays while the pointer is on it.
+            property bool _rested: false
+            Timer {
+                id: restTimer
+                interval: Config.options?.dock?.revealDelay ?? 150
+                onTriggered: dockWindow._rested = dockHover.containsMouse
+            }
+            Connections {
+                target: dockHover
+                function onContainsMouseChanged() {
+                    if (!dockHover.containsMouse) { restTimer.stop(); dockWindow._rested = false }
+                    else if (dockWindow.reveal) dockWindow._rested = true
+                    else restTimer.restart()
+                }
+            }
             readonly property bool screenFullscreen: {
                 void CompositorService.fullscreenRevision
                 return CompositorService.hasFullscreenOnScreen(modelData?.name ?? "")
@@ -92,7 +108,7 @@ Scope {
             // Never over a fullscreen window (pinned included: the dock is on
             // the overlay layer and would sit on top of a game).
             property bool reveal: !screenFullscreen && (root.pinned
-                || (hoverToReveal && dockHover.containsMouse)
+                || (hoverToReveal && _rested)
                 || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated))
 
             color: "transparent"

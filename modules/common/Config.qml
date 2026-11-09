@@ -885,6 +885,9 @@ Singleton {
                 property JsonObject autoHide: JsonObject {
                     property bool enable: false
                     property int delay: 1000 // ms
+                    // The pointer must rest this long at the edge before the
+                    // bar shows (brushing past it, e.g. to browser tabs, doesn't).
+                    property int revealDelay: 150 // ms
                 }
 
                 property JsonObject workspaces: JsonObject {
@@ -1478,6 +1481,7 @@ Singleton {
                 property int iconSize: 40
                 property bool pinnedOnStartup: false
                 property bool hoverToReveal: true
+                property int revealDelay: 150 // ms the pointer rests at the edge before it shows
                 property bool showOnDesktop: true
                 property var screenList: []
                 property var pinnedApps: ["kitty", "nemo", "zen-browser", "brave-browser"]
