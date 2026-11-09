@@ -127,9 +127,20 @@ Right-click a piece, press **Edit on the desktop** in Settings, or run
 `qs ipc call pieces edit`. The layer comes above your windows and shows the
 grid:
 
-- drag a card to move it, its corner to resize it; it snaps to whole cells
-  when you let go, and springs back if the spot is outside the grid or taken
-  (or smaller than the piece's `minSize`);
+- drag a card to move it: a shape under it shows where it will land, the
+  cell you let go on or, when that's taken, the nearest free spot it fits
+  (it springs back only when the page has no room for it);
+- drag its corner to resize it: the pieces it grows into are pushed right or
+  down just far enough (pushing the next one on in turn), and one that hits
+  the edge goes to the nearest free spot. You see them move while you drag.
+  When nothing more fits, the size stops at the last one that did (never
+  under the piece's `minSize`);
+- keys: click a card (or press Tab) to select it; the arrows move it a cell,
+  pushing what's in the way, and Shift+arrows resize it from its bottom-right
+  corner. The layer takes the keyboard once you click on it;
+- every move and resize can be undone from the toast (or
+  `qs ipc call undo last`) for a few seconds, as long as the page hasn't
+  changed since;
 - **×** removes it, **⚙** opens its settings (from its manifest);
 - the toolbar adds a piece (at the first free spot), adds or removes a page,
   and **Done** leaves; so does Escape (or `qs ipc call pieces done`).
@@ -212,3 +223,15 @@ keep working.
 `qs ipc call pieces add <id>` puts one on the focused screen's shown page
 (what the Atelier's **Add to desktop** does from the standalone Settings
 window); `qs ipc call pieces grid` shows each screen's grid.
+
+For scripts, columns and rows count from 1:
+
+- `qs ipc call pieces place <id> <col> <row>` puts a piece on the focused
+  screen's shown page at that cell, or the free spot nearest it, and prints
+  its uid;
+- `qs ipc call pieces move <uid> <col> <row>` moves a placed piece (on any
+  screen and page; the uids are in `pieces.screens`) the same way, with Undo.
+
+The arranging itself (nearest free spot, pushing, the resize limit) is in
+`services/piecesArrange.js`; `node scripts/dev/test-pieces-arrange.js`
+checks it.

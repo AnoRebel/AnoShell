@@ -8,6 +8,7 @@ import Quickshell.Io
 import qs.modules.common
 import qs.services
 import "undoLogic.js" as UndoLogic
+import "piecesArrange.js" as Arrange
 
 /**
  * Pieces: the desktop widget registry (spec desktop-pieces). A piece is a
@@ -189,11 +190,11 @@ Singleton {
     function removePage(screenName: string, page: int): void {
         const l = root.layoutOf(screenName)
         const pages = l.pages.length <= 1 ? [[]] : l.pages.filter((_, i) => i !== page)
-        root._removeWithUndo(screenName, l, { page: Math.min(l.page, pages.length - 1), pages }, "Removed a desktop page", page)
+        root._saveWithUndo(screenName, l, { page: Math.min(l.page, pages.length - 1), pages }, "Removed a desktop page", page)
     }
     // Saves `after`; Undo puts `before`'s pages back, but only while the
-    // layout is still exactly what the removal left (else it says it can't).
-    function _removeWithUndo(screenName, before, after, label, page) {
+    // layout is still exactly what the change left (else it says it can't).
+    function _saveWithUndo(screenName, before, after, label, page) {
         if (UndoLogic.same(before.pages, after.pages)) return
         root._save(screenName, after)
         Undo.push({ label, restore: () => {
@@ -204,42 +205,64 @@ Singleton {
     // Places a piece on the shown page at the first free spot of a grid of
     // cols × rows cells; false when it doesn't fit.
     function add(screenName: string, id: string, cols: int, rows: int): bool {
+        return root.addAt(screenName, id, cols, rows, -1, -1) !== ""
+    }
+    // The same at the free spot nearest cell x, y (x < 0: the first free
+    // one); the new piece's uid, "" when it doesn't fit.
+    function addAt(screenName: string, id: string, cols: int, rows: int, x: int, y: int): string {
         const e = root.entries[id]
-        if (!e || !root.usable(id)) return false
+        if (!e || !root.usable(id)) return ""
         const l = root.layoutOf(screenName)
-        const page = l.pages[l.page]
+        const page = Array.from(l.pages[l.page])
         const w = Math.min(e.size.w, cols), h = Math.min(e.size.h, rows)
-        const spot = root.freeSpot(page, w, h, cols, rows)
-        if (!spot) return false
+        const spot = x < 0 ? root.freeSpot(page, w, h, cols, rows) : Arrange.nearestFree(page, w, h, cols, rows, x, y)
+        if (!spot) return ""
         const uid = `${id}-${Date.now().toString(36)}`
         const pages = l.pages.slice()
         pages[l.page] = page.concat([{ uid, id, x: spot.x, y: spot.y, w, h, settings: {} }])
         root._save(screenName, { page: l.page, pages })
-        return true
+        return uid
     }
     function remove(screenName: string, uid: string): void {
         const l = root.layoutOf(screenName)
         // (pages can be QML sequences, which flat() doesn't open: spread them)
         const name = root.entries[[].concat(...l.pages.map(p => Array.from(p))).find(w => w.uid === uid)?.id]?.name ?? "a piece"
-        root._removeWithUndo(screenName, l, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) }, `Removed ${name}`)
+        root._saveWithUndo(screenName, l, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) }, `Removed ${name}`)
     }
-    // Moves/resizes a placed piece if the spot is inside the grid and free
-    // (and the size within the manifest's minimum); false otherwise.
-    function place(screenName: string, uid: string, x: int, y: int, w: int, h: int, cols: int, rows: int): bool {
+    // How moving or resizing a placed piece would leave its page (a new
+    // page list), or null when it can't (services/piecesArrange.js):
+    //   "drop"   to cell a, b, or the free spot nearest it (a drag);
+    //   "push"   to cell a, b, shifting what's in the way the same way (keys);
+    //   "resize" to a × b cells, top-left kept, pushing neighbours right and
+    //            down; stops at the last size that fits, never under minSize.
+    function plan(screenName: string, uid: string, mode: string, a: int, b: int, cols: int, rows: int): var {
         const l = root.layoutOf(screenName)
-        const page = l.pages[l.page]
+        const pi = l.pages.findIndex(p => Array.from(p).some(o => o.uid === uid))
+        if (pi < 0) return null
+        const page = Array.from(l.pages[pi])
         const me = page.find(o => o.uid === uid)
-        if (!me) return false
         const min = root.entries[me.id]?.minSize ?? { w: 1, h: 1 }
-        if (w < min.w || h < min.h || x < 0 || y < 0 || x + w > cols || y + h > rows) return false
-        const others = page.filter(o => o.uid !== uid)
-        if (others.some(o => x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y)) return false
-        if (me.x === x && me.y === y && me.w === w && me.h === h) return true
+        if (mode === "resize") return Arrange.resize(page, uid, Math.max(min.w, a), Math.max(min.h, b), cols, rows)
+        const rect = { x: a, y: b, w: me.w, h: me.h }
+        if (mode === "push") return Arrange.push(page, uid, rect, cols, rows, { dx: Math.sign(a - me.x), dy: Math.sign(b - me.y) })
+        return Arrange.drop(page, uid, rect, cols, rows)
+    }
+    // Does what plan() shows and offers Undo; false when it can't.
+    function place(screenName: string, uid: string, mode: string, a: int, b: int, cols: int, rows: int): bool {
+        const after = root.plan(screenName, uid, mode, a, b, cols, rows)
+        if (!after) return false
+        const l = root.layoutOf(screenName)
+        const pi = l.pages.findIndex(p => Array.from(p).some(o => o.uid === uid))
         const pages = l.pages.slice()
-        pages[l.page] = page.map(o => o.uid === uid ? Object.assign({}, o, { x, y, w, h }) : o)
-        root._save(screenName, { page: l.page, pages })
+        pages[pi] = after
+        const name = root.entries[after.find(o => o.uid === uid).id]?.name ?? "a piece"
+        root._saveWithUndo(screenName, l, { page: l.page, pages }, `${mode === "resize" ? "Resized" : "Moved"} ${name}`)
         return true
     }
+    // While a piece is dragged in edit mode: { screen, uid, page } (the page
+    // as it would land), so the neighbours show where they'd be pushed.
+    property var preview: null
+    onEditingChanged: if (!root.editing) root.preview = null
     function setSetting(screenName: string, uid: string, key: string, value): void {
         const l = root.layoutOf(screenName)
         root._save(screenName, { page: l.page, pages: l.pages.map(p => p.map(o => {
@@ -283,6 +306,24 @@ Singleton {
             if (!root.entries[id]) return `no piece "${id}"`
             if (!g) return `no desktop layer on ${scr}`
             return root.add(scr, id, g.cols, g.rows) ? "ok" : "no free spot on this page"
+        }
+        // Puts a piece on the focused screen's shown page at the free spot
+        // nearest column col, row row (from 1): its uid (for move), or why not.
+        function place(id: string, col: int, row: int): string {
+            const scr = CompositorService.focusedMonitorName, g = root.grids[scr]
+            if (!(Config.options?.pieces?.enable ?? false)) return "pieces are off"
+            if (!root.entries[id]) return `no piece "${id}"`
+            if (!g) return `no desktop layer on ${scr}`
+            return root.addAt(scr, id, g.cols, g.rows, Math.max(0, col - 1), Math.max(0, row - 1)) || "no free spot on this page"
+        }
+        // Moves a placed piece (its uid, from place or pieces.screens) to
+        // column col, row row (from 1), or the free spot nearest it; Undo is offered.
+        function move(uid: string, col: int, row: int): string {
+            const scr = Object.keys(root.screens).find(s => root.layoutOf(s).pages.some(p => Array.from(p).some(o => o.uid === uid)))
+            if (!scr) return `no placed piece "${uid}"`
+            const g = root.grids[scr]
+            if (!g) return `no desktop layer on ${scr}`
+            return root.place(scr, uid, "drop", col - 1, row - 1, g.cols, g.rows) ? "ok" : "no free spot on that page"
         }
         // The grid per screen and the focused screen (what placing from the Atelier uses).
         // Remove the first placed piece of this id on the focused screen's
