@@ -20,6 +20,7 @@ node scripts/dev/test-wallpaper-deck.js
 node scripts/dev/test-generic-model.js    # compositor backends' parsing
 node scripts/dev/test-sway-model.js
 node scripts/dev/test-mango-model.js
+node scripts/dev/test-pieces-logic.js     # world clock zones, palette layout
 cd anod && go vet ./... && go test ./...
 ```
 

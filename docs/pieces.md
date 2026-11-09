@@ -47,9 +47,15 @@ tiled windows are); the window hides them, but their timers keep running.
 | Clock faces | Zen, Plain, Terminal or Cosmos: clocks from dhrruvsharma's dotfiles (GPL-3.0) in your colours and time format, scaled to the piece | face |
 | Day progress | how far through the day, week, month and year, as bars | week start |
 | News | headlines from Google News RSS (no key; personal use under Google's terms), opened in the browser on click; refreshed every 30 minutes. The local feed sends the place you type to Google | top / topic / local, place, country, language |
+| Lyrics | synced lyrics of the playing track, the current line in the middle and emphasised; click a line to seek. Needs Settings → Services → Lyrics; says so when it's off, nothing plays, or the track has none | title and artist |
+| World clock | the time in several places, with the difference, +1/−1 when it's another day there, and a day/twilight/night icon. One column per place when wide, a row each otherwise | places (`Area/City=Label`, comma-separated; empty: the Clock panel's world clocks) |
+| Palette | the Material colours made from your wallpaper as swatches: a row per family when roomy, the key colours when small. Click one to copy its hex | hex on the swatches |
+| Screen time | today's total and top apps as bars, as many as fit; the last 7 days when tall (the sidebar's screen time card). Needs screen time on (Settings → Sidebars) and anod | last 7 days |
 
 The to-do and timer pieces keep their service running while they're placed,
-even with the sidebar's to-do or Pomodoro turned off.
+even with the sidebar's to-do or Pomodoro turned off. The lyrics piece only
+looks lyrics up while the desktop can be seen; the world clock's offsets come
+from the Clock panel's service (`date` per zone, checked hourly for DST).
 
 ## Bioma organisms
 
@@ -89,6 +95,8 @@ piece. Memory: the layer and registry add about 50 MB; each piece a few MB.
 |---|---|---|
 | AnoShell clock (seconds on) | 0.5% | once a second |
 | AnoShell clock, profile, weather, to-do, calendar, timer (stopped), news | ~0% | no (news: one curl every 30 min) |
+| World clock, palette, screen time | not measured yet; nothing of their own ticks (the world clock follows the Clock service's minute) | no |
+| Lyrics | not measured yet | the current line, while a track with lyrics plays |
 | Bioma clock | 0.6% | second hand, once a second |
 | Bioma weather, photoperiod, agenda, calendar, adipose, sediment, rings, note | 0–1% | no |
 | Bioma nucleus | 0.4% (more while charging) | while the battery changes |
