@@ -3,46 +3,53 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Networking
 import QtQuick
 import qs.modules.common
 import qs.services.network
 import "root:services/network/NetLinks.js" as NetLinks
 
 /**
- * Network service using nmcli. WiFi scanning, connecting, password management,
- * status monitoring, signal strength tracking, and a hotspot toggle.
- * Also the non-Wi-Fi links (ethernet, USB/Bluetooth tethering, mobile
- * broadband) and which one carries the default route (NetLinks.js).
+ * Network service. Wi-Fi state (radio, status, connected network, signal,
+ * the network list, hotspot mode) is read live from Quickshell.Networking
+ * (NetworkManager over D-Bus); actions, scans, the hotspot toggle, VPN
+ * profiles and the non-Wi-Fi links (ethernet, USB/Bluetooth tethering,
+ * mobile broadband, which one carries the default route, NetLinks.js) use
+ * nmcli. `nmcli monitor` only refreshes the nmcli lists a line concerns
+ * (NetLinks.monitorScope), so Wi-Fi and container churn spawn nothing.
  */
 Singleton {
     id: root
 
-    property bool wifi: true
+    // The first Wi-Fi device (Quickshell.Networking WifiDevice), or null.
+    readonly property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
+    readonly property var wifiIfaces: Networking.devices.values.filter(d => d.type === DeviceType.Wifi).map(d => d.name)
+
+    property bool wifi: wifiStatus === "connected"
     // A real wired link (ethernet or USB tether) is up; containers, VMs,
     // bridges and tunnels don't count (NetLinks.isVirtual).
     readonly property bool ethernet: links.some(l => l.connected && (l.kind === "ethernet" || l.kind === "usb"))
     // [{ device, iface, kind, icon, title, state, connected, ip, primary }]:
     // usable non-Wi-Fi links, the one carrying traffic first. Refreshed on
-    // `nmcli monitor` events with the rest of the status.
+    // `nmcli monitor` events about a non-Wi-Fi device or the primary connection.
     property var links: []
     readonly property var primaryLink: links.find(l => l.primary) ?? null
     property string linkBusy: ""      // device a connect/disconnect is running on
     property string linkError: ""     // last failure, "<device>: <nmcli message>"
     // NetworkManager VPN and WireGuard profiles: [{ name, uuid, type, state, active }]
-    // (NetLinks.vpns), refreshed with the rest on `nmcli monitor` events.
+    // (NetLinks.vpns), refreshed on `nmcli monitor` profile / tunnel events.
     property var vpnConnections: []
     readonly property var activeVpn: vpnConnections.find(v => v.active) ?? null
     property string vpnBusy: ""       // uuid an up/down is running on
     property string vpnError: ""      // last failure, "<name>: <nmcli message>"
-    property bool wifiEnabled: false
+    property bool wifiEnabled: Networking.wifiEnabled
     property bool wifiScanning: false
     property bool wifiConnecting: connectProc.running
     property WifiAccessPoint wifiConnectTarget
 
-    // Hotspot — detected by polling `nmcli -t -f NAME,TYPE,DEVICE c show --active`
-    // for a row of type `802-11-wireless` whose name is the configured SSID.
+    // Hotspot — on while the Wi-Fi device runs in access-point mode.
     // Toggled via nmcli device wifi hotspot / nmcli connection down.
-    property bool hotspotActive: false
+    property bool hotspotActive: wifiDevice?.mode === WifiDeviceMode.AccessPoint
     property bool hotspotBusy: hotspotToggleProc.running
     // Replaced as a whole on each scan (never edited in place), so no binding
     // sees an entry that is being destroyed.
@@ -53,9 +60,19 @@ Singleton {
         if (!a.active && b.active) return 1
         return b.strength - a.strength
     })
-    property string wifiStatus: "disconnected"
-    property string networkName: ""
-    property int networkStrength
+    // "connected" | "limited" (connected, no internet) | "connecting" | "disabled" | "disconnected"
+    property string wifiStatus: {
+        const d = root.wifiDevice
+        if (!d) return "disconnected"
+        if (!Networking.wifiEnabled || !Networking.wifiHardwareEnabled) return "disabled"
+        if (d.state === ConnectionState.Connected)
+            return Networking.connectivity === NetworkConnectivity.Limited ? "limited" : "connected"
+        if (d.state === ConnectionState.Connecting) return "connecting"
+        return "disconnected"
+    }
+    // The connected Wi-Fi network, else the link carrying traffic.
+    property string networkName: active?.ssid ?? primaryLink?.title ?? ""
+    property int networkStrength: active?.strength ?? 0
 
     property string materialSymbol: root.primaryLink
         ? root.primaryLink.icon
@@ -210,26 +227,7 @@ Singleton {
         hotspotToggleProc.running = true
     }
 
-    Process {
-        id: hotspotToggleProc
-        onExited: (_, __) => hotspotPollProc.running = true
-    }
-    Process {
-        id: hotspotPollProc
-        // Look for an active connection of type 802-11-wireless whose name
-        // looks like a hotspot. Matches the default "Hotspot" name and any
-        // connection with the configured SSID.
-        command: ["bash", "-c",
-            "nmcli -t -f NAME,TYPE,DEVICE c show --active 2>/dev/null | " +
-            "awk -F: '$2 == \"802-11-wireless\" { print $1 }'"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const ssid = (Config.options?.network?.hotspot?.ssid ?? "").trim() || "AnoHotspot"
-                const lines = (this.text || "").split("\n").map(l => l.trim()).filter(l => l)
-                root.hotspotActive = lines.some(l => l === "Hotspot" || l === ssid)
-            }
-        }
-    }
+    Process { id: hotspotToggleProc }
 
     function changePassword(network, password, username = ""): void {
         network.askingPassword = false
@@ -244,7 +242,6 @@ Singleton {
     Process {
         id: connectProc
         environment: ({ LANG: "C", LC_ALL: "C" })
-        stdout: SplitParser { onRead: line => { getNetworks.running = true } }
         stderr: SplitParser {
             onRead: line => {
                 if (line.includes("Secrets were required") && root.wifiConnectTarget) root.wifiConnectTarget.askingPassword = true
@@ -256,27 +253,92 @@ Singleton {
         }
     }
 
-    Process { id: disconnectProc; stdout: SplitParser { onRead: getNetworks.running = true } }
-    Process { id: forgetProc; stdout: SplitParser { onRead: getNetworks.running = true } }
+    // The network list is live (Quickshell.Networking): no refresh after these.
+    Process { id: disconnectProc }
+    Process { id: forgetProc }
     Process {
         id: changePasswordProc
         onExited: { connectProc.running = false; connectProc.running = true }
     }
+    // A real scan; NetworkManager then updates the live list. Its output
+    // also refreshes the BSSID / frequency details.
     Process {
         id: rescanProcess
-        command: ["nmcli", "dev", "wifi", "list", "--rescan", "yes"]
-        stdout: SplitParser { onRead: { wifiScanning = false; getNetworks.running = true } }
+        command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID", "d", "w", "list", "--rescan", "yes"]
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stdout: StdioCollector { onStreamFinished: root._apExtra = root._parseApList(text) }
+        onExited: root.wifiScanning = false
     }
 
-    // Status monitoring
-    function update() {
-        updateConnectionType.startCheck()
-        wifiStatusProcess.running = true
-        updateNetworkName.running = true
-        updateNetworkStrength.running = true
-        linksProc.running = true
-        vpnProc.running = true
+    // ── Wi-Fi network list (Quickshell.Networking) ──────────────────────
+    // Visible networks only (NetworkManager also lists saved ones that are
+    // out of range, at 0 %). Keyed on the SSID set, so a signal change
+    // doesn't rebuild the list (a QML string property only notifies on a
+    // real change).
+    readonly property string _visibleKey: (wifiDevice?.networks.values ?? [])
+        .filter(n => n.name && (n.signalStrength > 0 || n.connected)).map(n => n.name).join("\n")
+    on_VisibleKeyChanged: _rebuildNetworks()
+    // Also when the model's objects change under the same names, so no
+    // entry keeps a destroyed WifiNetwork.
+    Connections {
+        target: root.wifiDevice?.networks ?? null
+        function onValuesChanged() { root._rebuildNetworks() }
     }
+
+    // { ssid: { bssid, frequency } } from the cached `nmcli d w list`: the
+    // only Wi-Fi fields Quickshell.Networking doesn't have. Read at startup,
+    // on every scan and when the connected network changes.
+    property var _apExtra: ({})
+    readonly property string _activeSsid: active?.ssid ?? ""
+    on_ActiveSsidChanged: apInfoProc.running = true
+
+    function _rebuildNetworks(): void {
+        const nets = (wifiDevice?.networks.values ?? []).filter(n => n.name && (n.signalStrength > 0 || n.connected))
+        const old = Array.from(root.wifiNetworks)
+        const next = []
+        for (const n of nets) {
+            if (next.some(a => a.ssid === n.name)) continue
+            const match = old.find(a => a.ssid === n.name)
+            if (match) { match.network = n; next.push(match) }
+            else {
+                const ssid = n.name
+                next.push(apComp.createObject(root, { ssid: ssid, network: n, extra: Qt.binding(() => root._apExtra[ssid] ?? {}) }))
+            }
+        }
+        if (next.length === old.length && next.every((a, i) => a === old[i])) return
+        const gone = old.filter(a => !next.includes(a))
+        // Replaced as a whole, never edited in place.
+        root.wifiNetworks = next
+        // Destroyed once nothing lists them any more.
+        Qt.callLater(() => gone.forEach(a => a.destroy()))
+    }
+
+    // `nmcli -g ACTIVE,SIGNAL,FREQ,SSID,BSSID d w list` → { ssid: { bssid, frequency } },
+    // the active (else strongest) access point per SSID. `-g` escapes ":" as "\:".
+    function _parseApList(text: string): var {
+        const out = {}, best = {}
+        for (const line of text.trim().split("\n")) {
+            const f = line.replace(/\\:/g, "\u0001").split(":").map(x => x.replace(/\u0001/g, ":"))
+            if (f.length < 5 || !f[3]) continue
+            const ap = { active: f[0] === "yes", strength: parseInt(f[1]) || 0, frequency: parseInt(f[2]) || 0, bssid: f[4] }
+            const cur = best[f[3]]
+            if (!cur || (ap.active && !cur.active) || (!ap.active && !cur.active && ap.strength > cur.strength)) best[f[3]] = ap
+        }
+        for (const ssid in best) out[ssid] = { bssid: best[ssid].bssid, frequency: best[ssid].frequency }
+        return out
+    }
+
+    Process {
+        id: apInfoProc
+        running: true
+        command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID", "d", "w", "list", "--rescan", "no"]
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stdout: StdioCollector { onStreamFinished: root._apExtra = root._parseApList(text) }
+    }
+
+    Component { id: apComp; WifiAccessPoint {} }
+
+    // ── nmcli-backed lists: links (NetLinks.parse) and VPN profiles ─────
 
     // One nmcli read of every device plus the default route, parsed in
     // NetLinks.js. A constant script: nothing is interpolated into it.
@@ -294,115 +356,33 @@ Singleton {
         }
     }
 
-    // `nmcli monitor` prints events in bursts; each refresh spawns several
-    // nmcli queries, so coalesce a burst into one refresh (hotspot included).
-    // Also runs once at startup. (Replaces a 5 s hotspot poll.)
+    // `nmcli monitor` prints events in bursts; a burst is coalesced into one
+    // refresh of only the lists its lines concern (NetLinks.monitorScope).
+    property bool _linksDirty: false
+    property bool _vpnDirty: false
     Timer {
         id: updateDebounce
         interval: 300
-        running: true
-        onTriggered: { root.update(); hotspotPollProc.running = true }
+        onTriggered: {
+            if (root._linksDirty) linksProc.running = true
+            if (root._vpnDirty) vpnProc.running = true
+            root._linksDirty = root._vpnDirty = false
+        }
     }
 
     Process {
         id: subscriber
         running: true
         command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
-        stdout: SplitParser { onRead: updateDebounce.restart() }
-    }
-
-    Process {
-        id: updateConnectionType
-        property string buffer
-        command: ["sh", "-c", "nmcli -t -f TYPE,STATE d status && nmcli -t -f CONNECTIVITY g"]
-        running: true
-        function startCheck() { buffer = ""; updateConnectionType.running = true }
-        stdout: SplitParser { onRead: data => { updateConnectionType.buffer += data + "\n" } }
-        onExited: (exitCode, exitStatus) => {
-            const lines = updateConnectionType.buffer.trim().split('\n')
-            const connectivity = lines.pop()
-            let hasWifi = false; let ws = "disconnected"
-            lines.forEach(line => {
-                if (line.includes("wifi:")) {
-                    if (line.includes("disconnected")) ws = "disconnected"
-                    else if (line.includes("connected")) { hasWifi = true; ws = "connected"; if (connectivity === "limited") { hasWifi = false; ws = "limited" } }
-                    else if (line.includes("connecting")) ws = "connecting"
-                    else if (line.includes("unavailable")) ws = "disabled"
-                }
-            })
-            root.wifiStatus = ws; root.wifi = hasWifi
-        }
-    }
-
-    Process {
-        id: updateNetworkName
-        command: ["sh", "-c", "nmcli -t -f NAME c show --active | head -1"]
-        running: true
-        stdout: SplitParser { onRead: data => { root.networkName = data } }
-    }
-
-    Process {
-        id: updateNetworkStrength
-        running: true
-        command: ["sh", "-c", "nmcli -f IN-USE,SIGNAL,SSID device wifi list --rescan no | awk '/^\\*/{if (NR!=1) {print $2}}'"]
-        stdout: SplitParser { onRead: data => { root.networkStrength = parseInt(data) } }
-    }
-
-    Process {
-        id: wifiStatusProcess
-        command: ["nmcli", "radio", "wifi"]
-        Component.onCompleted: running = true
         environment: ({ LANG: "C", LC_ALL: "C" })
-        stdout: StdioCollector { onStreamFinished: { root.wifiEnabled = text.trim() === "enabled" } }
-    }
-
-    Process {
-        id: getNetworks
-        running: true
-        command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w", "list", "--rescan", "no"] // the cached list: scans happen on request (rescanProcess)
-        environment: ({ LANG: "C", LC_ALL: "C" })
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const PLACEHOLDER = "STRINGWHICHHOPEFULLYWONTBEUSED"
-                const rep = new RegExp("\\\\:", "g")
-                const rep2 = new RegExp(PLACEHOLDER, "g")
-
-                const allNetworks = text.trim().split("\n").map(n => {
-                    const net = n.replace(rep, PLACEHOLDER).split(":")
-                    return {
-                        active: net[0] === "yes", strength: parseInt(net[1]),
-                        frequency: parseInt(net[2]), ssid: (net[3] ?? "").replace(rep2, ":"),
-                        bssid: net[4]?.replace(rep2, ":") ?? "", security: net[5] || ""
-                    }
-                }).filter(n => n.ssid && n.ssid.length > 0)
-
-                const networkMap = new Map()
-                for (const network of allNetworks) {
-                    const existing = networkMap.get(network.ssid)
-                    if (!existing) networkMap.set(network.ssid, network)
-                    else if (network.active && !existing.active) networkMap.set(network.ssid, network)
-                    else if (!network.active && !existing.active && network.strength > existing.strength) networkMap.set(network.ssid, network)
-                }
-
-                const wifiNetworks = Array.from(networkMap.values())
-                const old = Array.from(root.wifiNetworks)
-                // One entry per SSID (the map's key): matching on the BSSID too made a
-                // new object (and destroyed the one being connected to) when the
-                // strongest or active access point changed.
-                const same = (a, b) => a.ssid === b.ssid
-                const next = []
-                for (const network of wifiNetworks) {
-                    const match = old.find(n => same(n, network))
-                    if (match) { match.lastIpcObject = network; next.push(match) }
-                    else next.push(apComp.createObject(root, { lastIpcObject: network }))
-                }
-                const gone = old.filter(n => !next.includes(n))
-                root.wifiNetworks = next
-                // Destroyed once nothing lists them any more.
-                Qt.callLater(() => gone.forEach(n => n.destroy()))
+        stdout: SplitParser {
+            onRead: line => {
+                const s = NetLinks.monitorScope(line, root.wifiIfaces)
+                if (!s.links && !s.vpn) return
+                if (s.links) root._linksDirty = true
+                if (s.vpn) root._vpnDirty = true
+                updateDebounce.restart()
             }
         }
     }
-
-    Component { id: apComp; WifiAccessPoint {} }
 }

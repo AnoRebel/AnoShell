@@ -2,7 +2,7 @@
 // network panels list). Run: node scripts/dev/test-net-links.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/network/NetLinks.js'), 'utf8').replace('.pragma library', '')
-const N = new Function(src + ';return {parse, isVirtual, primaryIface, vpns};')()
+const N = new Function(src + ';return {parse, isVirtual, primaryIface, vpns, monitorScope};')()
 const a = (c, m) => { if (!c) throw new Error(m) }
 
 const dev = (d, type, state, conn, iface, driver, product, ip) =>
@@ -61,4 +61,27 @@ const vp = N.vpns([
 a(vp.map(v => v.name).join('|') === 'Office: VPN|wg-home|NetBird', 'vpn + wireguard only, up first, escapes undone: ' + vp.map(v => v.name))
 a(vp[1].active && vp[1].type === 'wireguard' && !vp[0].active && vp[0].state === 'activating' && vp[2].uuid === '896f00ed', 'state and uuid')
 a(N.vpns('').length === 0, 'no profiles')
+
+// `nmcli monitor` lines → which nmcli lists need a refresh
+const sc = (line) => { const s = N.monitorScope(line, ['wlp0s20f3']); return (s.links ? 'L' : '') + (s.vpn ? 'V' : '') }
+for (const [line, want] of [
+    ['wlp0s20f3: connecting (configuring)', ''],
+    ['wlp0s20f3: using connection \'Rebels\'', ''],
+    ['p2p-dev-wlp0s20f3: disconnected', ''],
+    ['Connectivity is now \'full\'', ''],
+    ['NetworkManager is now in the \'connected\' state', ''],
+    ['veth15d98b7: unmanaged', ''],
+    ['br-09d1652257f3: connected (externally)', ''],
+    ['vethb24106a: device removed', ''],
+    ['enp3s0: connected', 'L'],
+    ['AA:BB:CC:DD:EE:FF: disconnected', 'L'],
+    ['\'Rebels\' is now the primary connection', 'L'],
+    ['There\'s no primary connection', 'L'],
+    ['wg0: connected', 'V'],
+    ['tun0: device created', 'V'],
+    ['Office WiFi: connection profile changed', 'V'],
+    ['my:vpn: connection profile removed', 'V'],
+    ['NetworkManager is running', 'LV'],
+    ['', ''],
+]) a(sc(line) === want, `monitorScope(${JSON.stringify(line)}) = ${sc(line)}, want ${want}`)
 console.log('net links ok')
