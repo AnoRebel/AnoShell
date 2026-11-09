@@ -5,7 +5,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.modules.common.functions
 import qs.services
+import "hyprperf.js" as HyprPerf
 
 /**
  * GameMode state and the performance mode it drives.
@@ -23,6 +25,12 @@ import qs.services
  *                  toggle`, the quick toggle; kept in performance.manual)
  *   stopAnimations / stopBlur / stopVisualizers / holdPopups / stopShadows /
  *   hidePieces / slowPolling — what it stops, each switchable (performance.*)
+ *   hyprAnimations / hyprBlur / hyprShadows / hyprGaps / hyprRounding /
+ *   hyprTearing — Hyprland options it turns while it lasts (hyprperf.js):
+ *                  each is read first, only those not already at the
+ *                  performance value are changed, and exactly those are put
+ *                  back after, from a snapshot file that outlives a restart.
+ *                  Nothing on niri or other compositors.
  *
  * gameMode.enable only shows the bar indicator.
  */
@@ -99,6 +107,66 @@ Singleton {
         if (root.triggered) root.refused = true
     }
     function toggle() { root.performance ? root.off() : root.on() }
+
+    // ─── Hyprland levers ──────────────────────────────────────────────────
+    // {option: value while on} for the switched-on levers; {} when off.
+    readonly property bool _hyprOk: Config.ready && CompositorService.isHyprland
+    readonly property var _hyprWant: root._hyprOk && root.performance ? HyprPerf.wanted(root.perf) : ({})
+    readonly property string _hyprWantKey: JSON.stringify(root._hyprWant)
+    on_HyprWantKeyChanged: root._hyprSync()
+    // {option: original value} of what we changed, kept in hyprSnapshot.
+    property var _hyprSnap: ({})
+    property bool _hyprLoaded: false
+    property bool _hyprDirty: false
+
+    function _hyprEval(values) {
+        const call = HyprPerf.configCall(values)
+        if (call) Quickshell.execDetached(["hyprctl", "eval", call])
+    }
+    function _hyprSave(snap) {
+        root._hyprSnap = snap
+        hyprSnapshot.setText(JSON.stringify(snap))
+    }
+    // Put back what's no longer wanted, then read what is but isn't held yet.
+    function _hyprSync() {
+        if (!root._hyprLoaded || !root._hyprOk) return
+        if (hyprRead.running) { root._hyprDirty = true; return }
+        const r = HyprPerf.reconcile(root._hyprSnap, root._hyprWant)
+        root._hyprEval(r.restore)
+        if (Object.keys(r.restore).length > 0) root._hyprSave(r.snapshot)
+        if (r.toRead.length === 0) return
+        // Fixed script; the option names are positional arguments.
+        hyprRead.command = ["sh", "-c", "for o; do echo \"@$o\"; hyprctl getoption \"$o\"; done", "sh"].concat(r.toRead)
+        hyprRead.running = true
+    }
+
+    Process {
+        id: hyprRead
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const t = HyprPerf.take(root._hyprSnap, root._hyprWant, HyprPerf.parse(this.text))
+                if (Object.keys(t.apply).length > 0) {
+                    root._hyprSave(t.snapshot)  // saved before the change, so a crash can't lose it
+                    root._hyprEval(t.apply)
+                }
+                if (root._hyprDirty) { root._hyprDirty = false; Qt.callLater(root._hyprSync) }
+            }
+        }
+    }
+    // A shell restarted while they were changed restores from here once it
+    // knows performance mode is off (or keeps holding them while it's on).
+    FileView {
+        id: hyprSnapshot
+        path: FileUtils.trimFileProtocol(`${Directories.state}/anoshell/performance-hyprland.json`)
+        printErrors: false
+        onLoaded: {
+            try { root._hyprSnap = JSON.parse(hyprSnapshot.text()) || {} } catch (e) { root._hyprSnap = {} }
+            root._hyprLoaded = true
+            root._hyprSync()
+        }
+        onLoadFailed: { root._hyprLoaded = true; root._hyprSync() }
+    }
+    on_HyprOkChanged: root._hyprSync()
 
     // ─── gamemoded watch ──────────────────────────────────────────────────
     property bool _installed: false

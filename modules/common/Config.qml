@@ -1688,6 +1688,14 @@ Singleton {
                 property bool stopShadows: true
                 property bool hidePieces: true
                 property bool slowPolling: true
+                // Hyprland options turned while it lasts and put back after
+                // (services/hyprperf.js); nothing on other compositors.
+                property bool hyprAnimations: true
+                property bool hyprBlur: true
+                property bool hyprShadows: true
+                property bool hyprGaps: false
+                property bool hyprRounding: false
+                property bool hyprTearing: false
                 property int pollInterval: 10000   // ms, resource polling while slowed
                 property var apps: []              // app-id globs (case-insensitive) that turn it on while open
                 property bool manual: false        // turned on by hand (kept across restarts)

@@ -463,7 +463,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | Block | Purpose | Notable keys |
 |---|---|---|
 | `gameMode.enable` | Bar indicator while a game holds GameMode | — |
-| `performance` | Performance mode: what turns it on (`onGameMode` on by default, `onFullscreen`, `apps` globs) and what it pauses | `stopAnimations`, `stopBlur`, `stopVisualizers`, `holdPopups`, `stopShadows`, `hidePieces`, `slowPolling` + `pollInterval`, `manual`; IPC `performance toggle\|on\|off\|status` |
+| `performance` | Performance mode: what turns it on (`onGameMode` on by default, `onFullscreen`, `apps` globs) and what it pauses | `stopAnimations`, `stopBlur`, `stopVisualizers`, `holdPopups`, `stopShadows`, `hidePieces`, `slowPolling` + `pollInterval`, `manual`; Hyprland: `hyprAnimations`, `hyprBlur`, `hyprShadows` (on), `hyprGaps`, `hyprRounding`, `hyprTearing` (off), restored after (docs/extras.md); IPC `performance toggle\|on\|off\|status` |
 | `sounds` | Sound effects: login, notifications, panels, alerts (all off) | `volume`, `alertThreshold`, `alertGap`; IPC `sounds play <name>` |
 | `autostart.entries` | Startup applications anod starts once per login | `[{desktopId \| command, enabled, delayMs}]` |
 | `powerProfiles.restoreOnStart` | Restore last `power-profiles-daemon` profile on shell start | `preferredProfile` (auto-populated when you change profiles) |
@@ -696,6 +696,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Sound effects and battery sounds (`sounds.*`) | `pipewire` (`pw-play`); battery sounds: a sound theme (`sound-theme-freedesktop`) | silence |
 | Startup applications (`autostart.entries`) | anod running; a systemd user manager (`systemd-run`, `systemctl`), else `setsid` (util-linux) | nothing starts at login |
 | Performance mode for listed apps (`performance.apps`) | nothing (the compositor's window list) | — |
+| Performance mode's Hyprland levers (`performance.hypr*`) | Hyprland with the Lua config (`hyprctl getoption`, `hyprctl eval`) | not applied (nothing happens on niri) |
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `dbus` (`dbus-monitor`), `systemd` (`busctl`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 | Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |

@@ -467,7 +467,7 @@ ColumnLayout {
     SettingsCard {
         icon: "speed"
         title: "Performance mode"
-        subtitle: "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre)."
+        subtitle: "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre). On Hyprland it can also turn off the compositor's animations, blur, shadows, gaps and rounding, putting them back as they were after."
         configKeys: ["performance"]
 
         ConfigRow {
@@ -553,6 +553,26 @@ ColumnLayout {
             value: Config.options?.performance?.pollInterval ?? 10000
             onValueChanged: Config.setNestedValue("performance.pollInterval", Math.round(value))
             valueText: `${Math.round(value / 1000)} s`
+        }
+        // Hyprland's own options, put back exactly as they were after (services/hyprperf.js).
+        Repeater {
+            model: CompositorService.isHyprland ? [
+                { key: "hyprAnimations", label: "Hyprland: turn off animations", def: true },
+                { key: "hyprBlur", label: "Hyprland: turn off blur", def: true },
+                { key: "hyprShadows", label: "Hyprland: turn off shadows", def: true },
+                { key: "hyprGaps", label: "Hyprland: no gaps", def: false },
+                { key: "hyprRounding", label: "Hyprland: square corners", def: false },
+                { key: "hyprTearing", label: "Hyprland: allow tearing", def: false,
+                  sub: "Only for windows with an immediate window rule (lower latency, may tear)" }] : []
+            delegate: ConfigSwitch {
+                required property var modelData
+                label: modelData.label
+                sublabel: modelData.sub ?? ""
+                configKey: `performance.${modelData.key}`
+                checked: Config.options?.performance?.[modelData.key] ?? modelData.def
+                onCheckedChanged: if (checked !== (Config.options?.performance?.[modelData.key] ?? modelData.def))
+                    Config.setNestedValue(`performance.${modelData.key}`, checked)
+            }
         }
     }
 

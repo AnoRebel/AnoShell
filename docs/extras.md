@@ -325,6 +325,38 @@ while a game or app holds it, it stays off until they are all gone.
 gamemoded is followed over D-Bus, never polled and never started by the
 shell. Each paused effect has its own switch (`performance.*`).
 
+### Hyprland's own effects
+
+On Hyprland performance mode also turns compositor options while it lasts,
+each with its own switch:
+
+| Key | Hyprland option | While on | Default |
+|---|---|---|---|
+| `hyprAnimations` | `animations:enabled` | `false` | on |
+| `hyprBlur` | `decoration:blur:enabled` | `false` | on |
+| `hyprShadows` | `decoration:shadow:enabled` | `false` | on |
+| `hyprGaps` | `general:gaps_in`, `general:gaps_out` | `0` | off |
+| `hyprRounding` | `decoration:rounding` | `0` | off |
+| `hyprTearing` | `general:allow_tearing` | `true` | off |
+
+Each option is read first (`hyprctl getoption`). Only the ones not already at
+that value are changed (`hyprctl eval 'hl.config({ … })'`), and exactly those
+are put back afterwards, to the values they had. The originals are kept in
+`$XDG_STATE_HOME/anoshell/performance-hyprland.json` before anything changes,
+so a shell that restarts mid-mode puts them back once performance mode is off.
+Turning a switch off while the mode is on puts that option back straight
+away; turning one on takes it from then.
+
+- Tearing only happens for windows with an `immediate` window rule; the option
+  only allows it.
+- Saving `hyprland.lua` (or `hyprctl reload`) during the mode brings your
+  values back early; performance mode doesn't apply them again until it next
+  turns on.
+- The floating-bar gaps of AnoScreen also set `gaps_out`; with `hyprGaps` on,
+  ending the mode puts back the value read when it started.
+- niri and other compositors: nothing is changed (the shell-side levers above
+  still work).
+
 ## Sound effects
 
 All off until you turn them on in Settings → General → Sound effects. Each kind
