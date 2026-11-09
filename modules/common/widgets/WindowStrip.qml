@@ -27,6 +27,8 @@ Item {
     property real maxWidth: 800
     // false: a click only emits activated (a picker choosing a window).
     property bool focusOnTap: true
+    // A middle click closes the window (the dock's previews).
+    property bool closeOnMiddleClick: false
     signal activated(var win)
 
     readonly property int _gap: 8
@@ -113,6 +115,11 @@ Item {
                         if (root.focusOnTap) CompositorService.focusWindow(tile.modelData)
                         root.activated(tile.modelData)
                     }
+                }
+                TapHandler {
+                    enabled: root.closeOnMiddleClick
+                    acceptedButtons: Qt.MiddleButton
+                    onTapped: CompositorService.closeWindow(tile.modelData)
                 }
             }
         }
