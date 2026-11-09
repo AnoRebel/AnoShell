@@ -42,7 +42,15 @@ Scope {
 
         WlrLayershell.namespace: "quickshell:notifPopup"
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        // Keys only while a reply is being typed.
+        property int replyingId: -1
+        Connections {
+            target: Notifications
+            function onPopupListChanged() {
+                if (popupWindow.replyingId !== -1 && !Notifications.popupList.some(n => n.notificationId === popupWindow.replyingId)) popupWindow.replyingId = -1
+            }
+        }
+        WlrLayershell.keyboardFocus: replyingId !== -1 ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         exclusiveZone: 0
         color: "transparent"
 
@@ -251,8 +259,19 @@ Scope {
 
                                 // Actions
                                 RowLayout {
-                                    spacing: 4; visible: (modelData?.actions?.length ?? 0) > 0
+                                    spacing: 4; visible: (modelData?.actions?.length ?? 0) > 0 || (modelData?.canReply ?? false)
                                     Layout.fillWidth: true
+                                    RippleButton {
+                                        visible: (popupDelegate.modelData?.canReply ?? false) && popupWindow.replyingId !== popupDelegate.modelData.notificationId
+                                        buttonText: "Reply"
+                                        buttonRadius: 4; implicitHeight: 24
+                                        colBackground: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                                        onClicked: {
+                                            popupDelegate.modelData.timer?.stop() // stays up while typing
+                                            popupWindow.replyingId = popupDelegate.modelData.notificationId
+                                            Qt.callLater(() => popupReply.focusField())
+                                        }
+                                    }
                                     Repeater {
                                         model: modelData?.actions ?? []
                                         RippleButton {
@@ -263,6 +282,13 @@ Scope {
                                             onClicked: Notifications.attemptInvokeAction(popupDelegate.modelData.notificationId, modelData.identifier)
                                         }
                                     }
+                                }
+                                NotificationReply {
+                                    id: popupReply
+                                    visible: popupWindow.replyingId === popupDelegate.modelData?.notificationId
+                                    placeholder: popupDelegate.modelData?.replyPlaceholder ?? ""
+                                    onSent: text => { popupWindow.replyingId = -1; Notifications.sendReply(popupDelegate.modelData.notificationId, text) }
+                                    onCancelled: { popupWindow.replyingId = -1; popupDelegate.modelData.timer?.restart() }
                                 }
                             }
 

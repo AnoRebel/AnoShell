@@ -22,6 +22,7 @@ Item {
 
     signal dismissed(int notificationId)
     signal actionInvoked(int notificationId, string identifier)
+    property bool replying: false
 
     implicitWidth: parent?.width ?? 360
     implicitHeight: layout.implicitHeight + 16
@@ -103,8 +104,16 @@ Item {
                 // Actions
                 RowLayout {
                     spacing: 4
-                    visible: root.showActions && (!root.compact || root.expanded) && (root.notification?.actions?.length ?? 0) > 0
+                    visible: root.showActions && (!root.compact || root.expanded) && ((root.notification?.actions?.length ?? 0) > 0 || (root.notification?.canReply ?? false))
                     Layout.fillWidth: true
+                    RippleButton {
+                        visible: root.notification?.canReply ?? false
+                        buttonText: "Reply"
+                        buttonRadius: Appearance?.rounding.verysmall ?? 4
+                        implicitHeight: 28
+                        colBackground: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
+                        onClicked: { root.replying = true; Qt.callLater(() => replyField.focusField()) }
+                    }
                     Repeater {
                         model: root.notification?.actions ?? []
                         RippleButton {
@@ -116,6 +125,13 @@ Item {
                             onClicked: root.actionInvoked(root.notification.notificationId, modelData.identifier)
                         }
                     }
+                }
+                NotificationReply {
+                    id: replyField
+                    visible: root.replying && (root.notification?.canReply ?? false)
+                    placeholder: root.notification?.replyPlaceholder ?? ""
+                    onSent: text => { root.replying = false; Notifications.sendReply(root.notification.notificationId, text) }
+                    onCancelled: root.replying = false
                 }
             }
 

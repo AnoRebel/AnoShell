@@ -31,6 +31,10 @@ Singleton {
         property string body: notification?.body ?? ""
         property string image: notification?.image ?? ""
         property string summary: notification?.summary ?? ""
+        // Chat apps can take a typed reply (only while the app still holds
+        // the notification: none after a restart).
+        readonly property bool canReply: notification?.hasInlineReply ?? false
+        readonly property string replyPlaceholder: notification?.inlineReplyPlaceholder ?? ""
         property double time
         property string urgency: notification?.urgency.toString() ?? "normal"
         property Timer timer
@@ -145,6 +149,7 @@ Singleton {
     NotificationServer {
         id: notifServer
         actionsSupported: true
+        inlineReplySupported: true
         bodyHyperlinksSupported: true
         // Inline <img> in body text is not rendered in the compact bar/sidebar
         // popups (a plain Text element can't resolve the img base URL, which
@@ -254,6 +259,13 @@ Singleton {
         root.discardNotification(id)
     }
 
+    // Sends a typed reply to the app and closes the notification.
+    function sendReply(id, text) {
+        const n = notifServer.trackedNotifications.values.find(notif => notif.id + root.idOffset === id)
+        if (n?.hasInlineReply) n.sendInlineReply(text)
+        root.discardNotification(id)
+    }
+
     function triggerListChange() { root.list = root.list.slice(0) }
     function refresh() { notifFileView.reload() }
     Component.onCompleted: refresh()
@@ -295,6 +307,14 @@ Singleton {
         function toggleDnd(): void { root.silent = !root.silent }
         function setDnd(on: bool): void { root.silent = on }
         function clearAll(): void { root.discardAllNotifications() }
+        // Reply to a notification that takes one (id as in `list`).
+        function reply(id: int, text: string): string {
+            const n = root.list.find(x => x.notificationId === id)
+            if (!n?.canReply) return "error: no reply for that notification"
+            root.sendReply(id, text)
+            return "ok"
+        }
+        function list(): string { return JSON.stringify(root.list.map(n => ({ id: n.notificationId, app: n.appName, summary: n.summary, canReply: n.canReply }))) }
         function status(): string { return JSON.stringify({ dnd: root.silent, count: root.list.length, unread: root.unread }) }
     }
 }
