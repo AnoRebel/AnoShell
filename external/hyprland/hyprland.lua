@@ -624,19 +624,14 @@ hl.layer_rule({ match = { namespace = "^quickshell:bar.*" }, blur = true })
 
 -- ─── QuickShell UI toggles ───────────────────────────────────────────────────
 
--- Super tap → toggle search / launcher (QS, rofi fallback). Uses the QS
--- "release" pattern via the global-named dispatcher so a tap releases the
--- shortcut; held Super shows the workspace-number HUD instead.
-hl.bind("SUPER + Super_L", hl.dsp.global("quickshell:searchToggleRelease"), { description = "Toggle search" })
-hl.bind("SUPER + Super_R", hl.dsp.global("quickshell:searchToggleRelease"), { description = "Toggle search" })
-hl.bind(
-	"SUPER + Super_L",
-	hl.dsp.exec_cmd(qs_or("TEST_ALIVE", "", "pkill rofi || rofi -modi run,window,combi,ssh -show drun -show-icons"))
-)
-hl.bind(
-	"SUPER + Super_R",
-	hl.dsp.exec_cmd(qs_or("TEST_ALIVE", "", "pkill rofi || rofi -modi run,window,combi,ssh -show drun -show-icons"))
-)
+-- Super tap → toggle search / launcher (QS, rofi fallback). A native release
+-- bind: Hyprland fires it on Super's release only when nothing else was
+-- pressed with it, so Super+T and friends never open search (0.57+; the old
+-- global-shortcut pattern guessed from timing and misfired on fast combos).
+-- Held Super shows the workspace-number HUD instead.
+local search_tap = hl.dsp.exec_cmd(qs_or("search", "toggle", "pkill rofi || rofi -modi run,window,combi,ssh -show drun -show-icons"))
+hl.bind("SUPER + Super_L", search_tap, { release = true, description = "Toggle search" })
+hl.bind("SUPER + Super_R", search_tap, { release = true, description = "Toggle search" })
 
 -- Cancel the search-release if a modifier combo or click happens while Super is
 -- held. (`catchall` is only valid inside a submap in 0.56; as a global

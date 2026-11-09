@@ -348,8 +348,9 @@ Scope {
         }
     }
 
-    // Super tap toggles search (Hyprland: the bundled binds send
-    // searchToggleRelease on Super, and an interrupt on Ctrl/click combos).
+    // Super tap toggles search. The bundled binds now use a native release
+    // bind (`search toggle` over IPC); these shortcuts stay for older configs
+    // that still send searchToggleRelease, plus an interrupt on Ctrl/click.
     // 0.56 has no global catchall, so a combo is also recognised by its
     // effect: a long hold, or a workspace/focus change while Super was down.
     property bool _superArmed: false

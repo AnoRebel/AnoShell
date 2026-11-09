@@ -6,20 +6,22 @@
       "chord": "Super+Super_L",
       "action": "hyprland",
       "args": [
-        "hl.dsp.global(\"quickshell:searchToggleRelease\")"
+        "hl.dsp.exec_cmd(\"qs -c ano ipc call search toggle\")"
       ],
       "hyprland": {
-        "description": "Toggle search"
+        "description": "Toggle search",
+        "release": true
       }
     },
     {
       "chord": "Super+Super_R",
       "action": "hyprland",
       "args": [
-        "hl.dsp.global(\"quickshell:searchToggleRelease\")"
+        "hl.dsp.exec_cmd(\"qs -c ano ipc call search toggle\")"
       ],
       "hyprland": {
-        "description": "Toggle search"
+        "description": "Toggle search",
+        "release": true
       }
     },
     {
