@@ -33,3 +33,4 @@ PiecesCard 1.0 PiecesCard.qml
 BackupCard 1.0 BackupCard.qml
 AtelierPage 1.0 AtelierPage.qml
 ActionsPage 1.0 ActionsPage.qml
+AutostartCard 1.0 AutostartCard.qml

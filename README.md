@@ -693,7 +693,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Sound effects and battery sounds (`sounds.*`) | `pipewire` (`pw-play`); battery sounds: a sound theme (`sound-theme-freedesktop`) | silence |
 | Startup applications (`autostart.entries`) | anod running; a systemd user manager (`systemd-run`, `systemctl`), else `setsid` (util-linux) | nothing starts at login |
 | Performance mode for listed apps (`performance.apps`) | nothing (the compositor's window list) | — |
-| Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
+| Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `dbus` (`dbus-monitor`), `systemd` (`busctl`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 | Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
 | KDE Connect (`kdeConnect.enable`, off by default; bar module "Phone") | `kdeconnect` with `kdeconnectd` running (the shell doesn't start it; the bundled Hyprland/niri configs do), `systemd` (`busctl`), `glib2` (`gdbus`), `util-linux` (`setpriv`); sending a file: `zenity` | no pill and no phone actions; a hung kdeconnectd shows as not answering |

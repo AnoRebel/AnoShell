@@ -10,10 +10,9 @@ import qs.services
 /**
  * GameMode state and the performance mode it drives.
  *
- * gamemoded is watched over D-Bus (`gdbus monitor`: GameRegistered /
- * ClientCount changes), never polled, and never started by us: its client
- * count is only read once the name already has an owner (a call to an
- * unowned name would D-Bus-activate it).
+ * gamemoded is watched over D-Bus (dbus-monitor match rules on its signals
+ * and its name), never polled, and never started by us: the client count is
+ * read only while the name has an owner.
  *
  *   active       — at least one game holds gamemode
  *   clientCount  — gamemoded's ClientCount
@@ -113,12 +112,9 @@ Singleton {
         onExited: code => root._installed = code === 0
     }
 
+    // Any GameMode signal, or the name appearing/going: read the count again.
     function _onLine(line) {
-        const m = line.match(/'ClientCount': <(\d+)>/)
-        if (m) { root._setCount(parseInt(m[1], 10)); return }
-        if (line.includes("is owned by")) { countProc.running = true; return }
-        // "does not have an owner", or the owner went away
-        if (line.includes("owner")) root._setCount(0)
+        if (line.startsWith("signal ")) countProc.running = true
     }
     function _setCount(n) {
         root.clientCount = n
@@ -129,10 +125,14 @@ Singleton {
         id: monitor
         running: root._wanted
         command: ["setpriv", "--pdeathsig", "TERM", "--",
-            "gdbus", "monitor", "--session", "--dest", "com.feralinteractive.GameMode"]
+            // Match rules, not --dest: `gdbus monitor --dest` D-Bus-activates
+            // gamemoded, starting the daemon just by watching for it.
+            "dbus-monitor", "--session",
+            "type='signal',sender='com.feralinteractive.GameMode'",
+            "type='signal',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='com.feralinteractive.GameMode'"]
         stdout: SplitParser { onRead: line => root._onLine(line) }
         onRunningChanged: {
-            if (running) return
+            if (running) { countProc.running = true; return }
             root._setCount(0)
             if (root._wanted) restart.start()
         }
@@ -143,14 +143,14 @@ Singleton {
 
     Process {
         id: countProc
-        command: ["gdbus", "call", "--session", "--dest", "com.feralinteractive.GameMode",
-            "--object-path", "/com/feralinteractive/GameMode",
-            "--method", "org.freedesktop.DBus.Properties.Get", "com.feralinteractive.GameMode", "ClientCount"]
+        // Only once the name has an owner: any call to it, even busctl's
+        // --auto-start=no get-property, D-Bus-activates gamemoded. Fixed script.
+        command: ["sh", "-c", "busctl --user call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus NameHasOwner s com.feralinteractive.GameMode | grep -q 'b true' && busctl --user get-property com.feralinteractive.GameMode /com/feralinteractive/GameMode com.feralinteractive.GameMode ClientCount"]
         stdout: StdioCollector {
-            // "(<1>,)"
+            // "i 1"; nothing when gamemoded isn't running
             onStreamFinished: {
-                const m = (this.text || "").match(/<(\d+)>/)
-                if (m) root._setCount(parseInt(m[1], 10))
+                const m = (this.text || "").match(/^i (\d+)/)
+                root._setCount(m ? parseInt(m[1], 10) : 0)
             }
         }
     }

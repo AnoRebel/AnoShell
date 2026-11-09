@@ -54,7 +54,7 @@ var features = []feature{
 	{"music recognition", "musicRecognition.enable", []string{"songrec", "pw-record", "notify-send", "wl-copy"}},
 	{"package updates (bar module updates)", "updates.enable", []string{"checkupdates"}},
 	{"EasyEffects quick toggle and presets", "audio.easyEffects.enable", []string{"easyeffects"}},
-	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "gdbus"}},
+	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "dbus-monitor", "busctl"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},

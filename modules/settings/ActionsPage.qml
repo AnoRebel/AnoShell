@@ -143,10 +143,10 @@ ColumnLayout {
                             font.pixelSize: Appearance.font.pixelSize.smallest
                         }
                     }
-                    RowButton { icon: "play_arrow"; tip: "Run now"; onClicked: root.runNow(row.macro.name) }
-                    RowButton { icon: "arrow_upward"; tip: "Move up"; enabled: row.index > 0; onClicked: root.move(row.index, -1) }
-                    RowButton { icon: "arrow_downward"; tip: "Move down"; enabled: row.index < root.macros.length - 1; onClicked: root.move(row.index, 1) }
-                    RowButton { icon: "delete"; tip: "Delete"; Layout.rightMargin: 4; onClicked: root.remove(row.index) }
+                    RowButton { glyph: "play_arrow"; tip: "Run now"; onClicked: root.runNow(row.macro.name) }
+                    RowButton { glyph: "arrow_upward"; tip: "Move up"; enabled: row.index > 0; onClicked: root.move(row.index, -1) }
+                    RowButton { glyph: "arrow_downward"; tip: "Move down"; enabled: row.index < root.macros.length - 1; onClicked: root.move(row.index, 1) }
+                    RowButton { glyph: "delete"; tip: "Delete"; Layout.rightMargin: 4; onClicked: root.remove(row.index) }
                 }
             }
         }
@@ -230,11 +230,11 @@ ColumnLayout {
                             elide: Text.ElideRight
                             text: `${stepBox.kind?.label ?? "Unknown step"} · ${Actions.describe(stepBox.step)}`
                         }
-                        RowButton { icon: "arrow_upward"; tip: "Move up"; enabled: stepBox.index > 0
+                        RowButton { glyph: "arrow_upward"; tip: "Move up"; enabled: stepBox.index > 0
                             onClicked: root.editSteps(s => { const t = s[stepBox.index]; s[stepBox.index] = s[stepBox.index - 1]; s[stepBox.index - 1] = t }) }
-                        RowButton { icon: "arrow_downward"; tip: "Move down"; enabled: stepBox.index < Array.from(root.current?.steps ?? []).length - 1
+                        RowButton { glyph: "arrow_downward"; tip: "Move down"; enabled: stepBox.index < Array.from(root.current?.steps ?? []).length - 1
                             onClicked: root.editSteps(s => { const t = s[stepBox.index]; s[stepBox.index] = s[stepBox.index + 1]; s[stepBox.index + 1] = t }) }
-                        RowButton { icon: "close"; tip: "Remove"; onClicked: root.editSteps(s => { s.splice(stepBox.index, 1) }) }
+                        RowButton { glyph: "close"; tip: "Remove"; onClicked: root.editSteps(s => { s.splice(stepBox.index, 1) }) }
                     }
                     Repeater {
                         model: stepBox.kind?.fields?.length ?? 0
@@ -269,10 +269,10 @@ ColumnLayout {
     // A small round icon button for the rows.
     component RowButton: RippleButton {
         id: rb
-        property string icon: ""
+        property string glyph: ""
         property string tip: ""
         implicitWidth: 30; implicitHeight: 30; buttonRadius: 15
-        contentItem: MaterialSymbol { text: rb.icon; iconSize: 18; horizontalAlignment: Text.AlignHCenter }
+        contentItem: MaterialSymbol { text: rb.glyph; iconSize: 18; horizontalAlignment: Text.AlignHCenter }
         StyledToolTip { text: rb.tip }
     }
 
