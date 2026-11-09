@@ -30,8 +30,25 @@ Item {
     width: 0
     height: 0
 
+    // Hover tips wait out the warm-up (TooltipWarmup); forced ones (a slider
+    // held, alternativeVisibleCondition) show at once.
+    readonly property bool _hoverDriven: !root.alternativeVisibleCondition
+        && (root.parent?.hovered !== undefined || root.parent?.containsMouse !== undefined)
+    property bool _waited: false
+    onShownChanged: if (!root.shown) root._waited = false
+    Timer {
+        running: root.shown && root._hoverDriven && !root._waited && !TooltipWarmup.warm
+        interval: TooltipWarmup.delay
+        onTriggered: root._waited = true
+    }
+    readonly property bool _open: tipLoader.active
+    on_OpenChanged: root._open ? TooltipWarmup.opened() : TooltipWarmup.closed()
+    Component.onDestruction: if (root._open) TooltipWarmup.closed()
+
     Loader {
+        id: tipLoader
         active: root.shown && !!root.QsWindow.window
+            && (!root._hoverDriven || root._waited || TooltipWarmup.warm)
         sourceComponent: PopupWindow {
             visible: true
             anchor {
