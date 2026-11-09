@@ -179,7 +179,8 @@ cursor {
 // Ano QuickShell — main shell (replaces waybar + swaync + swayosd)
 // Guard: kill any lingering legacy bars/notifiers before spawning the shell.
 spawn-sh-at-startup "pkill -x waybar; pkill -x swaync; pkill -x swayosd; true"
-spawn-sh-at-startup "qs -c ano &"
+// More than the 1024 open files niri hands its children (anod --supervise raises it itself).
+spawn-sh-at-startup "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano"
 // anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
 // For crash supervision, replace both lines with: anod --supervise (it starts qs).
 spawn-sh-at-startup "A=$(command -v anod || echo \"$HOME/.local/bin/anod\"); [ -x \"$A\" ] && exec \"$A\""

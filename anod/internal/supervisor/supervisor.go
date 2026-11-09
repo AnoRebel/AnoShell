@@ -96,6 +96,7 @@ func (s *Supervisor) Run(ctx context.Context) State {
 			log.Printf("supervisor: huge pages stay on: %v", errno)
 		}
 	}
+	raiseNoFile()
 	for {
 		cmd := exec.Command(s.Cmd[0], s.Cmd[1:]...)
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
@@ -235,4 +236,24 @@ func NewestEntry(dir string) string {
 		return ""
 	}
 	return list[0].p
+}
+
+// raiseNoFile lifts the open-file soft limit to 65536 (or the hard limit)
+// for the shell it starts: a compositor hands its children 1024, and a shell
+// that reloads on every scale change has run out of descriptors after a day.
+// An explicit Setrlimit also stops os/exec from restoring the old limit in
+// the child (which it does after Go raises its own limit at start).
+func raiseNoFile() {
+	var r syscall.Rlimit
+	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &r); err != nil {
+		return
+	}
+	want := min(uint64(65536), r.Max)
+	if want <= r.Cur {
+		want = r.Cur
+	}
+	r.Cur = want
+	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &r); err != nil {
+		log.Printf("supervisor: open-file limit stays: %v", err)
+	}
 }

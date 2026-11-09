@@ -107,11 +107,15 @@ hl.on("hyprland.start", function()
 	-- after crashes; otherwise both start here. Skipped if anod isn't installed
 	-- (build it with anod/install.sh).
 	local ANOD_SUPERVISE = false
+	-- The shell gets more than the 1024 open files Hyprland hands its
+	-- children (a day of reloads ran out of descriptors). anod --supervise
+	-- raises it itself.
+	local QS_START = "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c " .. QS_CONFIG
 	local ANOD = 'A=$(command -v anod || echo "$HOME/.local/bin/anod"); [ -x "$A" ] && exec "$A"'
 	if ANOD_SUPERVISE then
-		hl.exec_cmd(ANOD .. " --supervise || exec qs -c " .. QS_CONFIG)
+		hl.exec_cmd(ANOD .. " --supervise || " .. QS_START)
 	else
-		hl.exec_cmd("qs -c " .. QS_CONFIG .. " &")
+		hl.exec_cmd(QS_START)
 		hl.exec_cmd(ANOD)
 	end
 
@@ -675,7 +679,7 @@ hl.bind("CTRL + " .. MAIN_MOD .. " + B", hl.dsp.exec_cmd(qs_ipc("antiFlashbang",
 hl.bind("CTRL + " .. MAIN_MOD .. " + P", hl.dsp.exec_cmd(qs_ipc("panelFamily", "cycle")))
 hl.bind(
 	"CTRL + " .. MAIN_MOD .. " + R",
-	hl.dsp.exec_cmd("killall qs quickshell; sleep 0.3; qs -c " .. QS_CONFIG .. " &")
+	hl.dsp.exec_cmd("killall qs quickshell; sleep 0.3; ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c " .. QS_CONFIG)
 )
 
 -- Clipboard (QS first, rofi fallback)
