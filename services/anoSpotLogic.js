@@ -42,3 +42,36 @@ function newlyFinished(seen, finished) {
     if (!seen) return []
     return (finished || []).filter(f => !seen.includes(f.path))
 }
+
+// ── The shelf (services/AnoSpotStash, the stash popout) ──────────────────
+
+// A path as a file:// URI ("#", "?", spaces encoded; slashes kept).
+function fileUri(path) {
+    return "file://" + String(path).split("/").map(encodeURIComponent).join("/")
+}
+
+// Recent screenshots, newest first, at most n: [{ path, at }].
+function addShot(shots, path, at, n) {
+    return [{ path: path, at: at }].concat((shots || []).filter(s => s.path !== path)).slice(0, Math.max(0, n))
+}
+
+// The shelf's rows: every pin first, then the n newest screenshots, then the
+// n newest clipboard entries, leaving out what a pin already holds (a pin
+// remembers its screenshot's path as `source`, its entry's id as `from`; a
+// text pin also matches by its text).
+//   pins:  services/Cliphist pins   shots: [{ path, at }]
+//   clips: [{ line, info }] (info: Cliphist.entryInfo), newest first
+//   → [{ key, src: "pin" | "shot" | "clip", pin? | path? | line?, info? }]
+function shelf(pins, shots, clips, n) {
+    pins = pins || []
+    n = Math.max(0, n | 0)
+    const sources = new Set(pins.map(p => p.source).filter(s => s))
+    const froms = new Set(pins.map(p => p.from).filter(s => s))
+    const texts = new Set(pins.filter(p => p.kind === "text").map(p => p.text))
+    const out = pins.map(p => ({ key: "pin:" + p.key, src: "pin", pin: p }))
+    for (const s of (shots || []).filter(s => !sources.has(s.path)).slice(0, n))
+        out.push({ key: "shot:" + s.path, src: "shot", path: s.path })
+    for (const c of (clips || []).filter(c => !froms.has(c.info.id) && !(c.info.kind === "text" && texts.has(c.info.text))).slice(0, n))
+        out.push({ key: "clip:" + c.info.id, src: "clip", line: c.line, info: c.info })
+    return out
+}

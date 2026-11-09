@@ -278,7 +278,8 @@ Singleton {
 
     // ── Pins: kept in anoshell/clipboard-pins.json (pinned images copied to
     // clipboard-pins/ beside it), so a cliphist wipe doesn't take them.
-    // A pin: { key, kind: "text" | "image", text?, file?, ext?, width?, height? }
+    // A pin: { key, kind: "text" | "image", text?, file?, ext?, width?, height?,
+    //   from? (the entry's id), source? (the picture file it was copied from) }
     readonly property string pinsDir: `${Directories.anoData}/clipboard-pins`
     property var pins: []
     property bool _pinsLoaded: false
@@ -320,10 +321,10 @@ Singleton {
         const key = `${Date.now()}`
         if (info.kind === "image") {
             const file = `${root.pinsDir}/${key}.${info.ext || "png"}`
-            pinProc.pending = { key: key, kind: "image", file: file, ext: info.ext, width: info.width, height: info.height }
+            pinProc.pending = { key: key, kind: "image", file: file, ext: info.ext, width: info.width, height: info.height, from: id }
             pinProc.exec({ command: ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode > "$OUT"'], environment: ({ ID: id, BIN: root.cliphistBinary, OUT: file }) })
         } else {
-            pinProc.pending = { key: key, kind: "text" }
+            pinProc.pending = { key: key, kind: "text", from: id }
             pinProc.exec({ command: ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode | head -c 1048576'], environment: ({ ID: id, BIN: root.cliphistBinary }) })
         }
     }
@@ -336,6 +337,20 @@ Singleton {
         }
         if (root.pins.some(q => q.kind === "text" && q.text === text)) return
         root._savePins([{ key: `${Date.now()}`, kind: "text", text: text }].concat(root.pins))
+    }
+    // Pin a picture file (a screenshot on the AnoSpot shelf): copied in, so
+    // the temp file going doesn't take it. `source` remembers where from.
+    function pinFile(path) {
+        if (!path || pinProc.running || pinProc.pending || root.pins.some(q => q.source === path)) return
+        if (!root._pinsLoaded) {
+            Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Clipboard", "clipboard-pins.json can't be read, so nothing is pinned (fix or remove the file)"])
+            return
+        }
+        const key = `${Date.now()}`
+        const ext = ((path.match(/\.([A-Za-z0-9]+)$/) ?? [])[1] ?? "png").toLowerCase()
+        const file = `${root.pinsDir}/${key}.${ext}`
+        pinProc.pending = { key: key, kind: "image", file: file, ext: ext, source: path }
+        pinProc.exec({ command: ["cp", "--", path, file] })
     }
     // A text pin is saved once its output is read, an image pin once the
     // file is written (exit and end of output can come in either order).

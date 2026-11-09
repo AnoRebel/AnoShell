@@ -489,8 +489,18 @@ ColumnLayout {
     SettingsCard {
         icon: "place_item"
         title: "Drag and drop"
-        subtitle: "Stage files dropped on AnoSpot for triage and actions"
-        configKeys: ["anoSpot.acceptDrops", "anoSpot.stashDir"]
+        subtitle: "Stage files dropped on AnoSpot for triage and actions; the same popout shelves your pins, copies and screenshots"
+        configKeys: ["anoSpot.acceptDrops", "anoSpot.stashDir", "anoSpot.shelfSize"]
+
+        ConfigSlider {
+            label: "Shelf: recent items"
+            configKey: "anoSpot.shelfSize"
+            sublabel: "The stash popout is also a shelf: your pins, plus this many of the newest copies and screenshots (0: pins only). Click copies, drag out into an app. Open it with `qs -c ano ipc call shelf toggle`, or set a click to \"shelf\""
+            from: 0; to: 20; stepSize: 1
+            value: Config.options?.anoSpot?.shelfSize ?? 8
+            valueText: `${Math.round(value)}`
+            onValueChanged: Config.setNestedValue("anoSpot.shelfSize", Math.round(value))
+        }
 
         ConfigSwitch {
             id: dropEnable

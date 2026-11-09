@@ -32,7 +32,7 @@ Move the dock onto the pill's edge, or the pill onto the dock's, and the two
 | Wheel over the media | Volume |
 | Horizontal scroll, or drag along it | Switch faces (status, media, spectrum, lyrics) |
 | Press the grip (⋮⋮ at its start) | Edge picker: move to an edge (or click one) |
-| Drop files on it | Stash them for actions |
+| Drop files on it | Stash them for actions (the shelf opens) |
 
 With **Grow into** on for a panel, a click grows the pill into that panel
 inline (the same panel, same state) instead of opening it separately; click
@@ -58,6 +58,18 @@ others appear when they have something to show.
 - **Spectrum**: an audio visualiser. cava runs only while this face is in view.
 - **Lyrics**: the current line of time-synced lyrics (Settings → Services →
   Lyrics), or "No lyrics for this track".
+
+## The shelf
+
+Dropping files on the pill opens the shelf: the dropped files with their
+actions (LocalSend, Open, Copy path, Move to…, Reveal, your own), and below
+them your pins and the newest copies and screenshots (`anoSpot.shelfSize`,
+8 of each). Click an item to copy it (a picture goes in as a picture), drag
+it out into another app (files and pictures as files, text as text), or pin
+it with its corner pin. Pins are the clipboard's pins (kept across restarts
+and a cleared history; a pinned screenshot is copied, so it outlives the
+temporary file). Open it any time with `qs -c ano ipc call shelf toggle`, or
+set a pill click to `"shelf"`.
 
 ## Transient states
 
@@ -131,6 +143,7 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | `anoSpot.acceptDrops` | `true` | Accept dropped files |
 | `anoSpot.stashDir` | `""` | Where dropped files go (empty: a cache folder) |
 | `anoSpot.dropTargets` | `[]` | Your own drop actions |
+| `anoSpot.shelfSize` | `8` | Newest copies and screenshots on the shelf, beside the pins (0: pins only) |
 | `anoSpot.workspaceHoverPreview.enable` | `true` | Workspace preview on hover: live thumbnails under the chip, click one to focus it |
 | `anoSpot.workspaceHoverPreview.allWorkspaces` | `false` | Every workspace's windows (labelled) instead of this screen's current one |
 | `anoSpot.workspaceHoverPreview.openDelayMs` | `200` | |
@@ -147,6 +160,8 @@ Defaults as shipped. Settings → AnoSpot has all of them.
 | Workspace preview | Hyprland (window capture) |
 | Media | a player with MPRIS (most do) |
 | Recording transient | a screen recorder (Settings → Services → Screen recording) |
+| Download transient | anod |
+| Shelf | `cliphist` + `wl-clipboard` (copies, pins) |
 
 ## From a terminal
 

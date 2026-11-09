@@ -1829,6 +1829,9 @@ Singleton {
                 property bool acceptDrops: true
                 property string stashDir: ""
                 property var dropTargets: []
+                // The stash popout as a shelf: this many newest clipboard
+                // entries and screenshots beside the pins (0: pins only).
+                property int shelfSize: 8
                 property bool showLyrics: false
                 // Status zones (track, notification, battery) collapse to their icon
                 // and open on hover.

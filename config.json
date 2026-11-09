@@ -584,6 +584,7 @@
     "acceptDrops": true,
     "stashDir": "",
     "dropTargets": [],
+    "shelfSize": 8,
     "showLyrics": false,
     "accordion": true,
     "faces": {

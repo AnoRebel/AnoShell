@@ -181,7 +181,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | Service | What it provides |
 |---------|------------------|
 | `AnoSpotState` | Aggregated state shared between the AnoSpot pill and its widgets. |
-| `AnoSpotStash` | Manages the drag-and-drop stash directory ($XDG_RUNTIME_DIR/anoSpot or fallback). |
+| `AnoSpotStash` | Manages the drag-and-drop stash directory ($XDG_RUNTIME_DIR/anoSpot or fallback) and the shelf's recent screenshots. |
 
 ## Configuration
 
@@ -388,7 +388,8 @@ Top/bottom/left/right pill overlay aggregating now-playing (Mpris), latest notif
   // Drag and drop
   "acceptDrops": true,
   "stashDir": "",                // empty = auto ($XDG_RUNTIME_DIR/anoSpot, /tmp/anoSpot-<UID> fallback)
-  "dropTargets": []              // user-defined custom action buttons; see below
+  "dropTargets": [],             // user-defined custom action buttons; see below
+  "shelfSize": 8                 // shelf: newest copies + screenshots beside the pins (0 = pins only)
 }
 ```
 
@@ -418,6 +419,9 @@ Built-in actions:
 | Move to…     | zenity directory picker, then `mv` each item there       | `zenity`                          |
 | Reveal       | `xdg-open` the parent directory in the user's file manager | `xdg-utils`                     |
 | Clear all    | Empty the stash and close the popout                     | —                                 |
+
+#### Shelf
+The same popout is a shelf: below the dropped files, your pins (the clipboard's pins, `clipboard-pins.json`; a pinned screenshot is copied in) and the `shelfSize` newest clipboard entries and screenshots. Click copies (`wl-copy`, pictures with their MIME type), drag out drops the file (`text/uri-list`) or the text into another app, the corner pin pins/unpins. Open it with `qs -c ano ipc call shelf toggle` or a click action set to `"shelf"`.
 
 Stash directory resolution order:
 1. `Config.options.anoSpot.stashDir` if non-empty (explicit override)
@@ -670,6 +674,7 @@ Each AnoSpot widget/action and the underlying tool that makes it work:
 | Drag handle              | Qt `MouseArea`; no external deps                           |
 | Drop target              | QML `DropArea` (Wayland data-device protocol)              |
 | Stash                    | bash + `cp`/`rm`/`stat`/`du`/`mkdir`/`ls` (coreutils)      |
+| Shelf                    | `cliphist` + `wl-clipboard` (copy, pins); drag-out via the Wayland data-device protocol |
 | Action: LocalSend        | `bash`, `python3`, `curl`, `openssl`, `iproute2`           |
 | Action: Open / Reveal    | `xdg-utils` (`xdg-open`)                                   |
 | Action: Copy path        | `wl-clipboard` (`wl-copy`)                                 |

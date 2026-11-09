@@ -5,6 +5,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.services
+import "root:services/anoSpotLogic.js" as AnoSpotLogic
 
 /**
  * AnoSpot stash — ephemeral staging directory for items dropped onto the
@@ -44,6 +46,41 @@ Singleton {
     // Aggregate size of every staged item, formatted.
     property real totalSizeBytes: 0
     readonly property string totalSizeText: _formatSize(totalSizeBytes)
+
+    // ─── Shelf ───────────────────────────────────────────────────────────
+    // Beside the dropped files, the popout is a shelf: pins (services/Cliphist's,
+    // kept in clipboard-pins.json, pictures copied beside it) and the
+    // anoSpot.shelfSize newest clipboard entries and screenshots (the
+    // screenshots only in memory: their temp files go within a day; a pin
+    // keeps a copy).
+    readonly property int shelfSize: Math.max(0, Config.options?.anoSpot?.shelfSize ?? 8)
+    property var shots: []   // [{ path, at }], newest first
+    Connections {
+        target: Screenshot
+        function onCaptured(path, mode) { root.shots = AnoSpotLogic.addShot(root.shots, path, Date.now(), root.shelfSize) }
+    }
+    onShelfSizeChanged: root.shots = root.shots.slice(0, root.shelfSize)
+    // Drop screenshots whose file is gone (saved elsewhere, deleted); run when
+    // the popout opens.
+    function pruneShots() {
+        if (root.shots.length === 0 || shotCheck.running) return
+        shotCheck.exec({ command: ["sh", "-c", 'for f; do [ -e "$f" ] && printf "%s\\n" "$f"; done', "sh"].concat(root.shots.map(s => s.path)) })
+    }
+    Process {
+        id: shotCheck
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const live = this.text.split("\n")
+                root.shots = root.shots.filter(s => live.includes(s.path))
+            }
+        }
+    }
+    // A picture file to the clipboard, typed by its extension.
+    function copyImage(path) {
+        const ext = ((path.match(/\.([A-Za-z0-9]+)$/) ?? [])[1] ?? "png").toLowerCase()
+        Quickshell.execDetached({ command: ["sh", "-c", 'wl-copy -t "image/$EXT" < "$F"'],
+            environment: ({ EXT: ({ jpg: "jpeg", svg: "svg+xml" })[ext] ?? ext.replace(/[^a-z0-9]/g, ""), F: path }) })
+    }
 
     // ─── Built-in action runtimes ───────────────────────────────────────
     // Each one operates on the current staged item set. Stateless helpers;
