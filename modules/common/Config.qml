@@ -1508,6 +1508,7 @@ Singleton {
                 property bool pinnedOnStartup: false
                 property bool hoverToReveal: true
                 property int revealDelay: 150 // ms the pointer rests at the edge before it shows
+                property bool magnify: true // icons swell by distance from the pointer and lift
                 property bool showOnDesktop: true
                 property var screenList: []
                 property var pinnedApps: ["kitty", "nemo", "zen-browser", "brave-browser"]
