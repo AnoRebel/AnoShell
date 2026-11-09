@@ -43,8 +43,8 @@ Settings → Sidebars → **Productivity**.
   `~/.local/share/anoshell/todo.txt` by default. Edit it in any editor and the
   sidebar updates at once; changes made in the sidebar are written straight
   back. Tick a task and it strikes through, then folds under **Done**;
-  double-click a task to edit it; remove one and **Undo** brings it back for a
-  few seconds. todo.txt markup shows as chips: `(A) ` priority (A red, B
+  double-click a task to edit it; remove one (or clear the done ones) and the
+  **Undo** toast brings it back in its place for a few seconds. todo.txt markup shows as chips: `(A) ` priority (A red, B
   tertiary), `due:2026-10-25` (or `due:today`, `due:tomorrow`, `due:fri`),
   `+project` and `@context`.
 - **Pomodoro and stopwatch** (`pomodoro.enable`): focus, short break and long
@@ -57,6 +57,18 @@ Settings → Sidebars → **Productivity**.
   pin, which turns click-through off again. Also
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
+
+## Undo
+
+Removing a to-do, a clipboard entry or pin, a desktop piece or page, or a
+keybind (Settings → Keybinds) needs no confirmation: it goes at once and a
+toast at the bottom of the focused screen offers **Undo** for 6 seconds,
+putting it back exactly where it was. The last three removals can be undone,
+newest first: click Undo, press Ctrl+Z in Settings, or run
+`qs -c ano ipc call undo last`. When the thing changed since (another edit to
+the same layout or keybinds), Undo says so and changes nothing. Removing an
+Atelier install, clearing the clipboard history and resetting all keybinds
+have no undo.
 
 ## Live pins
 
@@ -199,6 +211,11 @@ opens a large preview; for a video, **Play** opens it in your default player.
 history in `~/.local/share/anoshell/clipboard-pins.json` (pinned images are
 copied to `clipboard-pins/` beside it), so clearing the history keeps them.
 Unpinning removes the copy.
+
+Deleting an entry or unpinning a pin happens at once, with an **Undo** toast
+for 6 seconds; cliphist deletes the entry (and an unpinned image's copy goes)
+only once the toast is gone, so Undo puts it back in its place. Clearing the
+whole history has no undo.
 
 Keys: ↑↓ select, Enter pastes, Space previews (search empty), Ctrl+P pins
 or unpins, Delete removes the selected entry or unpins a pin (search empty);

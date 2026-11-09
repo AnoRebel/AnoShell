@@ -339,31 +339,6 @@ Rectangle {
             }
         }
 
-        // Undo a removal
-        Rectangle {
-            id: undoBar
-            readonly property bool show: Todo.lastRemoved !== null
-            Layout.fillWidth: true
-            Layout.preferredHeight: show ? 34 : 0
-            opacity: show ? 1 : 0
-            clip: true
-            radius: Appearance.rounding.small
-            color: Appearance.colors.colLayer2
-            Behavior on Layout.preferredHeight { Anim {} }
-            Behavior on opacity { Anim {} }
-            RowLayout {
-                anchors { fill: parent; leftMargin: 10; rightMargin: 4 }
-                StyledText {
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    text: `Removed “${root.meta(Todo.lastRemoved?.item?.text ?? "").title}”`
-                    font.pixelSize: Appearance.font.pixelSize.smaller
-                }
-                RippleButton { buttonText: "Undo"; onClicked: Todo.undoRemove() }
-            }
-            Timer { running: undoBar.show; interval: 6000; onTriggered: Todo.lastRemoved = null }
-        }
-
         // Add
         Rectangle {
             Layout.fillWidth: true

@@ -197,16 +197,21 @@ Singleton {
         Quickshell.execDetached(["bash", "-c", pasteCommands.join(` && sleep ${root.pasteDelay} && `)])
     }
 
-    Process {
-        id: deleteProc
-        function deleteEntry(e) {
-            const id = root._id(e); if (!id) return
-            deleteProc.exec({ command: ["bash", "-c", `printf '%s' "$ID" | ${root.cliphistBinary} delete`], environment: ({ ID: id }) })
-        }
-        onExited: root.refresh()
+    // Deleting hides the entry at once; cliphist deletes it only once its
+    // Undo is gone (Undo's commit), so Undo brings it back in its place.
+    property var _hidden: ({})
+    function deleteEntry(entry) {
+        const id = root._id(entry); if (!id || root._hidden[id]) return
+        root._hidden[id] = true
+        root.entries = root.entries.filter(e => root._id(e) !== id)
+        const text = String(entry).split("\t").slice(1).join("\t")
+        Undo.push({
+            label: root.entryIsImage(entry) ? "Deleted an image" : `Deleted “${text.length > 40 ? text.slice(0, 40) + "…" : text}”`,
+            restore: () => { delete root._hidden[id]; root.refresh() },
+            // cliphist ids only grow, so the id can stay hidden after the delete.
+            commit: () => Quickshell.execDetached({ command: ["bash", "-c", `printf '%s' "$ID" | ${root.cliphistBinary} delete`], environment: ({ ID: id }) })
+        })
     }
-
-    function deleteEntry(entry) { deleteProc.deleteEntry(entry) }
 
     Process {
         id: wipeProc
@@ -244,7 +249,7 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             root.error = ""
             if (exitCode === 0) {
-                root.entries = readProc.buffer
+                root.entries = readProc.buffer.filter(e => !root._hidden[root._id(e)])
                 root._prune()
             } else if (readErr.text.indexOf("store something first") >= 0) {
                 root.entries = []
@@ -375,9 +380,21 @@ Singleton {
             if (code === 0) root._savePins([p].concat(root.pins))
         }
     }
+    // Undo puts the pin back in its place; its image file goes only once the Undo is gone.
     function unpin(pin) {
+        const i = root.pins.findIndex(p => p.key === pin.key)
+        if (i < 0) return
         root._savePins(root.pins.filter(p => p.key !== pin.key))
-        if (pin.kind === "image" && pin.file) Quickshell.execDetached(["rm", "-f", "--", pin.file])
+        const t = pin.text ?? ""
+        Undo.push({
+            label: "Unpinned " + (pin.kind === "image" ? "an image" : `“${t.length > 40 ? t.slice(0, 40) + "…" : t}”`),
+            restore: () => {
+                if (root.pins.some(p => p.key === pin.key)) return false
+                const l = root.pins.slice(); l.splice(Math.min(i, l.length), 0, pin)
+                root._savePins(l)
+            },
+            commit: () => { if (pin.kind === "image" && pin.file && !root.pins.some(p => p.key === pin.key)) Quickshell.execDetached(["rm", "-f", "--", pin.file]) }
+        })
     }
     // Copy (and optionally paste) a pin: values go in as environment, not script text.
     function copyPin(pin, andPaste) {

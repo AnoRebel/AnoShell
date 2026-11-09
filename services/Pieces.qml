@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Io
 import qs.modules.common
 import qs.services
+import "undoLogic.js" as UndoLogic
 
 /**
  * Pieces: the desktop widget registry (spec desktop-pieces). A piece is a
@@ -187,9 +188,18 @@ Singleton {
     }
     function removePage(screenName: string, page: int): void {
         const l = root.layoutOf(screenName)
-        if (l.pages.length <= 1) { root._save(screenName, { page: 0, pages: [[]] }); return }
-        const pages = l.pages.filter((_, i) => i !== page)
-        root._save(screenName, { page: Math.min(l.page, pages.length - 1), pages })
+        const pages = l.pages.length <= 1 ? [[]] : l.pages.filter((_, i) => i !== page)
+        root._removeWithUndo(screenName, l, { page: Math.min(l.page, pages.length - 1), pages }, "Removed a desktop page", page)
+    }
+    // Saves `after`; Undo puts `before`'s pages back, but only while the
+    // layout is still exactly what the removal left (else it says it can't).
+    function _removeWithUndo(screenName, before, after, label, page) {
+        if (UndoLogic.same(before.pages, after.pages)) return
+        root._save(screenName, after)
+        Undo.push({ label, restore: () => {
+            if (!UndoLogic.same(root.layoutOf(screenName).pages, after.pages)) return false
+            root._save(screenName, { page: page ?? root.layoutOf(screenName).page, pages: before.pages })
+        } })
     }
     // Places a piece on the shown page at the first free spot of a grid of
     // cols × rows cells; false when it doesn't fit.
@@ -209,7 +219,8 @@ Singleton {
     }
     function remove(screenName: string, uid: string): void {
         const l = root.layoutOf(screenName)
-        root._save(screenName, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) })
+        const name = root.entries[l.pages.flat().find(w => w.uid === uid)?.id]?.name ?? "a piece"
+        root._removeWithUndo(screenName, l, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) }, `Removed ${name}`)
     }
     // Moves/resizes a placed piece if the spot is inside the grid and free
     // (and the size within the manifest's minimum); false otherwise.

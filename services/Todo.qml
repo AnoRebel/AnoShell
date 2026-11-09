@@ -51,7 +51,6 @@ Singleton {
     }
     function save(list) {
         if (!root.writable) { console.warn(`[Todo] ${root.path} didn't load; not saving`); return }
-        root.lastRemoved = null
         root.items = list
         file.setText(root.serialize(list))
         // The save replaces the file (atomic rename), which drops the watch: re-arm it.
@@ -73,22 +72,22 @@ Singleton {
         l[i] = Object.assign({}, l[i], { text: root.expandDue(text.trim()) })
         root.save(l)
     }
-    // The last removed task, for Undo (cleared by the next change).
-    property var lastRemoved: null
-    function remove(i) {
-        const l = root.items.slice()
-        const [gone] = l.splice(i, 1)
-        root.save(l)
-        root.lastRemoved = { item: gone, index: i }
+    function remove(i) { root._removeWhere((_, j) => j === i) }
+    function clearDone() { root._removeWhere(it => it.done) }
+    // Removes the matching tasks at once; Undo puts them back where they were.
+    function _removeWhere(test) {
+        const gone = root.items.map((it, j) => ({ item: it, index: j })).filter(g => test(g.item, g.index))
+        if (!gone.length || !root.writable) return
+        root.save(root.items.filter((it, j) => !test(it, j)))
+        Undo.push({
+            label: gone.length === 1 ? `Removed “${gone[0].item.text}”` : `Removed ${gone.length} done tasks`,
+            restore: () => {
+                const l = root.items.slice()
+                for (const g of gone) l.splice(Math.min(g.index, l.length), 0, g.item)
+                root.save(l)
+            }
+        })
     }
-    function undoRemove() {
-        const r = root.lastRemoved
-        if (!r) return
-        const l = root.items.slice()
-        l.splice(Math.min(r.index, l.length), 0, r.item)
-        root.save(l)
-    }
-    function clearDone() { root.save(root.items.filter(i => !i.done)) }
 
     Process { id: mkdir; command: ["mkdir", "-p", "--", root.path.slice(0, root.path.lastIndexOf("/"))] }
     FileView {
