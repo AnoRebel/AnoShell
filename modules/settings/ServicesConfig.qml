@@ -1125,6 +1125,41 @@ ColumnLayout {
         }
     }
 
+    // ═══ NetworkManager VPNs ═══
+    SettingsCard {
+        icon: "vpn_lock"
+        title: "NetworkManager VPNs"
+        subtitle: "VPN and WireGuard connections set up in NetworkManager (nm-connection-editor, `nmcli connection import`): on or off. The bar's network icon shows a small shield while one is on."
+
+        StyledText {
+            visible: Network.vpnConnections.length === 0
+            text: "No VPN or WireGuard connections in NetworkManager"
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            opacity: 0.6
+        }
+
+        Repeater {
+            model: Network.vpnConnections
+            ConfigRow {
+                required property var modelData
+                label: modelData.name
+                sublabel: `${modelData.type === "wireguard" ? "WireGuard" : "VPN"} · ${Network.vpnBusy === modelData.uuid ? "working…" : (modelData.state || "off")}`
+                StyledSwitch {
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                    enabled: Network.vpnBusy === ""
+                    checked: modelData.state !== ""
+                    onToggled: Network.setVpnActive(modelData.uuid, checked)
+                }
+            }
+        }
+
+        NoticeBox {
+            visible: Network.vpnError.length > 0
+            level: "error"
+            text: Network.vpnError
+        }
+    }
+
     // ═══ Calendar (external sync) ═══
     SettingsCard {
         icon: "event"

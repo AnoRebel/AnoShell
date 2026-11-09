@@ -26,8 +26,10 @@ Item {
         iconSize: Appearance?.font.pixelSize.larger ?? 20
         color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
     }
-    // VPN up: a small shield; filled and tinted while traffic goes out an exit node.
-    readonly property bool vpnOn: VPN.enabled && VPN.connected
+    // VPN up (a provider's, or a NetworkManager VPN/WireGuard connection): a
+    // small shield; filled and tinted while traffic goes out an exit node.
+    readonly property bool providerVpnOn: VPN.enabled && VPN.connected
+    readonly property bool vpnOn: root.providerVpnOn || Network.activeVpn !== null
     readonly property string exitNode: VPN.providerName === "netbird" ? VPN.netbirdExitNode : ""
     MaterialSymbol {
         anchors { right: icon.right; bottom: icon.bottom; rightMargin: -4; bottomMargin: -2 }
@@ -79,7 +81,7 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                visible: root.vpnOn
+                visible: root.providerVpnOn
                 spacing: 6
                 MaterialSymbol { text: root.exitNode ? "vpn_lock" : "shield"; iconSize: 16; color: Appearance.colors.colPrimary }
                 StyledText {
@@ -87,6 +89,17 @@ Item {
                     elide: Text.ElideRight
                     text: `${VPN.providerName === "netbird" ? "NetBird" : VPN.providerName} · ${root.exitNode ? "exit node " + root.exitNode : "direct"}`
                     font.pixelSize: Appearance.font.pixelSize.smaller
+                }
+            }
+
+            // NetworkManager VPN / WireGuard connections that are up.
+            Repeater {
+                model: Network.vpnConnections.filter(v => v.active)
+                RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true; spacing: 6
+                    MaterialSymbol { text: "shield"; iconSize: 16; color: Appearance.colors.colPrimary }
+                    StyledText { Layout.fillWidth: true; elide: Text.ElideRight; text: `${modelData.name} · ${modelData.type === "wireguard" ? "WireGuard" : "VPN"}`; font.pixelSize: Appearance.font.pixelSize.smaller }
                 }
             }
 

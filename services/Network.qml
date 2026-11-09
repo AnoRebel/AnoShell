@@ -28,6 +28,12 @@ Singleton {
     readonly property var primaryLink: links.find(l => l.primary) ?? null
     property string linkBusy: ""      // device a connect/disconnect is running on
     property string linkError: ""     // last failure, "<device>: <nmcli message>"
+    // NetworkManager VPN and WireGuard profiles: [{ name, uuid, type, state, active }]
+    // (NetLinks.vpns), refreshed with the rest on `nmcli monitor` events.
+    property var vpnConnections: []
+    readonly property var activeVpn: vpnConnections.find(v => v.active) ?? null
+    property string vpnBusy: ""       // uuid an up/down is running on
+    property string vpnError: ""      // last failure, "<name>: <nmcli message>"
     property bool wifiEnabled: false
     property bool wifiScanning: false
     property bool wifiConnecting: connectProc.running
@@ -113,6 +119,43 @@ Singleton {
         root.linkBusy = device
         root.linkError = ""
         linkProc.exec(["nmcli", "device", on ? "connect" : "disconnect", device])
+    }
+
+    // Bring a VPN profile up or down. The uuid must be one of
+    // vpnConnections and is only ever an argv element.
+    function setVpnActive(uuid: string, on: bool): void {
+        const v = root.vpnConnections.find(c => c.uuid === uuid)
+        if (vpnToggleProc.running || !v) return
+        root.vpnBusy = uuid
+        root.vpnError = ""
+        vpnToggleProc.vpnName = v.name
+        vpnToggleProc.exec(["nmcli", "connection", on ? "up" : "down", "uuid", uuid])
+    }
+
+    Process {
+        id: vpnToggleProc
+        property string vpnName: ""
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stderr: StdioCollector { id: vpnErr }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0) root.vpnError = `${vpnToggleProc.vpnName}: ${vpnErr.text.trim().split("\n").pop().replace(/^Error: /, "") || "nmcli failed"}`
+            root.vpnBusy = ""
+            if (exitCode !== 0) root.vpnConnections = root.vpnConnections.slice() // switches back to the real state
+            vpnProc.running = true
+        }
+    }
+
+    Process {
+        id: vpnProc
+        running: true
+        command: ["nmcli", "-t", "-f", "NAME,UUID,TYPE,STATE", "connection", "show"]
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const v = NetLinks.vpns(this.text)
+                if (JSON.stringify(v) !== JSON.stringify(root.vpnConnections)) root.vpnConnections = v
+            }
+        }
     }
 
     Process {
@@ -232,6 +275,7 @@ Singleton {
         updateNetworkName.running = true
         updateNetworkStrength.running = true
         linksProc.running = true
+        vpnProc.running = true
     }
 
     // One nmcli read of every device plus the default route, parsed in

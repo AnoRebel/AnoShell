@@ -3726,6 +3726,13 @@
  },
  {
   "page": 9,
+  "card": "NetworkManager VPNs",
+  "label": "NetworkManager VPNs",
+  "sublabel": "VPN and WireGuard connections set up in NetworkManager (nm-connection-editor, `nmcli connection import`): on or off. The bar's network icon shows a small shield while one is on.",
+  "keys": []
+ },
+ {
+  "page": 9,
   "card": "Calendar sync",
   "label": "Calendar sync",
   "sublabel": "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered.",

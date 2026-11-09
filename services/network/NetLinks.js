@@ -82,3 +82,23 @@ function parse(deviceText, routeJson) {
     links.sort((a, b) => (b.primary - a.primary) || (b.connected - a.connected) || a.title.localeCompare(b.title))
     return { links: links, primary: primary }
 }
+
+// `nmcli -t -f NAME,UUID,TYPE,STATE connection show` → the VPN and WireGuard
+// profiles: [{ name, uuid, type ("vpn" | "wireguard"), state, active }],
+// up or coming up first. Terse mode escapes ":" and "\" inside a field.
+function vpns(text) {
+    const out = []
+    for (const line of String(text || "").split("\n")) {
+        const f = []
+        let cur = ""
+        for (let i = 0; i < line.length; i++) {
+            if (line[i] === "\\" && i + 1 < line.length) cur += line[++i]
+            else if (line[i] === ":") { f.push(cur); cur = "" }
+            else cur += line[i]
+        }
+        f.push(cur)
+        if (f.length < 4 || (f[2] !== "vpn" && f[2] !== "wireguard")) continue
+        out.push({ name: f[0], uuid: f[1], type: f[2], state: f[3], active: f[3] === "activated" })
+    }
+    return out.sort((a, b) => ((b.state !== "") - (a.state !== "")) || a.name.localeCompare(b.name))
+}

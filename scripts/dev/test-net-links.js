@@ -2,7 +2,7 @@
 // network panels list). Run: node scripts/dev/test-net-links.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/network/NetLinks.js'), 'utf8').replace('.pragma library', '')
-const N = new Function(src + ';return {parse, isVirtual, primaryIface};')()
+const N = new Function(src + ';return {parse, isVirtual, primaryIface, vpns};')()
 const a = (c, m) => { if (!c) throw new Error(m) }
 
 const dev = (d, type, state, conn, iface, driver, product, ip) =>
@@ -49,4 +49,16 @@ for (const v of ['vboxnet0', 'docker0', 'veth1', 'virbr0', 'br-abc', 'tun0', 'wg
     a(N.isVirtual(v), 'virtual: ' + v)
 for (const v of ['enp3s0', 'eth0', 'enp0s20u1', 'wlan0', 'lom1'])
     a(!N.isVirtual(v), 'real: ' + v)
+// VPN profiles (`nmcli -t -f NAME,UUID,TYPE,STATE connection show`)
+const vp = N.vpns([
+    'Rebels:6631c943:802-11-wireless:activated',
+    'NetBird:896f00ed:vpn:',
+    'Office\\: VPN:1111:vpn:activating',
+    'wg-home:2222:wireguard:activated',
+    'docker0:3333:bridge:activated',
+    'short:line',
+].join('\n'))
+a(vp.map(v => v.name).join('|') === 'Office: VPN|wg-home|NetBird', 'vpn + wireguard only, up first, escapes undone: ' + vp.map(v => v.name))
+a(vp[1].active && vp[1].type === 'wireguard' && !vp[0].active && vp[0].state === 'activating' && vp[2].uuid === '896f00ed', 'state and uuid')
+a(N.vpns('').length === 0, 'no profiles')
 console.log('net links ok')
