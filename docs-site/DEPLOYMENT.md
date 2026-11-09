@@ -29,8 +29,11 @@ The dev site is `anoshell-dev`, not `dev.anoshell`. Cloudflare sits in front of
 - **Domain:** the domain above, HTTPS on, certificate **None** (Cloudflare
   proxies the name and ends TLS, as for the other anorebel.net apps),
   container port `3000`. The DNS names already resolve through Cloudflare.
-- **Watch paths:** `docs/**`, `docs-site/**`, so pushes that touch only the
-  shell don't rebuild the site.
+- **Watch paths:** main: `docs/**`, `docs-site/**`, so pushes that touch only
+  the shell don't rebuild the site. dev: none. Dokploy matches watch paths
+  against the files in GitHub's push payload, and when `dev` is moved to
+  commits main already has, that payload doesn't list their files, so a
+  filtered dev app never rebuilt.
 - **Health check:** `GET /api/health` → `200 {"status":"healthy","version":…}`
   after reading the content index; `503` otherwise. The image has the same
   check as a Docker `HEALTHCHECK`, so Dokploy's rolling deploys wait for it.
