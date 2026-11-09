@@ -147,10 +147,14 @@ PopupWindow {
             StackView {
                 id: stackView
                 anchors { fill: parent; margins: popupBackground.padding }
-                pushEnter: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
-                pushExit: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
-                popEnter: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
-                popExit: Transition { NumberAnimation { duration: AnimationConfig.scaledDuration(0) } }
+                // A submenu slides in from the side it opens towards (and back on
+                // pop) while SubMenu fades itself; reduced motion keeps the fade only.
+                readonly property real slide: AnimationConfig.reducedMotion ? 0 : 28
+                readonly property int slideMs: AnimationConfig.scaledDuration(220)
+                pushEnter: Transition { NumberAnimation { property: "x"; from: stackView.slide; to: 0; duration: stackView.slideMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                pushExit: Transition { NumberAnimation { property: "x"; from: 0; to: -stackView.slide; duration: stackView.slideMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                popEnter: Transition { NumberAnimation { property: "x"; from: -stackView.slide; to: 0; duration: stackView.slideMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+                popExit: Transition { NumberAnimation { property: "x"; from: 0; to: stackView.slide; duration: stackView.slideMs; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 implicitWidth: currentItem.implicitWidth
                 implicitHeight: currentItem.implicitHeight
