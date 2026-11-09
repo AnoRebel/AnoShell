@@ -14,7 +14,7 @@ The shell runs as the Quickshell config `ano` (`qs -c ano`) from
 depends on anod: without it, everything native keeps working and daemon
 features show as unavailable.
 
-![The default layout: the pill at the bottom, the dock at the top](images/desktop.webp)
+![The default layout: the pill at the bottom edge (the dock is off until you turn it on)](images/desktop.webp)
 
 ## Panel families
 
