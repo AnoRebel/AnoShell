@@ -146,11 +146,13 @@ ano wallpaper status    # what's shown, and the rotation settings
 
 `background.wallpaperDir` (Settings → Appearance → Wallpaper Picker, or the
 picker's gear) is the one folder everything uses: the picker deals from it,
-(Wallhaven's tab can also search by colour: the row of swatches under its
-filters is Wallhaven's own palette, the only colours its API takes; pick one
-again to clear it.) Wallhaven downloads land in it, rotation picks from it and `ano backup
+Wallhaven downloads land in it, rotation picks from it and `ano backup
 create --add wallpapers` archives it. Empty (the default) means `Wallpapers` in your
 Pictures folder (`XDG_PICTURES_DIR`, usually `~/Pictures/Wallpapers`).
+
+Wallhaven's tab can also search by colour: the row of swatches under its
+filters is Wallhaven's own palette (the only colours its API takes); pick one
+again to clear it.
 
 ```json
 "background": { "wallpaperDir": "~/Pictures/hyprwallpapers" }
