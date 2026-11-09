@@ -69,7 +69,8 @@ Singleton {
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) {
-                console.error("[NiriKeybinds] Failed to read config:", root.niriConfigPath)
+                // No config file: niri runs on its built-in defaults (not an error).
+                console.info("[NiriKeybinds] no config at", root.niriConfigPath, "- niri's defaults apply")
             }
         }
     }

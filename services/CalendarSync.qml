@@ -295,6 +295,7 @@ Singleton {
     FileView {
         id: cacheFileView
         path: root.cachePath
+        printErrors: false // no cache yet on a first start: not an error
         watchChanges: false
         onLoaded: {
             const content = cacheFileView.text()
