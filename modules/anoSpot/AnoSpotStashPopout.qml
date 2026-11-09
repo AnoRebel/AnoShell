@@ -248,7 +248,7 @@ Scope {
                 width: 380
                 // Fits what it holds, up to 560 px.
                 height: Math.min(560, Math.max(200, cardCol.implicitHeight + 24))
-                Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.OutCubic } }
+                Behavior on height { MotionSpring { token: "settle" } }
                 radius: Appearance?.rounding?.normal ?? 14
                 color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
                 // Glass-token opt-in for the popout surface. Inner cells
