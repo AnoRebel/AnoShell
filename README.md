@@ -37,7 +37,9 @@ backend is picked from the session at start.
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
   brightness, night light, power and performance mode, device pills, package
-  updates, removable drives, notifications with DND, KDE Connect, screen time
+  updates, removable drives, notifications with DND (critical ones still show),
+  inline replies and per-app rules, focus mode, a screen-share picker on
+  Hyprland, KDE Connect, screen time
   with limits, screenshots (freeze-frame regions), text recognition (OCR) and screen recording,
   song recognition, lyrics ([extras](docs/extras.md), [configuration](docs/configuration.md)).
 - **anod and `ano`:** the companion daemon (wallpapers, hooks, keybinds,
@@ -47,6 +49,8 @@ backend is picked from the session at start.
   search over every option and previews you edit in place: drag the bar's
   modules, the bar, pill and dock, the lock screen's parts and the
   notifications; themes and looks drawn in their own colours and shapes.
+  Ctrl+Z undoes changes made there (resets included); typing anywhere starts
+  a search.
 
 Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writable overrides live under the `anoshell` namespace: `~/.config/anoshell/` (config, themes, looks, pieces, plugins, lock screens, rices, lyrics), `~/.local/state/anoshell/`, `~/.cache/anoshell/`.
 
@@ -532,6 +536,14 @@ qs -c ano ipc call <target> <method>
 | `session` | `toggle`, `open`, `close` |
 | `actions` | `run name` (queued if one runs), `list`, `ring` (toggle) |
 | `dock` | `toggle`, `pin`, `unpin` |
+| `notifications` | `toggleDnd`, `setDnd on`, `status`, `list`, `reply id text` |
+| `config` | `get key`, `set key json`, `reset key`, `undo` |
+| `focus` | `toggle`, `on`, `off`, `status` (bar away + Do Not Disturb) |
+| `undo` | `last`, `list` (the Undo toast after a removal) |
+| `pieces` | `add id`, `remove id`, `list`, `next`, `prev`, `page n`, `edit`, `done` |
+| `clock` | `toggle`, `countdown seconds`, `stopwatch`, `dismiss`, `snooze` |
+| `shelf` | `toggle` (the pill's shelf) |
+| `performance` | `toggle` (performance mode by hand) |
 | `clipboard` / `cliphistService` | `toggle`, `open`, `close` / direct cliphist actions |
 | `altSwitcher` | `show`, `hide`, `next`, `prev`, `activate` |
 | `search` | `toggle`, `open`, `close` |
