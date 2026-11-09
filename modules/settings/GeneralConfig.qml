@@ -482,27 +482,71 @@ ColumnLayout {
             valueText: `${Math.round(value)}`
         }
 
+        // Per-app rules as a list: every app that has notified (from the
+        // history) plus any already given a rule; blocked apps never reach the
+        // history, so the rule lists keep them here.
         ConfigRow {
-            label: "Silent apps"
+            id: appRules
+            label: "Per-app"
             configKey: "notifications.silentApps"
-            sublabel: "Comma-separated app names: kept in the history, no popup"
-            StyledTextInput {
-                text: Array.from(Config.options?.notifications?.silentApps ?? []).join(", ")
-                Layout.fillWidth: true
-                onEditingFinished: Config.setNestedValue("notifications.silentApps",
-                    text.split(",").map(s => s.trim()).filter(s => s.length > 0))
+            sublabel: "Silent: kept in the history, no popup. Blocked: dropped."
+            property var extra: [] // typed in below, not yet given a rule
+            readonly property var silent: Array.from(Config.options?.notifications?.silentApps ?? [])
+            readonly property var blocked: Array.from(Config.options?.notifications?.blockedApps ?? [])
+            readonly property var apps: {
+                const seen = {}, out = []
+                const add = n => { const k = String(n ?? "").trim(); if (k && !seen[k.toLowerCase()]) { seen[k.toLowerCase()] = true; out.push(k) } }
+                for (const n of Notifications.list) add(n.appName)
+                appRules.silent.forEach(add); appRules.blocked.forEach(add); appRules.extra.forEach(add)
+                return out.sort((a, b) => a.localeCompare(b))
             }
-        }
+            function ruleOf(app) {
+                const k = app.toLowerCase(), has = l => l.some(a => String(a).trim().toLowerCase() === k)
+                return has(appRules.blocked) ? "blocked" : has(appRules.silent) ? "silent" : "normal"
+            }
+            function setRule(app, rule) {
+                const k = app.toLowerCase(), drop = l => l.filter(a => String(a).trim().toLowerCase() !== k)
+                Config.setNestedValue("notifications.silentApps", rule === "silent" ? drop(appRules.silent).concat([app]) : drop(appRules.silent))
+                Config.setNestedValue("notifications.blockedApps", rule === "blocked" ? drop(appRules.blocked).concat([app]) : drop(appRules.blocked))
+            }
 
-        ConfigRow {
-            label: "Blocked apps"
-            configKey: "notifications.blockedApps"
-            sublabel: "Comma-separated app names: their notifications are dropped"
-            StyledTextInput {
-                text: Array.from(Config.options?.notifications?.blockedApps ?? []).join(", ")
+            ColumnLayout {
                 Layout.fillWidth: true
-                onEditingFinished: Config.setNestedValue("notifications.blockedApps",
-                    text.split(",").map(s => s.trim()).filter(s => s.length > 0))
+                spacing: 6
+                StyledText {
+                    visible: appRules.apps.length === 0
+                    text: "No app has sent a notification yet"
+                    color: Appearance.colors.colSubtext
+                    font.pixelSize: Appearance.font.pixelSize.small
+                }
+                Repeater {
+                    model: appRules.apps
+                    RowLayout {
+                        required property string modelData
+                        Layout.fillWidth: true
+                        spacing: 8
+                        StyledText { text: modelData; Layout.fillWidth: true; elide: Text.ElideRight }
+                        ChoiceRow {
+                            model: [{ value: "normal", label: "Normal", icon: "notifications" },
+                                    { value: "silent", label: "Silent", icon: "notifications_paused" },
+                                    { value: "blocked", label: "Blocked", icon: "block" }]
+                            current: appRules.ruleOf(modelData)
+                            onChose: value => appRules.setRule(modelData, value)
+                        }
+                    }
+                }
+                StyledTextInput {
+                    Layout.fillWidth: true
+                    // An app that hasn't notified yet: add it by name, then pick its rule.
+                    onAccepted: { const n = text.trim(); if (n) appRules.extra = appRules.extra.concat([n]); text = "" }
+                    StyledText {
+                        anchors.fill: parent
+                        text: "Add an app by name…"
+                        opacity: 0.45
+                        visible: parent.text.length === 0
+                        font.pixelSize: parent.font.pixelSize
+                    }
+                }
             }
         }
 
