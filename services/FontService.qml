@@ -37,8 +37,9 @@ Singleton {
         id: fcListProc
         // `fc-list : family` prints one family-name spec per line; a spec can be
         // a comma-separated list of localized aliases. Take the first alias of
-        // each line, dedupe, sort.
-        command: ["fc-list", ":", "family"]
+        // each line, dedupe, sort. Scalable only: bitmap families can't be
+        // drawn at other sizes (and each logs a warning in the picker).
+        command: ["fc-list", ":scalable=true", "family"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const seen = {};
