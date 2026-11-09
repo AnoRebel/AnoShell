@@ -52,6 +52,29 @@ Singleton {
 
     Process { id: applyProc }
 
+    // Redraw what each output shows now with a new resize mode (awww only
+    // applies the mode when it draws; the shell engine follows the config).
+    function reshow(resize) {
+        if ((Config.options?.background?.engine ?? "awww") !== "awww") return
+        reshowProc.resize = resize
+        reshowProc.running = true
+    }
+    Process {
+        id: reshowProc
+        property string resize: "fit"
+        command: ["awww", "query"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // ": eDP-1: 1280x800, scale: 1.5, currently displaying: image: /path"
+                for (const line of text.split("\n")) {
+                    const m = line.match(/([^\s:]+): \d+x\d+.*currently displaying: image: (.+)$/)
+                    if (m) Quickshell.execDetached(["awww", "img", "--resize", reshowProc.resize,
+                        "--transition-type", "none", "--outputs", m[1], "--", m[2]])
+                }
+            }
+        }
+    }
+
     // Random wallpaper rotation without anod (anod rotates when it runs, so
     // this would fight it otherwise).
     property list<string> randomWallpaperList: []

@@ -4,8 +4,10 @@ AnoShell's daemon, anod, applies wallpapers and everything that follows from
 one, in this order:
 
 1. **awww** shows the image, with the resize mode you chose
-   (`background.resize`: `fit`, `crop`, `stretch` or `no`). The mode is recorded,
-   so glass can sample exactly what is on screen.
+   (`background.resize`: `fit`, `crop`, `stretch` or `no`; default `fit`). The
+   mode is recorded, so glass can sample exactly what is on screen. Change it in
+   Settings → Appearance → Wallpaper engine → Fit (Fit, Fill, Stretch, Center);
+   the wallpaper on screen is redrawn straight away.
 2. **matugen** generates the Material colours from it, written where the shell
    reads them (`~/.local/state/anoshell/generated/colors.json`). The scheme is
    `appearance.colors.schemeType`; with several candidate colours,

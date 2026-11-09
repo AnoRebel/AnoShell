@@ -111,9 +111,9 @@ ColumnLayout {
             label: "Fit"
             configKey: "background.resize"
             ChoiceRow {
-                model: [{ value: "fit", label: "Fit", icon: "fit_screen" }, { value: "crop", label: "Fill", icon: "crop" }, { value: "stretch", label: "Stretch", icon: "open_in_full" }]
+                model: [{ value: "fit", label: "Fit", icon: "fit_screen" }, { value: "crop", label: "Fill", icon: "crop" }, { value: "stretch", label: "Stretch", icon: "open_in_full" }, { value: "no", label: "Center", icon: "filter_center_focus" }]
                 current: Config.options?.background?.resize ?? "fit"
-                onChose: value => Config.setNestedValue("background.resize", value)
+                onChose: value => { Config.setNestedValue("background.resize", value); Wallpapers.reshow(value) }
             }
         }
         ConfigSwitch {
