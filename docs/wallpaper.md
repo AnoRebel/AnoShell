@@ -150,13 +150,13 @@ Wallhaven downloads land in it, rotation picks from it and `ano backup
 create --add wallpapers` archives it. Empty (the default) means `Wallpapers` in your
 Pictures folder (`XDG_PICTURES_DIR`, usually `~/Pictures/Wallpapers`).
 
-Wallhaven's tab can also search by colour: the row of swatches under its
-filters is Wallhaven's own palette (the only colours its API takes); pick one
-again to clear it.
-
 ```json
 "background": { "wallpaperDir": "~/Pictures/hyprwallpapers" }
 ```
+
+Wallhaven's tab can also search by colour: the row of swatches under its
+filters is Wallhaven's own palette (the only colours its API takes); pick one
+again to clear it.
 
 `background.randomize` changes the wallpaper on a timer, from the wallpaper
 folder, or from `directory` if you give rotation its own:
