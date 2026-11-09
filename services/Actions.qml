@@ -163,6 +163,7 @@ Singleton {
             run: (s, done) => {
                 const p = { "power-saver": PowerProfile.PowerSaver, "balanced": PowerProfile.Balanced, "performance": PowerProfile.Performance }[s.profile]
                 if (p === undefined) return done(`no power profile "${s.profile ?? ""}"`)
+                if (!PowerProfilePersistence.available) return done("power-profiles-daemon isn't running")
                 if (p === PowerProfile.Performance && !PowerProfiles.hasPerformanceProfile) return done("this machine has no performance profile (is power-profiles-daemon running?)")
                 PowerProfiles.profile = p
                 done("")

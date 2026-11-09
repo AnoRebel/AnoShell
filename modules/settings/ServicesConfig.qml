@@ -569,7 +569,16 @@ ColumnLayout {
         subtitle: "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`."
         configKeys: ["powerProfiles"]
 
+        StyledText {
+            visible: PowerProfilePersistence.checked && !PowerProfilePersistence.available
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            text: "power-profiles-daemon isn't installed or running, so there are no profiles to switch."
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.small
+        }
         ConfigSwitch {
+            visible: PowerProfilePersistence.available
             label: "Restore on start"
             configKey: "powerProfiles.restoreOnStart"
             sublabel: "When off, power-profiles-daemon decides at boot"
@@ -578,6 +587,7 @@ ColumnLayout {
         }
 
         ConfigRow {
+            visible: PowerProfilePersistence.available
             label: "Active profile"
             sublabel: "Persists across reboots when restore-on-start is on"
 

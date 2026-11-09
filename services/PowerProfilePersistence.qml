@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.UPower
 import qs.modules.common
 
@@ -25,6 +26,21 @@ Singleton {
 
     property bool _initialized: false
 
+    // Whether power-profiles-daemon is on the system bus (running or
+    // activatable). Without it nothing is restored or offered: setting a
+    // profile would only log warnings and the buttons would do nothing.
+    property bool available: false
+    property bool checked: false
+    Process {
+        running: true
+        command: ["sh", "-c", "busctl --system list --no-legend 2>/dev/null | awk '{print $1}' | grep -qxE 'org.freedesktop.UPower.PowerProfiles|net.hadess.PowerProfiles'"]
+        onExited: code => {
+            root.available = code === 0
+            root.checked = true
+            if (root.available && Config.ready) Qt.callLater(() => root._applyPreferredProfile())
+        }
+    }
+
     function _profileToString(profile): string {
         switch (profile) {
             case PowerProfile.PowerSaver: return "power-saver"
@@ -44,7 +60,7 @@ Singleton {
     }
 
     function _applyPreferredProfile(): void {
-        if (!Config.ready || root._initialized)
+        if (!Config.ready || !root.available || root._initialized)
             return
 
         root._initialized = true
@@ -78,6 +94,7 @@ Singleton {
 
     Connections {
         target: PowerProfiles
+        enabled: root.available
         function onProfileChanged() {
             const s = root._profileToString(PowerProfiles.profile)
             if (s.length === 0)
