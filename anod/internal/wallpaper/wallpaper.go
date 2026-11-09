@@ -201,6 +201,29 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 	}
 
 	// 3. hooks, in order
+	res.Steps = append(res.Steps, p.hooks(ctx, s, img, src, false)...)
+	p.logSteps(res.Steps)
+	return res, nil
+}
+
+// readsImage: a hook that follows the wallpaper image rather than
+// colors.json ({image} in its argv, or the cava builtin, which reads pywal).
+func readsImage(h Hook) bool {
+	if h.Builtin == "cava" {
+		return true
+	}
+	for _, a := range h.Command {
+		if strings.Contains(a, "{image}") {
+			return true
+		}
+	}
+	return false
+}
+
+// hooks runs s.Hooks in order. theme: the colours came from a static theme,
+// not img, so hooks that read the image are skipped.
+func (p *Pipeline) hooks(ctx context.Context, s Settings, img, src string, theme bool) []StepResult {
+	var steps []StepResult
 	env := []string{"ANO_WALLPAPER=" + img, "ANO_THEME_MODE=" + s.Mode, "ANO_COLORS=" + p.ColorsPath}
 	for _, h := range s.Hooks {
 		name := h.Name
@@ -209,10 +232,13 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		}
 		switch {
 		case !h.Enable:
-			res.Steps = append(res.Steps, StepResult{Name: name, Skipped: "disabled"})
+			steps = append(steps, StepResult{Name: name, Skipped: "disabled"})
 			continue
 		case s.FixedColor:
-			res.Steps = append(res.Steps, StepResult{Name: name, Skipped: "fixed colour mode"})
+			steps = append(steps, StepResult{Name: name, Skipped: "fixed colour mode"})
+			continue
+		case theme && readsImage(h):
+			steps = append(steps, StepResult{Name: name, Skipped: "reads the wallpaper, not the theme"})
 			continue
 		}
 		timeout := time.Duration(h.Timeout) * time.Second
@@ -220,11 +246,11 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 			timeout = 20 * time.Second
 		}
 		if h.Builtin == "cava" {
-			res.Steps = append(res.Steps, p.cava(name))
+			steps = append(steps, p.cava(name))
 			continue
 		}
 		if len(h.Command) == 0 {
-			res.Steps = append(res.Steps, StepResult{Name: name, Skipped: "no command"})
+			steps = append(steps, StepResult{Name: name, Skipped: "no command"})
 			continue
 		}
 		argv := make([]string, len(h.Command))
@@ -236,12 +262,40 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 		}
 		argv[0] = expandHome(argv[0])
 		if _, err := exec.LookPath(argv[0]); err != nil {
-			res.Steps = append(res.Steps, StepResult{Name: name, Skipped: "not installed: " + argv[0]})
+			steps = append(steps, StepResult{Name: name, Skipped: "not installed: " + argv[0]})
 			continue
 		}
-		res.Steps = append(res.Steps, p.run(ctx, name, timeout, argv, env))
+		steps = append(steps, p.run(ctx, name, timeout, argv, env))
 	}
-	for _, st := range res.Steps {
+	return steps
+}
+
+// ApplyPalette makes a ready palette (a static theme's colors.json content)
+// the colours the way a wallpaper's are: colors.json, GTK, then the hooks
+// that don't read the wallpaper image — so apps follow a static theme too.
+// mode is the theme's dark/light.
+func (p *Pipeline) ApplyPalette(ctx context.Context, colors []byte, mode string, s Settings) (Result, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	s.FixedColor, s.Mode = false, mode
+	res := Result{Colors: p.ColorsPath, Scheme: Choice{Mode: mode}}
+	st := StepResult{Name: "colors"}
+	if err := writeAtomic(p.ColorsPath, colors); err != nil {
+		st.Error = err.Error()
+		res.Steps = append(res.Steps, st)
+		return res, err
+	}
+	st.OK = true
+	p.saveColors("") // not from an image: a later wallpaper recolour isn't skipped as "already done"
+	res.Steps = append(res.Steps, st, p.Gtk(s))
+	img := p.LoadState().Image
+	res.Steps = append(res.Steps, p.hooks(ctx, s, img, img, true)...)
+	p.logSteps(res.Steps)
+	return res, nil
+}
+
+func (p *Pipeline) logSteps(steps []StepResult) {
+	for _, st := range steps {
 		switch {
 		case st.Skipped != "":
 			p.logf("wallpaper: %s skipped (%s)", st.Name, st.Skipped)
@@ -251,7 +305,6 @@ func (p *Pipeline) Apply(ctx context.Context, req Request, s Settings) (Result, 
 			p.logf("wallpaper: %s ok (%dms)", st.Name, st.Duration)
 		}
 	}
-	return res, nil
 }
 
 func awwwArgs(img string, outputs []string, s Settings) []string {
@@ -300,7 +353,7 @@ func (p *Pipeline) matugen(ctx context.Context, img string, s Settings) StepResu
 	defer cancel()
 	args := []string{"image", img, "--mode", mode, "--type", "scheme-" + scheme,
 		"--prefer", prefer, "--json", "hex", "--dry-run"}
-	if cfg := p.matugenConfig(); cfg != "" {
+	if cfg := p.MatugenConfig(); cfg != "" {
 		args = append([]string{"-c", cfg}, args...)
 	}
 	out, err := exec.CommandContext(c, "matugen", args...).Output()
@@ -375,11 +428,11 @@ func (p *Pipeline) Gtk(s Settings) StepResult {
 // matugenMinimalConfig is all matugen 4 accepts: both tables, even empty.
 const matugenMinimalConfig = "# Written by anod: only colours are read (--dry-run --json).\n[config]\n\n[templates]\n"
 
-// matugenConfig returns an anod-owned matugen config, so a user's own
+// MatugenConfig returns an anod-owned matugen config, so a user's own
 // ~/.config/matugen/config.toml (which matugen 4 rejects without a [config]
 // table, and whose templates we don't want) never breaks colour generation.
 // "" (matugen's default lookup) when it can't be written.
-func (p *Pipeline) matugenConfig() string {
+func (p *Pipeline) MatugenConfig() string {
 	if p.ColorsPath == "" {
 		return ""
 	}

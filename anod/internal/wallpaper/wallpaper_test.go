@@ -99,6 +99,41 @@ func TestFixedColourModeSkipsHooks(t *testing.T) {
 	}
 }
 
+// A static theme's palette: colors.json and the hooks that read it, even
+// with the colour mode fixed; hooks that follow the image are skipped.
+func TestApplyPaletteRunsColourHooks(t *testing.T) {
+	bin, home, p := setup(t)
+	fakeBin(t, bin, "wal", "exit 0")
+	fakeBin(t, bin, "applycolor", "exit 0")
+	p.GtkDirs = []string{filepath.Join(home, "gtk-3.0")}
+	res, err := p.ApplyPalette(context.Background(), []byte(`{"primary":"#123456","background":"#fafafa","darkmode":false}`), "light",
+		Settings{FixedColor: true, Gtk: true, Hooks: []Hook{
+			{Name: "pywal", Enable: true, Command: []string{"wal", "-i", "{image}"}},
+			{Name: "cava", Enable: true, Builtin: "cava"},
+			{Name: "apps", Enable: true, Command: []string{"applycolor", "--mode", "{mode}"}},
+		}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := []string{}
+	for _, s := range res.Steps {
+		names = append(names, s.Name+":"+map[bool]string{true: "ok", false: "x"}[s.OK]+s.Skipped)
+	}
+	want := "colors:ok gtk:ok pywal:xreads the wallpaper, not the theme cava:xreads the wallpaper, not the theme apps:ok"
+	if strings.Join(names, " ") != want {
+		t.Fatalf("steps:\n got %s\nwant %s", strings.Join(names, " "), want)
+	}
+	if b, _ := os.ReadFile(filepath.Join(bin, "applycolor.log")); string(b) != "--mode light\n" {
+		t.Fatalf("applycolor argv: %q", b)
+	}
+	if b, _ := os.ReadFile(p.ColorsPath); !strings.Contains(string(b), "#123456") {
+		t.Fatalf("colors.json: %s", b)
+	}
+	if css, _ := os.ReadFile(filepath.Join(home, "gtk-3.0", "gtk.css")); !strings.Contains(string(css), "#123456") {
+		t.Fatalf("gtk.css: %s", css)
+	}
+}
+
 func TestHookTimeout(t *testing.T) {
 	bin, home, p := setup(t)
 	fakeBin(t, bin, "slow", "/usr/bin/sleep 5")

@@ -246,6 +246,7 @@ func main() {
 		}
 		return st, nil
 	})
+	registerThemes(ctx, srv, wp)
 	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
 	srv.Handle("wallpaper.status", func(json.RawMessage) (any, error) {
 		rs, _ := wallpaperSettings()
