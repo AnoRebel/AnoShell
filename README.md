@@ -696,6 +696,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Scratchpad & Pins (`scratchpad.enable`, off by default) | `wl-clipboard` (copy), `libnotify` (`notify-send`: failed background commands), a terminal (Settings → Default apps) for terminal pins; `??` needs an AI provider (left sidebar) | no copy / no failure notice / terminal pins don't open / `??` says no provider |
 | Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
+| Live pins (Super+Alt+P, `livePins`) | window capture: Hyprland (hyprland-toplevel-export); `libnotify` (`notify-send`) for the "window closed" notice | not offered on other compositors / no notice |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
 

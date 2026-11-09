@@ -1,0 +1,4 @@
+module qs.modules.livePins
+LivePins 1.0 LivePins.qml
+LivePin 1.0 LivePin.qml
+LivePinPicker 1.0 LivePinPicker.qml

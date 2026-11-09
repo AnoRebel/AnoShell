@@ -236,6 +236,10 @@
     "onTimeout": "keep",
     "saveDir": ""
   },
+  "livePins": {
+    "fps": 10,
+    "layer": "top"
+  },
   "screenTime": {
     "enable": false,
     "keepDays": 30,

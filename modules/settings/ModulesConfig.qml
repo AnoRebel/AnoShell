@@ -29,7 +29,7 @@ ColumnLayout {
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
             "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
-            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "controlPanel", "pieces"
+            "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "livePins", "controlPanel", "pieces"
         ]
     }
 
@@ -511,6 +511,34 @@ ColumnLayout {
                     Config.setNestedValue("screenshot.ocrLanguages", l.length ? l : ["eng"])
                 }
                 Layout.preferredWidth: 200
+            }
+        }
+    }
+
+    // ═══ Live pins ═══
+    SettingsCard {
+        icon: "picture_in_picture"
+        title: "Live pins"
+        subtitle: "Super+Alt+P: pick a window, drag over a part of it, and that part stays on screen, live. Drag a pin to move it, its corner to resize; hover for the layer and close buttons (Hyprland)"
+        configKeys: ["livePins"]
+
+        ConfigSlider {
+            label: "Frames a second"
+            configKey: "livePins.fps"
+            sublabel: "Per pin; each frame is a window capture, so lower is lighter. Paused while hidden, locked or covered"
+            from: 1; to: 30; stepSize: 1
+            value: Config.options?.livePins?.fps ?? 10
+            onValueChanged: Config.setNestedValue("livePins.fps", Math.round(value))
+            valueText: `${Math.round(value)} fps`
+        }
+        ConfigRow {
+            label: "New pins open"
+            configKey: "livePins.layer"
+            sublabel: "Each pin's hover button moves it between the two"
+            ChoiceRow {
+                model: [{ value: "top", label: "Above windows", icon: "flip_to_front" }, { value: "bottom", label: "On the desktop", icon: "flip_to_back" }]
+                current: Config.options?.livePins?.layer ?? "top"
+                onChose: value => Config.setNestedValue("livePins.layer", value)
             }
         }
     }

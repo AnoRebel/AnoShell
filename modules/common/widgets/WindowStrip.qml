@@ -25,6 +25,8 @@ Item {
     property int thumbW: 180
     property int thumbH: 110
     property real maxWidth: 800
+    // false: a click only emits activated (a picker choosing a window).
+    property bool focusOnTap: true
     signal activated(var win)
 
     readonly property int _gap: 8
@@ -108,7 +110,7 @@ Item {
                 HoverHandler { id: tileHover; cursorShape: Qt.PointingHandCursor }
                 TapHandler {
                     onTapped: {
-                        CompositorService.focusWindow(tile.modelData)
+                        if (root.focusOnTap) CompositorService.focusWindow(tile.modelData)
                         root.activated(tile.modelData)
                     }
                 }
