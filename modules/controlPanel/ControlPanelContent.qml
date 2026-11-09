@@ -66,7 +66,7 @@ ColumnLayout {
             RowLayout {
                 spacing: 8
                 MaterialSymbol { text: "brightness_6"; iconSize: 18; color: Appearance?.colors.colPrimary ?? "#65558F" }
-                StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Brightness.monitors[0]?.brightness ?? 0; onMoved: Brightness.monitors[0]?.setBrightness(value); stopIndicatorValues: [] }
+                StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Brightness.primary?.brightness ?? 0; onMoved: Brightness.primary?.setBrightness(value); stopIndicatorValues: [] }
             }
             RowLayout {
                 spacing: 8

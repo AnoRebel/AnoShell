@@ -20,14 +20,22 @@ Singleton {
     property var ddcMonitors: []
     readonly property list<BrightnessMonitor> monitors: Quickshell.screens.map(screen => monitorComp.createObject(root, { screen }))
 
+    // The first screen we can drive (control panel slider).
+    readonly property var primary: monitors.find(m => m.ready) ?? null
+    // light.device changed in Settings: pick the devices again.
+    readonly property string _override: Config.options?.light?.device ?? ""
+    on_OverrideChanged: if (Config.ready && !backlightProc.running) { backlights = []; ddcMonitors = []; backlightProc.running = true }
+
+    // Only screens whose brightness we can drive (a backlight of their own,
+    // or DDC/CI); an external screen without DDC is not given the panel's.
     function getMonitorForScreen(screen): var {
-        return monitors.find(m => m.screen === screen)
+        return monitors.find(m => m.screen === screen && m.ready) ?? null
     }
 
     // `screen?`: a monitor unplugged a moment ago is still listed with no screen.
     function focusedMonitor(): var {
         const focusedName = CompositorService.focusedMonitorName
-        return monitors.find(m => m.screen?.name === focusedName) ?? null
+        return monitors.find(m => m.screen?.name === focusedName && m.ready) ?? null
     }
 
     function increaseBrightness(): void {
@@ -44,7 +52,37 @@ Singleton {
 
     onMonitorsChanged: {
         ddcMonitors = []
-        ddcProc.running = true
+        backlights = []
+        backlightProc.running = true
+    }
+
+    // Each backlight with the connector it belongs to ("" for firmware/ACPI
+    // ones that hang off the GPU, not an output): { name, type, conn }.
+    property var backlights: []
+    Process {
+        id: backlightProc
+        command: ["sh", "-c", "for b in /sys/class/backlight/*; do [ -e \"$b\" ] || continue; c=$(basename \"$(readlink -f \"$b/device\")\"); case $c in card*-*) c=${c#card*-} ;; *) c= ;; esac; echo \"$(basename \"$b\") $(cat \"$b/type\" 2>/dev/null) $c\"; done"]
+        stdout: SplitParser {
+            onRead: data => {
+                const [name, type, conn] = data.trim().split(" ")
+                if (name) root.backlights.push({ name, type: type ?? "", conn: conn ?? "" })
+            }
+        }
+        onExited: ddcProc.running = true
+    }
+    // The backlight for a screen: the one under its connector; else, for a
+    // built-in panel, one that names no connector (raw/platform before
+    // firmware). light.device overrides it for the screen that has one (or
+    // the built-in panel, or the only screen).
+    function backlightFor(screenName): string {
+        const internal = /^(eDP|LVDS|DSI)/.test(screenName)
+        const rank = t => ({ raw: 0, platform: 1, firmware: 2 })[t] ?? 3
+        let found = root.backlights.find(b => b.conn === screenName)
+        if (!found && internal)
+            found = root.backlights.filter(b => !b.conn).sort((a, b) => rank(a.type) - rank(b.type))[0]
+        const device = Config.options?.light?.device ?? ""
+        if (device) return (found || internal || Quickshell.screens.length === 1) ? device : ""
+        return found?.name ?? ""
     }
 
     function initializeMonitor(i): void {
@@ -125,16 +163,21 @@ Singleton {
             const match = root.ddcMonitors.find(m => m.name === screen.name && !root.monitors.slice(0, root.monitors.indexOf(this)).some(mon => mon.busNum === m.busNum))
             isDdc = !!match
             busNum = match?.busNum ?? ""
-            const device = Config.options.light.device
+            backlightDevice = isDdc ? "" : root.backlightFor(screen?.name ?? "")
+            if (!isDdc && !backlightDevice) { // nothing drives this screen
+                initializeMonitor(root.monitors.indexOf(monitor) + 1)
+                return
+            }
             initProc.command = isDdc
                 ? ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"]
-                : ["brightnessctl", "-m"].concat(device ? ["-d", device] : ["-c", "backlight"], ["i"])
+                : ["brightnessctl", "-m", "-d", backlightDevice, "i"]
             initProc.running = true
         }
 
         // The backlight device brightnessctl picked; its actual_brightness is
         // watched so keys, firmware and other tools show up here too.
         property string backlightDir: ""
+        property string backlightDevice: ""
         property bool _fromFile: false
 
         readonly property Process initProc: Process {
@@ -175,15 +218,7 @@ Singleton {
                 const valuePercentNumber = Math.floor(brightnessValue * 100)
                 let valuePercent = `${valuePercentNumber}%`
                 if (valuePercentNumber === 0) valuePercent = "1"
-                const device = Config.options.light.device
-                const cmd = ["brightnessctl"]
-                if (device) {
-                    cmd.push("-d", device)
-                } else {
-                    cmd.push("--class", "backlight")
-                }
-                cmd.push("s", valuePercent, "--quiet")
-                setProc.exec(cmd)
+                setProc.exec(["brightnessctl", "-d", monitor.backlightDevice, "s", valuePercent, "--quiet"])
             }
         }
 
@@ -204,7 +239,7 @@ Singleton {
         function decrement(): void { root.decreaseBrightness() }
         // Per screen: { screen, percent, ddc } (read-only, for scripts and tests).
         function status(): string {
-            return JSON.stringify(root.monitors.map(m => ({ screen: m.screen?.name ?? "", percent: Math.round(m.brightness * 100), ddc: m.isDdc })))
+            return JSON.stringify(root.monitors.map(m => ({ screen: m.screen?.name ?? "", percent: Math.round(m.brightness * 100), ddc: m.isDdc, device: m.backlightDevice, supported: m.ready })))
         }
     }
 
