@@ -13,9 +13,11 @@ import qs.services
  * The piece's root item gets `ctx` (live, screenName, cell) and `settings`
  * (the placed piece's settings over the manifest's defaults).
  *
- * In edit mode the card can be dragged (snaps to cells on release), resized
- * from its corner, removed, or have its settings opened; a spot that's
- * outside the grid or taken springs back. Right-click enters edit mode.
+ * In edit mode the card can be dragged (it lands on the free spot nearest
+ * where it's let go), resized from its corner (pushing its neighbours aside;
+ * it stops at the last size that fits), removed, or have its settings
+ * opened. While it moves, a shape shows where it will land and the
+ * neighbours it would push move there. Right-click enters edit mode.
  */
 Item {
     id: host
@@ -24,7 +26,9 @@ Item {
     // { originX, originY, step, gap, cols, rows, screenName } from the layer
     property var grid
     property bool editing: false
+    property bool selected: false   // the one the arrow keys move (edit mode)
     signal openSettings(var host)
+    signal picked()
     // Where it takes input (the layer's mask collects these).
     readonly property Region region: Region { item: host }
 
@@ -41,11 +45,24 @@ Item {
     property real dy: 0
     property real dw: 0
     property real dh: 0
-    x: host.grid.originX + host.placed.x * host.grid.step + host.dx
-    y: host.grid.originY + host.placed.y * host.grid.step + host.dy
-    width: Math.max(host.grid.step - host.grid.gap, host.placed.w * host.grid.step - host.grid.gap + host.dw)
-    height: Math.max(host.grid.step - host.grid.gap, host.placed.h * host.grid.step - host.grid.gap + host.dh)
-    z: host.dx || host.dy || host.dw || host.dh ? 10 : 0
+    // Where it sits: placed, or where another piece's drag would push it.
+    readonly property var cell: {
+        const p = Pieces.preview
+        if (host.editing && p && p.screen === host.grid.screenName && p.uid !== host.placed.uid)
+            return p.page.find(o => o.uid === host.placed.uid) ?? host.placed
+        return host.placed
+    }
+    x: host.grid.originX + host.cell.x * host.grid.step + host.dx
+    y: host.grid.originY + host.cell.y * host.grid.step + host.dy
+    width: Math.max(host.grid.step - host.grid.gap, host.cell.w * host.grid.step - host.grid.gap + host.dw)
+    height: Math.max(host.grid.step - host.grid.gap, host.cell.h * host.grid.step - host.grid.gap + host.dh)
+    z: host.dragging ? 10 : 0
+    readonly property bool dragging: moveArea.pressed || resizeArea.pressed
+    // Pushed aside, snapping in, a key move: animated (not under the pointer).
+    Behavior on x { enabled: host.editing && !host.dragging; animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
+    Behavior on y { enabled: host.editing && !host.dragging; animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
+    Behavior on width { enabled: host.editing && !host.dragging; animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
+    Behavior on height { enabled: host.editing && !host.dragging; animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
 
     // The cell geometry the current drag/resize would land on.
     readonly property var target: ({
@@ -54,10 +71,36 @@ Item {
         w: Math.max(1, Math.round((host.width + host.grid.gap) / host.grid.step)),
         h: Math.max(1, Math.round((host.height + host.grid.gap) / host.grid.step))
     })
-    function commit() {
+    readonly property string mode: moveArea.pressed ? "drop" : resizeArea.pressed ? "resize" : ""
+    // The page as the drag would leave it (null: nowhere fits) and this piece's spot in it.
+    readonly property var plan: !host.editing || !host.mode ? null
+        : Pieces.plan(host.grid.screenName, host.placed.uid, host.mode,
+                      host.mode === "drop" ? host.target.x : host.target.w,
+                      host.mode === "drop" ? host.target.y : host.target.h, host.grid.cols, host.grid.rows)
+    readonly property var landing: host.plan?.find(o => o.uid === host.placed.uid) ?? null
+    onPlanChanged: {
+        if (host.plan) Pieces.preview = { screen: host.grid.screenName, uid: host.placed.uid, page: host.plan }
+        else if (Pieces.preview?.uid === host.placed.uid) Pieces.preview = null
+    }
+    function commit(mode) {
         const t = host.target
-        Pieces.place(host.grid.screenName, host.placed.uid, t.x, t.y, t.w, t.h, host.grid.cols, host.grid.rows)
+        Pieces.preview = null
+        Pieces.place(host.grid.screenName, host.placed.uid, mode, mode === "drop" ? t.x : t.w, mode === "drop" ? t.y : t.h, host.grid.cols, host.grid.rows)
         host.dx = 0; host.dy = 0; host.dw = 0; host.dh = 0
+    }
+
+    // Where it will land, under the card being dragged.
+    Rectangle {
+        z: -1
+        visible: !!host.landing
+        x: host.grid.originX + (host.landing?.x ?? 0) * host.grid.step - host.x
+        y: host.grid.originY + (host.landing?.y ?? 0) * host.grid.step - host.y
+        width: (host.landing?.w ?? 1) * host.grid.step - host.grid.gap
+        height: (host.landing?.h ?? 1) * host.grid.step - host.grid.gap
+        radius: Appearance.rounding.large
+        color: Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.22)
+        border.width: 2
+        border.color: Appearance.colors.colPrimary
     }
 
     // The card, in the active look's material (fill or glass, stroke, texture).
@@ -116,7 +159,7 @@ Item {
             anchors.fill: parent
             radius: Appearance.rounding.large
             color: Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.12)
-            border.width: 2
+            border.width: host.selected ? 4 : 2
             border.color: Appearance.colors.colPrimary
         }
         // Drag anywhere on the card to move it.
@@ -125,13 +168,13 @@ Item {
             anchors.fill: parent
             cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             property point start
-            onPressed: mouse => start = mapToItem(null, mouse.x, mouse.y)
+            onPressed: mouse => { start = mapToItem(null, mouse.x, mouse.y); host.picked() }
             onPositionChanged: mouse => {
                 const p = mapToItem(null, mouse.x, mouse.y)
                 host.dx += p.x - start.x; host.dy += p.y - start.y
                 start = p
             }
-            onReleased: host.commit()
+            onReleased: host.commit("drop")
         }
         Row {
             anchors { top: parent.top; right: parent.right; margins: 6 }
@@ -146,24 +189,25 @@ Item {
             color: Appearance.colors.colPrimary
             MaterialSymbol { anchors.centerIn: parent; text: "open_in_full"; iconSize: 14; rotation: 90; color: Appearance.colors.colOnPrimary }
             MouseArea {
+                id: resizeArea
                 anchors.fill: parent
                 anchors.margins: -6
                 cursorShape: Qt.SizeFDiagCursor
                 property point start
-                onPressed: mouse => start = mapToItem(null, mouse.x, mouse.y)
+                onPressed: mouse => { start = mapToItem(null, mouse.x, mouse.y); host.picked() }
                 onPositionChanged: mouse => {
                     const p = mapToItem(null, mouse.x, mouse.y)
                     host.dw += p.x - start.x; host.dh += p.y - start.y
                     start = p
                 }
-                onReleased: host.commit()
+                onReleased: host.commit("resize")
             }
         }
         // Where it will land.
         StyledText {
             anchors { left: parent.left; bottom: parent.bottom; margins: 8 }
-            visible: moveArea.pressed || host.dw !== 0 || host.dh !== 0
-            text: `${host.target.w}×${host.target.h} at ${host.target.x + 1},${host.target.y + 1}`
+            visible: host.dragging
+            text: host.landing ? `${host.landing.w}×${host.landing.h} at ${host.landing.x + 1},${host.landing.y + 1}` : "No room"
             font.pixelSize: Appearance.font.pixelSize.smaller
             color: Appearance.colors.colPrimary
         }

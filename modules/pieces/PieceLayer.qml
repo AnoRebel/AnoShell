@@ -184,6 +184,8 @@ Scope {
                         ctx: win.ctx
                         grid: win.grid
                         editing: win.editing
+                        selected: win.selected === modelData
+                        onPicked: win.selected = modelData
                         onOpenSettings: h => settingsPanel.host = h
                     }
                 }
@@ -287,7 +289,7 @@ Scope {
             }
 
             // ── Edit mode: toolbar, the piece list, a piece's settings ──
-            onEditingChanged: if (!win.editing) { settingsPanel.host = null; addList.open = false }
+            onEditingChanged: if (!win.editing) { settingsPanel.host = null; addList.open = false; win.selected = "" }
             // Escape: the open panel first, then edit mode. A window-level
             // shortcut, so it works wherever focus is inside the layer.
             Shortcut {
@@ -299,6 +301,44 @@ Scope {
                     else if (addList.open) addList.open = false
                     else Pieces.editing = false
                 }
+            }
+            // Keys for the selected piece (the one last clicked; Tab picks the
+            // next): arrows move it a cell, pushing what's in the way; with
+            // Shift they resize it from its bottom-right corner. Undo is offered.
+            property string selected: ""
+            function nudge(dx, dy, resize) {
+                const o = (win.layout.pages[win.shownPage] ?? []).find(p => p.uid === win.selected)
+                if (!o) return
+                if (resize) Pieces.place(win.screenName, o.uid, "resize", o.w + dx, o.h + dy, win.cols, win.rows)
+                else Pieces.place(win.screenName, o.uid, "push", o.x + dx, o.y + dy, win.cols, win.rows)
+            }
+            function selectNext() {
+                const l = Array.from(win.layout.pages[win.shownPage] ?? []).sort((a, b) => a.y - b.y || a.x - b.x)
+                if (!l.length) return
+                const i = l.findIndex(o => o.uid === win.selected)
+                win.selected = l[(i + 1) % l.length].uid
+            }
+            component Nudge: Shortcut {
+                property int dx
+                property int dy
+                property bool grow
+                enabled: win.editing && win.selected !== "" && !settingsPanel.host && !addList.open
+                context: Qt.WindowShortcut
+                onActivated: win.nudge(dx, dy, grow)
+            }
+            Nudge { sequence: "Left"; dx: -1 }
+            Nudge { sequence: "Right"; dx: 1 }
+            Nudge { sequence: "Up"; dy: -1 }
+            Nudge { sequence: "Down"; dy: 1 }
+            Nudge { sequence: "Shift+Left"; dx: -1; grow: true }
+            Nudge { sequence: "Shift+Right"; dx: 1; grow: true }
+            Nudge { sequence: "Shift+Up"; dy: -1; grow: true }
+            Nudge { sequence: "Shift+Down"; dy: 1; grow: true }
+            Shortcut {
+                sequence: "Tab"
+                enabled: win.editing && !settingsPanel.host && !addList.open
+                context: Qt.WindowShortcut
+                onActivated: win.selectNext()
             }
             SurfaceMaterial {
                 id: toolbar
