@@ -934,6 +934,8 @@ func awwwTransition(typ, dir string) string {
 		return typ
 	case "zoom":
 		return "grow"
+	case "paint": // the shell engine's blobs; awww's closest is its wave
+		return "wave"
 	case "slideRight", "slide":
 		switch dir {
 		case "left":

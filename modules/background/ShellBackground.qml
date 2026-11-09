@@ -106,7 +106,10 @@ Scope {
                 id: trans
                 target: win; property: "progress"; from: 0; to: 1
                 duration: root.transitionType === "none" ? 1 : root.transitionMs
-                easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
+                // Paint eases each blob itself: a linear clock spreads them over
+                // the whole duration (the standard curve is 80% done at a third).
+                easing.type: root.transitionType === "paint" ? Easing.Linear : Easing.BezierSpline
+                easing.bezierCurve: Appearance.animationCurves.standard
                 onFinished: win.finish()
             }
 
@@ -138,7 +141,7 @@ Scope {
                 fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/bg_transition.frag.qsb"))
                 property var source: nextTex
                 property real progress: win.progress
-                property real mode: ({ wipe: 1, right: 1, left: 1, top: 1, bottom: 1, slideRight: 1, grow: 2, center: 2, outer: 2, zoom: 2 })[root.transitionType] ?? 0
+                property real mode: ({ wipe: 1, right: 1, left: 1, top: 1, bottom: 1, slideRight: 1, grow: 2, center: 2, outer: 2, zoom: 2, paint: 3 })[root.transitionType] ?? 0
                 property real aspect: width / Math.max(1, height)
             }
         }

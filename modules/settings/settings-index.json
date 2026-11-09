@@ -3046,6 +3046,15 @@
  {
   "page": 7,
   "card": "",
+  "label": "Paint",
+  "sublabel": "",
+  "keys": [
+   "background.transition.type"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
   "label": "None",
   "sublabel": "",
   "keys": [
