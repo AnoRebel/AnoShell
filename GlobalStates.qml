@@ -74,6 +74,7 @@ Singleton {
     property bool displayManagerOpen: false
     property bool anoSpotStashOpen: false
     property bool calendarOpen: false
+    property bool clockOpen: false // Clock panel (modules/clock)
     // Network Orbit panel (modules/networkOrbit) and its tab: wifi, bt, vpn, eth.
     property bool networkOrbitOpen: false
     property string networkOrbitTab: "wifi"

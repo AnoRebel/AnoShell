@@ -48,6 +48,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super+Y | Scratchpad & Pins (when on) |
 | Super+Ctrl+X | actions ring (your macros, Settings → Actions) |
 | Super+Alt+P | live pin: keep part of a window on screen (Hyprland) |
+| Super+Ctrl+C | Clock: alarms, world clocks, timer, stopwatch |
 | Super+Comma, Super+Slash | Settings, cheatsheet |
 | Super+Return, Super+E, Super+Z, Super+D | terminal, files, browser (your default apps), vicinae |
 | Super+Q, Super+Shift+Q | close |

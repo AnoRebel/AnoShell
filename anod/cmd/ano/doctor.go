@@ -44,6 +44,7 @@ var features = []feature{
 	{"audio spectrum", "", []string{"cava"}},
 	{"sound effects and battery sounds", "sounds.battery|sounds.login|sounds.notifications|sounds.panels|sounds.alerts", []string{"pw-play"}},
 	{"startup applications (anod; else setsid)", "", []string{"systemd-run|setsid"}},
+	{"alarm and timer sound (Clock panel)", "clock.alarmSound", []string{"pw-play"}},
 	{"weather", "bar.weather.enable", []string{"curl"}},
 	{"public holidays", "calendar.holidays.enable", []string{"curl"}},
 	{"calendar sync", "calendar.externalSync.enable", []string{"curl"}},

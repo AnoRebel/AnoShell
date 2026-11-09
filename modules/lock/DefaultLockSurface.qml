@@ -152,6 +152,14 @@ Item {
                 font.pixelSize: Appearance.font.pixelSize.larger; color: "white"; opacity: 0.6
                 Layout.alignment: Qt.AlignHCenter
             }
+            // Next alarm (clock.showOnLock)
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 4
+                visible: (Config.options?.clock?.showOnLock ?? true) && Chrono.nextAlarmText !== ""
+                MaterialSymbol { text: "alarm"; iconSize: 16; color: "white"; opacity: 0.6 }
+                StyledText { text: Chrono.nextAlarmText; font.pixelSize: Appearance.font.pixelSize.small; color: "white"; opacity: 0.6 }
+            }
         }
 
         // Avatar and name

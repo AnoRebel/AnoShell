@@ -255,6 +255,12 @@
     "longBreakMinutes": 15,
     "cyclesBeforeLongBreak": 4
   },
+  "clock": {
+    "alarmSound": true,
+    "snoozeMinutes": 10,
+    "ringMinutes": 5,
+    "showOnLock": true
+  },
   "stickyNotes": {
     "enable": false,
     "clickThrough": false,

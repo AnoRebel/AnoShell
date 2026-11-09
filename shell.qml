@@ -64,6 +64,7 @@ ShellRoot {
         void KdeConnect;  // kdeConnect IPC and pairing prompts; runs only with kdeConnect.enable
         void Scratchpad;  // scratchpad IPC; reads its pins only with scratchpad.enable
         Sounds.greet();   // the login sound, once per session (sounds.login)
+        void Chrono;      // clock IPC; alarms ring with the Clock panel closed
     }
 
     // ═══════════════════════════════════════════════════════════════════════

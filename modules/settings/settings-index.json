@@ -1825,6 +1825,51 @@
   ]
  },
  {
+  "page": 4,
+  "card": "Clock",
+  "label": "Clock",
+  "sublabel": "Alarms, world clocks, timer and stopwatch · middle-click the bar clock, or qs ipc call clock toggle",
+  "keys": [
+   "clock"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Alarm sound",
+  "sublabel": "Alarms and the timer play a sound (the sound theme's alarm-clock-elapsed) even though other shell sounds are off",
+  "keys": [
+   "clock.alarmSound"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Snooze",
+  "sublabel": "",
+  "keys": [
+   "clock.snoozeMinutes"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Ring for",
+  "sublabel": "An unanswered alarm then stops and leaves a \\\"Missed alarm\\\" notification",
+  "keys": [
+   "clock.ringMinutes"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Next alarm on the lock screen",
+  "sublabel": "",
+  "keys": [
+   "clock.showOnLock"
+  ]
+ },
+ {
   "page": 5,
   "card": "AnoSpot",
   "label": "AnoSpot",

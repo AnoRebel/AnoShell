@@ -1,3 +1,4 @@
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -6,6 +7,7 @@ import QtQuick.Layouts
 
 /**
  * Clock bar module with morph-capable popout showing calendar, uptime, weather summary.
+ * Middle-click opens the Clock panel; the popout shows the next alarm.
  */
 Item {
     id: root
@@ -33,7 +35,12 @@ Item {
         StyledText { visible: root.showDate && !root.vertical; font.pixelSize: Appearance.font.pixelSize.small; color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"; text: DateTime.date }
     }
 
-    MouseArea { id: clockMA; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
+    // Middle-click: the Clock panel (alarms, world clocks, timer).
+    MouseArea {
+        id: clockMA; anchors.fill: parent; hoverEnabled: true
+        acceptedButtons: PanelGate.enabled("anoClock") ? Qt.MiddleButton : Qt.NoButton
+        onClicked: GlobalStates.clockOpen = !GlobalStates.clockOpen
+    }
 
     BarModulePopout {
         shown: root.hovered
@@ -76,6 +83,12 @@ Item {
                     spacing: 4
                     MaterialSymbol { text: "schedule"; iconSize: 14; opacity: 0.4 }
                     StyledText { text: `Up ${DateTime.uptime}`; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
+                }
+                RowLayout {
+                    spacing: 4
+                    visible: Chrono.nextAlarmText !== ""
+                    MaterialSymbol { text: "alarm"; iconSize: 14; opacity: 0.4 }
+                    StyledText { text: Chrono.nextAlarmText; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
                 }
                 Item { Layout.fillWidth: true }
                 Loader {

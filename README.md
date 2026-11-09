@@ -172,6 +172,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Notepad` / `Todo` | Notepad tabs (JSON) and the to-do list (a `todo.txt` synced both ways). Opt-in. |
 | `CalendarEvents` / `Holidays` | Your own events with recurrence and reminders; public holidays per country. |
 | `Pomodoro` | Pomodoro, stopwatch and countdown. Opt-in. |
+| `Chrono` | Alarms (minute-aligned check, snooze/dismiss notification, sound) and world clocks for the Clock panel; the timer and stopwatch are `Pomodoro`'s. |
 | `ScreenTime` | Screen time per app and title, idle-aware, with daily and per-app limits. Opt-in. |
 | `Scratchpad` | Pinned commands (terminal or background), the prompt bar's parser, and the tabs over notes, to-do, clipboard and calendar ([docs/scratchpad.md](docs/scratchpad.md)). Opt-in. |
 
@@ -701,6 +702,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Launcher plugins (`search.userPlugins`; bundled `clipboard`, `websearch`, `files`, `kaomoji`, `unicode`, `keybinds`, `windows`) | nothing for the loader; `clipboard` needs `cliphist`; `files` needs `fd`; `kaomoji`, `unicode` and `keybinds` copy with `wl-copy` (`wl-clipboard`); `keybinds` needs anod | that plugin shows nothing (keybinds says anod isn't running) |
 | Scratchpad & Pins (`scratchpad.enable`, off by default) | `wl-clipboard` (copy), `libnotify` (`notify-send`: failed background commands), a terminal (Settings → Default apps) for terminal pins; `??` needs an AI provider (left sidebar) | no copy / no failure notice / terminal pins don't open / `??` says no provider |
 | Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
+| Clock panel alarms and world clocks (middle-click the bar clock, `qs ipc call clock toggle`) | `libnotify` (`notify-send` ≥ 0.7.10: the Snooze/Dismiss actions), `pipewire` (`pw-play`) and a sound theme with `alarm-clock-elapsed` (`sound-theme-freedesktop`) for `clock.alarmSound`; world clocks: `coreutils` (`date`, `test`) and `tzdata` (`/usr/share/zoneinfo`) | no alarm notification / a silent alarm / "Unknown time zone" |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 | Actions (Settings → Actions, the ring on Super+Ctrl+X, `actions` IPC) | per step: open file/URL `xdg-utils` (`xdg-open`); shell command `sh`; brightness as for brightness (`brightnessctl`, or `ddcutil` for external monitors); power profile `power-profiles-daemon`; wallpaper anod (else `awww`) | that step fails, a notification names it, and the steps after it don't run |
 | Live pins (Super+Alt+P, `livePins`) | window capture: Hyprland (hyprland-toplevel-export) | not offered on other compositors |

@@ -1,0 +1,2 @@
+module qs.modules.clock
+ClockPanel 1.0 ClockPanel.qml
