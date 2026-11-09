@@ -58,7 +58,7 @@ Singleton {
                 root.artist = t.subtitle ?? ""
                 root.url = t.url ?? ""
                 notifier.shown = { title: root.title, artist: root.artist, url: root.url }
-                notifier.exec(["notify-send", "-a", "AnoShell", "-i", "audio-x-generic", "--wait",
+                notifier.exec(["timeout", "900", "notify-send", "-a", "AnoShell", "-i", "audio-x-generic", "--wait",
                     "-A", "copy=Copy", "-A", "search=Search", "--", root.title, root.artist])
             }
         }

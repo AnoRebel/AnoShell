@@ -211,7 +211,7 @@ Singleton {
     readonly property string _finishedScript: 'f="$1"; [ -s "$f" ] || { notify-send -a AnoShell -i video-x-generic "Recording failed" "The file is empty: $f"; exit 0; }; '
             + 't="${XDG_RUNTIME_DIR:-/tmp}/anoshell/rec-thumb.png"; mkdir -p "${t%/*}"; '
             + 'ffmpeg -loglevel error -y -ss 0.3 -i "$f" -frames:v 1 -vf scale=480:-1 "$t" 2>/dev/null || t=video-x-generic; '
-            + 'a=$(notify-send -a AnoShell -i "$t" --wait -A open=Open -A folder="Show in folder" -A delete=Delete -- "Recording saved" "$f"); '
+            + 'a=$(timeout 900 notify-send -a AnoShell -i "$t" --wait -A open=Open -A folder="Show in folder" -A delete=Delete -- "Recording saved" "$f"); '
             + 'case "$a" in open) xdg-open "$f";; folder) xdg-open "${f%/*}";; delete) gio trash -- "$f" || notify-send -a AnoShell "Couldn\'t move the recording to the trash" "$f";; esac'
 
     // Keybinds (bundled hyprland.lua: Super+Shift+R region, Super+Shift+Alt+R screen).

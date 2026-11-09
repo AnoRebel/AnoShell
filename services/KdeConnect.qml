@@ -170,7 +170,7 @@ Singleton {
     // device; "--" so a device name starting with "-" isn't read as an option.
     function _askPairing(d) {
         const p = pairAsk.createObject(root, { deviceId: d.id,
-            command: ["notify-send", "-a", "AnoShell", "-w", "-A", "accept=Accept", "-A", "reject=Reject", "--",
+            command: ["timeout", "120", "notify-send", "-a", "AnoShell", "-w", "-A", "accept=Accept", "-A", "reject=Reject", "--",
                 "KDE Connect", `${d.name} wants to pair`] })
         p.running = true
     }
