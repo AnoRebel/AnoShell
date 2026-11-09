@@ -219,14 +219,24 @@ Item {
         }
         return { top, bottom }
     }
+    // manifest.keywords: words that, typed first with a space ("g cats"),
+    // also activate the plugin; it gets the query whole, keyword included.
+    function _keywordFor(e) {
+        const k = e.manifest.keywords
+        if (!Array.isArray(k)) return false
+        const sp = root.query.indexOf(" ")
+        return sp > 0 && k.includes(root.query.slice(0, sp).toLowerCase()) && root.query.slice(sp + 1).trim().length > 0
+    }
     function _activeFor(e) {
         const p = e.manifest.prefix
+        if (root._keywordFor(e)) return true
         if (typeof p === "string" && p.length) return root.query.startsWith(p)
         const min = Number.isInteger(e.manifest.minLength) ? e.manifest.minLength : 2
         return root.query.trim().length >= min
     }
     function _queryFor(e) {
         if (!root._activeFor(e)) return ""
+        if (root._keywordFor(e)) return root.query
         const p = e.manifest.prefix
         return typeof p === "string" && p.length ? root.query.slice(p.length) : root.query
     }
