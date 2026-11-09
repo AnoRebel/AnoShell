@@ -183,6 +183,26 @@ Singleton {
         }
     }
 
+    // A notification from the shell itself (no D-Bus round trip): listed,
+    // persisted and popped up like any other. Ids are negative so they never
+    // meet the server's (which count up from idOffset).
+    function post(summary, body, critical) {
+        const id = Math.min(0, ...root.list.map(n => n.notificationId)) - 1
+        const n = notifComponent.createObject(root, {
+            "notificationId": id, "appName": "AnoShell", "summary": summary ?? "", "body": body ?? "",
+            "time": Date.now(), "urgency": String(critical ? NotificationUrgency.Critical : NotificationUrgency.Normal),
+        })
+        root.list = [...root.list, n]
+        if (!root.popupInhibited) {
+            n.popup = true
+            n.timer = notifTimerComponent.createObject(root, { "notificationId": id, "interval": Config.options?.notifications?.timeout ?? 7000 })
+            root.unread++
+        }
+        root.notify(n)
+        notifFileView.setText(stringifyList(root.list))
+        return id
+    }
+
     function markAllRead() { root.unread = 0 }
 
     function discardNotification(id) {

@@ -57,6 +57,7 @@ var features = []feature{
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},
 	{"opening files and folders (downloads, drives)", "", []string{"xdg-open"}},
+	{"actions: open-file/URL and shell-command steps", "", []string{"xdg-open", "sh"}},
 	{"Qt apps in the palette (the qt6ct platform theme; kvantum for appearance.theme.qt \"kvantum\")", "", []string{"qt6ct"}},
 	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},

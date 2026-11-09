@@ -167,6 +167,14 @@
       ]
     },
     {
+      "chord": "Super+Ctrl+X",
+      "action": "shell",
+      "args": [
+        "actions",
+        "ring"
+      ]
+    },
+    {
       "chord": "Super+Shift+B",
       "action": "shell",
       "args": [

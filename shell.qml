@@ -50,6 +50,7 @@ ShellRoot {
         void ScreenFilters; // re-applies a kept eye-care filter
         void MinimizedWindows;
         void DefaultApps;
+        void Actions;     // `actions` IPC target (macros, the ring's key)
         void Anod;
         void AppColorScheme;
         void StaticThemeLoader; // singletons only exist once referenced; static/fixed themes need it

@@ -163,7 +163,8 @@ PanelWindow {
                                 case 9: return displaysPage
                                 case 10: return keybindsPage
                                 case 11: return atelierPage
-                                case 12: return aboutPage
+                                case 12: return actionsPage
+                                case 13: return aboutPage
                                 default: return generalPage
                             }
                         }
@@ -264,6 +265,10 @@ PanelWindow {
     Component {
         id: atelierPage
         AtelierPage {}
+    }
+    Component {
+        id: actionsPage
+        ActionsPage {}
     }
     Component {
         id: aboutPage

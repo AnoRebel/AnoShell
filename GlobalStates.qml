@@ -52,6 +52,7 @@ Singleton {
     property bool clipboardOpen: false
     property bool controlPanelOpen: false
     property bool cheatsheetOpen: false
+    property bool actionsRingOpen: false   // the actions ring (modules/actions)
     property bool settingsOverlayOpen: false
     property bool settingsOpen: false
     property bool settingsCommandPaletteOpen: false

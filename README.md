@@ -511,6 +511,7 @@ qs -c ano ipc call <target> <method>
 | `idle` | `toggle`, `enable`, `disable` |
 | `hud` | `toggle`, `open`, `close` |
 | `session` | `toggle`, `open`, `close` |
+| `actions` | `run name` (queued if one runs), `list`, `ring` (toggle) |
 | `dock` | `toggle`, `pin`, `unpin` |
 | `clipboard` / `cliphistService` | `toggle`, `open`, `close` / direct cliphist actions |
 | `altSwitcher` | `show`, `hide`, `next`, `prev`, `activate` |
@@ -696,6 +697,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Scratchpad & Pins (`scratchpad.enable`, off by default) | `wl-clipboard` (copy), `libnotify` (`notify-send`: failed background commands), a terminal (Settings → Default apps) for terminal pins; `??` needs an AI provider (left sidebar) | no copy / no failure notice / terminal pins don't open / `??` says no provider |
 | Text recognition (Super+Shift+X, `screenshot ocr`) | `tesseract` and the data for each of `screenshot.ocrLanguages` (`tesseract-data-eng` by default); on Hyprland and other wlroots: `grim` + `slurp`; `wl-clipboard` | a notification names what's missing |
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
+| Actions (Settings → Actions, the ring on Super+Ctrl+X, `actions` IPC) | per step: open file/URL `xdg-utils` (`xdg-open`); shell command `sh`; brightness as for brightness (`brightnessctl`, or `ddcutil` for external monitors); power profile `power-profiles-daemon`; wallpaper anod (else `awww`) | that step fails, a notification names it, and the steps after it don't run |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
 

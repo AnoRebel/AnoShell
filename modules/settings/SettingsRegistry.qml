@@ -57,6 +57,7 @@ Singleton {
         { name: "Displays",   icon: "desktop_windows", configRoots: ["cursor", "icons"] },
         { name: "Keybinds",   icon: "keyboard",        configRoots: ["keyboard"] },
         { name: "Atelier",    icon: "design_services", configRoots: ["atelier"] },
+        { name: "Actions",    icon: "bolt",            configRoots: ["actions"] },
         { name: "About",      icon: "info",            configRoots: ["user"] },
     ]
 

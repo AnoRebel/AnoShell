@@ -20,7 +20,7 @@ OUT = SETTINGS / "settings-index.json"
 # Page order = SettingsRegistry.pages order.
 PAGES = ["GeneralConfig", "ModulesConfig", "BarConfig", "DockConfig", "SidebarsConfig",
          "AnoSpotConfig", "AppearanceConfig", "OverviewConfig", "ServicesConfig", "DisplaysPage",
-         "KeybindsPage", "AboutPage"]
+         "KeybindsPage", "AtelierPage", "ActionsPage", "AboutPage"]
 # Cards kept in their own files, indexed with the page that shows them.
 EXTRA = {"DisplaysPage": ["CursorCard"], "AboutPage": ["PresetsCard"]}
 ADVANCED_RE = re.compile(r"^\s*advanced\s*:\s*true\b", re.M)

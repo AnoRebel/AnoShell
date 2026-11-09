@@ -957,6 +957,12 @@ Singleton {
                 property int width: 280
                 property int height: 220
             }
+            // Actions (services/Actions.qml): macros run from the ring (the
+            // first 8), a key or `qs -c ano ipc call actions run <name>`.
+            // [{ name, icon, steps: [{ type, … }] }]; Settings → Actions edits them.
+            property JsonObject actions: JsonObject {
+                property var macros: []
+            }
 
             // Settings itself: show the advanced options (search always finds them).
             property JsonObject settings: JsonObject {
