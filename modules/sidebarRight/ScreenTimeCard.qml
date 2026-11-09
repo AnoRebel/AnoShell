@@ -6,7 +6,8 @@ import qs.modules.common.widgets
 import qs.services
 
 // Screen time (screenTime.enable): today's total, the top apps with bars
-// (click one for its top window titles), and the last 7 days.
+// (click one for its top window titles), and the last 7 days. Also the
+// screen-time piece, which sets live, maxApps and showWeek for its size.
 Rectangle {
     id: root
     implicitHeight: col.implicitHeight + 20
@@ -16,7 +17,11 @@ Rectangle {
     property var day: ({ total: 0, apps: [] })
     property var week: []
     property string openApp: ""
-    readonly property bool live: GlobalStates.sidebarRightOpen
+    // Refreshes while shown.
+    property bool live: GlobalStates.sidebarRightOpen
+    property int maxApps: 0 // 0: all anod returns
+    property bool showWeek: true
+    readonly property var apps: root.maxApps > 0 ? (root.day.apps ?? []).slice(0, root.maxApps) : (root.day.apps ?? [])
 
     function fmt(secs) {
         const m = Math.round(secs / 60)
@@ -53,15 +58,18 @@ Rectangle {
             }
         }
         StyledText {
-            visible: (root.day.apps ?? []).length === 0
-            text: !Anod.available ? "Needs anod (ano doctor)" : ScreenTime.idle ? "Idle: not counting" : "Nothing yet today"
+            visible: root.apps.length === 0
+            text: !ScreenTime.enabled ? "Screen time is off (Settings → Sidebars → Productivity)"
+                : !Anod.available ? "Needs anod (ano doctor)" : ScreenTime.idle ? "Idle: not counting" : "Nothing yet today"
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
             color: Appearance.colors.colSubtext
             font.pixelSize: Appearance.font.pixelSize.smaller
         }
 
         // Top apps
         Repeater {
-            model: root.day.apps ?? []
+            model: root.apps
             delegate: ColumnLayout {
                 required property var modelData
                 readonly property real share: (modelData.secs ?? 0) / Math.max(1, root.day.apps[0]?.secs ?? 1)
@@ -102,7 +110,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: 4
-            visible: root.week.length === 7
+            visible: root.showWeek && root.week.length === 7
             spacing: 6
             readonly property int peak: Math.max(1, ...root.week.map(d => d.secs ?? 0))
             Repeater {

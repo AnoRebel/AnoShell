@@ -1,0 +1,14 @@
+{
+  "id": "screen-time",
+  "name": "Screen time",
+  "description": "Today's screen time: the total and your top apps as bars, the last 7 days when tall (needs screen time on and anod)",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "ScreenTimePiece.qml",
+  "preview": "preview.png",
+  "size": { "w": 3, "h": 3 },
+  "minSize": { "w": 2, "h": 2 },
+  "settings": [
+    { "key": "week", "type": "bool", "label": "Last 7 days (when tall enough)", "default": true }
+  ]
+}
