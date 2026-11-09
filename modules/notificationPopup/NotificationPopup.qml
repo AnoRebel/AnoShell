@@ -214,7 +214,7 @@ Scope {
                                 StyledImage {
                                     anchors.centerIn: parent; width: 20; height: 20
                                     source: FileUtils.iconSource(modelData?.image || modelData?.appIcon || "")
-                                    visible: source.toString().length > 0
+                                    visible: status === Image.Ready
                                 }
                                 MaterialSymbol {
                                     anchors.centerIn: parent; text: "notifications"; iconSize: 16

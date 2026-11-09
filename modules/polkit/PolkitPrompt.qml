@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 
@@ -131,7 +132,7 @@ Scope {
                                 width: 26; height: 26
                                 sourceSize: Qt.size(26, 26)
                                 visible: status === Image.Ready
-                                source: win.flow?.iconName ? `image://icon/${win.flow.iconName}` : ""
+                                source: FileUtils.iconSource(win.flow?.iconName ?? "")
                             }
                             MaterialSymbol {
                                 anchors.centerIn: parent

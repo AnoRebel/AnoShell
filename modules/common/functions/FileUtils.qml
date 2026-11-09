@@ -28,9 +28,12 @@ Singleton {
     // (notification appIcon/image can be any of these).
     function iconSource(icon) {
         if (typeof icon !== "string" || icon.length === 0) return "";
-        if (icon.includes("://")) return icon;
+        // Quickshell hands theme names over as image://icon/<name> already.
+        if (icon.startsWith("image://icon/")) icon = icon.slice(13).split("?")[0];
+        else if (icon.includes("://")) return icon;
         if (icon.startsWith("/")) return "file://" + icon;
-        return "image://icon/" + icon;
+        // A name the theme lacks would draw the magenta "missing" square.
+        return Quickshell.hasThemeIcon(icon) ? "image://icon/" + icon : "";
     }
 
     // Image source for an app's icon (by app id or desktop-entry icon name):

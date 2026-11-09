@@ -52,16 +52,17 @@ Item {
                 color: Appearance?.colors.colSecondaryContainer ?? "#E8DEF8"
 
                 StyledImage {
+                    id: notifIcon
                     anchors.centerIn: parent
                     width: 24; height: 24
                     source: FileUtils.iconSource(root.notification?.image || root.notification?.appIcon || "")
-                    visible: source.toString().length > 0
+                    visible: status === Image.Ready
                 }
                 MaterialSymbol {
                     anchors.centerIn: parent
                     text: "notifications"
                     iconSize: 20
-                    visible: parent.children[0].source?.toString().length === 0
+                    visible: !notifIcon.visible // none, or one that didn't load (e.g. gone since a restart)
                     color: Appearance?.m3colors.m3onSecondaryContainer ?? "#1D1B20"
                 }
             }

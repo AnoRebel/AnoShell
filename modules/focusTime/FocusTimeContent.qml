@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.modules.common
+import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "."
@@ -386,7 +387,7 @@ Item {
 
                         Image {
                             visible: root.selectedAppClass !== "" && root.selectedAppIcon !== "" && !root.isWeekView
-                            source: root.selectedAppIcon.startsWith("/") ? "file://" + root.selectedAppIcon : "image://icon/" + root.selectedAppIcon
+                            source: FileUtils.themedIcon(root.selectedAppIcon)
                             sourceSize: Qt.size(20, 20)
                             Layout.preferredWidth: 20; Layout.preferredHeight: 20
                             Layout.alignment: Qt.AlignVCenter
@@ -615,7 +616,7 @@ Item {
                                 RowLayout {
                                     anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; spacing: 10
                                     Image {
-                                        source: model.icon ? (model.icon.startsWith("/") ? "file://" + model.icon : "image://icon/" + model.icon) : ""
+                                        source: model.icon ? FileUtils.themedIcon(model.icon) : ""
                                         sourceSize: Qt.size(24, 24); Layout.preferredWidth: 24; Layout.preferredHeight: 24
                                         fillMode: Image.PreserveAspectFit; visible: model.icon !== ""
                                     }
@@ -752,7 +753,7 @@ Item {
                                     RowLayout {
                                         anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12; spacing: 10
                                         Image {
-                                            source: model.icon ? (model.icon.startsWith("/") ? "file://" + model.icon : "image://icon/" + model.icon) : ""
+                                            source: model.icon ? FileUtils.themedIcon(model.icon) : ""
                                             sourceSize: Qt.size(20, 20); Layout.preferredWidth: 20; Layout.preferredHeight: 20
                                             fillMode: Image.PreserveAspectFit; visible: model.icon !== ""
                                         }
