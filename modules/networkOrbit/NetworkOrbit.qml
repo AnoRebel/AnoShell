@@ -70,8 +70,8 @@ Scope {
             height: Math.min(600, parent.height - 32)
             radius: Appearance.rounding.windowRounding
             color: Appearance.m3colors.m3background
-            border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.width: Appearance.borders.width
+            border.color: Appearance.borders.color
             clip: true
             // The view drives the card's intro / exit (fade + slight scale).
             opacity: content.item?.cardOpacity ?? 0

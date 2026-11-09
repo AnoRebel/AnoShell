@@ -88,8 +88,10 @@ Item {
     // No texture on a see-through card (e.g. one the connected frame paints).
     readonly property bool _textured: root._mode > 0 && root._strength > 0 && root.color.a > 0.05 && (Config.options?.appearance?.lookTextures ?? true)
 
-    border.width: root.look.shape?.stroke ?? 0
-    border.color: Appearance.colors.colOutlineVariant
+    // appearance.border, or the look's thicker stroke; none on a see-through
+    // card (the connected frame draws the outline once around its shape).
+    border.width: root.color.a > 0.05 ? Appearance.borders.forStroke(root.look.shape?.stroke) : 0
+    border.color: Appearance.borders.color
 
     HoverHandler { id: hover }
 

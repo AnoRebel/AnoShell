@@ -184,8 +184,8 @@ Scope {
                         implicitHeight: cardContent.implicitHeight + 20
                         radius: Appearance?.rounding.normal ?? 12
                         color: root.connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
-                        border.width: root.connected ? 0 : 1
-                        border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                        border.width: root.connected ? 0 : Appearance.borders.width
+                        border.color: Appearance.borders.color
 
                         // Subtle shadow (floating only)
                         layer.enabled: !root.connected

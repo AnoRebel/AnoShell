@@ -166,7 +166,7 @@ Scope {
                         anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter }
                         width: wsRow.implicitWidth + 24; height: 40; radius: 20
                         color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                        border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                        border.width: Appearance.borders.width; border.color: Appearance.borders.color
 
                         RowLayout {
                             id: wsRow; anchors.centerIn: parent; spacing: 6

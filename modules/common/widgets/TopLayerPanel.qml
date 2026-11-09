@@ -70,8 +70,8 @@ Scope {
                 id: backgroundCanvas
                 anchors.fill: parent
                 color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
-                borderWidth: 1 / Math.min(topPanel.screenW, topPanel.screenH)
-                borderColor: Appearance?.colors.colLayer0Border ?? "#44444488"
+                borderWidth: Appearance.borders.width / Math.min(topPanel.screenW, topPanel.screenH)
+                borderColor: Appearance.borders.color
                 polygonIsNormalized: false
 
                 // Build combined polygon from all active morphed panels

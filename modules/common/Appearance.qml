@@ -133,20 +133,20 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     colors: QtObject {
         property color colSubtext: m3colors.m3outline
-        // Layer 0
+        // Layer 0. transparentize(c, a) sets alpha a, so a transparency t is 1 - t.
         property color colLayer0Base: ColorUtils.mix(m3colors.m3background, m3colors.m3primary, Config.options.appearance.extraBackgroundTint ? 0.99 : 1)
-        property color colLayer0: ColorUtils.transparentize(colLayer0Base, root.backgroundTransparency)
+        property color colLayer0: ColorUtils.transparentize(colLayer0Base, 1 - root.backgroundTransparency)
         property color colOnLayer0: m3colors.m3onBackground
-        property color colLayer0Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.9, root.contentTransparency))
-        property color colLayer0Active: ColorUtils.transparentize(ColorUtils.mix(colLayer0, colOnLayer0, 0.8, root.contentTransparency))
+        property color colLayer0Hover: ColorUtils.mix(colLayer0, colOnLayer0, 0.9)
+        property color colLayer0Active: ColorUtils.mix(colLayer0, colOnLayer0, 0.8)
         property color colLayer0Border: ColorUtils.mix(root.m3colors.m3outlineVariant, colLayer0, 0.4)
         // Layer 1
         property color colLayer1Base: m3colors.m3surfaceContainerLow
         property color colLayer1: ColorUtils.solveOverlayColor(colLayer0Base, colLayer1Base, 1 - root.contentTransparency)
         property color colOnLayer1: m3colors.m3onSurfaceVariant
         property color colOnLayer1Inactive: ColorUtils.mix(colOnLayer1, colLayer1, 0.45)
-        property color colLayer1Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.92), root.contentTransparency)
-        property color colLayer1Active: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.85), root.contentTransparency)
+        property color colLayer1Hover: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.92), 1 - root.contentTransparency)
+        property color colLayer1Active: ColorUtils.transparentize(ColorUtils.mix(colLayer1, colOnLayer1, 0.85), 1 - root.contentTransparency)
         // Layer 2
         property color colLayer2Base: m3colors.m3surfaceContainer
         property color colLayer2: ColorUtils.solveOverlayColor(colLayer1Base, colLayer2Base, 1 - root.contentTransparency)
@@ -193,7 +193,7 @@ Singleton {
         property color colOnTertiary: m3colors.m3onTertiary
         property color colOnTertiaryContainer: m3colors.m3onTertiaryContainer
         // Surface
-        property color colBackgroundSurfaceContainer: ColorUtils.transparentize(m3colors.m3surfaceContainer, root.backgroundTransparency)
+        property color colBackgroundSurfaceContainer: ColorUtils.transparentize(m3colors.m3surfaceContainer, 1 - root.backgroundTransparency)
         property color colSurfaceContainerLow: ColorUtils.solveOverlayColor(m3colors.m3background, m3colors.m3surfaceContainerLow, 1 - root.contentTransparency)
         property color colSurfaceContainer: ColorUtils.solveOverlayColor(m3colors.m3surfaceContainerLow, m3colors.m3surfaceContainer, 1 - root.contentTransparency)
         property color colSurfaceContainerHigh: ColorUtils.solveOverlayColor(m3colors.m3surfaceContainer, m3colors.m3surfaceContainerHigh, 1 - root.contentTransparency)
@@ -229,6 +229,16 @@ Singleton {
     // ═══════════════════════════════════════════════════════════════════════
     // Rounding (corner radius values)
     // ═══════════════════════════════════════════════════════════════════════
+    // Outline of every shell surface (appearance.border): on by default, at
+    // least `width` px; a look with a thicker stroke keeps its own. In connected
+    // mode the frame draws it once around the whole shape.
+    readonly property QtObject borders: QtObject {
+        readonly property bool enabled: Config.options?.appearance?.border?.enable ?? true
+        readonly property real width: enabled ? Math.max(0.5, Config.options?.appearance?.border?.width ?? 1) : 0
+        readonly property color color: root.colors.colOutlineVariant
+        function forStroke(stroke) { return enabled ? Math.max(width, stroke ?? 0) : 0 }
+    }
+
     // Scaled by the active look's shape.radiusScale (Looks.qml); `full` stays a pill.
     rounding: QtObject {
         // Eased, so switching looks morphs every corner instead of snapping.

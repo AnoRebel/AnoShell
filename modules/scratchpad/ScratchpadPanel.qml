@@ -42,7 +42,6 @@ Scope {
             anchors.fill: parent
             radius: Appearance.rounding.windowRounding
             color: Appearance.m3colors.m3background
-            border.width: 1; border.color: Appearance.colors.colLayer0Border
             clip: true
             opacity: root.shown ? 1 : 0
             // Comes out of its edge.

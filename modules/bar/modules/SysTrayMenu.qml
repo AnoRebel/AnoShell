@@ -102,8 +102,8 @@ PopupWindow {
             // In a panel it covers the panel's own rows: opaque there.
             color: connected ? "transparent" : !root.fuse ? Appearance.m3colors.m3surfaceContainerHigh : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
             radius: Appearance?.rounding.normal ?? 12
-            border.width: connected ? 0 : 1
-            border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+            border.width: connected ? 0 : Appearance.borders.width
+            border.color: Appearance.borders.color
             clip: true
 
             ConnectedSurfaceLease {

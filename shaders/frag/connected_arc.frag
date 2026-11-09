@@ -38,6 +38,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 texTint;       // straight rgb
     vec4 texShade;      // straight rgb
     vec4 glassEdge;     // glass edge light: rgb, a = strength (0 off)
+    vec4 outline;       // appearance.border: rgb, a = width px (0 off)
 } ubuf;
 
 float texHash(vec2 p) {
@@ -198,6 +199,13 @@ void main() {
         float dirLight = clamp(1.25 - (uvn.x * 0.6 + uvn.y), 0.0, 1.0);
         rimA = (1.0 - smoothstep(0.0, 2.5, -d)) * (0.35 + 0.65 * dirLight) * ubuf.glassEdge.a;
         fill = mix(fill, ubuf.glassEdge.rgb, clamp(rimA, 0.0, 1.0));
+    }
+    // Outline along the silhouette, but not along the screen's own edges.
+    if (ubuf.outline.a > 0.0) {
+        vec2 sc = vec2(ubuf.widthPx, ubuf.heightPx) * 0.5;
+        float ow = ubuf.outline.a;
+        float band = smoothstep(-ow - fw, -ow + fw, d) * smoothstep(ow + fw, ow + 2.0 * fw, -sdBox(px, sc, sc));
+        fill = mix(fill, ubuf.outline.rgb, band);
     }
     vec4 col = vec4(fill, 1.0) * cov;
     if (ubuf.shadowColor.a > 0.0) {

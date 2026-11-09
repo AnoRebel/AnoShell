@@ -477,10 +477,10 @@ Scope {
                 // (aurora, angel, etc.) can dial the pill's translucency.
                 // Material You and "neutral" static themes leave the
                 // tokens at sensible defaults and look unchanged.
-                border.width: spotWindow.fusedLook ? 0 : (Appearance?.glassTokens?.borderWidth ?? 1)
-                border.color: Appearance?.glassTokens?.borderColor
-                            ?? Appearance?.colors?.colOutlineVariant
-                            ?? "#444"
+                // appearance.border (or the theme's thicker one); connected, the
+                // frame outlines the pill as part of its shape.
+                border.width: spotWindow.connected ? 0 : Appearance.borders.forStroke(Appearance?.glassTokens?.borderWidth ?? 0)
+                border.color: Appearance?.glassTokens?.borderColor ?? Appearance.borders.color
                 opacity: Appearance?.glassTokens?.opacity ?? 0.96
 
                 // Click dispatcher — catches left/right/middle on the pill background.

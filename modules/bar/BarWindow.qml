@@ -292,8 +292,8 @@ PanelWindow {
             visible: barRoot.drawChrome && barRoot.plainBody && barRoot.laidOut
             color: Appearance?.colors.colLayer0 ?? "#1C1B1F"
             radius: barRoot.barRadius
-            border.width: 1
-            border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+            border.width: Appearance.borders.width
+            border.color: Appearance.borders.color
 
             Behavior on color {
                 animation: Appearance?.animation.elementMoveFast.colorAnimation.createObject(this)

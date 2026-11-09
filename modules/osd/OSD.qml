@@ -216,8 +216,8 @@ Scope {
                 height: 56
                 radius: 28
                 color: osdWindow.connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
-                border.width: osdWindow.connected ? 0 : 1
-                border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                border.width: osdWindow.connected ? 0 : Appearance.borders.width
+                border.color: Appearance.borders.color
                 Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(200); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
                 // Progress mode (volume/brightness/mic)

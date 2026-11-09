@@ -152,8 +152,8 @@ Scope {
             visible: !slot.connected
             color: "transparent"
             radius: Appearance.rounding.normal
-            border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.width: Appearance.borders.width
+            border.color: Appearance.borders.color
             contentUnderBorder: true
         }
         Binding { target: body; property: "parent"; value: slot.connected ? slot : rounded.contentItem }

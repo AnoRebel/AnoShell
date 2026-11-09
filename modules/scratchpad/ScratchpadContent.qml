@@ -223,7 +223,7 @@ ColumnLayout {
                 visible: root.showAnswer && Scratchpad.answer !== null
                 radius: Appearance.rounding.normal
                 color: Appearance.m3colors.m3surfaceContainerHigh
-                border.width: 1; border.color: Appearance.colors.colLayer0Border
+                border.width: Appearance.borders.width; border.color: Appearance.borders.color
                 ColumnLayout {
                     anchors { fill: parent; margins: 10 }
                     spacing: 6

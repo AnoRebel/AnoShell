@@ -64,7 +64,6 @@ Scope {
             height: hudContent.implicitHeight + 48
             radius: Appearance?.rounding.windowRounding ?? 20
             color: Appearance?.m3colors.m3background ?? "#1C1B1F"
-            border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
             clip: true
 
             opacity: GlobalStates.hudVisible ? 1 : 0

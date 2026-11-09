@@ -647,6 +647,12 @@ Singleton {
                 property var familyLooks: ({})
                 // The look's surface texture (caustics, grain, grid, clay light).
                 property bool lookTextures: true
+                // Outline of every shell surface (Appearance.borders); a look's
+                // thicker stroke wins. Connected: one outline around the frame.
+                property JsonObject border: JsonObject {
+                    property bool enable: true
+                    property real width: 1
+                }
                 // Glass material on panels and cards, with any look: a tint over
                 // the compositor's blur, wallpaper refraction at the edges and an
                 // edge light. The tint thickens over bright wallpaper for contrast.

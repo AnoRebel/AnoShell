@@ -228,7 +228,6 @@ Scope {
             height: Math.min(panelContent.implicitHeight + 32, switcherWindow.height * 0.7)
             radius: Appearance?.rounding.windowRounding ?? 20
             color: Qt.rgba((Appearance?.colors.colLayer0 ?? "#1C1B1F").r, (Appearance?.colors.colLayer0 ?? "#1C1B1F").g, (Appearance?.colors.colLayer0 ?? "#1C1B1F").b, root.backgroundOpacity)
-            border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
             clip: true
 
             opacity: root.panelVisible ? 1 : 0

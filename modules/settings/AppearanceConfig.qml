@@ -131,7 +131,7 @@ ColumnLayout {
         icon: "palette"
         title: "Look"
         subtitle: "The shell's visual identity: shape, material, texture, type and motion"
-        configKeys: ["appearance.look", "appearance.familyLooks", "appearance.lookTextures", "appearance.glass"]
+        configKeys: ["appearance.look", "appearance.familyLooks", "appearance.lookTextures", "appearance.glass", "appearance.border"]
 
         readonly property string chosen: Config.options?.appearance?.look ?? ""
         readonly property string familyDefault: Looks.familyDefaults[Looks.family] ?? "liquid"
@@ -293,6 +293,25 @@ ColumnLayout {
             sublabel: "The look's texture on panels (caustics, paper grain, grid, clay light). Animated ones move only while you hover."
             checked: Config.options?.appearance?.lookTextures ?? true
             onCheckedChanged: Config.setNestedValue("appearance.lookTextures", checked)
+        }
+
+        ConfigSwitch {
+            label: "Outlines"
+            configKey: "appearance.border.enable"
+            sublabel: "A thin border around the bar, dock, pill, sidebars and every panel; in connected mode one outline runs around the whole frame."
+            checked: Config.options?.appearance?.border?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("appearance.border.enable", checked)
+        }
+
+        ConfigSlider {
+            label: "Outline width"
+            configKey: "appearance.border.width"
+            sublabel: "Looks with a thicker stroke of their own keep it."
+            enabled: Config.options?.appearance?.border?.enable ?? true
+            from: 0.5; to: 4; stepSize: 0.5
+            value: Config.options?.appearance?.border?.width ?? 1
+            onValueChanged: Config.setNestedValue("appearance.border.width", Math.round(value * 2) / 2)
+            valueText: `${value}px`
         }
     }
 

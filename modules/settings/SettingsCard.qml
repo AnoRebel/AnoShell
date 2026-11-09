@@ -33,8 +33,8 @@ Rectangle {
     implicitHeight: cardColumn.implicitHeight + 2
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-    border.width: 1
-    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+    border.width: Appearance.borders.width
+    border.color: Appearance.borders.color
 
     // NOTE: do NOT animate the card root's implicitHeight. The collapse is
     // already animated by the inner content Item's Behavior on implicitHeight

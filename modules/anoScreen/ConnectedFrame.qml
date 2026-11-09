@@ -344,5 +344,8 @@ Item {
         // Glass (appearance.glass): an edge light on the silhouette.
         readonly property color _glassLight: ColorUtils.mix(Appearance.colors.colOnSurface, Appearance.colors.colPrimary, 0.7)
         property vector4d glassEdge: Qt.vector4d(_glassLight.r, _glassLight.g, _glassLight.b, Glass.enabled ? Glass.edgeLight : 0)
+        // appearance.border: one outline around the whole fused shape.
+        readonly property color _outline: Appearance.borders.color
+        property vector4d outline: Qt.vector4d(_outline.r, _outline.g, _outline.b, Appearance.borders.forStroke(Looks.current.shape?.stroke))
     }
 }

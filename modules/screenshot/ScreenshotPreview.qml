@@ -155,7 +155,6 @@ Scope {
                       top: root.onTop ? parent.top : undefined; bottom: root.onTop ? undefined : parent.bottom }
             radius: Appearance.rounding.normal
             color: Appearance.m3colors.m3surfaceContainer
-            border.width: 1; border.color: Appearance.colors.colLayer0Border
             // Slides in from its own side.
             opacity: root.shown && !Screenshot.preparing ? 1 : 0
             transform: Translate {

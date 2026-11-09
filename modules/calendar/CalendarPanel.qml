@@ -66,7 +66,6 @@ Scope {
                 // text stays readable over any wallpaper (a translucent fill
                 // plus whole-card opacity washed the text out).
                 color: Appearance?.m3colors.m3background ?? "#1C1B1F"
-                border.width: 1; border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
 
 
                 // Animation in/out

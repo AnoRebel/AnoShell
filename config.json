@@ -9,6 +9,7 @@
     "primaryMonitor": ""
   },
   "appearance": {
+    "border": { "enable": true, "width": 1 },
     "bezel": 0,
     "extraBackgroundTint": false,
     "fonts": {

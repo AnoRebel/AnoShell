@@ -18,8 +18,8 @@ Rectangle {
     implicitHeight: infoCol.implicitHeight + 20
     radius: Appearance?.rounding.normal ?? 12
     color: Appearance?.colors.colLayer1 ?? "#E5E1EC"
-    border.width: 1
-    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+    border.width: Appearance.borders.width
+    border.color: Appearance.borders.color
 
     ColumnLayout {
         id: infoCol

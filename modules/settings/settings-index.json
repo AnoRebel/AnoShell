@@ -2160,7 +2160,8 @@
    "appearance.look",
    "appearance.familyLooks",
    "appearance.lookTextures",
-   "appearance.glass"
+   "appearance.glass",
+   "appearance.border"
   ]
  },
  {
@@ -2206,6 +2207,24 @@
   "sublabel": "The look's texture on panels (caustics, paper grain, grid, clay light). Animated ones move only while you hover.",
   "keys": [
    "appearance.lookTextures"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Outlines",
+  "sublabel": "A thin border around the bar, dock, pill, sidebars and every panel; in connected mode one outline runs around the whole frame.",
+  "keys": [
+   "appearance.border.enable"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Outline width",
+  "sublabel": "Looks with a thicker stroke of their own keep it.",
+  "keys": [
+   "appearance.border.width"
   ]
  },
  {

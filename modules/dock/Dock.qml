@@ -168,8 +168,8 @@ Scope {
                         : (root.isTop ? gap - hideShift : parent.height - height - gap + hideShift)
                     radius: root.isPillStyle ? height / 2 : Appearance?.rounding.normal ?? 12
                     color: connected ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
-                    border.width: connected ? 0 : 1
-                    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+                    border.width: connected ? 0 : Appearance.borders.width
+                    border.color: Appearance.borders.color
 
                     ConnectedSurfaceLease {
                         id: dockLease

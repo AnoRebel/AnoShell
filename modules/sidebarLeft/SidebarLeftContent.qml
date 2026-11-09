@@ -19,8 +19,8 @@ Rectangle {
     readonly property bool connectedMode: PanelRegistry.enabled
     color: connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
     radius: connectedMode ? 0 : (Appearance?.rounding.normal ?? 12)
-    border.width: 0
-    border.color: Appearance?.colors.colLayer0Border ?? "#44444488"
+    border.width: connectedMode ? 0 : Appearance.borders.width
+    border.color: Appearance.borders.color
     clip: true
 
     property int currentTab: 0 // 0 = AI Chat, 1 = Notifications, 2 = Translator
