@@ -10,8 +10,9 @@ import "."
 /**
  * Left sidebar content — tabbed view: AI Chat | Notifications + media player.
  */
-Rectangle {
+SurfaceMaterial {
     id: root
+    surface: "sidebar"
     // In connected mode the frame shader paints this sidebar's fused surface, so
     // going transparent lets it show through instead of stacking a second inset
     // background (the "double background"). Drop border/rounding too. Floating
@@ -19,8 +20,6 @@ Rectangle {
     readonly property bool connectedMode: PanelRegistry.enabled
     color: connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
     radius: connectedMode ? 0 : (Appearance?.rounding.normal ?? 12)
-    border.width: connectedMode ? 0 : Appearance.borders.width
-    border.color: Appearance.borders.color
     clip: true
 
     property int currentTab: 0 // 0 = AI Chat, 1 = Notifications, 2 = Translator

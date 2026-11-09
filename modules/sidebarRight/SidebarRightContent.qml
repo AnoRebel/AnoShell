@@ -13,8 +13,9 @@ import "."
  * media player, volume/brightness sliders, calendar, system info.
  * Modules are configurable via Config.options.sidebar.right.enabledWidgets.
  */
-Rectangle {
+SurfaceMaterial {
     id: root
+    surface: "sidebar"
     property var panelScreen: null
     property var brightnessMonitor: panelScreen ? Brightness.getMonitorForScreen(panelScreen) : null
 
@@ -28,8 +29,6 @@ Rectangle {
     readonly property bool connectedMode: PanelRegistry.enabled
     color: connectedMode ? "transparent" : (Appearance?.colors.colLayer0 ?? "#1C1B1F")
     radius: connectedMode ? 0 : (Appearance?.rounding.normal ?? 12)
-    border.width: connectedMode ? 0 : Appearance.borders.width
-    border.color: Appearance.borders.color
     clip: true
 
     readonly property var enabledWidgets: Config.options?.sidebar?.right?.enabledWidgets ?? [
