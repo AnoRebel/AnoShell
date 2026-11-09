@@ -58,6 +58,33 @@ Settings → Sidebars → **Productivity**.
   `qs -c ano ipc call stickyNote clickThrough`. Its place and size are
   `stickyNotes.x`, `y`, `width` and `height`.
 
+## Clock
+
+Alarms, world clocks, a timer and a stopwatch in one small panel: middle-click
+the bar clock, press Super+Ctrl+C, or `qs -c ano ipc call clock toggle`
+(Settings → Modules → Clock switches the panel off; alarms keep ringing).
+
+- **Alarms**: a time, a label and the days it repeats on (none: once, then it
+  switches itself off). They ring with the panel closed: a critical
+  notification with **Snooze** and **Dismiss**, and, with **Alarm sound**
+  (`clock.alarmSound`, on by default although other shell sounds are off), the
+  sound theme's `alarm-clock-elapsed` every few seconds through `ffplay` at the
+  output's volume. An alarm nobody answers stops after `clock.ringMinutes` and
+  leaves a "Missed alarm" notification; one that came due while the machine
+  slept rings on resume, or is reported missed when more than 30 minutes late.
+  Snooze is `clock.snoozeMinutes` (a pending snooze is forgotten on restart).
+  `qs -c ano ipc call clock snooze|dismiss`; `clock next` prints the next
+  alarm, which the bar clock's popout and the lock screen (`clock.showOnLock`)
+  also show.
+- **World clocks**: IANA zone names (`Asia/Tokyo`, `America/New_York`), checked
+  against `/usr/share/zoneinfo`; each zone's offset comes from `date +%z`
+  (rechecked hourly, for daylight saving).
+- **Timer** and **stopwatch**: the same ones as the timer piece and the
+  sidebar's Pomodoro card. The timer ends on time with the panel closed, with a
+  notification and the alarm sound.
+
+Alarms and zones are kept in `~/.local/state/anoshell/clock.json`.
+
 ## Removable drives
 
 The module `drives` (add it to any bar in Settings → Bar, or to the pill in

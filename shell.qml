@@ -62,6 +62,7 @@ ShellRoot {
         void MusicRecognition; // musicRecognition IPC; records only when asked
         void KdeConnect;  // kdeConnect IPC and pairing prompts; runs only with kdeConnect.enable
         void Scratchpad;  // scratchpad IPC; reads its pins only with scratchpad.enable
+        void Chrono;      // clock IPC; alarms ring with the Clock panel closed
     }
 
     // ═══════════════════════════════════════════════════════════════════════

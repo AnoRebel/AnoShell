@@ -46,6 +46,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super (tap), Super+A | search; Super+Tab overview; Super+Grave task view |
 | Super+B / N / I / O / X | left sidebar / right sidebar / control panel / media / session |
 | Super+Y | Scratchpad & Pins (when on) |
+| Super+Ctrl+C | Clock: alarms, world clocks, timer, stopwatch |
 | Super+Comma, Super+Slash | Settings, cheatsheet |
 | Super+Return, Super+E, Super+Z, Super+D | terminal, files, browser (your default apps), vicinae |
 | Super+Q, Super+Shift+Q | close |

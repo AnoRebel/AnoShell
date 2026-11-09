@@ -907,6 +907,14 @@ Singleton {
                 property int longBreakMinutes: 15
                 property int cyclesBeforeLongBreak: 4
             }
+            // Clock panel + alarms (services/Chrono.qml; alarms and world
+            // clocks themselves are kept in $XDG_STATE_HOME/anoshell/clock.json).
+            property JsonObject clock: JsonObject {
+                property bool alarmSound: true  // alarms play a sound even though other shell sounds are off
+                property int snoozeMinutes: 10
+                property int ringMinutes: 5     // an unanswered alarm stops ringing after this
+                property bool showOnLock: true  // next alarm under the lock screen clock
+            }
             property JsonObject stickyNotes: JsonObject {
                 property bool enable: false
                 property bool clickThrough: false // clicks pass through to the windows below

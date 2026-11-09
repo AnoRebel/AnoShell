@@ -234,6 +234,14 @@
       ]
     },
     {
+      "chord": "Super+Ctrl+C",
+      "action": "shell",
+      "args": [
+        "clock",
+        "toggle"
+      ]
+    },
+    {
       "chord": "Super+Ctrl+D",
       "action": "shell",
       "args": [

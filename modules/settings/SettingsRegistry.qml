@@ -49,7 +49,7 @@ Singleton {
         { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "widgets"] },
         { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
         { name: "Dock",       icon: "space_dashboard", configRoots: ["dock"] },
-        { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes"] },
+        { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "clock"] },
         { name: "AnoSpot",    icon: "view_compact_alt",configRoots: ["anoSpot"] },
         { name: "Appearance", icon: "palette",         configRoots: ["appearance", "background", "animations"] },
         { name: "Overview",   icon: "overview",        configRoots: ["overview"] },

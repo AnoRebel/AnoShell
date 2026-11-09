@@ -16,7 +16,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Sidebars"
         subtitle: "Behavior, widget toggles, sliders"
-        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "screenTime", "scratchpad"]
+        configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "screenTime", "scratchpad", "clock"]
     }
 
     // ═══ Sidebar Behavior ═══
@@ -316,6 +316,41 @@ ColumnLayout {
             sublabel: "Clicks go to the windows below (its pin turns this off)"
             checked: Config.options?.stickyNotes?.clickThrough ?? false
             onCheckedChanged: Config.setNestedValue("stickyNotes.clickThrough", checked)
+        }
+    }
+
+    // ═══ Clock ═══
+    SettingsCard {
+        icon: "alarm"
+        title: "Clock"
+        subtitle: "Alarms, world clocks, timer and stopwatch · middle-click the bar clock, or qs ipc call clock toggle"
+        configKeys: ["clock"]
+
+        ConfigSwitch {
+            label: "Alarm sound"; configKey: "clock.alarmSound"
+            sublabel: "Alarms and the timer play a sound (the sound theme's alarm-clock-elapsed) even though other shell sounds are off"
+            checked: Config.options?.clock?.alarmSound ?? true
+            onCheckedChanged: Config.setNestedValue("clock.alarmSound", checked)
+        }
+        ConfigSlider {
+            label: "Snooze"; configKey: "clock.snoozeMinutes"
+            from: 1; to: 30; stepSize: 1
+            value: Config.options?.clock?.snoozeMinutes ?? 10
+            onValueChanged: Config.setNestedValue("clock.snoozeMinutes", Math.round(value))
+            valueText: `${Math.round(value)} min`
+        }
+        ConfigSlider {
+            label: "Ring for"; configKey: "clock.ringMinutes"
+            sublabel: "An unanswered alarm then stops and leaves a \"Missed alarm\" notification"
+            from: 1; to: 30; stepSize: 1
+            value: Config.options?.clock?.ringMinutes ?? 5
+            onValueChanged: Config.setNestedValue("clock.ringMinutes", Math.round(value))
+            valueText: `${Math.round(value)} min`
+        }
+        ConfigSwitch {
+            label: "Next alarm on the lock screen"; configKey: "clock.showOnLock"
+            checked: Config.options?.clock?.showOnLock ?? true
+            onCheckedChanged: Config.setNestedValue("clock.showOnLock", checked)
         }
     }
 }
