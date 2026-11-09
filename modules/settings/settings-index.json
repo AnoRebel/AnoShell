@@ -3200,7 +3200,7 @@
   "page": 9,
   "card": "Performance mode",
   "label": "Performance mode",
-  "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre).",
+  "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre). On Hyprland it can also turn off the compositor's animations, blur, shadows, gaps and rounding, putting them back as they were after.",
   "keys": [
    "performance"
   ]
