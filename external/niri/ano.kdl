@@ -534,6 +534,12 @@ window-rule {
     opacity 0.8
 }
 
+// AnoShell's standalone Settings (its own app id and icon)
+window-rule {
+    match app-id="^anoshell-settings$"
+    open-floating true
+}
+
 // Polkit / portals
 window-rule {
     match app-id=r#"polkit"#

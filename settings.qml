@@ -1,4 +1,5 @@
 //@ pragma UseQApplication
+//@ pragma AppId anoshell-settings
 //@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
 
 import "modules/common"

@@ -66,3 +66,21 @@ else
     echo "installed anod + ano $ver to $bin"
 fi
 case ":$PATH:" in *":$bin:"*) ;; *) echo "note: $bin is not in PATH" ;; esac
+
+# Standalone Settings in app launchers and docks, with its own icon (its
+# windows carry the app id anoshell-settings, see settings.qml).
+shell_dir="$(cd .. && pwd)"
+apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+mkdir -p "$apps"
+cat > "$apps/anoshell-settings.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=AnoShell Settings
+Comment=Settings for the AnoShell desktop shell
+Exec=qs -n -p "$shell_dir/settings.qml"
+Icon=$shell_dir/assets/icons/anoshell-settings.svg
+StartupWMClass=anoshell-settings
+Categories=Settings;DesktopSettings;
+Keywords=shell;bar;theme;wallpaper;keybinds;
+DESKTOP
+echo "installed the AnoShell Settings launcher to $apps"

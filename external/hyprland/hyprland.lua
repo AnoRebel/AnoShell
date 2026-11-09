@@ -540,6 +540,9 @@ hl.window_rule({ match = { class = "^(stacer)$" }, float = true, center = true }
 -- kitty running nmtui
 hl.window_rule({ match = { class = "kitty", title = "nmtui" }, float = true, size = "60% 70%", center = true })
 
+-- AnoShell's standalone Settings (its own app id and icon)
+hl.window_rule({ match = { class = "^(anoshell-settings)$" }, float = true, center = true })
+
 -- GNOME Settings
 hl.window_rule({ match = { class = [[org\.gnome\.Settings]] }, float = true, size = "70% 80%", center = true })
 
