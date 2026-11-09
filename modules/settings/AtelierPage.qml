@@ -289,7 +289,17 @@ ColumnLayout {
                         Layout.fillWidth: true
                         visible: (it.description ?? "").length > 0
                         wrapMode: Text.Wrap
+                        textFormat: Text.PlainText // catalog text: never rich text
                         text: it.description ?? ""
+                    }
+                    // What's new: the update's (an installed item) or this
+                    // version's (a catalog item) notes, always plain text.
+                    AtelierChanges {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 4
+                        visible: root.stage !== "confirm"
+                        version: it.source === "installed" ? (it.update ?? "") : it.source === "catalog" ? (it.version ?? "") : ""
+                        changes: version ? (it.changes ?? []) : []
                     }
                     StyledText {
                         Layout.fillWidth: true
@@ -376,6 +386,11 @@ ColumnLayout {
                         Layout.fillWidth: true; wrapMode: Text.Wrap; color: Appearance.colors.colSubtext
                         text: `By ${confirmCol.p.author || "an unknown author"}, from ${confirmCol.p.catalogName || confirmCol.p.catalog || "a catalog"}. Catalog review is not a security audit.`
                             + (confirmCol.p.capabilitiesChanged ? " This update declares different network hosts or commands than the installed version." : "")
+                    }
+                    AtelierChanges {
+                        Layout.fillWidth: true
+                        version: confirmCol.p.version ?? ""
+                        changes: confirmCol.p.changes ?? []
                     }
                     StyledText {
                         Layout.fillWidth: true; wrapMode: Text.Wrap
@@ -708,6 +723,33 @@ ColumnLayout {
             text: Atelier.types.find(t => t.id === entry?.type)?.icon ?? "extension"
             iconSize: 36
             color: Appearance.colors.colSubtext
+        }
+    }
+
+    // "What's new in 1.2.0" and the catalog's lines. Catalog text is shown
+    // as plain text only: never rich text, so no markup or links from it.
+    component AtelierChanges: ColumnLayout {
+        id: ch
+        property string version: ""
+        property var changes: []
+        visible: ch.changes.length > 0
+        spacing: 2
+        StyledText {
+            Layout.fillWidth: true
+            textFormat: Text.PlainText
+            font.weight: Font.DemiBold
+            text: `What's new in ${ch.version}`
+        }
+        Repeater {
+            model: ch.changes
+            delegate: StyledText {
+                required property var modelData
+                Layout.fillWidth: true
+                textFormat: Text.PlainText
+                wrapMode: Text.Wrap
+                color: Appearance.colors.colSubtext
+                text: `• ${String(modelData)}`
+            }
         }
     }
 

@@ -106,6 +106,12 @@ func atelierCmd(args []string) int {
 		json.Unmarshal(raw, &p)
 		cancel := func() { ipc.Call(sock, "atelier.cancel", map[string]any{"token": p.Token}) }
 		fmt.Printf("%s %s by %s, from %s\n", p.Name, p.Version, orDash(p.Author), p.CatalogName)
+		if len(p.Changes) > 0 {
+			fmt.Printf("What's new in %s:\n", p.Version)
+			for _, l := range p.Changes {
+				fmt.Printf("  • %s\n", l)
+			}
+		}
 		if len(p.ModifiedFiles) > 0 {
 			fmt.Printf("You changed these files since installing; the update replaces them: %s\n", strings.Join(p.ModifiedFiles, ", "))
 		}
