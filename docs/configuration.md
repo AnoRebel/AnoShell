@@ -47,7 +47,7 @@ bundled Hyprland config), or as a standalone window with
 | Dock | `dock` |
 | Sidebars | `sidebar` |
 | AnoSpot | `anoSpot` |
-| Appearance | `appearance`, `background`, `animations` |
+| Appearance | `appearance`, `background`, `animations`, `settings.softenWallpaper` |
 | Overview | `overview` |
 | Services | `ai`, `autostart`, `gameMode`, `performance`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` |
 | Displays | `cursor`, `icons` |

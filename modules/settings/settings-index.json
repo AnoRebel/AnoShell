@@ -2483,7 +2483,8 @@
   "keys": [
    "background.engine",
    "background.video",
-   "background.resize"
+   "background.resize",
+   "settings.softenWallpaper"
   ]
  },
  {
@@ -2511,6 +2512,15 @@
   "sublabel": "Off: only the screen you're using decodes it; the others show a still (much lighter)",
   "keys": [
    "background.video.allScreens"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Soften the wallpaper under Settings",
+  "sublabel": "While Settings is open the wallpaper blurs a little (Shell engine) or dims (awww); windows, bar and pieces stay sharp",
+  "keys": [
+   "settings.softenWallpaper"
   ]
  },
  {

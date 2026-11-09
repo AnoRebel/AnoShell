@@ -617,7 +617,7 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
 -- Shell surfaces that animate themselves (slides, springs, fades): no compositor
 -- map/unmap animation on top, or two animations fight on every open and close.
-hl.layer_rule({ match = { namespace = "^quickshell:(sidebarLeft|sidebarRight|anospot|anospot:.*|osd|notifPopup|search|clipboard|controlPanel|media|session|settings|weather|anoview|wallpaper|bar:.*|dock|anoScreen|altSwitcher|taskview|networkOrbit|customize|displayConfirm|polkit|polkitPlain|screenshot|familyTransition|background|corner:.*|frameExclusion|topLayer|lock)$" }, no_anim = true })
+hl.layer_rule({ match = { namespace = "^quickshell:(sidebarLeft|sidebarRight|anospot|anospot:.*|osd|notifPopup|search|clipboard|controlPanel|media|session|settings|weather|anoview|wallpaper|bar:.*|dock|anoScreen|altSwitcher|taskview|networkOrbit|customize|displayConfirm|polkit|polkitPlain|screenshot|familyTransition|background|wallpaperDim|corner:.*|frameExclusion|topLayer|lock)$" }, no_anim = true })
 -- rofi: its rounded corners are alpha 0, and one launcher theme is deliberately
 -- black/10% (alpha 0.1). 0.05 blurs that theme and still skips the corners.
 hl.layer_rule({ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.05 })

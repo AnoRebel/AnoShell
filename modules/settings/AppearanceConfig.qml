@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Appearance"
         subtitle: "Look, theme and colours, bezel, animations, wallpaper rotation"
-        configRoots: ["appearance", "background", "animations"]
+        configRoots: ["appearance", "background", "animations", "settings.softenWallpaper"]
     }
 
     // Track the originally-selected theme so hover-preview can revert
@@ -93,7 +93,7 @@ ColumnLayout {
         icon: "wallpaper"
         title: "Wallpaper engine"
         subtitle: "Who draws the wallpaper; anod applies it either way (colours, hooks)"
-        configKeys: ["background.engine", "background.video", "background.resize"]
+        configKeys: ["background.engine", "background.video", "background.resize", "settings.softenWallpaper"]
 
         ConfigRow {
             label: "Engine"
@@ -123,6 +123,13 @@ ColumnLayout {
             enabled: (Config.options?.background?.engine ?? "awww") === "shell"
             checked: Config.options?.background?.video?.allScreens ?? false
             onCheckedChanged: Config.setNestedValue("background.video.allScreens", checked)
+        }
+        ConfigSwitch {
+            label: "Soften the wallpaper under Settings"
+            configKey: "settings.softenWallpaper"
+            sublabel: "While Settings is open the wallpaper blurs a little (Shell engine) or dims (awww); windows, bar and pieces stay sharp"
+            checked: Config.options?.settings?.softenWallpaper ?? true
+            onCheckedChanged: Config.setNestedValue("settings.softenWallpaper", checked)
         }
     }
 

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Effects
 import QtMultimedia
 import Quickshell
 import Quickshell.Wayland
@@ -54,6 +55,10 @@ Scope {
 
     function isVideo(p) { return /\.(mp4|mkv|webm|mov|avi|m4v|ogv)$/i.test(p) }
     function isAnimated(p) { return /\.gif$/i.test(p) }
+    // settings.softenWallpaper: 0 → 1 while the Settings overlay is open.
+    property real soften: GlobalStates.settingsOpen && (Config.options?.settings?.softenWallpaper ?? true) ? 1 : 0
+    Behavior on soften { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard } }
+
     readonly property int fillMode: ({ crop: Image.PreserveAspectCrop, fit: Image.PreserveAspectFit, stretch: Image.Stretch, no: Image.Pad })[root.resize] ?? Image.PreserveAspectFit
 
     Variants {
@@ -113,36 +118,74 @@ Scope {
                 onFinished: win.finish()
             }
 
-            Media {
-                id: slotA
+            Item {
+                id: wall
                 anchors.fill: parent
-                path: win.aPath
-                playing: !win.covered && win.decodes
-                onReadyChanged: if (!win.aFront) win.backReady()
+                Media {
+                    id: slotA
+                    anchors.fill: parent
+                    path: win.aPath
+                    playing: !win.covered && win.decodes
+                    onReadyChanged: if (!win.aFront) win.backReady()
+                }
+                Media {
+                    id: slotB
+                    anchors.fill: parent
+                    path: win.bPath
+                    playing: !win.covered && win.decodes
+                    onReadyChanged: if (win.aFront) win.backReady()
+                }
+                // The back slot is drawn only through the transition shader.
+                ShaderEffectSource {
+                    id: nextTex
+                    sourceItem: win.back
+                    hideSource: true
+                    live: true
+                    visible: false
+                }
+                ShaderEffect {
+                    anchors.fill: parent
+                    visible: win.backPath !== "" && win.back.ready
+                    fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/bg_transition.frag.qsb"))
+                    property var source: nextTex
+                    property real progress: win.progress
+                    property real mode: ({ wipe: 1, right: 1, left: 1, top: 1, bottom: 1, slideRight: 1, grow: 2, center: 2, outer: 2, zoom: 2, paint: 3 })[root.transitionType] ?? 0
+                    property real aspect: width / Math.max(1, height)
+                }
             }
-            Media {
-                id: slotB
+
+            // Soften under Settings: the wallpaper blurred at quarter size and
+            // scaled back up, plus a light dim. Exists only while soften > 0.
+            Loader {
+                active: root.soften > 0 && !GameMode.stopBlur
+                sourceComponent: Item {
+                    width: win.width / 4; height: win.height / 4
+                    transformOrigin: Item.TopLeft
+                    scale: 4
+                    opacity: root.soften
+                    ShaderEffectSource {
+                        id: smallWall
+                        anchors.fill: parent
+                        sourceItem: wall
+                        textureSize: Qt.size(width, height)
+                        live: true
+                        visible: false
+                    }
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: smallWall
+                        autoPaddingEnabled: false
+                        blurEnabled: true
+                        blur: 1
+                        blurMax: 16
+                    }
+                }
+            }
+            Rectangle {
                 anchors.fill: parent
-                path: win.bPath
-                playing: !win.covered && win.decodes
-                onReadyChanged: if (win.aFront) win.backReady()
-            }
-            // The back slot is drawn only through the transition shader.
-            ShaderEffectSource {
-                id: nextTex
-                sourceItem: win.back
-                hideSource: true
-                live: true
-                visible: false
-            }
-            ShaderEffect {
-                anchors.fill: parent
-                visible: win.backPath !== "" && win.back.ready
-                fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/qsb/bg_transition.frag.qsb"))
-                property var source: nextTex
-                property real progress: win.progress
-                property real mode: ({ wipe: 1, right: 1, left: 1, top: 1, bottom: 1, slideRight: 1, grow: 2, center: 2, outer: 2, zoom: 2, paint: 3 })[root.transitionType] ?? 0
-                property real aspect: width / Math.max(1, height)
+                color: "black"
+                opacity: 0.18 * root.soften
+                visible: opacity > 0
             }
         }
     }

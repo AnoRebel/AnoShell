@@ -40,6 +40,30 @@ Scope {
         }
     }
 
+    // settings.softenWallpaper with the awww engine: the shell doesn't draw
+    // the wallpaper (ShellBackground blurs its own), so a translucent layer on
+    // the background layer dims it instead. Mapped only while it shows.
+    property real soften: GlobalStates.settingsOpen && (Config.options?.settings?.softenWallpaper ?? true)
+        && (Config.options?.background?.engine ?? "awww") !== "shell" ? 1 : 0
+    Behavior on soften { NumberAnimation { duration: AnimationConfig.scaledDuration(300); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard } }
+    Variants {
+        model: Quickshell.screens
+        LazyLoader {
+            id: dimLoader
+            required property var modelData
+            active: root.soften > 0
+            PanelWindow {
+                screen: dimLoader.modelData
+                color: Qt.rgba(0, 0, 0, 0.25 * root.soften)
+                exclusionMode: ExclusionMode.Ignore
+                mask: Region {} // clicks reach the desktop
+                WlrLayershell.layer: WlrLayer.Background
+                WlrLayershell.namespace: "quickshell:wallpaperDim"
+                anchors { top: true; bottom: true; left: true; right: true }
+            }
+        }
+    }
+
     IpcHandler {
         target: "settings"
         function toggle(): void { GlobalStates.settingsOpen = !GlobalStates.settingsOpen }
