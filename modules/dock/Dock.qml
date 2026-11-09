@@ -32,6 +32,7 @@ Scope {
     readonly property real iconSize: Config.options?.dock?.iconSize ?? 28
     readonly property var pinnedApps: Config.options?.dock?.pinnedApps ?? ["kitty", "nemo", "zen-browser", "brave-browser"]
     readonly property real globalMargin: Config.options?.appearance?.bezel ?? 0
+    readonly property bool previews: Config.options?.dock?.previews ?? true
 
     // Running app list from ToplevelManager
     readonly property var runningAppIds: {
@@ -108,8 +109,25 @@ Scope {
             // Never over a fullscreen window (pinned included: the dock is on
             // the overlay layer and would sit on top of a game).
             property bool reveal: !screenFullscreen && (root.pinned
-                || (hoverToReveal && _rested)
+                || (hoverToReveal && _rested) || _previewsOpen > 0
                 || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated))
+
+            // Window previews open from this dock: they hold it up while the
+            // pointer is on them (they are their own popup surface, so the
+            // dock's hover area loses the pointer).
+            property int _previewsOpen: 0
+            // The window list is leased while the dock shows, so it is already
+            // filled when a preview opens.
+            readonly property bool _wantWindows: visible && reveal && root.previews
+            property bool _leased: false
+            function _lease() {
+                if (_wantWindows === _leased) return
+                _leased = _wantWindows
+                if (_leased) CompositorService.acquireWindows("dock"); else CompositorService.releaseWindows("dock")
+            }
+            on_WantWindowsChanged: _lease()
+            Component.onCompleted: _lease()
+            Component.onDestruction: if (_leased) CompositorService.releaseWindows("dock")
 
             color: "transparent"
             exclusiveZone: root.pinned && !screenFullscreen ? dockHeight : 0
@@ -298,7 +316,8 @@ Scope {
 
                                     StyledToolTip {
                                         text: modelData.appId
-                                        visible: iconMA.containsMouse
+                                        // A running app's preview names its windows instead.
+                                        visible: iconMA.containsMouse && !dockItem.hasPreview
                                     }
                                 }
 
@@ -311,6 +330,44 @@ Scope {
                                     color: Appearance?.colors.colPrimary ?? "#65558F"
                                     visible: modelData.running
                                     Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(150) } }
+                                }
+
+                                // Window previews (dock.previews): the app's windows,
+                                // live, after a rest on its icon; above the icon, or
+                                // beside it on a side dock. Made only while hovered or
+                                // open, kept a moment after it closes so it can retract.
+                                readonly property bool hasPreview: root.previews && modelData.running
+                                Timer { id: previewDwell; interval: 350; running: iconMA.containsMouse }
+                                Timer { id: previewRetract; interval: 400 }
+                                Loader {
+                                    id: previewLoader
+                                    anchors.fill: parent
+                                    readonly property bool open: item?.effectiveShown ?? false
+                                    onOpenChanged: {
+                                        dockWindow._previewsOpen += open ? 1 : -1
+                                        if (!open) previewRetract.restart()
+                                    }
+                                    Component.onDestruction: if (open) dockWindow._previewsOpen -= 1
+                                    active: dockItem.hasPreview && (iconMA.containsMouse || open || previewRetract.running)
+                                    sourceComponent: BarModulePopout {
+                                        id: preview
+                                        shown: iconMA.containsMouse && !iconMA.pressed && !previewDwell.running
+                                        popupWidth: strip.implicitWidth + 24
+                                        popupHeight: strip.implicitHeight + 24
+                                        WindowStrip {
+                                            id: strip
+                                            active: preview.effectiveShown
+                                            thumbW: 200; thumbH: 120
+                                            closeOnMiddleClick: true
+                                            maxWidth: root.isVertical ? 420 : (dockWindow.screen?.width ?? 1280) * 0.8
+                                            Binding on windows {
+                                                when: strip.active
+                                                restoreMode: Binding.RestoreNone
+                                                value: CompositorService.windows.filter(w => w.appId === dockItem.modelData.appId).slice(0, 6)
+                                            }
+                                            onActivated: preview.dismiss()
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -262,7 +262,7 @@ The Settings UI has 14 pages, opening on About, each owning a set of top-level c
 | General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
-| Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, pinned apps |
+| Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, window previews, pinned apps |
 | Sidebars     | `sidebar`                                                                                | Behavior toggles (instant open, keep loaded), right-sidebar widget picker with empty-state warning, quick-slider sub-toggles |
 | AnoSpot      | `anoSpot`                                                                                | Position, per-widget visibility, click bindings, event border animation, drag/drop config + custom drop actions |
 | Appearance   | `appearance`, `background`, `animations`                                                 | Theme source (Material You / static) with hover-preview, font picker, bezel preview, animation speed, wallpaper rotation |
@@ -499,6 +499,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `lock.passwordInput.expandOnFocus` | Animate the password field on focus | — |
 | `anoSpot.showLyrics` | Swap track title for the current lyric line | requires `lyrics.enable` |
 | `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
+| `dock.previews` | Rest on a running app in the dock to see its windows as live thumbnails (up to 6); click focuses, middle-click closes | — |
 | `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
 
 `appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 75 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel, Crystal Neuo's six materials — most with dark/light variants).

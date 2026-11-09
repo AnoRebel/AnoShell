@@ -350,7 +350,7 @@ ColumnLayout {
         icon: "tune"
         title: "Behavior"
         subtitle: "Auto-hide, hover reveal, and desktop-only visibility"
-        configKeys: ["dock.pinnedOnStartup", "dock.magnify", "dock.hoverToReveal", "dock.revealDelay", "dock.showOnDesktop"]
+        configKeys: ["dock.pinnedOnStartup", "dock.magnify", "dock.previews", "dock.hoverToReveal", "dock.revealDelay", "dock.showOnDesktop"]
         visible: root.dockEnabled
 
         ConfigSwitch {
@@ -367,6 +367,14 @@ ColumnLayout {
             sublabel: "Icons swell as the pointer passes, neighbours a little less, and lift off the edge"
             checked: Config.options?.dock?.magnify ?? true
             onCheckedChanged: Config.setNestedValue("dock.magnify", checked)
+        }
+
+        ConfigSwitch {
+            label: "Window previews"
+            configKey: "dock.previews"
+            sublabel: "Rest on a running app to see its windows live; click one to focus it, middle-click to close it"
+            checked: Config.options?.dock?.previews ?? true
+            onCheckedChanged: Config.setNestedValue("dock.previews", checked)
         }
 
         ConfigSwitch {

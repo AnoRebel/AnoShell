@@ -155,6 +155,11 @@ download folder: size and rate; finished ones open the file or folder). Any of t
 shows that workspace's windows as live thumbnails; clicking one goes to the
 workspace and focuses the window.
 
+`dock.previews` (on by default): resting the pointer on a running app in the
+dock for a moment shows its windows (up to six) as live thumbnails with their
+titles, above the icon (beside it on a side dock). Click one to focus it,
+middle-click to close it. The dock stays up while the pointer is on them.
+
 ## Network panel
 
 `network.panelStyle` picks what the network and Bluetooth entry points open:
