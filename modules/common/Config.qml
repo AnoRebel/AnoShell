@@ -1158,6 +1158,7 @@ Singleton {
                     property string sorting: "date_added" // date_added | toplist | views | favorites | random | relevance
                     property string order: "desc"
                     property string topRange: "1M"    // for toplist: 1d 3d 1w 1M 3M 6M 1y
+                    property string colors: ""        // one of Wallhaven's colour codes (hex, no #); "" = any
                 }
                 // How awww fits images (crop | fit | stretch | no); recorded so glass
                 // lines up with what's on screen.

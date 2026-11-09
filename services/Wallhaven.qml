@@ -69,6 +69,7 @@ Singleton {
         ]
         if ((f?.sorting ?? "") === "toplist") p.push("topRange=" + encodeURIComponent(f?.topRange ?? "1M"))
         if (root.query.length > 0) p.push("q=" + encodeURIComponent(root.query))
+        if (/^[0-9a-f]{6}$/.test(f?.colors ?? "")) p.push("colors=" + f.colors)
         if ((f?.sorting ?? "") === "random" && page > 1 && root._seed.length > 0) p.push("seed=" + encodeURIComponent(root._seed))
         return "https://wallhaven.cc/api/v1/search?" + p.join("&")
     }
@@ -147,7 +148,7 @@ Singleton {
 
     // A filter or the key changed: search again if the list is in use.
     readonly property string _filterKey: JSON.stringify([root.filters?.categories, root.filters?.purity,
-        root.filters?.sorting, root.filters?.order, root.filters?.topRange, root.hasKey])
+        root.filters?.sorting, root.filters?.order, root.filters?.topRange, root.filters?.colors, root.hasKey])
     on_FilterKeyChanged: if (root.used) root.fetch(true)
 
     // ── Download, then apply through Wallpapers (anod's pipeline) ───────────
