@@ -1,0 +1,14 @@
+{
+  "id": "lyrics",
+  "name": "Lyrics",
+  "description": "Synced lyrics of the playing track, the current line in the middle (needs Settings → Services → Lyrics)",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "LyricsPiece.qml",
+  "preview": "preview.png",
+  "size": { "w": 4, "h": 3 },
+  "minSize": { "w": 3, "h": 2 },
+  "settings": [
+    { "key": "track", "type": "bool", "label": "Title and artist above", "default": true }
+  ]
+}
