@@ -342,20 +342,21 @@ func (h *Store) memoHash(p string, fi fs.FileInfo) string {
 
 // Item is one local item, normalised across types.
 type Item struct {
-	Type        string `json:"type"`
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Author      string `json:"author"`
-	Version     string `json:"version"`
-	Description string `json:"description"`
-	Preview     string `json:"preview"`
-	Source      string `json:"source"` // builtin | user | installed
-	Catalog     string `json:"catalog,omitempty"`
-	Path        string `json:"path"`
-	Update      string `json:"update,omitempty"`
-	Modified    bool   `json:"modified,omitempty"`
-	Revoked     bool   `json:"revoked,omitempty"`
-	Code        bool   `json:"code"`
+	Type        string   `json:"type"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Author      string   `json:"author"`
+	Version     string   `json:"version"`
+	Description string   `json:"description"`
+	Preview     string   `json:"preview"`
+	Source      string   `json:"source"` // builtin | user | installed
+	Catalog     string   `json:"catalog,omitempty"`
+	Path        string   `json:"path"`
+	Update      string   `json:"update,omitempty"`
+	Changes     []string `json:"changes,omitempty"` // what's new in Update (plain text)
+	Modified    bool     `json:"modified,omitempty"`
+	Revoked     bool     `json:"revoked,omitempty"`
+	Code        bool     `json:"code"`
 	// rices: what the keybinds layer would set, and what it leaves out
 	Keybinds        []KeybindSummary `json:"keybinds,omitempty"`
 	KeybindsDropped []string         `json:"keybindsDropped,omitempty"`
@@ -394,7 +395,7 @@ func (h *Store) List(typ string) (ListResult, error) {
 			if e, ok := findEntry(cats, r.Catalog, t, it.ID); ok {
 				it.Revoked = e.Revoked
 				if !e.Revoked && newer(e.Version, r.Version) {
-					it.Update = e.Version
+					it.Update, it.Changes = e.Version, e.Changes
 				}
 			}
 		}

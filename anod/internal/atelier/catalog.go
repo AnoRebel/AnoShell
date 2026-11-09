@@ -32,6 +32,51 @@ type Entry struct {
 	Revoked     bool     `json:"revoked,omitempty"`
 	Hosts       []string `json:"hosts,omitempty"`
 	Commands    []string `json:"commands,omitempty"`
+	// Changes: what's new in this version, plain text (never markup); a
+	// string or a list of strings in the index, a list once read.
+	Changes Changes `json:"changes,omitempty"`
+}
+
+// Caps on an entry's changes: what doesn't fit is cut, not refused.
+const (
+	maxChangeLines = 20
+	maxChangeLen   = 300
+)
+
+// Changes reads a string (one line per newline) or a list of strings;
+// anything else reads as none (the entry stays installable). Lines are
+// trimmed, control characters dropped and the caps applied.
+type Changes []string
+
+func (c *Changes) UnmarshalJSON(b []byte) error {
+	var one string
+	var many []string
+	if json.Unmarshal(b, &one) == nil {
+		many = strings.Split(one, "\n")
+	} else if json.Unmarshal(b, &many) != nil {
+		*c = nil
+		return nil
+	}
+	var out Changes
+	for _, l := range many {
+		l = strings.TrimSpace(strings.Map(func(r rune) rune {
+			if r < 0x20 || r == 0x7f || (r >= 0x80 && r < 0xa0) {
+				return -1
+			}
+			return r
+		}, l))
+		if l == "" {
+			continue
+		}
+		if r := []rune(l); len(r) > maxChangeLen {
+			l = string(r[:maxChangeLen-1]) + "…"
+		}
+		if out = append(out, l); len(out) == maxChangeLines {
+			break
+		}
+	}
+	*c = out
+	return nil
 }
 
 // Index is a catalog's JSON.

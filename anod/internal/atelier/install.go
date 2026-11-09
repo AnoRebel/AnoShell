@@ -49,7 +49,8 @@ type Prepared struct {
 	ModifiedFiles       []string  `json:"modifiedFiles"`
 	// rices: what the keybinds layer would set (applied only when ticked)
 	Keybinds []KeybindSummary `json:"keybinds,omitempty"`
-	Update   bool             `json:"update"` // replaces an installed copy
+	Update   bool             `json:"update"`            // replaces an installed copy
+	Changes  []string         `json:"changes,omitempty"` // what's new in Version (plain text)
 }
 
 type pending struct {
@@ -134,7 +135,7 @@ func (h *Store) Prepare(typ, id, catalog string) (*Prepared, error) {
 	p.Prepared = Prepared{
 		Token: tok, Type: typ, ID: id, Code: isCode(typ), Name: e.Name, Author: e.Author, Catalog: catalog,
 		CatalogName: catName, Version: e.Version, Findings: []Finding{}, Hosts: orEmpty(e.Hosts),
-		Commands: orEmpty(e.Commands), ModifiedFiles: []string{}, Update: old != nil,
+		Commands: orEmpty(e.Commands), ModifiedFiles: []string{}, Update: old != nil, Changes: e.Changes,
 	}
 	if p.Name == "" {
 		p.Name = id

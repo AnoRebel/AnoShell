@@ -68,6 +68,35 @@ network the Atelier shows what was fetched last and says the catalog is offline.
 The AnoShell community catalog doesn't exist yet; until it does, the list
 starts empty.
 
+### Catalog format
+
+```json
+{
+  "name": "My catalog",
+  "items": [
+    {
+      "id": "weather-card", "type": "pieces", "name": "Weather card",
+      "version": "1.2.0", "author": "someone", "licence": "MIT",
+      "description": "Today's weather on the desktop",
+      "preview": "https://example.org/weather-card.png",
+      "url": "https://example.org/weather-card-1.2.0.tar.gz",
+      "sha256": "<64 hex digits>",
+      "hosts": ["api.open-meteo.com"], "commands": [],
+      "changes": ["Hourly forecast", "Fixed the icon in light mode"]
+    }
+  ]
+}
+```
+
+`id` (`a-z`, `0-9`, `-`), `type`, `url` and `sha256` are required; `compositor`
+(`hyprland` or `niri`) limits an item to one compositor and `revoked: true`
+withdraws it. `changes` is optional: what's new in this version, a string
+(one line per newline) or a list of strings. It is shown as plain text, never
+as markup: at most 20 lines of 300 characters, control characters dropped; any
+other shape is ignored. The Atelier shows it as "What's new in 1.2.0" on the
+item and on the update confirmation, and `ano atelier install` prints it.
+`ano atelier pack` prints an entry to start from.
+
 ### What an install does
 
 1. Downloads the item (https only) and checks it against the catalog's
