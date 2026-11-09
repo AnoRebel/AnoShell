@@ -4,9 +4,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -154,9 +156,65 @@ func Generate(p Paths, binds []Bind, helpers string) (hyprChanged, niriChanged b
 	if hyprChanged, err = write(p.HyprBinds, HyprlandLua(binds, helpers)); err != nil {
 		return
 	}
-	niriChanged, err = write(p.NiriBinds, NiriKDL(binds))
+	kdl := NiriKDL(binds)
+	// niri rejects the whole config over one bad bind (a raw action it
+	// doesn't know): check the file on its own first and keep the old one.
+	if old, rerr := os.ReadFile(p.NiriBinds); rerr != nil || string(old) != kdl {
+		if err = ValidateNiri(kdl); err != nil {
+			return
+		}
+	}
+	niriChanged, err = write(p.NiriBinds, kdl)
 	return
 }
+
+// ValidateNiri checks generated niri binds with `niri validate` (a binds
+// file is a whole config on its own). Without niri there is nothing to ask.
+func ValidateNiri(kdl string) error {
+	if _, err := exec.LookPath("niri"); err != nil {
+		return nil
+	}
+	f, err := os.CreateTemp("", "ano-binds-*.kdl")
+	if err != nil {
+		return nil
+	}
+	defer os.Remove(f.Name())
+	_, werr := f.WriteString(kdl)
+	f.Close()
+	if werr != nil {
+		return nil
+	}
+	out, err := exec.Command("niri", "validate", "-c", f.Name()).CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	// niri's report: "Error: × <what>" lines and the numbered source lines
+	// it quotes; keep the messages and the bind lines (not "binds {").
+	var msg []string
+	seen := map[string]bool{}
+	for _, l := range strings.Split(stripANSI(string(out)), "\n") {
+		t := strings.TrimSpace(l)
+		if after, ok := strings.CutPrefix(t, "Error:"); ok {
+			t = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(after), "×"))
+		} else if m := srcLineRE.FindStringSubmatch(l); m != nil && !strings.HasPrefix(strings.TrimSpace(m[1]), "binds") && strings.TrimSpace(m[1]) != "}" {
+			t = strings.TrimSpace(m[1])
+		} else {
+			continue
+		}
+		if t != "" && !seen[t] && !strings.HasPrefix(t, "error loading config") && t != "error parsing" && t != "error parsing KDL" {
+			seen[t] = true
+			msg = append(msg, t)
+		}
+	}
+	return fmt.Errorf("niri rejects the binds, nothing written: %s", strings.Join(msg, "; "))
+}
+
+var (
+	ansiRE    = regexp.MustCompile("\x1b\\[[0-9;]*m")
+	srcLineRE = regexp.MustCompile(`^\s*\d+ │(.*)$`)
+)
+
+func stripANSI(s string) string { return ansiRE.ReplaceAllString(s, "") }
 
 // Migrated reports whether the compositor configs include ano's binds.
 func Migrated(p Paths) bool {
