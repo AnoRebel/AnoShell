@@ -1324,6 +1324,13 @@ Singleton {
                 property bool blur: false
             }
 
+            // Screen-share picker (Hyprland): shown when xdph's
+            // custom_picker_binary is scripts/share-picker (Settings → Services
+            // writes it). Off: the stock hyprland-share-picker answers.
+            property JsonObject sharePicker: JsonObject {
+                property bool enable: true
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // Audio protection
             // ═══════════════════════════════════════════════════════════════

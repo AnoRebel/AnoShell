@@ -3085,6 +3085,24 @@
  },
  {
   "page": 9,
+  "card": "Screen sharing",
+  "label": "Screen sharing",
+  "sublabel": "AnoShell's picker when an app asks to share a screen, window or region",
+  "keys": [
+   "sharePicker"
+  ]
+ },
+ {
+  "page": 9,
+  "card": "",
+  "label": "Use AnoShell's picker",
+  "sublabel": "Screens and windows with live previews, or a region you drag out. Off: the stock hyprland-share-picker answers",
+  "keys": [
+   "sharePicker.enable"
+  ]
+ },
+ {
+  "page": 9,
   "card": "AI Chat",
   "label": "AI Chat",
   "sublabel": "Model configuration, API keys, system prompt, and temperature",

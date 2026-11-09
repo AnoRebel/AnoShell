@@ -13,6 +13,7 @@ installed next to anod by `anod/install.sh` (see [Installation](installation.md)
 | `ano reload` | reloads the shell |
 | `ano ipc <args…>` | passes through to `qs -c ano ipc` |
 | `ano emit <event> [key=value …]` | sends a shell event to anod, which runs its hook |
+| `ano share-pick [--allow-token]` | the Hyprland screen-share picker, as xdph runs it (through `scripts/share-picker`); falls back to `hyprland-share-picker`. `ano share-pick status` says what xdph.conf uses; `ano share-pick install [--picker PATH] [--dry-run]` sets it, after a backup ([extras → Screen sharing](extras.md#screen-sharing-hyprland)) |
 | `ano version` | prints the version and the API version |
 
 ```sh

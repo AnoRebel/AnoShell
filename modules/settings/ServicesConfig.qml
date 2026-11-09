@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.UPower
 import qs.modules.common
 import qs.modules.common.widgets
@@ -20,11 +21,11 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Services"
-        subtitle: "AI, Startup applications, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Drives"
+        subtitle: "AI, Startup applications, GameMode, Performance mode, Updates, PowerProfiles, Network, VPN, NightLight, Lyrics, Calendar, Resources, Brightness, Weather, Recording, Screen sharing, Drives"
         configRoots: [
             "ai", "autostart", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn", "kdeConnect",
             "nightLight", "location", "lyrics", "calendar", "resources", "light",
-            "shell", "weather", "recording", "screenFilter", "drives"
+            "shell", "weather", "recording", "sharePicker", "screenFilter", "drives"
         ]
     }
 
@@ -119,6 +120,80 @@ ColumnLayout {
                 placeholderText: "~/Videos"
                 text: Config.options?.recording?.dir ?? ""
                 onEditingFinished: Config.setNestedValue("recording.dir", text.trim())
+            }
+        }
+    }
+
+    // ═══ Screen sharing (Hyprland) ═══
+    SettingsCard {
+        id: shareCard
+        visible: CompositorService.compositor === "hyprland"
+        icon: "screen_share"
+        title: "Screen sharing"
+        subtitle: "AnoShell's picker when an app asks to share a screen, window or region"
+        configKeys: ["sharePicker"]
+
+        // `ano share-pick status`: ano | other | stock | missing, then the path set.
+        property string xdph: ""
+        property string xdphPath: ""
+        property string installLog: ""
+        readonly property string picker: `${Directories.shellRoot}/scripts/share-picker`
+        // ano may live outside xdph's (and the shell's) PATH: ~/.local/bin by default.
+        readonly property string _ano: 'A=$(command -v ano || echo "$HOME/.local/bin/ano"); exec "$A" share-pick'
+        Component.onCompleted: if (visible) xdphStatus.running = true
+        Process {
+            id: xdphStatus
+            command: ["sh", "-c", `${shareCard._ano} status`]
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    const t = text.trim()
+                    const i = t.indexOf(" ")
+                    shareCard.xdph = i < 0 ? t : t.slice(0, i)
+                    shareCard.xdphPath = i < 0 ? "" : t.slice(i + 1)
+                }
+            }
+        }
+        Process {
+            id: xdphInstall
+            // The picker path goes in as an argument, never into the command line.
+            command: ["sh", "-c", `${shareCard._ano} install --picker "$1"`, "sh", shareCard.picker]
+            stdout: StdioCollector { onStreamFinished: shareCard.installLog = text.trim() }
+            stderr: StdioCollector { onStreamFinished: if (text.trim()) shareCard.installLog = text.trim() }
+            onExited: xdphStatus.running = true
+        }
+
+        ConfigSwitch {
+            label: "Use AnoShell's picker"
+            configKey: "sharePicker.enable"
+            sublabel: "Screens and windows with live previews, or a region you drag out. Off: the stock hyprland-share-picker answers"
+            checked: Config.options?.sharePicker?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("sharePicker.enable", checked)
+        }
+        NoticeBox {
+            Layout.fillWidth: true
+            iconName: shareCard.xdph === "ano" ? "check_circle" : "info"
+            level: shareCard.xdph === "ano" ? "info" : "warning"
+            text: shareCard.xdph === "ano" ? "xdph.conf points at AnoShell's picker."
+                : shareCard.xdph === "other" ? `xdph.conf uses another picker: ${shareCard.xdphPath}. The button below replaces it (after a backup).`
+                : shareCard.xdph === "" ? "Checking ~/.config/hypr/xdph.conf… (needs the ano command)"
+                : "The portal (xdg-desktop-portal-hyprland) only shows this picker once ~/.config/hypr/xdph.conf names it: screencopy { custom_picker_binary = … }. Settings writes that only when you press the button, and backs the file up first."
+        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            RippleButton {
+                visible: shareCard.xdph !== "ano"
+                enabled: !xdphInstall.running
+                toggled: true
+                buttonText: "Set in xdph.conf"
+                onClicked: xdphInstall.running = true
+            }
+            StyledText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                opacity: 0.6
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                text: shareCard.installLog || "Then restart the portal (systemctl --user restart xdg-desktop-portal-hyprland) or log in again. Undo: restore the xdph.conf.bak-* file."
             }
         }
     }

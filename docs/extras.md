@@ -257,6 +257,38 @@ While recording, a small floating indicator shows the time with Stop, Discard
 notification shows the first frame with Open, Show in folder and Delete.
 Recordings go to `recording.dir` (empty: ~/Videos).
 
+## Screen sharing (Hyprland)
+
+When an app asks to share the screen, xdg-desktop-portal-hyprland (xdph) runs a
+picker. AnoShell has its own: tabs for **Screens** and **Windows** with live
+previews, and **Region** (drag one out with `slurp`). Arrow keys choose, Enter
+shares, Tab switches tabs, Esc cancels. **Allow restore** lets the app share
+the same thing again later without asking (the portal's restore token).
+
+The portal only runs it once `~/.config/hypr/xdph.conf` names it:
+
+```
+screencopy {
+    custom_picker_binary = ~/.config/quickshell/ano/scripts/share-picker   # the full path
+}
+```
+
+Settings → Services → Screen sharing writes that line when you press **Set in
+xdph.conf** (never on its own; the old file is kept as `xdph.conf.bak-<time>`),
+as does `ano share-pick install`. Restart the portal afterwards
+(`systemctl --user restart xdg-desktop-portal-hyprland`) or log in again.
+
+How it works: `scripts/share-picker` runs `ano share-pick`, which reads the
+portal's `XDPH_*` lists, asks the shell (`qs -c ano ipc call sharePicker pick`)
+and waits up to 60 s for the answer, then prints the one
+`[SELECTION]<flags>/<choice>` line the portal reads (`screen:<output>`,
+`window:<id>` or `region:<output>@x,y,w,h`; flag `r` = allow restore). The
+choice is checked against what the portal offered. The portal waits while a
+picker is open, so the wait is bounded; no answer in time means "cancelled".
+If the shell isn't running, `sharePicker.enable` is off, or the shell reloads
+mid-pick, the stock `hyprland-share-picker` opens instead, so sharing keeps
+working. `ano doctor` says whether xdph.conf points at the picker.
+
 ## Screen time
 
 `screenTime.enable` (Settings → Sidebars → Productivity) counts how long each

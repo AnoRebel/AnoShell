@@ -72,13 +72,15 @@ Singleton {
         { id: "anoMorphLayer", source: "modules/common/widgets/TopLayerPanel.qml", listed: false, effective: "morphingPanels" },
         { id: "anoPieces", source: "modules/pieces/PieceLayer.qml", key: "pieces.enable", listed: false, effective: "piecesShown" },
         { id: "anoScratchpad", source: "modules/scratchpad/ScratchpadPanel.qml", key: "scratchpad.enable", listed: false },
+        // Only its IPC target until xdph asks (the window is a LazyLoader).
+        { id: "anoSharePicker", source: "modules/sharePicker/SharePicker.qml", key: "sharePicker.enable", compositor: "hyprland", listed: false },
     ]
 
     // Ids each family hosts. Everything not listed here is unavailable in
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen", "anoPolkit",
-        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions"]
+        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions", "anoSharePicker"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar", "anoClock"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote", "anoLivePins"]
