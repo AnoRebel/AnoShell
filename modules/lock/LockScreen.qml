@@ -207,6 +207,22 @@ Scope {
         }
     }
     Timer { id: fpRetry; onTriggered: fp.start() }
+    // After a resume the reader often stops answering the scan that was
+    // running before sleep (it'd only come back at the timeout): start a
+    // fresh one. Watched only while locked with a fingerprint in use.
+    Process {
+        id: sleepWatch
+        running: root.held && fp.available
+        command: ["gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1", "--object-path", "/org/freedesktop/login1"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (!line.includes("Manager.PrepareForSleep (false")) return
+                if (fprint.active) fprint.abort()
+                fp.state = "off"; fp.message = ""
+                fpRetry.interval = 1500; fpRetry.restart()
+            }
+        }
+    }
     Connections { target: sessionLock; function onSecureChanged() { fp.start() } }
     Connections { target: fp; function onWantedChanged() { if (root.held) { fp.reset(); fp.detect() } } }
     PamContext {
