@@ -65,6 +65,30 @@ Singleton {
         return [cur, keys[keys.length - 1]];
     }
 
+    // Whether a dot-path names a key the schema declares. Assigning an
+    // undeclared property on a JsonAdapter/JsonObject throws, which would
+    // stop a write or a preview halfway; below a `var` property (a plain JS
+    // object) any key is allowed.
+    property var _warnedUndeclared: ({})
+    function isDeclared(dotPath) {
+        let cur = root.options
+        for (const k of dotPath.split(".")) {
+            if (cur === null || cur === undefined || typeof cur !== "object") return true
+            if (typeof cur.objectNameChanged !== "function") return true // plain object: free-form
+            if (!(k in cur)) return false
+            cur = cur[k]
+        }
+        return true
+    }
+    function _undeclared(dotPath) {
+        if (root.isDeclared(dotPath)) return false
+        if (!root._warnedUndeclared[dotPath]) {
+            root._warnedUndeclared[dotPath] = true
+            console.warn(`[Config] ${dotPath} is not a setting; skipped`)
+        }
+        return true
+    }
+
     // Arrays read from a JsonAdapter list property are V4Sequence wrappers,
     // which Array.isArray rejects.
     function _isArrayLike(v) {
@@ -116,6 +140,8 @@ Singleton {
             userDeltaWriteTimer.restart();
             return;
         }
+
+        if (root._undeclared(nestedKey)) return;
 
         // 1. Live in-memory mutation — UI sees the change this tick
         const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
@@ -177,6 +203,7 @@ Singleton {
                 root.options[keys[0]] = arr
                 continue
             }
+            if (root._undeclared(k)) continue
             const [p, leaf] = root._walkPath(root.options, k, true)
             old[k] = p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf]))
             p[leaf] = values[k]
@@ -1838,6 +1865,7 @@ Singleton {
         function set(key: string, json: string): string {
             let v
             try { v = JSON.parse(json) } catch (e) { return `error: value is not JSON (${e})` }
+            if (!root.isDeclared(key)) return `error: ${key} is not a setting`
             // Edges go through the swap rule (pill and dock never share one).
             if ((key === "anoSpot.position" || key === "dock.position") && root.edgeMover) root.edgeMover(key === "dock.position" ? "dock" : "pill", v)
             else root.setNestedValue(key, v)
