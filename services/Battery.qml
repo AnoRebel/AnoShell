@@ -29,7 +29,15 @@ Singleton {
     }
     // Whole percents (0..1 in 0.01 steps): UPower reports fractional changes every
     // few seconds while charging, and each one re-animated every battery ring.
-    property real percentage: Math.round((UPower.displayDevice?.percentage ?? 1) * 100) / 100
+    // A 0% reading in the Unknown state (boot, resume, a charger being moved on
+    // some firmware) is no reading: keep the last real one, so it can't
+    // trigger the critical warning or automatic suspend.
+    property real _lastGood: 1
+    readonly property real _raw: UPower.displayDevice?.percentage ?? 1
+    readonly property bool _bogus: _raw <= 0 && chargeState === UPowerDeviceState.Unknown
+    on_RawChanged: if (!_bogus) _lastGood = _raw
+    Component.onCompleted: if (!_bogus) _lastGood = _raw
+    property real percentage: Math.round((_bogus ? _lastGood : _raw) * 100) / 100
     readonly property bool allowAutomaticSuspend: Config.options.battery.automaticSuspend
     readonly property bool soundEnabled: Config.options.sounds.battery
 
