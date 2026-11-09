@@ -48,6 +48,30 @@ Singleton {
     // Fire-and-forget shell event (dropped while anod is unavailable).
     function emit(name, data) { root.call("event.emit", { event: name, data: data ?? {} }) }
 
+    // A package the Atelier installed (an <id>~<n> folder of pieces, plugins
+    // or lockscreens) was compile-checked: anod drops the version it kept
+    // since the update (confirm) or, when this one fails, brings that one
+    // back (rollback) and the shell says so. A report about a folder that is
+    // not the installed update is a no-op there. Reports made before anod
+    // connects wait for it.
+    property var _loadReports: []
+    function reportLoad(type, id, dir, name, error) {
+        if (!/~\d+$/.test(dir)) return
+        if (!root.available) {
+            root._loadReports = root._loadReports.filter(r => r.path !== dir).concat([{ type, id, path: dir, name, error }])
+            return
+        }
+        if (!error) { root.call("atelier.confirm", { type, id, path: dir }); return }
+        root.call("atelier.rollback", { type, id, path: dir }, r => {
+            if (!r) return // nothing kept to go back to
+            // Notification bodies may be read as markup: the error is escaped.
+            const plain = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            Quickshell.execDetached(["notify-send", "-a", "AnoShell", "-i", "history", "--",
+                `${name || id}: back to version ${r.version || "before"}`,
+                plain(`The update didn't load, so the previous version is back. ${String(error).slice(0, 300)}`)])
+        })
+    }
+
     property int _nextId: 0
     property var _pending: ({})
     property bool _versionBlocked: false
@@ -90,6 +114,9 @@ Singleton {
             if (err) { root.error = err.message; return }
             root.error = ""
             root.available = true
+            const reports = root._loadReports
+            root._loadReports = []
+            for (const r of reports) root.reportLoad(r.type, r.id, r.path, r.name, r.error)
             root._send("version", {}, r => { root.version = r?.version ?? "" })
             if (!root._startedSent) { root._startedSent = true; root.emit("started", {}) }
         })

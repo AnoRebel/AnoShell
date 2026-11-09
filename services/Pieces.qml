@@ -102,8 +102,9 @@ Singleton {
     readonly property bool checking: root._holds > 0
     function hold(on: bool): void { root._holds = Math.max(0, root._holds + (on ? 1 : -1)) }
     onCheckingChanged: if (root.checking) for (const e of Object.values(root.entries)) root._check(e)
+    // An Atelier install's result goes to anod (keep or roll back the update).
     function _check(e): void {
-        if (e.errors.length) return
+        if (e.errors.length) { if (e.source === "user") Anod.reportLoad("pieces", e.id, e.dir, e.name, e.errors.join("; ")); return }
         const c = Qt.createComponent(e.url, Component.Asynchronous)
         const done = () => {
             if (c.status === Component.Loading) return
@@ -114,6 +115,7 @@ Singleton {
             q[e.id] = c.status === Component.Error ? c.errorString().trim().split(`file://${e.dir}/`).join("").replace(/\?r=\d+/g, "") : ""
             if (q[e.id]) console.warn(`[Pieces] ${e.id}: ${q[e.id]}`)
             root.qmlErrors = q
+            if (e.source === "user") Anod.reportLoad("pieces", e.id, e.dir, e.name, q[e.id])
             c.destroy()
         }
         if (c.status === Component.Loading) c.statusChanged.connect(done); else done()

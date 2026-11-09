@@ -17,6 +17,8 @@ import (
 //	atelier.commit     {token}                     → {path}
 //	atelier.cancel     {token}                     → true
 //	atelier.remove     {type, id}                  → true
+//	atelier.confirm    {type, id, path?}           → {confirmed} (the update loaded: drop the kept previous version)
+//	atelier.rollback   {type, id, path?}           → {version} (it didn't: the previous version comes back)
 //	atelier.riceApply  {id, layers}                → {snapshot, applied, created, skipped, wallpaper, keybinds, appliedAt}
 //	atelier.riceUndo                               → {ok: true, kept: [config keys you changed since, left as you set them]}
 //	atelier.riceExport {name}                      → {id, path}
@@ -98,6 +100,33 @@ func registerAtelier(srv *ipc.Server, h *atelier.Store) {
 			return nil, bad(err)
 		}
 		return true, nil
+	})
+	type loaded struct {
+		Type string `json:"type"`
+		ID   string `json:"id"`
+		Path string `json:"path"`
+	}
+	srv.HandleSlow("atelier.confirm", func(p json.RawMessage) (any, error) {
+		var req loaded
+		if err := json.Unmarshal(p, &req); err != nil || req.Type == "" || req.ID == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {type, id, path?}")
+		}
+		ok, err := h.Confirm(req.Type, req.ID, req.Path)
+		if err != nil {
+			return nil, bad(err)
+		}
+		return map[string]any{"confirmed": ok}, nil
+	})
+	srv.HandleSlow("atelier.rollback", func(p json.RawMessage) (any, error) {
+		var req loaded
+		if err := json.Unmarshal(p, &req); err != nil || req.Type == "" || req.ID == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {type, id, path?}")
+		}
+		v, err := h.Rollback(req.Type, req.ID, req.Path)
+		if err != nil {
+			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
+		}
+		return map[string]any{"version": v}, nil
 	})
 	srv.HandleSlow("atelier.riceApply", func(p json.RawMessage) (any, error) {
 		var req struct {

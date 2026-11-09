@@ -230,7 +230,10 @@ Atelier methods (Settings → Atelier; see `anod/internal/atelier`): `atelier.li
 in `atelier.catalogs` with ETags; a failure keeps the cache and marks the catalog `offline`),
 `atelier.prepare` (`{"type", "id", "catalog"}`: download, SHA-256 check, staged extraction, static audit
 for code; returns a token valid 10 minutes), `atelier.commit` (`{"token"}` → `{"path"}`), `atelier.cancel`,
-`atelier.remove` (`{"type", "id"}`), `atelier.riceApply` (`{"id", "layers"}`), `atelier.riceUndo` and
+`atelier.remove` (`{"type", "id"}`), `atelier.confirm` and `atelier.rollback` (`{"type", "id", "path"?}`:
+the shell reports that an updated piece, plugin or lock screen loaded, dropping the previous version kept
+since the update (`{"confirmed"}`), or that it failed, bringing that version back (`{"version"}`); a report
+whose `path` isn't the installed folder is ignored), `atelier.riceApply` (`{"id", "layers"}`), `atelier.riceUndo` and
 `atelier.riceExport` (`{"name"}` → `{"id", "path"}`), `atelier.wallhaven` (`{"query", "page"?, "purity"?, "sorting"?}` →
 `{"items": [{"id", "url", "thumb", "resolution", "fileSize", "fileType", "source", "purity", "page", "installed"}],
 "page", "lastPage", "hasKey", "error"?}`; results cached 10 minutes, at most 40 calls a minute, the key sent only as
