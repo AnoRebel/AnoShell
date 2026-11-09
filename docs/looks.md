@@ -19,6 +19,12 @@ Pick one in **Settings → Appearance → Look**, or leave it on **Auto** to use
 your layout's default (Ano and Hefty: Liquid; Clean: Neo-tech; Minimal: Ink).
 Switching morphs every surface; nothing restarts.
 
+**Outlines.** Every surface (bar, dock, pill, sidebars, popups, panels) has a
+thin border, on by default at 1 px: Settings → Appearance → **Outlines** turns
+it off and **Outline width** sets it (`appearance.border.enable`,
+`appearance.border.width`). A look with a thicker stroke keeps its own. In
+connected mode one outline runs around the whole frame, not around each piece.
+
 From a terminal:
 
 ```sh
