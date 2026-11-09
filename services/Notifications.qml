@@ -248,7 +248,8 @@ Singleton {
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound) {
                 root.list = []
-                notifFileView.setText(stringifyList(root.list))
+                // A write from inside the load handler is dropped; defer it.
+                Qt.callLater(() => notifFileView.setText(stringifyList(root.list)))
             }
         }
     }

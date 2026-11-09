@@ -72,7 +72,7 @@ Singleton {
                 const dir = root.filePath.substring(0, root.filePath.lastIndexOf('/'))
                 Quickshell.execDetached(["/usr/bin/mkdir", "-p", dir])
                 root.list = []; root.nextId = 1
-                root.saveToFile()
+                Qt.callLater(root.saveToFile) // a write from inside the load handler is dropped
             } else {
                 console.warn("[CalendarEvents] load error:", error)
                 root.list = []; root.nextId = 1
