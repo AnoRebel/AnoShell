@@ -18,9 +18,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SETTINGS = ROOT / "modules/settings"
 OUT = SETTINGS / "settings-index.json"
 # Page order = SettingsRegistry.pages order.
-PAGES = ["GeneralConfig", "ModulesConfig", "BarConfig", "DockConfig", "SidebarsConfig",
+PAGES = ["AboutPage", "GeneralConfig", "ModulesConfig", "BarConfig", "DockConfig", "SidebarsConfig",
          "AnoSpotConfig", "AppearanceConfig", "OverviewConfig", "ServicesConfig", "DisplaysPage",
-         "KeybindsPage", "AtelierPage", "ActionsPage", "AboutPage"]
+         "KeybindsPage", "AtelierPage", "ActionsPage"]
 # Cards kept in their own files, indexed with the page that shows them.
 EXTRA = {"DisplaysPage": ["CursorCard"], "AboutPage": ["PresetsCard"]}
 ADVANCED_RE = re.compile(r"^\s*advanced\s*:\s*true\b", re.M)

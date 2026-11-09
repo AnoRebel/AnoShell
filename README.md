@@ -249,10 +249,11 @@ You can edit the user file directly if you prefer JSON over the GUI. The shell w
 
 ### Settings pages
 
-The Settings UI has 13 pages, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
+The Settings UI has 14 pages, opening on About, each owning a set of top-level config keys. The "Reset" header button on each page only clears keys it owns; the global "Reset every setting" card on the About page wipes the entire user delta.
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
+| About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, credits, global "Reset every setting" card |
 | General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
@@ -265,7 +266,7 @@ The Settings UI has 13 pages, each owning a set of top-level config keys. The "R
 | Displays     | `cursor`, `icons`                                                                        | Monitor arrangement, mode, scale, rotation, VRR and profiles (through anod), cursor and icon themes |
 | Keybinds     | `keyboard`                                                                               | Search, record, add, change or remove binds; keyboard layouts |
 | Atelier      | `atelier`                                                                                | Themes, looks, pieces, plugins, lock screens, wallpapers and rices: browse, preview, install, use, undo |
-| About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, credits, global "Reset every setting" card |
+| Actions      | `actions`                                                                                | Macros: build, reorder, test and run step lists; the ring on Super+Ctrl+X (see docs/actions.md) |
 
 Settings opens via `qs -c ano ipc call settings toggle`, the standalone window via `qs -n -p ~/.config/quickshell/ano/settings.qml`, or `Super+,` (Hyprland default).
 

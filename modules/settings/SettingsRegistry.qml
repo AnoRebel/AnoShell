@@ -23,7 +23,7 @@ import "."
  *
  *   {
  *     key: "anoSpot.eventBorder.holdMs",
- *     pageIndex: 5,             // index into SettingsOverlay.pages
+ *     pageIndex: 6,             // index into SettingsOverlay.pages
  *     pageName: "AnoSpot",      // human-readable
  *     pageIcon: "view_compact_alt",
  *     haystack: "anoSpot.eventBorder.holdMs anoSpot AnoSpot eventBorder holdMs",
@@ -45,6 +45,7 @@ Singleton {
     // (top-level keys + dotted-path overrides) so the palette can resolve a
     // typed key to its page.
     readonly property var pages: [
+        { name: "About",      icon: "info",            configRoots: ["user"] },
         { name: "General",    icon: "tune",            configRoots: ["audio", "battery", "time", "notifications", "interactions", "sounds.battery", "session", "polkit"] },
         { name: "Modules",    icon: "extension",       configRoots: ["disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation", "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime", "taskView", "media", "compositor", "hacks", "displayManager", "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "livePins", "widgets"] },
         { name: "Bar",        icon: "dock_to_bottom",  configRoots: ["bar", "bars", "tray"] },
@@ -58,7 +59,6 @@ Singleton {
         { name: "Keybinds",   icon: "keyboard",        configRoots: ["keyboard"] },
         { name: "Atelier",    icon: "design_services", configRoots: ["atelier"] },
         { name: "Actions",    icon: "bolt",            configRoots: ["actions"] },
-        { name: "About",      icon: "info",            configRoots: ["user"] },
     ]
 
     // Cached search index — recomputed when pages or config schema changes.

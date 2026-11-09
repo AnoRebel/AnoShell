@@ -150,21 +150,21 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.margins: 20
                         sourceComponent: {
-                            switch (GlobalStates.settingsPage) {
-                                case 0: return generalPage
-                                case 1: return modulesPage
-                                case 2: return barPage
-                                case 3: return dockPage
-                                case 4: return sidebarsPage
-                                case 5: return anoSpotPage
-                                case 6: return appearancePage
-                                case 7: return overviewPage
-                                case 8: return servicesPage
-                                case 9: return displaysPage
-                                case 10: return keybindsPage
-                                case 11: return atelierPage
-                                case 12: return actionsPage
-                                case 13: return aboutPage
+                            switch (SettingsRegistry.pages[GlobalStates.settingsPage]?.name) {
+                                case "General": return generalPage
+                                case "Modules": return modulesPage
+                                case "Bar": return barPage
+                                case "Dock": return dockPage
+                                case "Sidebars": return sidebarsPage
+                                case "AnoSpot": return anoSpotPage
+                                case "Appearance": return appearancePage
+                                case "Overview": return overviewPage
+                                case "Services": return servicesPage
+                                case "Displays": return displaysPage
+                                case "Keybinds": return keybindsPage
+                                case "Atelier": return atelierPage
+                                case "Actions": return actionsPage
+                                case "About": return aboutPage
                                 default: return generalPage
                             }
                         }

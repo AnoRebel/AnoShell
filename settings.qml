@@ -171,21 +171,21 @@ ShellRoot {
                     anchors { left: parent.left; right: parent.right; top: parent.top; margins: 24 }
 
                     sourceComponent: {
-                        switch (settingsRoot.currentPage) {
-                            case 0: return comp_general
-                            case 1: return comp_modules
-                            case 2: return comp_bar
-                            case 3: return comp_dock
-                            case 4: return comp_sidebars
-                            case 5: return comp_anospot
-                            case 6: return comp_appearance
-                            case 7: return comp_overview
-                            case 8: return comp_services
-                            case 9: return comp_displays
-                            case 10: return comp_keybinds
-                            case 11: return comp_atelier
-                            case 12: return comp_actions
-                            case 13: return comp_about
+                        switch (SettingsRegistry.pages[settingsRoot.currentPage]?.name) {
+                            case "General": return comp_general
+                            case "Modules": return comp_modules
+                            case "Bar": return comp_bar
+                            case "Dock": return comp_dock
+                            case "Sidebars": return comp_sidebars
+                            case "AnoSpot": return comp_anospot
+                            case "Appearance": return comp_appearance
+                            case "Overview": return comp_overview
+                            case "Services": return comp_services
+                            case "Displays": return comp_displays
+                            case "Keybinds": return comp_keybinds
+                            case "Atelier": return comp_atelier
+                            case "Actions": return comp_actions
+                            case "About": return comp_about
                             default: return comp_general
                         }
                     }

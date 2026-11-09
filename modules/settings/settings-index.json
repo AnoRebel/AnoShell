@@ -1,6 +1,66 @@
 [
  {
   "page": 0,
+  "card": "User Profile",
+  "label": "User Profile",
+  "sublabel": "Avatar, display name, and account settings",
+  "keys": [
+   "user"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "",
+  "label": "Custom avatar path",
+  "sublabel": "Override ~/.face with a custom path (leave empty for default)",
+  "keys": [
+   "user.avatarPath"
+  ]
+ },
+ {
+  "page": 0,
+  "card": "Ano Shell",
+  "label": "Ano Shell",
+  "sublabel": "A comprehensive QuickShell desktop shell",
+  "keys": []
+ },
+ {
+  "page": 0,
+  "card": "System Details",
+  "label": "System Details",
+  "sublabel": "Runtime environment and paths",
+  "keys": []
+ },
+ {
+  "page": 0,
+  "card": "Features",
+  "label": "Features",
+  "sublabel": "What this shell can do",
+  "keys": []
+ },
+ {
+  "page": 0,
+  "card": "Credits & Sources",
+  "label": "Credits & Sources",
+  "sublabel": "Built from patterns across the QuickShell community",
+  "keys": []
+ },
+ {
+  "page": 0,
+  "card": "Presets",
+  "label": "Presets",
+  "sublabel": "Try a whole setup live, then keep it or go back",
+  "keys": []
+ },
+ {
+  "page": 0,
+  "card": "Backup & restore",
+  "label": "Backup & restore",
+  "sublabel": "Your settings, themes, widgets and data in an archive; restore all of it or some",
+  "keys": []
+ },
+ {
+  "page": 1,
   "card": "Audio",
   "label": "Audio",
   "sublabel": "Volume protection, system sounds, and audio behavior",
@@ -9,7 +69,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "EasyEffects quick toggle",
   "sublabel": "",
@@ -18,7 +78,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Volume protection (Earbang guard)",
   "sublabel": "Blocks sudden volume jumps that could damage hearing",
@@ -27,7 +87,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Max allowed increase per step",
   "sublabel": "Maximum % the volume can jump in a single change",
@@ -36,7 +96,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Hard volume limit",
   "sublabel": "Absolute maximum volume percentage (pavucontrol allows up to 153%)",
@@ -45,7 +105,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Sound effects",
   "label": "Sound effects",
   "sublabel": "Short sounds for logging in, notifications, panels and alerts, played with pw-play. All off until you turn them on. Needs `pipewire` (pw-play).",
@@ -60,7 +120,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Volume",
   "sublabel": "For every sound effect and the battery sounds, under the system volume",
@@ -69,7 +129,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "When the desktop first appears",
   "sublabel": "Once per session, not when the shell restarts",
@@ -78,7 +138,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Notifications",
   "sublabel": "An app's own sound (sound-name, sound-file) plays instead; apps that ask for silence get none. Nothing plays while popups are held.",
@@ -87,7 +147,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Panels opening and closing",
   "sublabel": "Sidebars, launcher, overview, control panel and the other panels",
@@ -96,7 +156,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Alerts",
   "sublabel": "CPU or memory use going over the limit below, or the battery reaching its critical level while unplugged",
@@ -105,7 +165,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Alert above",
   "sublabel": "",
@@ -114,7 +174,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Quiet time between alerts",
   "sublabel": "How long a value must stay under the limit before it can sound again",
@@ -123,7 +183,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Battery",
   "label": "Battery",
   "sublabel": "Warning thresholds, auto-suspend, and power notifications",
@@ -133,7 +193,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Low battery warning",
   "sublabel": "Show notification when battery drops below this level",
@@ -142,7 +202,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Critical battery warning",
   "sublabel": "Urgent notification with sound",
@@ -151,7 +211,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Auto-suspend threshold",
   "sublabel": "System suspends automatically below this level",
@@ -160,7 +220,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Enable automatic suspend",
   "sublabel": "Suspend the system when battery reaches the threshold above",
@@ -169,7 +229,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Full battery notification",
   "sublabel": "Notify to unplug when charged above this level",
@@ -178,7 +238,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Battery sounds",
   "sublabel": "Play sounds for charging, low battery, and full events",
@@ -187,7 +247,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Time & Clock",
   "label": "Time & Clock",
   "sublabel": "Clock format, date format, and second precision",
@@ -196,7 +256,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Second precision",
   "sublabel": "Update clock every second (slightly more CPU usage)",
@@ -205,7 +265,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Notifications",
   "label": "Notifications",
   "sublabel": "Popup behavior, timeout, and sounds",
@@ -214,7 +274,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Auto-dismiss timeout",
   "sublabel": "How long popup notifications stay visible",
@@ -223,7 +283,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Silent mode",
   "sublabel": "No popups — notifications still go to the history",
@@ -232,7 +292,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Popups on screen",
   "sublabel": "Newest popups shown at once; older ones wait in the history",
@@ -241,7 +301,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Silent apps",
   "sublabel": "Comma-separated app names: kept in the history, no popup",
@@ -250,7 +310,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Blocked apps",
   "sublabel": "Comma-separated app names: their notifications are dropped",
@@ -259,7 +319,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Session",
   "label": "Session",
   "sublabel": "Confirmation for logout and shutdown",
@@ -268,7 +328,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Press twice to log out",
   "sublabel": "Off: a single click logs out",
@@ -277,7 +337,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Press twice to shut down",
   "sublabel": "Off: a single click powers off",
@@ -286,7 +346,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Password prompt",
   "label": "Password prompt",
   "sublabel": "AnoShell asks for your password when an app needs permission (polkit)",
@@ -295,7 +355,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Use AnoShell's password prompt",
   "sublabel": "Off: another agent (or none) answers polkit",
@@ -304,7 +364,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Blur behind the prompt",
   "sublabel": "Off (default): only dims the screen; the bundled compositor configs leave quickshell:polkitPlain unblurred",
@@ -313,7 +373,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Lock screen",
   "label": "Lock screen",
   "sublabel": "niri",
@@ -322,7 +382,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Lock with AnoShell (niri)",
   "sublabel": "Off: another locker (swaylock, hyprlock…) handles it",
@@ -331,7 +391,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Fingerprint unlock",
   "sublabel": "Touch the reader instead of typing, when fprintd has your print (fprintd-enroll). The password always works too; after 3 failed scans only the password does",
@@ -340,7 +400,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Notifications on the lock screen",
   "sublabel": "The built-in lock screen lists the ones that arrive while locked",
@@ -349,7 +409,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Status row",
   "sublabel": "Battery and network above the password field",
@@ -358,7 +418,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "On-screen keyboard",
   "sublabel": "",
@@ -367,7 +427,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Dim when idle",
   "sublabel": "Darkens the lock screen after 30 s without input",
@@ -376,7 +436,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "Scrolling & Interactions",
   "label": "Scrolling & Interactions",
   "sublabel": "Touchpad and mouse scroll speed",
@@ -385,7 +445,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Faster touchpad scrolling",
   "sublabel": "Enhanced scroll speed for high-res touchpads",
@@ -394,7 +454,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Touchpad scroll factor",
   "sublabel": "",
@@ -403,7 +463,7 @@
   ]
  },
  {
-  "page": 0,
+  "page": 1,
   "card": "",
   "label": "Mouse scroll factor",
   "sublabel": "",
@@ -412,7 +472,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Enabled Modules",
   "label": "Enabled Modules",
   "sublabel": "",
@@ -422,7 +482,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "OSD Indicators",
   "label": "OSD Indicators",
   "sublabel": "Choose which on-screen display indicators are shown",
@@ -431,7 +491,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Auto-hide timeout",
   "sublabel": "How long the OSD pill stays visible",
@@ -440,7 +500,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "OSD position",
   "sublabel": "",
@@ -449,7 +509,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Top",
   "sublabel": "",
@@ -458,7 +518,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Bottom",
   "sublabel": "",
@@ -467,7 +527,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Device events",
   "label": "Device events",
   "sublabel": "A short pill (or the OSD) when devices come and go. Nothing polls: Bluetooth, audio and displays come from what the shell already watches, USB from one udevadm monitor while it's on.",
@@ -476,7 +536,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Show device events",
   "sublabel": "",
@@ -485,7 +545,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Hot Screen Corners",
   "label": "Hot Screen Corners",
   "sublabel": "Trigger actions by moving cursor to screen corners",
@@ -494,7 +554,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Enable hot corners",
   "sublabel": "",
@@ -503,7 +563,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Dwell time",
   "sublabel": "How long cursor must stay in corner before activation",
@@ -512,7 +572,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Hit zone size",
   "sublabel": "Size of the invisible corner trigger area in pixels",
@@ -521,7 +581,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Alt-Tab Window Switcher",
   "label": "Alt-Tab Window Switcher",
   "sublabel": "Window switching overlay appearance and behavior",
@@ -530,7 +590,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Style",
   "sublabel": "Cards on an arc from the pill's edge",
@@ -539,7 +599,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Enable animations",
   "sublabel": "",
@@ -548,7 +608,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Animation duration",
   "sublabel": "",
@@ -557,7 +617,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Most recent first (MRU)",
   "sublabel": "Order windows by most recently used instead of creation order",
@@ -566,7 +626,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Compact style",
   "sublabel": "Smaller thumbnails, more windows visible",
@@ -575,7 +635,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Background opacity",
   "sublabel": "",
@@ -584,7 +644,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Scrim dimming",
   "sublabel": "",
@@ -593,7 +653,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Max visible windows",
   "sublabel": "",
@@ -602,7 +662,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Task View",
   "label": "Task View",
   "sublabel": "Current workspace window layout",
@@ -611,7 +671,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Layout algorithm",
   "sublabel": "How windows are arranged in task view",
@@ -620,7 +680,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Hero",
   "sublabel": "",
@@ -629,7 +689,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Grid",
   "sublabel": "",
@@ -638,7 +698,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Justified",
   "sublabel": "",
@@ -647,7 +707,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Masonry",
   "sublabel": "",
@@ -656,7 +716,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Screenshots",
   "label": "Screenshots",
   "sublabel": "Print, Shift+Print, Ctrl+Print, Super+Shift+S, Super+Shift+X (text) · the card shown after a capture",
@@ -665,7 +725,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Copy to the clipboard",
   "sublabel": "Every capture goes on the clipboard at once",
@@ -674,7 +734,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Card position",
   "sublabel": "",
@@ -683,7 +743,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Card stays for",
   "sublabel": "0 keeps it until you close it; the pointer on it keeps it too",
@@ -692,7 +752,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Then",
   "sublabel": "What happens to the capture when the card leaves on its own",
@@ -701,7 +761,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Save to",
   "sublabel": "Empty: Pictures/Screenshots",
@@ -710,7 +770,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Freeze the screen while picking a region",
   "sublabel": "The region shot is the moment you started, not what moved meanwhile (Hyprland and other wlroots compositors)",
@@ -719,7 +779,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Text recognition languages",
   "sublabel": "Super+Shift+X copies the text in a region. tesseract codes, comma separated (eng, deu, fra, chi_sim…); each needs its tesseract-data package",
@@ -728,7 +788,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Live pins",
   "label": "Live pins",
   "sublabel": "Super+Alt+P: pick a window, drag over a part of it, and that part stays on screen, live. Drag a pin to move it, its corner to resize; hover for the layer and close buttons (Hyprland)",
@@ -737,7 +797,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Frames a second",
   "sublabel": "Per pin; each frame is a window capture, so lower is lighter. Paused while hidden, locked or covered",
@@ -746,7 +806,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "New pins open",
   "sublabel": "Each pin's hover button moves it between the two",
@@ -755,7 +815,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Control panel",
   "label": "Control panel",
   "sublabel": "Extra rows in the control panel, on its own and grown from the pill",
@@ -764,7 +824,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "System tray",
   "sublabel": "The tray's items and menus, while an app has one (also without a tray in the bar)",
@@ -773,7 +833,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Capture",
   "sublabel": "Screenshot a region, copy the text in a region, or start and stop a region recording",
@@ -782,7 +842,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "App Launcher",
   "label": "App Launcher",
   "sublabel": "Extra results above your apps · each off until you turn it on",
@@ -791,7 +851,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Allow dangerous actions",
   "sublabel": "Reboot and power off run from the launcher (otherwise they are refused)",
@@ -800,7 +860,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Package helper",
   "sublabel": "Empty: paru if installed, else yay",
@@ -809,7 +869,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Default Applications",
   "label": "Default Applications",
   "sublabel": "Used by keybinds (ano run …) and every shell action that opens one",
@@ -818,7 +878,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Compositor",
   "label": "Compositor",
   "sublabel": "Wayland compositor settings",
@@ -828,7 +888,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Force backend",
   "sublabel": "auto, hyprland, niri, sway, mango, labwc or generic — auto detects from the session; sway, mango and labwc are experimental",
@@ -837,7 +897,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Primary monitor",
   "sublabel": "Leave empty for auto",
@@ -846,7 +906,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Panel Families",
   "label": "Panel Families",
   "sublabel": "Switch between different shell presets — changes which modules are active",
@@ -856,7 +916,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Family transition animation",
   "sublabel": "Animated ripple effect when switching between panel families",
@@ -865,7 +925,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Focus Time",
   "label": "Focus Time",
   "sublabel": "App usage tracking with daily and weekly statistics",
@@ -874,7 +934,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Enable Focus Time",
   "sublabel": "Track time spent in each application",
@@ -883,7 +943,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Excluded apps",
   "sublabel": "Comma-separated list of apps to ignore",
@@ -892,7 +952,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Display Manager",
   "label": "Display Manager",
   "sublabel": "Monitor configuration panel (Hyprland only)",
@@ -901,7 +961,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Enable Display Manager",
   "sublabel": "Show monitor resolution/refresh rate controls",
@@ -910,7 +970,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Reader",
   "label": "Reader",
   "sublabel": "Novel, manga and anime panels · keybinds Ctrl+Super+N / M / A",
@@ -919,7 +979,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Enable the readers",
   "sublabel": "Needs anod; its backend runs only while a panel is open",
@@ -928,7 +988,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Anime: resume where you stopped",
   "sublabel": "anod follows mpv's position per episode (also marks episodes watched)",
@@ -937,7 +997,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Anime: skip openings and endings",
   "sublabel": "Times from AniSkip (api.aniskip.com, community-submitted), looked up by the show's MyAnimeList id",
@@ -946,7 +1006,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Anime: Airing tab and new-episode badges",
   "sublabel": "This week's episodes, this season and top airing from AniList (graphql.anilist.co, no account); library shows get a badge when a newer episode is out",
@@ -955,7 +1015,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Anime: watched after",
   "sublabel": "",
@@ -964,7 +1024,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Stop the backend after",
   "sublabel": "Seconds with every reader closed (and nothing playing)",
@@ -973,7 +1033,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Image cache",
   "sublabel": "Covers and pages kept by the backend (applies on its next start)",
@@ -982,7 +1042,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Page cache",
   "sublabel": "Lists, details and chapters kept by the backend (applies on its next start)",
@@ -991,7 +1051,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Python",
   "sublabel": "Interpreter for sources set to Python (a venv with flask, requests, curl_cffi)",
@@ -1000,7 +1060,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Advanced",
   "label": "Advanced",
   "sublabel": "Debug settings and workarounds",
@@ -1013,7 +1073,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Race condition delay",
   "sublabel": "Delay (ms) for file reload operations to avoid race conditions",
@@ -1023,7 +1083,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Sound theme",
   "sublabel": "",
@@ -1033,7 +1093,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Morphing bar panels",
   "sublabel": "ano",
@@ -1043,7 +1103,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Duplicate player filter",
   "sublabel": "Filter duplicate MPRIS players from browser integrations",
@@ -1053,7 +1113,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Preferred player",
   "sublabel": "Name to track first when nothing is playing (e.g. spotify); empty = automatic",
@@ -1063,7 +1123,7 @@
   "advanced": true
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "Desktop pieces",
   "label": "Desktop pieces",
   "sublabel": "Cards on the desktop, under your windows, on pages · off by default",
@@ -1072,7 +1132,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Show desktop pieces",
   "sublabel": "Clicks on a window never reach them; they pause while a maximised window covers the screen or it's locked",
@@ -1081,7 +1141,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Grid cell",
   "sublabel": "Pieces snap to a grid of these squares",
@@ -1090,7 +1150,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Gap",
   "sublabel": "",
@@ -1099,7 +1159,7 @@
   ]
  },
  {
-  "page": 1,
+  "page": 2,
   "card": "",
   "label": "Animation frame rate",
   "sublabel": "For animated pieces (the Bioma organisms). Each frame redraws the desktop layer: higher is smoother and costs more",
@@ -1108,7 +1168,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Position & Style",
   "label": "Position & Style",
   "sublabel": "Bar style, edge, auto-hide, background, and margin",
@@ -1121,7 +1181,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Bar style",
   "sublabel": "ano",
@@ -1130,7 +1190,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Auto hide",
   "sublabel": "autoHide",
@@ -1139,7 +1199,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Auto-hide delay",
   "sublabel": "How long the bar stays after the pointer leaves",
@@ -1148,7 +1208,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show background",
   "sublabel": "showBackground",
@@ -1157,7 +1217,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Corner style",
   "sublabel": "0 = floating (default), 1 = edge-to-edge with bezel padding",
@@ -1166,7 +1226,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Floating",
   "sublabel": "",
@@ -1175,7 +1235,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Edge-to-edge",
   "sublabel": "",
@@ -1184,7 +1244,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Bar layout",
   "label": "Bar layout",
   "sublabel": "Form, groups and modules. Detach a group to make it its own island; drag modules between groups.",
@@ -1194,7 +1254,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Form",
   "sublabel": "Edge to edge, inset, a pill per group, or hugging the content",
@@ -1203,7 +1263,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Full",
   "sublabel": "",
@@ -1212,7 +1272,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Fit",
   "sublabel": "",
@@ -1221,7 +1281,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Islands",
   "sublabel": "",
@@ -1230,7 +1290,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Notch",
   "sublabel": "",
@@ -1239,7 +1299,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Layout & Sizing",
   "label": "Layout & Sizing",
   "sublabel": "Bar height, corner radius, module spacing, padding, and decorations",
@@ -1249,7 +1309,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Bar height",
   "sublabel": "Total thickness of the bar in pixels",
@@ -1259,7 +1319,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Corner radius",
   "sublabel": "Rounding of the bar background corners",
@@ -1269,7 +1329,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Left section spacing",
   "sublabel": "Gap between modules in the left section",
@@ -1279,7 +1339,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Center section spacing",
   "sublabel": "Gap between modules in the center group",
@@ -1289,7 +1349,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Right section spacing",
   "sublabel": "Gap between modules in the right section",
@@ -1299,7 +1359,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Edge padding",
   "sublabel": "Distance from screen edge to first/last module",
@@ -1309,7 +1369,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Center group padding",
   "sublabel": "Inner padding of the center pill container",
@@ -1319,7 +1379,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Center group radius",
   "sublabel": "Corner rounding of the center pill container",
@@ -1329,7 +1389,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show center group background",
   "sublabel": "Visible pill background behind center modules (workspaces)",
@@ -1339,7 +1399,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show section separators",
   "sublabel": "Thin vertical lines between left, center, and right sections",
@@ -1349,7 +1409,7 @@
   "advanced": true
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Click & Scroll Actions",
   "label": "Click & Scroll Actions",
   "sublabel": "What happens when you click or scroll on each bar section",
@@ -1358,7 +1418,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Left section scroll",
   "sublabel": "",
@@ -1367,7 +1427,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Right section scroll",
   "sublabel": "",
@@ -1376,7 +1436,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Center section scroll",
   "sublabel": "",
@@ -1385,7 +1445,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Workspaces",
   "label": "Workspaces",
   "sublabel": "Workspace indicator count and style",
@@ -1394,7 +1454,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Number of workspaces shown",
   "sublabel": "How many workspace dots appear in the bar",
@@ -1403,7 +1463,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show windows on hover",
   "sublabel": "Hovering a workspace button shows its windows as live thumbnails; click one to go to it",
@@ -1412,7 +1472,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "Weather",
   "label": "Weather",
   "sublabel": "Weather data in bar and sidebar",
@@ -1421,7 +1481,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show weather module in bar",
   "sublabel": "",
@@ -1430,7 +1490,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "City name",
   "sublabel": "",
@@ -1439,7 +1499,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Use Fahrenheit (USCS)",
   "sublabel": "Imperial units (°F, mph, inches)",
@@ -1448,7 +1508,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Fetch interval",
   "sublabel": "How often weather data refreshes",
@@ -1457,7 +1517,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "System Tray",
   "label": "System Tray",
   "sublabel": "Tray icon filtering and pin management",
@@ -1466,7 +1526,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Filter passive items",
   "sublabel": "Hide tray items with 'passive' status (reduces clutter)",
@@ -1475,7 +1535,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Invert pinned items",
   "sublabel": "Swap which items are shown as pinned vs overflow",
@@ -1484,7 +1544,7 @@
   ]
  },
  {
-  "page": 2,
+  "page": 3,
   "card": "",
   "label": "Show item ID in tooltip",
   "sublabel": "Useful for identifying which items to pin",
@@ -1493,7 +1553,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Dock",
   "label": "Dock",
   "sublabel": "Application dock with pinned and running apps",
@@ -1502,7 +1562,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Position",
   "label": "Position",
   "sublabel": "Which screen edge the dock appears on",
@@ -1511,7 +1571,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Automatic edge",
   "sublabel": "Opposite the pill when the pill is the bar; bottom otherwise. Picking an edge below turns this off.",
@@ -1520,7 +1580,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Style",
   "label": "Style",
   "sublabel": "Visual appearance of the dock",
@@ -1529,7 +1589,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Sizing",
   "label": "Sizing",
   "sublabel": "Dock height and icon dimensions",
@@ -1539,7 +1599,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Dock height",
   "sublabel": "Total height of the dock container",
@@ -1548,7 +1608,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Icon size",
   "sublabel": "Size of individual app icons inside the dock",
@@ -1557,7 +1617,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Behavior",
   "label": "Behavior",
   "sublabel": "Auto-hide, hover reveal, and desktop-only visibility",
@@ -1568,7 +1628,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Start pinned",
   "sublabel": "Dock is always visible when shell starts (no auto-hide initially)",
@@ -1577,7 +1637,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Hover to reveal",
   "sublabel": "Show dock when mouse enters the dock edge area",
@@ -1586,7 +1646,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Show on empty desktop",
   "sublabel": "Always show dock when no window is focused (like macOS)",
@@ -1595,7 +1655,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Pinned Apps",
   "label": "Pinned Apps",
   "sublabel": "Apps that always appear in the dock, even when not running",
@@ -1604,7 +1664,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "Screen Filter",
   "label": "Screen Filter",
   "sublabel": "Restrict dock to specific monitors",
@@ -1613,7 +1673,7 @@
   ]
  },
  {
-  "page": 3,
+  "page": 4,
   "card": "",
   "label": "Screen whitelist",
   "sublabel": "Comma-separated monitor names (empty = all screens)",
@@ -1622,7 +1682,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Sidebar Behavior",
   "label": "Sidebar Behavior",
   "sublabel": "Animation, loading, and dismissal settings",
@@ -1633,7 +1693,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Instant open (skip animation)",
   "sublabel": "Sidebars appear immediately without slide-in transition",
@@ -1642,7 +1702,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Keep left sidebar loaded",
   "sublabel": "Faster re-open at the cost of ~20MB memory",
@@ -1651,7 +1711,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Keep right sidebar loaded",
   "sublabel": "Faster re-open at the cost of ~15MB memory",
@@ -1660,14 +1720,14 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Left Sidebar",
   "label": "Left Sidebar",
   "sublabel": "AI Chat and Notifications panel",
   "keys": []
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Right Sidebar Widgets",
   "label": "Right Sidebar Widgets",
   "sublabel": "Choose which modules appear in the right sidebar",
@@ -1676,7 +1736,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Quick Sliders",
   "label": "Quick Sliders",
   "sublabel": "",
@@ -1685,7 +1745,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Show brightness slider",
   "sublabel": "",
@@ -1694,7 +1754,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Show volume slider",
   "sublabel": "",
@@ -1703,7 +1763,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Show microphone slider",
   "sublabel": "Additional slider for microphone input volume",
@@ -1712,7 +1772,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Productivity",
   "label": "Productivity",
   "sublabel": "Notepad, to-do and pomodoro in the right sidebar; a sticky note on the desktop · all off by default",
@@ -1726,7 +1786,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Notepad",
   "sublabel": "Tabs of text, kept in ~/.local/share/anoshell/notepad.json",
@@ -1735,7 +1795,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "To-do",
   "sublabel": "Synced both ways with a todo.txt you can edit anywhere",
@@ -1744,7 +1804,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Scratchpad & Pins",
   "sublabel": "Notes, to-do, clipboard and calendar in one panel that grows from the pill (Super+Y), with pinned commands and a prompt; uses the notepad and to-do even when they're off here",
@@ -1753,7 +1813,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "todo.txt",
   "sublabel": "Empty: ~/.local/share/anoshell/todo.txt",
@@ -1762,7 +1822,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Pomodoro and stopwatch",
   "sublabel": "Separate from Focus Time: no Do Not Disturb, no tracking",
@@ -1771,7 +1831,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Screen time",
   "sublabel": "Time per app and window title, kept only on this machine (needs anod); idle and locked time isn't counted",
@@ -1780,7 +1840,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Idle after",
   "sublabel": "No input this long (and nothing playing) stops the count",
@@ -1789,7 +1849,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Keep",
   "sublabel": "Older days are deleted",
@@ -1798,7 +1858,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Daily limit",
   "sublabel": "A notification when today's total reaches it (nothing is blocked)",
@@ -1807,7 +1867,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Sticky note",
   "sublabel": "On the desktop, kept in ~/.local/share/anoshell/sticky.md",
@@ -1816,7 +1876,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Click-through",
   "sublabel": "Clicks go to the windows below (its pin turns this off)",
@@ -1825,7 +1885,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "Clock",
   "label": "Clock",
   "sublabel": "Alarms, world clocks, timer and stopwatch · middle-click the bar clock, or qs ipc call clock toggle",
@@ -1834,7 +1894,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Alarm sound",
   "sublabel": "Alarms and the timer play a sound (the sound theme's alarm-clock-elapsed) even though other shell sounds are off",
@@ -1843,7 +1903,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Snooze",
   "sublabel": "",
@@ -1852,7 +1912,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Ring for",
   "sublabel": "An unanswered alarm then stops and leaves a \\\"Missed alarm\\\" notification",
@@ -1861,7 +1921,7 @@
   ]
  },
  {
-  "page": 4,
+  "page": 5,
   "card": "",
   "label": "Next alarm on the lock screen",
   "sublabel": "",
@@ -1870,7 +1930,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "AnoSpot",
   "label": "AnoSpot",
   "sublabel": "Dynamic-island-style overlay for now playing, notifications, recording, clock",
@@ -1880,7 +1940,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Enable AnoSpot",
   "sublabel": "Compositor-agnostic. Works on Hyprland and Niri.",
@@ -1889,7 +1949,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Pill only",
   "sublabel": "Use the pill as the whole shell: hide the bar and the dock (your Modules choices for them are kept)",
@@ -1899,7 +1959,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Position",
   "label": "Position",
   "sublabel": "Which screen edge the overlay anchors to",
@@ -1913,7 +1973,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Allow drag to reposition",
   "sublabel": "Show a drag handle on the leading edge; releasing snaps to the nearest screen edge",
@@ -1922,7 +1982,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Floating",
   "sublabel": "Keep the pill as its own rounded island with a gap, instead of fusing it into the connected frame",
@@ -1931,7 +1991,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Inside the bar",
   "sublabel": "Not while floating: a floating pill sits beside the bar",
@@ -1940,7 +2000,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Auto-hide",
   "sublabel": "Stay tucked into the edge; point at the edge to bring it out",
@@ -1949,7 +2009,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Hide in fullscreen",
   "sublabel": "Slide into the edge while a window is fullscreen; hover the edge to bring it back",
@@ -1958,7 +2018,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Widgets",
   "label": "Widgets",
   "sublabel": "Which slots to render",
@@ -1975,7 +2035,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Collapse to icons",
   "sublabel": "The track, notification and battery show as icons and open when you hover them",
@@ -1984,7 +2044,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Now playing (Mpris)",
   "sublabel": "",
@@ -1993,7 +2053,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Latest notification",
   "sublabel": "",
@@ -2002,7 +2062,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Recording indicator",
   "sublabel": "",
@@ -2011,7 +2071,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Clock & weather",
   "sublabel": "",
@@ -2020,7 +2080,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Workspace",
   "sublabel": "Active workspace number/name (click → overview)",
@@ -2029,7 +2089,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Workspace preview",
   "sublabel": "Hovering the workspace shows its windows as live thumbnails; click one to focus it",
@@ -2038,7 +2098,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Preview every workspace",
   "sublabel": "Windows of all workspaces, labelled with their workspace; off: this screen's current workspace",
@@ -2047,7 +2107,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Battery",
   "sublabel": "Hidden automatically on desktops without a battery",
@@ -2056,7 +2116,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Bar modules",
   "label": "Bar modules",
   "sublabel": "Any bar module can sit on the pill too (after the zones above). Most hide themselves when idle: drives while nothing is plugged in, privacy while nothing records.",
@@ -2065,7 +2125,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Faces",
   "label": "Faces",
   "sublabel": "Resting faces you swipe between (horizontal scroll, or drag along the pill). Status is always first.",
@@ -2074,7 +2134,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Media",
   "sublabel": "Title, artist and transport; while a player is running",
@@ -2083,7 +2143,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Spectrum",
   "sublabel": "Audio visualiser; cava runs only while this face is in view",
@@ -2092,7 +2152,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Lyrics",
   "sublabel": "Time-synced lyrics; needs Lyrics turned on in Services",
@@ -2101,7 +2161,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Grow into",
   "label": "Grow into",
   "sublabel": "Clicking grows the pill into the panel (the same panel content, inline) instead of opening it separately",
@@ -2110,7 +2170,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Media controls",
   "sublabel": "Left click by default",
@@ -2119,7 +2179,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Control panel",
   "sublabel": "Right click by default",
@@ -2128,7 +2188,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Calendar",
   "sublabel": "When an action opens the calendar",
@@ -2137,7 +2197,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Transient states",
   "label": "Transient states",
   "sublabel": "The pill briefly morphs to show these; the ones it shows, the separate on-screen display doesn't",
@@ -2146,7 +2206,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Volume",
   "sublabel": "Level capsule",
@@ -2155,7 +2215,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Brightness",
   "sublabel": "Level capsule",
@@ -2164,7 +2224,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Microphone mute",
   "sublabel": "",
@@ -2173,7 +2233,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Keyboard layout",
   "sublabel": "",
@@ -2182,7 +2242,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Notifications",
   "sublabel": "Summary of incoming notifications",
@@ -2191,7 +2251,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Charging",
   "sublabel": "Plugged in / on battery",
@@ -2200,7 +2260,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Recording",
   "sublabel": "Started / saved",
@@ -2209,7 +2269,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Device events",
   "sublabel": "Bluetooth, USB, audio output, displays (Settings → Modules → Device events)",
@@ -2218,7 +2278,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Drag and drop",
   "label": "Drag and drop",
   "sublabel": "Stage files dropped on AnoSpot for triage and actions",
@@ -2228,7 +2288,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Accept drops",
   "sublabel": "When off, drags pass through AnoSpot to whatever is below",
@@ -2237,7 +2297,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Stash directory",
   "sublabel": "Empty = auto ($XDG_RUNTIME_DIR/anoSpot, falls back to /tmp/anoSpot-<UID>)",
@@ -2246,7 +2306,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Custom drop actions",
   "label": "Custom drop actions",
   "sublabel": "User-defined commands shown as buttons in the stash popout",
@@ -2255,7 +2315,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "Event border animation",
   "label": "Event border animation",
   "sublabel": "Pulsing gradient halo when configured events occur",
@@ -2264,7 +2324,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Enable",
   "sublabel": "",
@@ -2273,7 +2333,7 @@
   ]
  },
  {
-  "page": 5,
+  "page": 6,
   "card": "",
   "label": "Hold duration",
   "sublabel": "How long the halo stays visible before fading out",
@@ -2282,7 +2342,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Wallpaper engine",
   "label": "Wallpaper engine",
   "sublabel": "Who draws the wallpaper; anod applies it either way (colours, hooks)",
@@ -2293,7 +2353,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Engine",
   "sublabel": "awww",
@@ -2302,7 +2362,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Fit",
   "sublabel": "",
@@ -2311,7 +2371,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Play video wallpapers on every screen",
   "sublabel": "Off: only the screen you're using decodes it; the others show a still (much lighter)",
@@ -2320,7 +2380,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Look",
   "label": "Look",
   "sublabel": "The shell's visual identity: shape, material, texture, type and motion",
@@ -2333,7 +2393,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Glass",
   "sublabel": "Panels become tinted glass over the blur, with refraction and an edge light (any look). The tint thickens over bright wallpaper so text stays readable.",
@@ -2342,7 +2402,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Glass tint",
   "sublabel": "",
@@ -2351,7 +2411,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Edge light",
   "sublabel": "",
@@ -2360,7 +2420,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Refraction",
   "sublabel": "",
@@ -2369,7 +2429,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Surface textures",
   "sublabel": "The look's texture on panels (caustics, paper grain, grid, clay light). Animated ones move only while you hover.",
@@ -2378,7 +2438,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Outlines",
   "sublabel": "A thin border around the bar, dock, pill, sidebars and every panel; in connected mode one outline runs around the whole frame.",
@@ -2387,7 +2447,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Outline width",
   "sublabel": "Looks with a thicker stroke of their own keep it.",
@@ -2396,7 +2456,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Theme source",
   "label": "Theme source",
   "sublabel": "Dynamic Material You (wallpaper-derived) or pick a static theme",
@@ -2406,7 +2466,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Source",
   "sublabel": "materialYou",
@@ -2415,7 +2475,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Colour mode",
   "sublabel": "Wallpaper palette, with the AnoShell violet/teal accent for brand moments",
@@ -2424,7 +2484,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Apps",
   "sublabel": "Light or dark for your apps (GTK, and Qt apps via the portal), independent of the shell",
@@ -2433,7 +2493,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Colour GTK apps",
   "sublabel": "GTK 3 and 4 (libadwaita) apps opened from now on use the palette; your own gtk.css rules are kept",
@@ -2442,7 +2502,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Qt apps",
   "sublabel": "palette",
@@ -2451,7 +2511,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Wallpaper colours",
   "label": "Wallpaper colours",
   "sublabel": "How the palette is made from the wallpaper; picks can be remembered per wallpaper",
@@ -2460,7 +2520,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Remember per wallpaper",
   "sublabel": "Mode, scheme and source colour picked for a wallpaper come back with it",
@@ -2469,7 +2529,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Picks set the default",
   "sublabel": "Wallpapers without their own picks follow your last one",
@@ -2478,7 +2538,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Theme Colors",
   "label": "Theme Colors",
   "sublabel": "Live color swatches from the active palette",
@@ -2487,7 +2547,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Fonts",
   "label": "Fonts",
   "sublabel": "Font families used across the shell — pick from installed fonts",
@@ -2496,7 +2556,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Main font",
   "sublabel": "Primary UI text",
@@ -2505,7 +2565,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Title font",
   "sublabel": "Headings and large labels",
@@ -2514,7 +2574,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Numbers font",
   "sublabel": "Clock, percentages, counters",
@@ -2523,7 +2583,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Monospace font",
   "sublabel": "Code, mono readouts (network speed, etc.)",
@@ -2532,7 +2592,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Reading font",
   "sublabel": "Long-form text (AI chat, notes)",
@@ -2541,7 +2601,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Expressive font",
   "sublabel": "Stylized headings and accents",
@@ -2550,7 +2610,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Background Tint",
   "label": "Background Tint",
   "sublabel": "Apply extra color tinting to layer backgrounds",
@@ -2559,7 +2619,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Extra background tint",
   "sublabel": "Adds a subtle color overlay to surfaces for a warmer feel",
@@ -2568,7 +2628,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Global Margin (Bezel)",
   "label": "Global Margin (Bezel)",
   "sublabel": "Floating mode: gap between shell elements and the screen edge",
@@ -2577,7 +2637,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Bezel size",
   "sublabel": "Insets floating bars, sidebars, and overlay panels from the screen edge. Ignored in Connected shell mode, which uses Frame thickness instead.",
@@ -2586,7 +2646,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Shell Mode",
   "label": "Shell Mode",
   "sublabel": "Floating widgets, or a unified surface with rounded screen corners",
@@ -2595,7 +2655,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Corner radius",
   "sublabel": "Size of the rounded screen corners / bar edge curve",
@@ -2604,7 +2664,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Frame thickness",
   "sublabel": "Connected mode's counterpart to Bezel: width of the painted frame band at each screen edge. 0 shows only the rounded corners; raise it for a wider frame (lower it if the band overlaps window borders).",
@@ -2613,7 +2673,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Windows sit flush against the frame",
   "sublabel": "",
@@ -2622,7 +2682,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Frame opacity",
   "sublabel": "Below 100% the frame becomes translucent. Turn on Frame blur too, or you'll see straight through it.",
@@ -2631,7 +2691,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Frame blur",
   "sublabel": "Blurs the desktop behind a translucent frame (frosted glass). No visible effect at 100% opacity.",
@@ -2640,7 +2700,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Jelly",
   "sublabel": "Panels give at their free edge as they slide out of the frame, then spring back. Off with reduced motion, performance mode or the battery saver.",
@@ -2649,7 +2709,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Jelly amount",
   "sublabel": "How far the edge gives",
@@ -2658,7 +2718,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Shadows",
   "label": "Shadows",
   "sublabel": "Material 3 elevation shadows behind shell surfaces",
@@ -2667,7 +2727,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Enable elevation shadows",
   "sublabel": "Drawn with a GPU signed-distance-field shader (cheap; no blur passes)",
@@ -2676,7 +2736,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Intensity",
   "sublabel": "Scales the shadow's blur radius",
@@ -2685,7 +2745,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Opacity",
   "sublabel": "Scales how dark the shadow is",
@@ -2694,7 +2754,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Animations",
   "label": "Animations",
   "sublabel": "On/off, speed, reduced motion and battery saving",
@@ -2703,7 +2763,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Enable animations",
   "sublabel": "Disable for better performance on low-end hardware",
@@ -2712,7 +2772,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Animation speed multiplier",
   "sublabel": "1.0 = normal, 0.5 = faster, 2.0 = slower",
@@ -2721,7 +2781,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Reduce motion",
   "sublabel": "Stop looping and ambient motion (spinning art, pulses, visualizers); opening and closing still animate",
@@ -2730,7 +2790,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Save battery",
   "sublabel": "Stop looping and ambient motion while running on battery",
@@ -2739,7 +2799,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Wallpaper Rotation",
   "label": "Wallpaper Rotation",
   "sublabel": "Automatically cycle through wallpapers from a directory",
@@ -2749,7 +2809,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Enable random wallpaper rotation",
   "sublabel": "Periodically change wallpaper from a directory",
@@ -2758,7 +2818,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Rotation folder",
   "sublabel": "Empty: the wallpaper folder (Wallpaper Picker card). Supports ~",
@@ -2767,7 +2827,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Rotation interval",
   "sublabel": "Time between wallpaper changes",
@@ -2776,7 +2836,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Wallpaper Picker",
   "label": "Wallpaper Picker",
   "sublabel": "The card deck: its folder, live preview and the Wallhaven key",
@@ -2788,7 +2848,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Wallpaper folder",
   "sublabel": "The picker deals from it, Wallhaven saves into it, rotation uses it. Empty: your Pictures folder's Wallpapers. Supports ~",
@@ -2797,7 +2857,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Live preview",
   "sublabel": "Videos and animated images play in the picker's preview (V in the picker)",
@@ -2806,7 +2866,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Wallpaper Transitions",
   "label": "Wallpaper Transitions",
   "sublabel": "Animation when switching between wallpapers (from inir backdrop)",
@@ -2815,7 +2875,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Enable wallpaper transitions",
   "sublabel": "Smooth crossfade or slide when changing wallpapers",
@@ -2824,7 +2884,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Transition type",
   "sublabel": "Visual style of the wallpaper change",
@@ -2833,7 +2893,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Crossfade",
   "sublabel": "",
@@ -2842,7 +2902,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Slide",
   "sublabel": "",
@@ -2851,7 +2911,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Zoom",
   "sublabel": "",
@@ -2860,7 +2920,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "None",
   "sublabel": "",
@@ -2869,7 +2929,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Transition duration",
   "sublabel": "How long the crossfade/slide animation takes",
@@ -2878,7 +2938,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "Slide direction",
   "sublabel": "Only applies to slide transition type",
@@ -2887,7 +2947,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "→",
   "sublabel": "",
@@ -2896,7 +2956,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "←",
   "sublabel": "",
@@ -2905,7 +2965,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "↓",
   "sublabel": "",
@@ -2914,7 +2974,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "",
   "label": "↑",
   "sublabel": "",
@@ -2923,7 +2983,7 @@
   ]
  },
  {
-  "page": 6,
+  "page": 7,
   "card": "Theme studio",
   "label": "Theme studio",
   "sublabel": "Make a static theme from your own colours; apps follow it like a wallpaper's",
@@ -2933,7 +2993,7 @@
   ]
  },
  {
-  "page": 7,
+  "page": 8,
   "card": "AnoView Layout",
   "label": "AnoView Layout",
   "sublabel": "Choose how windows are arranged in the overview",
@@ -2942,7 +3002,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Removable drives",
   "label": "Removable drives",
   "sublabel": "USB sticks and SD cards: the bar's \\\"drives\\\" module mounts, opens and ejects them",
@@ -2951,7 +3011,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Notify when a drive is plugged in",
   "sublabel": "Also when it's safe to remove after Eject, or when an action fails",
@@ -2960,7 +3020,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Screen recording",
   "label": "Screen recording",
   "sublabel": "Which recorder to use, audio, and where recordings go",
@@ -2969,7 +3029,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Recorder",
   "sublabel": "",
@@ -2978,7 +3038,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Audio",
   "sublabel": "both",
@@ -2987,7 +3047,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Frame rate",
   "sublabel": "",
@@ -2996,7 +3056,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Folder",
   "sublabel": "Empty: ~/Videos",
@@ -3005,7 +3065,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "AI Chat",
   "label": "AI Chat",
   "sublabel": "Model configuration, API keys, system prompt, and temperature",
@@ -3014,7 +3074,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Default model ID",
   "sublabel": "One of: ",
@@ -3023,7 +3083,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Temperature",
   "sublabel": "Creativity/randomness: 0 = deterministic, 2 = very creative",
@@ -3032,7 +3092,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Resources Monitor",
   "label": "Resources Monitor",
   "sublabel": "CPU, RAM, network polling frequency and history",
@@ -3042,7 +3102,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Update interval",
   "sublabel": "How often /proc is polled for CPU/RAM/network data",
@@ -3052,7 +3112,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "History length",
   "sublabel": "Number of data points stored for graph display",
@@ -3062,7 +3122,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Brightness",
   "label": "Brightness",
   "sublabel": "Backlight device override",
@@ -3072,7 +3132,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Device name",
   "sublabel": "Leave empty for auto-detect. Use 'brightnessctl -l' to list devices.",
@@ -3082,7 +3142,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "GameMode",
   "label": "GameMode",
   "sublabel": "Follows gamemoded (games started with gamemoderun or libgamemode) over D-Bus, without polling and without starting it. Needs `gamemode`.",
@@ -3091,7 +3151,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Bar indicator",
   "sublabel": "Show a gaming icon in the bar while a game holds GameMode",
@@ -3100,7 +3160,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Performance mode",
   "label": "Performance mode",
   "sublabel": "Frees the GPU and CPU for a game: pauses the shell's animations, blur, shadows and audio visualisers, puts the desktop pieces away, polls resources less often, and holds notification popups (they still reach the notification centre).",
@@ -3109,7 +3169,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "While a game holds GameMode",
   "sublabel": "",
@@ -3118,7 +3178,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "While a window is fullscreen",
   "sublabel": "Videos and presentations count too",
@@ -3127,7 +3187,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "While these apps are open",
   "sublabel": "App ids, comma-separated; * and ? match anything, case doesn't matter (e.g. steam_app_*, blender)",
@@ -3136,7 +3196,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Pause animations",
   "sublabel": "",
@@ -3145,7 +3205,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Pause blur",
   "sublabel": "",
@@ -3154,7 +3214,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Pause audio visualisers",
   "sublabel": "",
@@ -3163,7 +3223,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Hold notification popups",
   "sublabel": "",
@@ -3172,7 +3232,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Turn off shadows",
   "sublabel": "",
@@ -3181,7 +3241,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Put desktop pieces away",
   "sublabel": "",
@@ -3190,7 +3250,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Read CPU, memory and network less often",
   "sublabel": "",
@@ -3199,7 +3259,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Read them every",
   "sublabel": "",
@@ -3208,7 +3268,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Package updates",
   "label": "Package updates",
   "sublabel": "Counts pending updates (checkupdates, plus paru/yay -Qua for the AUR) and shows them in the bar module \\\"updates\\\". The shell never updates by itself: clicking opens the update in your terminal. Needs `pacman-contrib`.",
@@ -3217,7 +3277,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Check for updates",
   "sublabel": "",
@@ -3226,7 +3286,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Check every",
   "sublabel": "",
@@ -3235,7 +3295,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Update command",
   "sublabel": "Runs in your terminal. Empty: paru/yay -Syu, else sudo pacman -Syu",
@@ -3244,7 +3304,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Music recognition",
   "label": "Music recognition",
   "sublabel": "\\\"What's playing?\\\" from the quick toggles or `qs -c ano ipc call musicRecognition recognize`: records a few seconds, asks songrec (which uses Shazam's unofficial service), then deletes the recording. Needs `songrec` and PipeWire (pw-record).",
@@ -3253,7 +3313,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable",
   "sublabel": "",
@@ -3262,7 +3322,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Listen to",
   "sublabel": "",
@@ -3271,7 +3331,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Listen for",
   "sublabel": "",
@@ -3280,7 +3340,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Power profiles",
   "label": "Power profiles",
   "sublabel": "Restores the last-active power-profiles-daemon profile on shell start. Requires `power-profiles-daemon`.",
@@ -3289,7 +3349,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Restore on start",
   "sublabel": "When off, power-profiles-daemon decides at boot",
@@ -3298,7 +3358,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Location",
   "label": "Location",
   "sublabel": "Where you are, for the weather, night light's sunset-to-sunrise schedule and the sun and moon of the Bioma pieces",
@@ -3307,7 +3367,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Use my location",
   "sublabel": "Off: nothing is looked up; the weather uses its own city setting",
@@ -3316,7 +3376,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Find it",
   "sublabel": " · ",
@@ -3325,7 +3385,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "City",
   "sublabel": "The name shown, and what the weather looks up if no coordinates are set",
@@ -3334,7 +3394,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Latitude",
   "sublabel": "Decimal degrees, north positive (e.g. -6.8)",
@@ -3343,7 +3403,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Longitude",
   "sublabel": "Decimal degrees, east positive (e.g. 39.3)",
@@ -3352,7 +3412,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Night light",
   "label": "Night light",
   "sublabel": "Warms the screen at night through wlsunset (Hyprland, niri, sway): now, or on a schedule. Plus eye-care screen filters.",
@@ -3362,7 +3422,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "On now",
   "sublabel": "The same switch as the night light toggle in the bar, pill and sidebar. Holds the night temperature over any schedule.",
@@ -3371,7 +3431,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Automatic",
   "sublabel": "sun",
@@ -3380,7 +3440,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "From",
   "sublabel": "24-hour time, HH:mm",
@@ -3389,7 +3449,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Until",
   "sublabel": "24-hour time, HH:mm",
@@ -3398,7 +3458,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Fade",
   "sublabel": "How long the change from day to night (and back) takes",
@@ -3407,7 +3467,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Night temperature",
   "sublabel": "Lower = warmer / more orange",
@@ -3416,7 +3476,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Day temperature",
   "sublabel": "Outside the night hours (6500K is neutral)",
@@ -3425,7 +3485,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Gamma",
   "sublabel": "Brightness curve while it's on; 1.0 leaves it as is",
@@ -3434,7 +3494,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Monitors",
   "sublabel": "Only the ones picked",
@@ -3443,7 +3503,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Network panel",
   "label": "Network panel",
   "sublabel": "What the bar's network and Bluetooth icons (and the sidebar's Wi-Fi / Bluetooth chevrons) open",
@@ -3452,7 +3512,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Network panel style",
   "sublabel": "classic",
@@ -3461,7 +3521,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Network usage tracking",
   "label": "Network usage tracking",
   "sublabel": "Polls /proc/net/dev for per-interface bandwidth. Powers sparkline widgets when consumed by a UI surface.",
@@ -3471,7 +3531,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable",
   "sublabel": "",
@@ -3481,7 +3541,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Poll interval",
   "sublabel": "",
@@ -3491,7 +3551,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "History length",
   "sublabel": "Number of samples kept for sparkline display",
@@ -3501,7 +3561,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "KDE Connect",
   "label": "KDE Connect",
   "sublabel": "Your phone's battery in the bar (module \\\"Phone\\\"), ring, ping, clipboard and files; needs kdeconnectd running · off by default",
@@ -3510,7 +3570,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable KDE Connect",
   "sublabel": "Off: nothing runs",
@@ -3519,7 +3579,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Device",
   "sublabel": "The one the bar shows and actions go to",
@@ -3528,7 +3588,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "VPN",
   "label": "VPN",
   "sublabel": "Connection status + control for tailscale, netbird, warp, wireguard, or a custom CLI. The active provider is the first entry below with `enabled: true`.",
@@ -3537,7 +3597,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable VPN service",
   "sublabel": "When off, no provider CLI is queried regardless of `providers` content",
@@ -3546,7 +3606,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Notify on state change",
   "sublabel": "Reserved — surfaces can subscribe to statusChanged for their own toasts",
@@ -3555,7 +3615,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "NetBird management URL",
   "sublabel": "Your self-hosted server, passed when you connect from the shell; empty keeps the server the profile already uses",
@@ -3564,7 +3624,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "NetBird admin URL",
   "sublabel": "The dashboard of that server (for the login page)",
@@ -3573,7 +3633,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Calendar sync",
   "label": "Calendar sync",
   "sublabel": "Subscribe to ICS/iCal feeds (Google Calendar, work calendars, public schedules). Events appear wherever the calendar surface is rendered.",
@@ -3582,7 +3642,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable",
   "sublabel": "",
@@ -3591,7 +3651,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Refresh interval",
   "sublabel": "",
@@ -3600,7 +3660,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Lyrics",
   "label": "Lyrics",
   "sublabel": "Synchronized lyrics for the active media player. Reads local .lrc files, falls back to LRCLIB and NetEase online sources.",
@@ -3609,7 +3669,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Enable",
   "sublabel": "",
@@ -3618,7 +3678,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Visible by default",
   "sublabel": "When off, surfaces start collapsed and the user has to toggle",
@@ -3627,7 +3687,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Backend",
   "sublabel": "",
@@ -3636,7 +3696,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Lyrics directory",
   "sublabel": "Path for local .lrc files. Supports `~` expansion.",
@@ -3645,7 +3705,7 @@
   ]
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Shell",
   "label": "Shell",
   "sublabel": "Which shell ano scripts run under. Auto detects from $SHELL; override here when you want bash scripts to run under a specific interpreter.",
@@ -3655,7 +3715,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "",
   "label": "Preferred shell",
   "sublabel": "",
@@ -3665,7 +3725,7 @@
   "advanced": true
  },
  {
-  "page": 8,
+  "page": 9,
   "card": "Startup applications",
   "label": "Startup applications",
   "sublabel": "Started once when you log in, by anod (not again when the shell or anod restarts)",
@@ -3674,21 +3734,21 @@
   ]
  },
  {
-  "page": 9,
+  "page": 10,
   "card": "Arrangement",
   "label": "Arrangement",
   "sublabel": "Drag a monitor to move it; click one to change it",
   "keys": []
  },
  {
-  "page": 9,
+  "page": 10,
   "card": "Profiles",
   "label": "Profiles",
   "sublabel": "Saved arrangements; the one saved for the monitors you plug in applies by itself",
   "keys": []
  },
  {
-  "page": 9,
+  "page": 10,
   "card": "Cursor",
   "label": "Cursor",
   "sublabel": "Pointer theme and size · live, and for apps started later",
@@ -3697,7 +3757,7 @@
   ]
  },
  {
-  "page": 9,
+  "page": 10,
   "card": "Icons",
   "label": "Icons",
   "sublabel": "Icon theme for apps · the AnoShell ones follow the wallpaper",
@@ -3706,21 +3766,21 @@
   ]
  },
  {
-  "page": 10,
+  "page": 11,
   "card": "Keybinds",
   "label": "Keybinds",
   "sublabel": "",
   "keys": []
  },
  {
-  "page": 10,
+  "page": 11,
   "card": "Reset",
   "label": "Reset",
   "sublabel": "Back to the shipped keybinds",
   "keys": []
  },
  {
-  "page": 10,
+  "page": 11,
   "card": "Keyboard layouts",
   "label": "Keyboard layouts",
   "sublabel": "The first is the default; the keyboard module in the bar switches between them",
@@ -3729,7 +3789,7 @@
   ]
  },
  {
-  "page": 11,
+  "page": 12,
   "card": "Wallhaven",
   "label": "Wallhaven",
   "sublabel": "Search wallhaven.cc and install a wallpaper into your wallpaper folder (atelier/). Safe-for-work only unless your Wallhaven key is set.",
@@ -3738,14 +3798,14 @@
   ]
  },
  {
-  "page": 11,
+  "page": 12,
   "card": "Your setup",
   "label": "Your setup",
   "sublabel": "Undo the last rice, or save what you have now as one",
   "keys": []
  },
  {
-  "page": 11,
+  "page": 12,
   "card": "Catalogs",
   "label": "Catalogs",
   "sublabel": "Online lists of themes, pieces and more. Anyone can publish one: add only those you trust",
@@ -3754,7 +3814,7 @@
   ]
  },
  {
-  "page": 12,
+  "page": 13,
   "card": "Your actions",
   "label": "Your actions",
   "sublabel": "In ring order",
@@ -3764,70 +3824,10 @@
   ]
  },
  {
-  "page": 12,
+  "page": 13,
   "card": "${root.current.name}",
   "label": "${root.current.name}",
   "sublabel": "Steps run top to bottom; one that fails stops the rest and tells you which",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "User Profile",
-  "label": "User Profile",
-  "sublabel": "Avatar, display name, and account settings",
-  "keys": [
-   "user"
-  ]
- },
- {
-  "page": 13,
-  "card": "",
-  "label": "Custom avatar path",
-  "sublabel": "Override ~/.face with a custom path (leave empty for default)",
-  "keys": [
-   "user.avatarPath"
-  ]
- },
- {
-  "page": 13,
-  "card": "Ano Shell",
-  "label": "Ano Shell",
-  "sublabel": "A comprehensive QuickShell desktop shell",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "System Details",
-  "label": "System Details",
-  "sublabel": "Runtime environment and paths",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "Features",
-  "label": "Features",
-  "sublabel": "What this shell can do",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "Credits & Sources",
-  "label": "Credits & Sources",
-  "sublabel": "Built from patterns across the QuickShell community",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "Presets",
-  "label": "Presets",
-  "sublabel": "Try a whole setup live, then keep it or go back",
-  "keys": []
- },
- {
-  "page": 13,
-  "card": "Backup & restore",
-  "label": "Backup & restore",
-  "sublabel": "Your settings, themes, widgets and data in an archive; restore all of it or some",
   "keys": []
  }
 ]

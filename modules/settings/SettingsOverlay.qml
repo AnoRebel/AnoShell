@@ -48,7 +48,7 @@ Scope {
             GlobalStates.settingsCommandPaletteOpen = false
             GlobalStates.settingsOpen = false
         }
-        // Open on a page by index (0 = General … see SettingsRegistry.pages).
+        // Open on a page by index (0 = About, 1 = General … see SettingsRegistry.pages).
         function page(index: int): void {
             GlobalStates.settingsPage = Math.max(0, Math.min(index, SettingsRegistry.pages.length - 1))
             GlobalStates.settingsOpen = true

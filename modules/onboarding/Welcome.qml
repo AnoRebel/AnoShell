@@ -200,7 +200,7 @@ Scope {
                             wrapMode: Text.Wrap
                             text: "Monitors: arrangement, scale and profiles are in Settings → Displays (a change there asks to keep it, and goes back by itself if you don't). The cursor applies right away:"
                         }
-                        RippleButton { buttonText: "Open Settings → Displays"; onClicked: { GlobalStates.settingsPage = 9; GlobalStates.settingsOpen = true } }
+                        RippleButton { buttonText: "Open Settings → Displays"; onClicked: { GlobalStates.settingsPage = SettingsRegistry.pages.findIndex(p => p.name === "Displays"); GlobalStates.settingsOpen = true } }
                         CursorCard { Layout.fillWidth: true }
                     }
                     ColumnLayout {
@@ -218,7 +218,7 @@ Scope {
                                     ? `${parent.info.unbound.length} AnoShell actions have no key yet (the cheatsheet lists them; Settings → Keybinds can bind them).`
                                     : "Every AnoShell action has a key.")
                         }
-                        RippleButton { buttonText: "Open Settings → Keybinds"; onClicked: { GlobalStates.settingsPage = 10; GlobalStates.settingsOpen = true } }
+                        RippleButton { buttonText: "Open Settings → Keybinds"; onClicked: { GlobalStates.settingsPage = SettingsRegistry.pages.findIndex(p => p.name === "Keybinds"); GlobalStates.settingsOpen = true } }
                     }
 
                     // ── Navigation ─────────────────────────────────
