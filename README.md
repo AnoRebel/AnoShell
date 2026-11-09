@@ -21,9 +21,10 @@ backend is picked from the session at start.
   wallpapers (and Wallhaven) and whole-setup rices from built-in, your folders
   and catalogs, with previews, checksums, a code check and undo
   ([atelier](docs/atelier.md)).
-- **Pieces** (desktop widgets) in pages on a grid: clocks and clock faces, day
-  progress, system, weather, media, calendar, to-do, news, the Bioma
-  organisms, plus your own ([pieces](docs/pieces.md)).
+- **Pieces** (desktop widgets) in pages on a grid: clocks and clock faces, a
+  world clock, day progress, system, weather, media, lyrics, calendar, to-do,
+  news, screen time, the wallpaper's palette, the Bioma organisms, plus your
+  own ([pieces](docs/pieces.md)).
 - **Scratchpad & Pins:** notes, to-do, clipboard and calendar in one panel
   that grows from the pill, pinned commands (in a terminal or the background)
   and a prompt for notes, to-dos, commands, web searches and AI questions
@@ -711,6 +712,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Package updates (`updates.enable`, bar module `updates`) | `pacman-contrib` (`checkupdates`); `paru` or `yay` for AUR counts; a terminal (Settings → Default apps) to run the update | no count / AUR not counted |
 | Atelier (Settings → Atelier, `ano atelier`) | anod running (downloads, checksums and archives in Go, no extra binaries); catalogs need the network | the page says anod isn't running; catalogs show the cached index |
 | News piece (`news`) | `curl` to `news.google.com` (RSS, no key; local news sends the place you set); source icons: Google's favicon service (`www.google.com/s2/favicons`, sends only the source's site; off with the widget's "Source icons" setting) | the widget says it couldn't reach Google News; no icons |
+| Pieces: lyrics, world clock, palette, screen time | lyrics: as the Lyrics service (`lyrics.enable`; `curl` to lrclib.net / NetEase, `find` for local `.lrc`); world clock: `coreutils` (`date`), `sh` and `tzdata` (`/usr/share/zoneinfo`); palette: `wl-clipboard` (`wl-copy`); screen time: anod running and `screenTime.enable` | the piece says what's missing; the world clock marks an unknown zone; copying does nothing |
 | Clock | the system clock; keep it synchronised (`systemd-timesyncd`: `sudo timedatectl set-ntp true`, or chrony) — `ano doctor` warns when it isn't | the clock drifts |
 | EasyEffects quick toggle and presets (`audio.easyEffects.enable`) | `easyeffects` ≥ 7 running (its CLI: `-b`, `--bypass-toggle`, `-p`, `-l`); the shell never starts it | the pill stays hidden |
 | Sound effects and battery sounds (`sounds.*`) | `pipewire` (`pw-play`); battery sounds: a sound theme (`sound-theme-freedesktop`) | silence |
