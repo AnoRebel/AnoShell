@@ -37,6 +37,10 @@ The dev site is `anoshell-dev`, not `dev.anoshell`. Cloudflare sits in front of
 - **Environment:** nothing is required. Optional:
   `NUXT_PUBLIC_DOCS_VERSIONS` (JSON) replaces the version switcher's list at
   runtime, e.g. to add a third channel without a rebuild.
+  `NUXT_UMAMI_SITE_ID` and `NUXT_RYBBIT_SITE_ID` add the Umami
+  (umami.anorebel.net) and Rybbit (rybbit.anorebel.net) scripts; read when the
+  container starts (`server/plugins/analytics.ts`), so no rebuild is needed.
+  Unset, the pages load no analytics.
 - **Secrets:** none, at build or run time.
 
 ## Checking a build locally
