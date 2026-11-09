@@ -212,7 +212,17 @@ PanelWindow {
         pageCount: SettingsRegistry.pages.length
         onPageRequested: idx => GlobalStates.settingsPage = idx
         onCloseRequested: GlobalStates.settingsOpen = false
+        onUndone: key => undoToast.show(key ? `Undone: ${key}` : "Nothing to undo")
     }
+    SettingsToast { id: undoToast }
+    // Changes made while Settings is open can be undone (Ctrl+Z).
+    // (_held makes it count once, however the change signals arrive.)
+    readonly property bool _undoOpen: GlobalStates.settingsOpen
+    property bool _held: false
+    function _syncUndo() { if (_undoOpen !== _held) { _held = _undoOpen; Config.holdUndo(_held) } }
+    on_UndoOpenChanged: _syncUndo()
+    Component.onCompleted: _syncUndo()
+    Component.onDestruction: if (_held) Config.holdUndo(false)
 
     // ═══════════════════════════════════════
     // Page components

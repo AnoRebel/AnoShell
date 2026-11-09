@@ -34,3 +34,4 @@ BackupCard 1.0 BackupCard.qml
 AtelierPage 1.0 AtelierPage.qml
 ActionsPage 1.0 ActionsPage.qml
 AutostartCard 1.0 AutostartCard.qml
+SettingsToast 1.0 SettingsToast.qml

@@ -132,7 +132,7 @@ Singleton {
             const [p, leaf] = root._walkArrayPath(arr, keys.slice(1));
             if (JSON.stringify(p[leaf]) === JSON.stringify(convertedValue)) return;
             if (root.recordUndo)
-                root.undoStack = root.undoStack.concat([{ key: nestedKey, mine: keys[0] in root._userDelta, old: p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf])) }]);
+                root._pushUndo({ key: nestedKey, mine: keys[0] in root._userDelta, old: p[leaf] === undefined ? null : JSON.parse(JSON.stringify(p[leaf])) });
             p[leaf] = convertedValue;
             root.options[keys[0]] = arr;
             root._userDelta[keys[0]] = JSON.parse(JSON.stringify(arr));
@@ -146,7 +146,7 @@ Singleton {
         // 1. Live in-memory mutation — UI sees the change this tick
         const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
         if (root.recordUndo && JSON.stringify(liveParent[liveLeaf]) !== JSON.stringify(convertedValue))
-            root.undoStack = root.undoStack.concat([{ key: nestedKey, mine: root.originOf(nestedKey) === "user", old: liveParent[liveLeaf] === undefined ? null : JSON.parse(JSON.stringify(liveParent[liveLeaf])) }]);
+            root._pushUndo({ key: nestedKey, mine: root.originOf(nestedKey) === "user", old: liveParent[liveLeaf] === undefined ? null : JSON.parse(JSON.stringify(liveParent[liveLeaf])) });
         // No-op when nothing changes. Controls echo their initial value
         // through onValueChanged/onCheckedChanged at creation; without this
         // every such echo was persisted into the user delta (defaults written
@@ -167,8 +167,14 @@ Singleton {
     // the last one back (written like any change).
     property bool recordUndo: false
     property var undoStack: []
+    // The last 50 changes are kept.
+    function _pushUndo(entry) { root.undoStack = root.undoStack.concat([entry]).slice(-50) }
+    // Settings and Customize both record while open (a count, so one closing
+    // doesn't stop the other).
+    property int _undoHolders: 0
+    function holdUndo(on) { root._undoHolders = Math.max(0, root._undoHolders + (on ? 1 : -1)); root.recordUndo = root._undoHolders > 0 }
     function undo() {
-        if (root.undoStack.length === 0) return
+        if (root.undoStack.length === 0) return ""
         const last = root.undoStack[root.undoStack.length - 1]
         root.undoStack = root.undoStack.slice(0, -1)
         const was = root.recordUndo
@@ -179,6 +185,7 @@ Singleton {
         if (last.mine) root.setNestedValue(last.key, last.old)
         else root.resetToDefault(root._isArrayLike(root.options[top]) ? top : last.key)
         root.recordUndo = was
+        return last.key
     }
 
     // ── Preview (presets) ─────────────────────────────────────────────────
@@ -312,6 +319,11 @@ Singleton {
     // bundle defaults. Empty intermediate objects in the delta are
     // pruned so the file stays tidy.
     function resetToDefault(nestedKey) {
+        if (root.recordUndo && root.originOf(nestedKey) === "user") {
+            const [lp, ll] = root._walkPath(root.options, nestedKey, false)
+            if (lp !== null && lp !== undefined && lp[ll] !== undefined)
+                root._pushUndo({ key: nestedKey, mine: true, old: JSON.parse(JSON.stringify(lp[ll])) })
+        }
         delete root._migratedKeys[nestedKey];
         // Remove from delta and prune empty parents
         const segments = nestedKey.split(".");
@@ -1862,6 +1874,14 @@ Singleton {
             for (const k of key.split(".")) { if (v === undefined || v === null) break; v = v[k] }
             try { return JSON.stringify(v ?? null) } catch (e) { return "null" }
         }
+        // Back to the shipped default (out of your config file).
+        function reset(key: string): string {
+            if (!root.isDeclared(key)) return `error: ${key} is not a setting`
+            root.resetToDefault(key)
+            return "ok"
+        }
+        // Undo the last change recorded while Settings or Customize was open.
+        function undo(): string { return root.undo() || "nothing to undo" }
         function set(key: string, json: string): string {
             let v
             try { v = JSON.parse(json) } catch (e) { return `error: value is not JSON (${e})` }

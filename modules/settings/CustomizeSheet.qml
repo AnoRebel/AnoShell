@@ -29,7 +29,7 @@ Scope {
 
     onOpenChanged: {
         Config.undoStack = []
-        Config.recordUndo = open
+        Config.holdUndo(open)
     }
 
     IpcHandler {

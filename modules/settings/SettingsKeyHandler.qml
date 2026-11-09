@@ -1,5 +1,6 @@
 import QtQuick
 import qs
+import qs.modules.common
 import "."
 
 /**
@@ -40,6 +41,8 @@ Item {
     // Outputs back to the parent shell
     signal pageRequested(int index)
     signal closeRequested()
+    // Ctrl+Z undid a change (key is its setting), or there was nothing to undo ("").
+    signal undone(string key)
 
     Keys.priority: Keys.AfterItem
 
@@ -47,6 +50,24 @@ Item {
         // Ctrl+K — open the command palette. Toggles open if already shown.
         if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_K) {
             GlobalStates.settingsCommandPaletteOpen = !GlobalStates.settingsCommandPaletteOpen;
+            event.accepted = true;
+            return;
+        }
+
+        // Ctrl+Z — undo the last change made while Settings is open (a
+        // focused text field takes Ctrl+Z for its own text first).
+        if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Z) {
+            root.undone(Config.undo());
+            event.accepted = true;
+            return;
+        }
+
+        // Typing a letter or digit (nothing focused takes it) opens search
+        // with it, so there's no need for Ctrl+K first.
+        if (!(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
+            && !GlobalStates.settingsCommandPaletteOpen && event.text.length === 1 && event.text.charCodeAt(0) > 32 && event.text.charCodeAt(0) !== 127) {
+            SettingsRegistry.query = event.text;
+            GlobalStates.settingsCommandPaletteOpen = true;
             event.accepted = true;
             return;
         }

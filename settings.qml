@@ -54,7 +54,10 @@ ShellRoot {
             pageCount: settingsRoot.pages.length
             onPageRequested: idx => settingsRoot.currentPage = idx
             onCloseRequested: Qt.quit()
+            onUndone: key => undoToast.show(key ? `Undone: ${key}` : "Nothing to undo")
+            Component.onCompleted: Config.holdUndo(true) // Ctrl+Z for changes made here
         }
+        SettingsToast { id: undoToast }
 
         RowLayout {
             anchors.fill: parent
