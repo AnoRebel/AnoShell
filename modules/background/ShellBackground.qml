@@ -85,7 +85,19 @@ Scope {
             property real progress: 1
             onPathChanged: {
                 if (!path || path === frontPath) return
+                // Mid-transition: land the one in flight first, so the slot
+                // being shown isn't reloaded under the shader (flash/black).
+                if (trans.running) { trans.stop(); win.finish() }
+                if (path === frontPath) return
                 if (aFront) bPath = path; else aPath = path
+            }
+            // The back slot becomes the front; the old front unloads. A second
+            // call (finished after stop) finds no back path and does nothing.
+            function finish() {
+                if (!win.backPath) return
+                win.aFront = !win.aFront
+                if (win.aFront) win.bPath = ""; else win.aPath = ""
+                win.progress = 1
             }
             Component.onCompleted: aPath = path
             function backReady() { if (win.backPath && win.back.ready) trans.restart() }
@@ -95,11 +107,7 @@ Scope {
                 target: win; property: "progress"; from: 0; to: 1
                 duration: root.transitionType === "none" ? 1 : root.transitionMs
                 easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.standard
-                onFinished: {
-                    win.aFront = !win.aFront
-                    if (win.aFront) win.bPath = ""; else win.aPath = "" // the old front unloads
-                    win.progress = 1
-                }
+                onFinished: win.finish()
             }
 
             Media {
