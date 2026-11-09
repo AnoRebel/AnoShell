@@ -240,9 +240,15 @@ Scope {
             SurfaceMaterial {
                 id: card
                 surface: "stash"
-                anchors.centerIn: parent
+                // Hangs from the pill's side of the window (it's shorter than
+                // the window when it holds little).
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: root.spotPosition === "bottom" ? parent.height - height
+                    : root.spotPosition === "top" ? 0 : (parent.height - height) / 2
                 width: 380
-                height: 560
+                // Fits what it holds, up to 560 px.
+                height: Math.min(560, Math.max(200, cardCol.implicitHeight + 24))
+                Behavior on height { NumberAnimation { duration: AnimationConfig.scaledDuration(180); easing.type: Easing.OutCubic } }
                 radius: Appearance?.rounding?.normal ?? 14
                 color: Appearance?.colors?.colLayer0 ?? "#1e1e2e"
                 // Glass-token opt-in for the popout surface. Inner cells
@@ -258,6 +264,7 @@ Scope {
                 MouseArea { anchors.fill: parent }
 
                 ColumnLayout {
+                    id: cardCol
                     anchors.fill: parent
                     anchors.margins: 12
                     spacing: 10
@@ -442,6 +449,8 @@ Scope {
                         id: shelfGrid
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        // As tall as its rows (the card grows up to 560 px, then this scrolls).
+                        Layout.preferredHeight: Math.max(cellHeight, contentHeight)
                         cellWidth: Math.floor(width / 4)
                         cellHeight: 92
                         clip: true
