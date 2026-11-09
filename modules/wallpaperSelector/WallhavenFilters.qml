@@ -5,7 +5,7 @@ import qs.modules.common.widgets
 import qs.services
 
 // Wallhaven's filters under the ribbon: sorting (and the toplist range),
-// order, categories and purity. They write background.wallhaven.*; the
+// order, categories, purity and a colour. They write background.wallhaven.*; the
 // Wallhaven service searches again when they change. NSFW shows only with an
 // API key (Wallhaven ignores it without one).
 Flow {
@@ -89,6 +89,32 @@ Flow {
             danger: modelData[1] === 2
             active: (filters.f?.purity ?? "100")[modelData[1]] === "1"
             onClicked: filters.flip("purity", filters.f?.purity ?? "100", modelData[1])
+        }
+    }
+    Gap {}
+    // Search by colour: Wallhaven's own palette (its API takes only these).
+    Repeater {
+        model: ["660000", "990000", "cc0000", "cc3333", "ea4c88", "993399", "663399", "333399", "0066cc", "0099cc",
+            "66cccc", "77cc33", "669900", "336600", "666600", "999900", "cccc33", "ffff00", "ffcc33", "ff9900",
+            "ff6600", "cc6633", "996633", "663300", "000000", "999999", "cccccc", "ffffff", "424153"]
+        Rectangle {
+            required property string modelData
+            readonly property bool active: (filters.f?.colors ?? "") === modelData
+            width: 22 * filters.deck.u; height: 30 * filters.deck.u
+            color: "transparent"
+            Rectangle {
+                anchors.centerIn: parent
+                width: (parent.active ? 20 : 16) * filters.deck.u; height: width; radius: width / 2
+                color: "#" + parent.modelData
+                border.width: parent.active ? 2 : 1
+                border.color: parent.active ? filters.deck.tint.accent : Qt.rgba(filters.deck.tint.ink.r, filters.deck.tint.ink.g, filters.deck.tint.ink.b, 0.25)
+                Behavior on width { NumberAnimation { duration: AnimationConfig.scaledDuration(120) } }
+            }
+            MouseArea {
+                anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                // Again on the chosen one: any colour.
+                onClicked: filters.set("colors", parent.active ? "" : parent.modelData)
+            }
         }
     }
 }
