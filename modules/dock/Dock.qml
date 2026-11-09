@@ -89,12 +89,14 @@ Scope {
                 void CompositorService.fullscreenRevision
                 return CompositorService.hasFullscreenOnScreen(modelData?.name ?? "")
             }
-            property bool reveal: root.pinned
+            // Never over a fullscreen window (pinned included: the dock is on
+            // the overlay layer and would sit on top of a game).
+            property bool reveal: !screenFullscreen && (root.pinned
                 || (hoverToReveal && dockHover.containsMouse)
-                || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated)
+                || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated))
 
             color: "transparent"
-            exclusiveZone: root.pinned ? dockHeight : 0
+            exclusiveZone: root.pinned && !screenFullscreen ? dockHeight : 0
             // Connected and hover-revealed, the window reaches the screen edge
             // itself (not pushed in by the frame band or a bar there), so the
             // pointer pushed against the edge finds the hover strip; the dock
