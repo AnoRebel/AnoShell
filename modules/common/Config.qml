@@ -1041,6 +1041,9 @@ Singleton {
             // Settings itself: show the advanced options (search always finds them).
             property JsonObject settings: JsonObject {
                 property bool showAdvanced: false
+                // While the Settings overlay is open, blur (shell engine) or dim
+                // (awww) the wallpaper a little; windows, bar and pieces stay sharp.
+                property bool softenWallpaper: true
             }
 
             // First-run welcome: shown once on a fresh config (Settings → About runs it again).

@@ -138,6 +138,12 @@ ano wallpaper next      # the next rotation image, now
 ano wallpaper status    # what's shown, and the rotation settings
 ```
 
+While Settings is open the wallpaper softens a little: with the Shell engine
+it blurs (drawn at a quarter of the size, only while Settings is open) and dims
+slightly; with awww a translucent layer dims it. Windows, bars and pieces stay
+sharp. Turn it off with `settings.softenWallpaper` (Settings → Appearance →
+Wallpaper engine).
+
 ## Rotation
 
 ## The wallpaper folder
