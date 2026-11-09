@@ -61,10 +61,15 @@ Item {
 
     // Cutout edges in px: left, top, right, bottom. Clamped so a thick frame on
     // a small screen can never invert the cutout.
-    readonly property real _cutL: Math.min(frameThickness, width / 2)
-    readonly property real _cutT: Math.min(frameThickness, height / 2)
-    readonly property real _cutR: Math.max(_cutL, width - Math.min(frameThickness, width / 2))
-    readonly property real _cutB: Math.max(_cutT, height - Math.min(frameThickness, height / 2))
+    // Below 2 px the ring's inner edge moves out past the window (−2 px at 0):
+    // a ring of no thickness sat on the window's border, and anti-aliasing
+    // drew it as a half-covered line along every free edge (the floating
+    // bar's top and bottom rows). Continuous with the real ring at 2 px.
+    readonly property real _inset: frameThickness >= 2 ? frameThickness : 2 * frameThickness - 2
+    readonly property real _cutL: Math.min(_inset, width / 2)
+    readonly property real _cutT: Math.min(_inset, height / 2)
+    readonly property real _cutR: Math.max(_cutL, width - Math.min(_inset, width / 2))
+    readonly property real _cutB: Math.max(_cutT, height - Math.min(_inset, height / 2))
     readonly property real _cutRadius: Math.max(0, Math.min(cornerRadius,
         Math.floor(Math.min(_cutR - _cutL, _cutB - _cutT) / 2)))
 
