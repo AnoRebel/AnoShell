@@ -83,6 +83,29 @@ function parse(deviceText, routeJson) {
     return { links: links, primary: primary }
 }
 
+// Which nmcli-backed lists one `nmcli monitor` line (LANG=C) can change:
+// → { links, vpn }. Wi-Fi state comes from Quickshell.Networking, so lines
+// about a Wi-Fi device (`wifiIfaces`), connectivity and the overall state
+// change nothing here; neither does container/VM churn (docker bridges,
+// veths). Unknown lines refresh both.
+function monitorScope(line, wifiIfaces) {
+    const l = String(line || "").trim()
+    if (!l || /^(Connectivity is now|NetworkManager is now in|Networkmanager is now in)/i.test(l))
+        return { links: false, vpn: false }
+    // "<profile name>: connection profile created|changed|removed" (the name may hold spaces)
+    if (/: connection profile (created|changed|removed)$/.test(l)) return { links: false, vpn: true }
+    if (/ is now the primary connection$|^There's no primary connection/.test(l)) return { links: true, vpn: false }
+    const m = l.match(/^(\S+): /)
+    if (m) {
+        const dev = m[1]
+        if ((wifiIfaces || []).includes(dev) || dev.startsWith("p2p-dev-")) return { links: false, vpn: false }
+        if (/^(tun|tap|wg|wt\d)/.test(dev)) return { links: false, vpn: true }
+        if (isVirtual(dev)) return { links: false, vpn: false }
+        return { links: true, vpn: false }
+    }
+    return { links: true, vpn: true }
+}
+
 // `nmcli -t -f NAME,UUID,TYPE,STATE connection show` → the VPN and WireGuard
 // profiles: [{ name, uuid, type ("vpn" | "wireguard"), state, active }],
 // up or coming up first. Terse mode escapes ":" and "\" inside a field.
