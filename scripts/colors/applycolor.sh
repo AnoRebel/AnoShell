@@ -4,7 +4,7 @@
 # Applies generated Material You colors to external applications.
 # Run by anod as the "apps" wallpaper hook (background.hooks) after matugen.
 #
-# Currently supports: kitty, ghostty, foot, cava, GTK dark/light
+# Currently supports: kitty, ghostty, foot, cava, Qt, hyprtoolkit
 # Extend by adding functions below.
 # ══════════════════════════════════════════════════════════════════════════
 
@@ -73,7 +73,6 @@ outline=$(_col '.outline' '.colors.color8' '#938f99')
 shadow=$(_col '.shadow' '.special.background' '#000000')
 secondary=$(_col '.secondary' '.colors.color2' '#ccc2dc')
 tertiary=$(_col '.tertiary' '.colors.color5' '#efb8c8')
-error=$(_col '.error' '.colors.color1' '#f2b8b5')
 
 # Qt: appearance.theme.qt in the shell config. "palette" (default): Breeze
 # (or Fusion without it) on qt5ct/qt6ct's palette, which running apps pick up live;
@@ -86,60 +85,177 @@ QT_MODE=${QT_MODE:-palette}
 # #RRGGBB → 0xFFRRGGBB (opaque) for hyprland/hyprtoolkit color syntax.
 _hexToHl() { local h="${1#\#}"; [[ "${#h}" -eq 6 ]] && echo "0xFF${h^^}" || echo "0xFF181818"; }
 
-# ── Kitty ────────────────────────────────────────────────────────────────
+# ── Terminals (kitty, ghostty, foot) ───────────────────────────────────────
+# One colours file per terminal (16-colour palette, fg/bg, cursor, selection)
+# under generated/terminal/, and ONE marked include in the terminal's own
+# config that pulls it in. The user's file is never rewritten wholesale: only
+# our marker block is added or removed, through a symlink when it is one (the
+# target is edited in place), and the file is backed up once to <file>.ano-backup.
+# appearance.theme.terminals.<name> = false takes the block out again.
+TERM_DIR="$XDG_STATE_HOME/anoshell/generated/terminal"
+TERM_MARK="# anoshell-colors: added by AnoShell (Settings > Appearance > Terminals); removed when that switch is off"
+CONFIG_JSON="$XDG_CONFIG_HOME/anoshell/config.json"
+# ANOSHELL_NO_LIVE=1: don't signal running terminals (tests).
+LIVE=1
+[[ "${ANOSHELL_NO_LIVE:-}" == 1 ]] && LIVE=0
+
+_term_on() { # $1 = kitty|ghostty|foot → true unless its switch is false
+    [[ -f "$CONFIG_JSON" ]] || return 0
+    [[ "$(jq -r --arg t "$1" '.appearance.theme.terminals[$t] | if . == false then "off" else "on" end' "$CONFIG_JSON" 2>/dev/null)" != off ]]
+}
+
+# 6 hues (red green yellow blue magenta cyan), normal then bright, at the
+# primary's saturation and nudged 20 % towards it so they sit in the palette.
+_ansi_hues() { # $1 primary, $2 mode → 12 lines
+    awk -v p="$1" -v mode="$2" '
+        function hx(s, i) { return index("0123456789abcdef", tolower(substr(s, i, 1))) - 1 }
+        function ch(s, i) { return (hx(s, i) * 16 + hx(s, i + 1)) / 255 }
+        function h2r(a, b, t) { if (t < 0) t += 1; if (t > 1) t -= 1
+            if (t < 1/6) return a + (b - a) * 6 * t; if (t < 1/2) return b
+            if (t < 2/3) return a + (b - a) * (2/3 - t) * 6; return a }
+        function out(h, s, l,   q, a) { q = l < 0.5 ? l * (1 + s) : l + s - l * s; a = 2 * l - q
+            printf "#%02x%02x%02x\n", (h2r(a, q, h + 1/3) * 0.8 + pr * 0.2) * 255 + 0.5,
+                (h2r(a, q, h) * 0.8 + pg * 0.2) * 255 + 0.5, (h2r(a, q, h - 1/3) * 0.8 + pb * 0.2) * 255 + 0.5 }
+        BEGIN {
+            c = p; sub(/^#/, "", c); pr = ch(c, 1); pg = ch(c, 3); pb = ch(c, 5)
+            mx = pr; if (pg > mx) mx = pg; if (pb > mx) mx = pb
+            mn = pr; if (pg < mn) mn = pg; if (pb < mn) mn = pb
+            l = (mx + mn) / 2; s = mx == mn ? 0 : (l > 0.5 ? (mx - mn) / (2 - mx - mn) : (mx - mn) / (mx + mn))
+            if (s < 0.4) s = 0.4; if (s > 0.7) s = 0.7
+            split("0 120 45 215 295 180", H, " ")
+            for (b = 0; b < 2; b++) for (i = 1; i <= 6; i++)
+                out(H[i] / 360, s, mode == "light" ? (b ? 0.32 : 0.40) : (b ? 0.78 : 0.68))
+        }'
+}
+
+# term[0..15]: pywal's own when matugen's colors.json is absent, else built
+# from the Material roles.
+declare -a term
+_term_palette() {
+    local -a hues
+    local i
+    if [[ ! -f "$COLORS_JSON" && -n "$(_wal '.colors.color15')" ]]; then
+        for i in {0..15}; do term[i]=$(_wal ".colors.color$i"); done
+        return
+    fi
+    mapfile -t hues < <(_ansi_hues "$primary" "$MODE")
+    if [[ "$MODE" == light ]]; then
+        term[0]=$inverseSurface term[7]=$surfaceContainerHighest term[8]=$outline term[15]=$surfaceContainerLowest
+    else
+        term[0]=$surfaceContainerHigh term[7]=$onSurfaceVariant term[8]=$outline term[15]=$onSurface
+    fi
+    for i in {1..6}; do term[i]=${hues[i-1]} term[i+8]=${hues[i+5]}; done
+}
+
+# Prints the file without our block: the marker line and the lines right
+# after it that are ours ([main], or a path into generated/terminal/).
+_strip_block() {
+    awk -v mark="$TERM_MARK" '
+        skip && ($0 == "[main]" || index($0, "/anoshell/generated/terminal/")) { next }
+        { skip = 0 }
+        $0 == mark { skip = 1; next }
+        { print }' "$1"
+}
+
+# $1 config file, $2 on|off, $3 the block's lines (newline-separated).
+# The block goes last; the file is written only when that changes it.
+_include_block() {
+    local f="$1" want="$2" lines="$3" tmp
+    if [[ -L "$f" && ! -e "$f" ]]; then log "WARN: $f is a broken symlink, left alone"; return 0; fi
+    if [[ ! -e "$f" ]]; then
+        [[ "$want" == on ]] || return 0
+        mkdir -p "$(dirname "$f")"
+        printf '%s\n%s\n' "$TERM_MARK" "$lines" > "$f"
+        return 0
+    fi
+    tmp=$(mktemp)
+    _strip_block "$f" > "$tmp"
+    if [[ "$want" == on ]]; then
+        [[ -s "$tmp" && -n "$(tail -c1 "$tmp")" ]] && echo >> "$tmp"
+        printf '%s\n%s\n' "$TERM_MARK" "$lines" >> "$tmp"
+    fi
+    if cmp -s "$tmp" "$f"; then rm -f "$tmp"; return 0; fi
+    if [[ ! -w "$f" ]]; then log "WARN: $f is not writable, left alone"; rm -f "$tmp"; return 0; fi
+    [[ -e "$f.ano-backup" ]] || cp -L -- "$f" "$f.ano-backup"
+    # Through a symlink into its target, never replacing the link itself.
+    cat "$tmp" > "$f"
+    rm -f "$tmp"
+}
+
+# $1 name, $2 config file: "on" when its switch is on and it's in use
+# (the config exists or the terminal is installed).
+_term_state() {
+    if _term_on "$1" && { [[ -e "$2" ]] || command -v "$1" &>/dev/null; }; then echo on; else echo off; fi
+}
+
 apply_kitty() {
-    if ! command -v kitty &>/dev/null; then return; fi
-    # Send OSC escape sequences to all kitty instances
-    for sock in /tmp/kitty-*/; do
-        [[ -d "$sock" ]] || continue
-        kitty @ --to "unix:${sock}control" set-colors \
-            "foreground=$onBackground" \
-            "background=$background" \
-            "cursor=$primary" \
-            "selection_foreground=$onPrimary" \
-            "selection_background=$primary" \
-            2>/dev/null || true
-    done
-    log "Applied colors to kitty"
+    local conf="$XDG_CONFIG_HOME/kitty/kitty.conf" gen="$TERM_DIR/kitty.conf" on i
+    on=$(_term_state kitty "$conf")
+    if [[ "$on" == on ]]; then
+        {
+            echo "# Generated by AnoShell applycolor.sh from the wallpaper palette."
+            echo "foreground $onBackground"; echo "background $background"
+            echo "cursor $primary"; echo "cursor_text_color $background"
+            echo "selection_foreground $onPrimary"; echo "selection_background $primary"
+            echo "url_color $tertiary"
+            for i in {0..15}; do echo "color$i ${term[i]}"; done
+        } > "$gen"
+    fi
+    # Last in kitty.conf, so it wins over earlier colour lines and themes.
+    _include_block "$conf" "$on" "include $gen"
+    [[ "$on" == off ]] && rm -f "$gen"
+    # SIGUSR1 makes every running kitty re-read kitty.conf, include and all.
+    if [[ "$LIVE" == 1 ]]; then pkill -USR1 -x kitty 2>/dev/null || true; fi
+    log "kitty colours: $on"
 }
 
-# ── Ghostty ──────────────────────────────────────────────────────────────
 apply_ghostty() {
-    local config="$XDG_CONFIG_HOME/ghostty/config"
-    [[ -f "$config" ]] || return 0 # (a bare return is 1 here and set -e ends the script)
-
-    # Backup
-    cp "$config" "$config.bak" 2>/dev/null || true
-
-    # Update colors using sed
-    sed -i \
-        -e "s/^background = .*/background = ${background}/" \
-        -e "s/^foreground = .*/foreground = ${onBackground}/" \
-        -e "s/^cursor-color = .*/cursor-color = ${primary}/" \
-        -e "s/^selection-foreground = .*/selection-foreground = ${onPrimary}/" \
-        -e "s/^selection-background = .*/selection-background = ${primary}/" \
-        "$config" 2>/dev/null || true
-
-    log "Applied colors to ghostty config"
+    local dir="$XDG_CONFIG_HOME/ghostty" conf gen="$TERM_DIR/ghostty" on i
+    conf="$dir/config"; [[ -e "$dir/config.ghostty" ]] && conf="$dir/config.ghostty"
+    on=$(_term_state ghostty "$conf")
+    if [[ "$on" == on ]]; then
+        {
+            echo "# Generated by AnoShell applycolor.sh from the wallpaper palette."
+            echo "background = $background"; echo "foreground = $onBackground"
+            echo "cursor-color = $primary"; echo "cursor-text = $background"
+            echo "selection-foreground = $onPrimary"; echo "selection-background = $primary"
+            for i in {0..15}; do echo "palette = $i=${term[i]}"; done
+        } > "$gen"
+    fi
+    # config-file is read after the whole file, so it wins over theme= and
+    # colour lines wherever it sits; "?" keeps a missing file from erroring.
+    _include_block "$conf" "$on" "config-file = ?$gen"
+    [[ "$on" == off ]] && rm -f "$gen"
+    # Ghostty reloads its configuration on SIGUSR2.
+    if [[ "$LIVE" == 1 ]]; then pkill -USR2 -x ghostty 2>/dev/null || true; fi
+    log "ghostty colours: $on"
 }
 
-# ── Foot ─────────────────────────────────────────────────────────────────
 apply_foot() {
-    local config="$XDG_CONFIG_HOME/foot/foot.ini"
-    [[ -f "$config" ]] || return 0 # (a bare return is 1 here and set -e ends the script)
-
-    cp "$config" "$config.bak" 2>/dev/null || true
-
-    # Strip # from hex colors for foot format
-    local bg="${background/#\#/}"
-    local fg="${onBackground/#\#/}"
-
-    sed -i \
-        -e "s/^background=.*/background=${bg}/" \
-        -e "s/^foreground=.*/foreground=${fg}/" \
-        "$config" 2>/dev/null || true
-
-    log "Applied colors to foot config"
+    local conf="$XDG_CONFIG_HOME/foot/foot.ini" gen="$TERM_DIR/foot.ini" on i s ver sections h=()
+    on=$(_term_state foot "$conf")
+    if [[ "$on" == on ]]; then
+        # [colors-dark]/[colors-light] since foot 1.26; 1.28 dropped [colors].
+        sections="colors-dark colors-light"
+        ver=$(foot --version 2>/dev/null | sed -n 's/^foot version: \([0-9]*\)\.\([0-9]*\).*/\1 \2/p')
+        if [[ -n "$ver" ]] && (( ${ver% *} == 1 && ${ver#* } < 26 )); then sections="colors"; fi
+        for i in {0..15}; do h[i]=${term[i]#\#}; done
+        {
+            echo "# Generated by AnoShell applycolor.sh from the wallpaper palette."
+            for s in $sections; do
+                echo "[$s]"
+                echo "foreground=${onBackground#\#}"; echo "background=${background#\#}"
+                echo "cursor=${background#\#} ${primary#\#}"
+                echo "selection-foreground=${onPrimary#\#}"; echo "selection-background=${primary#\#}"
+                for i in {0..7}; do echo "regular$i=${h[i]}"; echo "bright$i=${h[i+8]}"; done
+            done
+        } > "$gen"
+    fi
+    # include= is a [main] key read where it stands, so it goes last (after
+    # the user's own colours) under a [main] of its own.
+    _include_block "$conf" "$on" $'[main]\ninclude='"$gen"
+    [[ "$on" == off ]] && rm -f "$gen"
+    log "foot colours: $on (new windows; a running foot server keeps its colours until restarted)"
 }
 
 # ── Cava (if pywal didn't already handle it) ─────────────────────────────
@@ -157,7 +273,7 @@ apply_cava() {
         -e "s/^foreground = .*/foreground = '${primary}'/" \
         "$config" 2>/dev/null || true
 
-    pkill -USR2 cava 2>/dev/null || true
+    if [[ "$LIVE" == 1 ]]; then pkill -USR2 cava 2>/dev/null || true; fi
     log "Applied colors to cava"
 }
 
@@ -358,6 +474,8 @@ EOF
 }
 
 # ── Run all ──────────────────────────────────────────────────────────────
+mkdir -p "$TERM_DIR"
+_term_palette
 apply_kitty
 apply_ghostty
 apply_foot

@@ -425,6 +425,23 @@ ColumnLayout {
             // after the config is on disk: the script reads it from there
             Timer { id: qtSoon; interval: 1000; onTriggered: StaticThemeLoader.refreshApps() }
         }
+        Repeater {
+            model: [{ key: "kitty", label: "Colour kitty", sub: "Running windows change too" },
+                    { key: "ghostty", label: "Colour Ghostty", sub: "Running windows reload their config" },
+                    { key: "foot", label: "Colour foot", sub: "New windows; a foot server keeps its colours until it restarts" }]
+            delegate: ConfigSwitch {
+                required property var modelData
+                label: modelData.label
+                configKey: `appearance.theme.terminals.${modelData.key}`
+                visible: appearanceRoot.appColorsFollow
+                sublabel: `${modelData.sub}. Adds one marked include line to its config; off takes it out again`
+                checked: Config.options?.appearance?.theme?.terminals?.[modelData.key] ?? true
+                onCheckedChanged: if (checked !== (Config.options?.appearance?.theme?.terminals?.[modelData.key] ?? true)) {
+                    Config.setNestedValue(`appearance.theme.terminals.${modelData.key}`, checked)
+                    qtSoon.restart()
+                }
+            }
+        }
 
         // ─── Theme grid (visible only when source = static or while previewing) ───
         // Dark / light / all: a filter over the grid (not saved).

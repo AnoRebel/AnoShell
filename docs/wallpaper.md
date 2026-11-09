@@ -92,6 +92,37 @@ In `"palette"`, KDE's Breeze style (package `breeze`) gives nicer shapes and
 still follows live; any other style you pick in qt6ct is kept, and Kvantum
 or none becomes Breeze (Fusion when Breeze isn't installed).
 
+### Terminals
+
+The `apps` step also writes a colours file per terminal into
+`$XDG_STATE_HOME/anoshell/generated/terminal/` (`kitty.conf`, `ghostty`,
+`foot.ini`): background, foreground, cursor, selection and all 16 ANSI
+colours. Black and white come from the surface roles; red, green, yellow,
+blue, magenta and cyan keep their hue at the primary's saturation, nudged
+towards it. When matugen's `colors.json` is missing, pywal's 16 colours are
+used as they are.
+
+Each terminal's own config gets one marked block that pulls the file in, and
+nothing else in it changes:
+
+| Terminal | Config | Block | Running windows |
+|---|---|---|---|
+| kitty | `kitty/kitty.conf` | `include …/kitty.conf`, last in the file so it wins over earlier colour lines and themes | reloaded (`SIGUSR1`) |
+| Ghostty | `ghostty/config.ghostty`, else `ghostty/config` | `config-file = ?…/ghostty` (read after the whole file, so it wins over `theme =` wherever it sits) | reloaded (`SIGUSR2`; Ghostty shows a "config reloaded" toast unless `app-notifications = no-config-reload`) |
+| foot | `foot/foot.ini` | `[main]` + `include=…/foot.ini`, last in the file; the file sets `[colors-dark]` and `[colors-light]` (`[colors]` before foot 1.26) | new windows only; a `foot --server` keeps its colours until it restarts |
+
+The block starts with a `# anoshell-colors: …` marker line. The first time a
+file is changed it is copied to `<file>.ano-backup`. A symlinked config is
+edited in its target, and the link stays a link; a read-only one is left
+alone with a warning. A terminal that's installed but has no config gets one
+holding just the block.
+
+**Colour kitty / Ghostty / foot** (Settings → Appearance → Theme source,
+`appearance.theme.terminals.{kitty,ghostty,foot}`, all on by default):
+off removes the marker block and the generated file, and the terminal is back
+to its own colours. Alacritty isn't themed: its `import`ed files lose to the
+colours in `alacritty.toml` itself.
+
 In the **Fixed** colour mode (Settings → Appearance → Theme source) step 3 is
 skipped: the colours don't follow the wallpaper.
 

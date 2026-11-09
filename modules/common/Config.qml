@@ -859,6 +859,13 @@ Singleton {
                     // (Breeze, else Fusion, on qt6ct's palette: running apps follow live), "kvantum"
                     // (a recoloured Kvantum theme, read when an app starts) or "off".
                     property string qt: "palette"
+                    // Terminals (applycolor.sh): a generated colours file each, pulled in by one
+                    // marked include line in the terminal's own config; off removes that line.
+                    property JsonObject terminals: JsonObject {
+                        property bool kitty: true
+                        property bool ghostty: true
+                        property bool foot: true
+                    }
                     // Light/dark for your apps (GTK color-scheme, portal-aware Qt apps):
                     // "follow" the shell, or always "light" / "dark".
                     property string appColorScheme: "follow"
