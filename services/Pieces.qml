@@ -219,7 +219,8 @@ Singleton {
     }
     function remove(screenName: string, uid: string): void {
         const l = root.layoutOf(screenName)
-        const name = root.entries[l.pages.flat().find(w => w.uid === uid)?.id]?.name ?? "a piece"
+        // (pages can be QML sequences, which flat() doesn't open: spread them)
+        const name = root.entries[[].concat(...l.pages.map(p => Array.from(p))).find(w => w.uid === uid)?.id]?.name ?? "a piece"
         root._removeWithUndo(screenName, l, { page: l.page, pages: l.pages.map(p => p.filter(w => w.uid !== uid)) }, `Removed ${name}`)
     }
     // Moves/resizes a placed piece if the spot is inside the grid and free
@@ -284,6 +285,16 @@ Singleton {
             return root.add(scr, id, g.cols, g.rows) ? "ok" : "no free spot on this page"
         }
         // The grid per screen and the focused screen (what placing from the Atelier uses).
+        // Remove the first placed piece of this id on the focused screen's
+        // current page (Undo is offered, as from the edit handles).
+        function remove(id: string): string {
+            const screen = CompositorService.focusedMonitorName
+            const l = root.layoutOf(screen)
+            const w = (l.pages[l.page] ?? []).find(x => x.id === id)
+            if (!w) return `no ${id} on this page`
+            root.remove(screen, w.uid)
+            return "ok"
+        }
         function grid(): string { return JSON.stringify({ focused: CompositorService.focusedMonitorName, grids: root.grids }) }
     }
 }
