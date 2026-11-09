@@ -2100,6 +2100,8 @@
    "anoSpot.showMpris",
    "anoSpot.showNotification",
    "anoSpot.showRecording",
+   "anoSpot.showTimer",
+   "anoSpot.showPrivacy",
    "anoSpot.showClockWeather",
    "anoSpot.showWorkspace",
    "anoSpot.workspaceHoverPreview",
@@ -2142,6 +2144,24 @@
   "sublabel": "",
   "keys": [
    "anoSpot.showRecording"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Running timer",
+  "sublabel": "Countdown, pomodoro or stopwatch time left while one runs; click opens it",
+  "keys": [
+   "anoSpot.showTimer"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Camera & microphone in use",
+  "sublabel": "A green (camera) or orange (microphone) dot; hover for the app",
+  "keys": [
+   "anoSpot.showPrivacy"
   ]
  },
  {
@@ -2337,9 +2357,27 @@
   "page": 6,
   "card": "",
   "label": "Recording",
-  "sublabel": "Started / saved",
+  "sublabel": "Started / saved (click opens the file)",
   "keys": [
    "anoSpot.transients.recording"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Download finished",
+  "sublabel": "Click opens the file (needs anod)",
+  "keys": [
+   "anoSpot.transients.download"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Screenshot taken",
+  "sublabel": "Click opens the picture",
+  "keys": [
+   "anoSpot.transients.screenshot"
   ]
  },
  {
@@ -2355,10 +2393,20 @@
   "page": 6,
   "card": "Drag and drop",
   "label": "Drag and drop",
-  "sublabel": "Stage files dropped on AnoSpot for triage and actions",
+  "sublabel": "Stage files dropped on AnoSpot for triage and actions; the same popout shelves your pins, copies and screenshots",
   "keys": [
    "anoSpot.acceptDrops",
-   "anoSpot.stashDir"
+   "anoSpot.stashDir",
+   "anoSpot.shelfSize"
+  ]
+ },
+ {
+  "page": 6,
+  "card": "",
+  "label": "Shelf: recent items",
+  "sublabel": "The stash popout is also a shelf: your pins, plus this many of the newest copies and screenshots (0: pins only). Click copies, drag out into an app. Open it with `qs -c ano ipc call shelf toggle`, or set a click to \\\"shelf\\\"",
+  "keys": [
+   "anoSpot.shelfSize"
   ]
  },
  {
