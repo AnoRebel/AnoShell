@@ -21,6 +21,10 @@ Bundled: **Minimal** (a large clock on your wallpaper and one line to type on)
 and **Bioma Gate** (Bioma's lock screen: a large clock with a minute dial,
 your picture and name, one field; ported from Bioma, GPL-3.0).
 
+With more than one screen, the field you type in is mirrored as dots on the
+others (the built-in one and Minimal): only the number of characters is shared
+between screens, never the text.
+
 ![The built-in lock screen (a preview)](images/lock-default.webp)
 ![Minimal (a preview)](images/lock-minimal.webp)
 
@@ -91,6 +95,8 @@ file. Its root `Item` fills the screen and gets `ctx`:
 |---|---|
 | `submit(password)` | check this password; unlocks when it's right |
 | `failed()` | signal: the password was wrong (clear your field) |
+| `reportTyped(length)` | call from your field when its text changes (if it has focus or is empty) and when it gains focus: only the length is shared |
+| `typedLength` | the length the focused screen's field reported, the same on every screen: draw that many dots where your field has no focus |
 | `busy` | a check is running |
 | `error` | why the last try failed (`""` when none) |
 | `capsLock` | Caps Lock is on |
