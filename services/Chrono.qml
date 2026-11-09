@@ -299,5 +299,8 @@ Singleton {
         function dismiss(): void { root.dismiss() }
         function snooze(): void { root.snooze() }
         function next(): string { return root.nextAlarmText }
+        // Start a countdown of N seconds, or toggle the stopwatch (scripts, keybinds).
+        function countdown(seconds: int): void { Pomodoro.cdSet(seconds); Pomodoro.cdToggle() }
+        function stopwatch(): void { Pomodoro.swToggle() }
     }
 }
