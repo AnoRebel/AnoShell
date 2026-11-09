@@ -1206,6 +1206,10 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject overview: JsonObject {
                 property string layout: "SmartGrid" // one of 10 hyprview layouts
+                // Window thumbnails in the overview, task view and Alt+Tab list:
+                // "off" = one still frame each, "hovered" = the hovered/selected one
+                // streams, "all" = all stream (the first 12).
+                property string liveThumbnails: "off"
             }
 
             property JsonObject taskView: JsonObject {

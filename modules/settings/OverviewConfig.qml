@@ -20,6 +20,7 @@ ColumnLayout {
         configRoots: ["overview"]
     }
 
+    readonly property string thumbMode: Config.options?.overview?.liveThumbnails ?? "off"
     readonly property string currentLayout: Config.options?.overview?.layout ?? "smartgrid"
 
     // Hoisted so the selected-indicator can resolve display names without
@@ -43,7 +44,7 @@ ColumnLayout {
         icon: "overview"
         title: "AnoView Layout"
         subtitle: "Choose how windows are arranged in the overview"
-        configKeys: ["overview"]
+        configKeys: ["overview.layout"]
         collapsible: false
 
         // Visual layout grid with mini-previews
@@ -129,6 +130,27 @@ ColumnLayout {
                 font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                 font.weight: Font.DemiBold
                 color: Appearance?.colors.colPrimary ?? "#65558F"
+            }
+        }
+    }
+
+    // ═══ Thumbnails ═══
+    SettingsCard {
+        icon: "live_tv"
+        title: "Live Thumbnails"
+        subtitle: "Overview, task view and the Alt+Tab list"
+        configKeys: ["overview.liveThumbnails"]
+
+        ConfigRow {
+            label: "Live thumbnails"
+            configKey: "overview.liveThumbnails"
+            sublabel: "Off shows one still frame per window. Streaming costs GPU time while the view is open."
+            ButtonGroup {
+                buttons: [
+                    GroupButton { label: "Off"; toggled: root.thumbMode === "off"; onClicked: Config.setNestedValue("overview.liveThumbnails", "off") },
+                    GroupButton { label: "Hovered"; toggled: root.thumbMode === "hovered"; onClicked: Config.setNestedValue("overview.liveThumbnails", "hovered") },
+                    GroupButton { label: "All (up to 12)"; toggled: root.thumbMode === "all"; onClicked: Config.setNestedValue("overview.liveThumbnails", "all") }
+                ]
             }
         }
     }
