@@ -300,7 +300,7 @@ Singleton {
     Process {
         id: updateNetworkStrength
         running: true
-        command: ["sh", "-c", "nmcli -f IN-USE,SIGNAL,SSID device wifi | awk '/^\\*/{if (NR!=1) {print $2}}'"]
+        command: ["sh", "-c", "nmcli -f IN-USE,SIGNAL,SSID device wifi list --rescan no | awk '/^\\*/{if (NR!=1) {print $2}}'"]
         stdout: SplitParser { onRead: data => { root.networkStrength = parseInt(data) } }
     }
 
@@ -315,7 +315,7 @@ Singleton {
     Process {
         id: getNetworks
         running: true
-        command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w"]
+        command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w", "list", "--rescan", "no"] // the cached list: scans happen on request (rescanProcess)
         environment: ({ LANG: "C", LC_ALL: "C" })
         stdout: StdioCollector {
             onStreamFinished: {
@@ -327,7 +327,7 @@ Singleton {
                     const net = n.replace(rep, PLACEHOLDER).split(":")
                     return {
                         active: net[0] === "yes", strength: parseInt(net[1]),
-                        frequency: parseInt(net[2]), ssid: net[3],
+                        frequency: parseInt(net[2]), ssid: (net[3] ?? "").replace(rep2, ":"),
                         bssid: net[4]?.replace(rep2, ":") ?? "", security: net[5] || ""
                     }
                 }).filter(n => n.ssid && n.ssid.length > 0)
