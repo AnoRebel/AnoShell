@@ -122,7 +122,12 @@ Scope {
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
             property bool _shown: false
-            Component.onCompleted: Qt.callLater(() => win._shown = true)
+            // Focus the grid once the window is up (and again after slurp):
+            // set earlier, inside the loader, it never reached the window, so
+            // no key worked until a click.
+            function _focusGrid() { Qt.callLater(() => { if (root.tab === "region") card.forceActiveFocus(); else grid.forceActiveFocus() }) }
+            onVisibleChanged: if (visible) _focusGrid()
+            Component.onCompleted: { Qt.callLater(() => win._shown = true); _focusGrid() }
 
             readonly property var items: root.tab === "screens" ? root.screens : root.tab === "windows" ? root.windows : []
             readonly property string choice: root.tab === "region" ? root.region : (items[grid.currentIndex]?.choice ?? "")
@@ -149,8 +154,9 @@ Scope {
                 Behavior on scale { MotionSpring { token: "liquid" } }
                 TapHandler {} // a click on the card is not a click on the dim
 
-                // Keys for the whole card: the grid keeps focus.
-                Keys.onPressed: event => {
+                // Keys for the whole card: the grid keeps focus and hands them here.
+                Keys.onPressed: event => card.handleKey(event)
+                function handleKey(event) {
                     const i = root.tabs.indexOf(root.tab)
                     if (event.key === Qt.Key_Escape) root.finish("")
                     else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -213,7 +219,7 @@ Scope {
                         cellHeight: 180
                         keyNavigationWraps: true
                         onModelChanged: currentIndex = 0
-                        Component.onCompleted: forceActiveFocus()
+                        Keys.onPressed: event => card.handleKey(event)
 
                         delegate: Item {
                             id: tile
