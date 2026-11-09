@@ -146,7 +146,9 @@ ano wallpaper status    # what's shown, and the rotation settings
 
 `background.wallpaperDir` (Settings → Appearance → Wallpaper Picker, or the
 picker's gear) is the one folder everything uses: the picker deals from it,
-Wallhaven downloads land in it, rotation picks from it and `ano backup
+(Wallhaven's tab can also search by colour: the row of swatches under its
+filters is Wallhaven's own palette, the only colours its API takes; pick one
+again to clear it.) Wallhaven downloads land in it, rotation picks from it and `ano backup
 create --add wallpapers` archives it. Empty (the default) means `Wallpapers` in your
 Pictures folder (`XDG_PICTURES_DIR`, usually `~/Pictures/Wallpapers`).
 
@@ -222,8 +224,10 @@ refuses them. For video, switch to the shell-drawn background
 "background": { "engine": "shell" }
 ```
 
-The shell then draws the wallpaper itself, with fade, wipe or grow transitions
-(`background.transition`). Colours and hooks use a still frame of a video.
+The shell then draws the wallpaper itself, with fade, wipe, grow or paint
+transitions (`background.transition`; paint grows the new image in from
+blobs that start at different times — awww, which has no such effect, uses
+its wave instead). Colours and hooks use a still frame of a video.
 One video decodes on one screen at a time — the
 focused one (`background.video.allScreens: true` decodes on every screen, at
 that many times the cost); the other screens show a still of it. Decoding

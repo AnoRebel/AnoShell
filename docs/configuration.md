@@ -89,6 +89,13 @@ Bars are defined in the `bars` array. Each bar sits on an edge (`top`,
 `bottom`, `left` or `right`) and has its own modules; `bar.*` holds the
 defaults every bar falls back to.
 
+An auto-hidden bar (`bar.autoHide.enable`) shows when the pointer rests at
+its edge for `bar.autoHide.revealDelay` (150 ms), so passing over the edge
+on the way to a browser's tabs doesn't pull it out; it stays for
+`bar.autoHide.delay` after the pointer leaves. The dock works the same way
+(`dock.revealDelay`), and with `dock.magnify` its icons swell by distance from
+the pointer and lift off the edge.
+
 ### Forms
 
 `bar.form` (or `form` on one bar) shapes the whole bar:
