@@ -191,6 +191,22 @@ ano ipc call networkOrbit toggle bt     # "" toggles whatever tab is open
 ano ipc call networkOrbit close
 ```
 
+### Wired & tethering
+
+The bar's `network` popout and the right sidebar's network card list every
+non-Wi-Fi link under **Wired & tethering**: ethernet, USB tethering (a phone
+whose USB driver is RNDIS, CDC Ethernet/NCM or Apple's ipheth), Bluetooth
+tethering and mobile broadband. Each row shows the link's type icon, name,
+state and IPv4 address, and a link button connects or disconnects it
+(`nmcli device connect|disconnect`). The one the default route goes through
+(the lowest metric in `ip route show default`) has a **Traffic** badge, and
+the bar icon shows its type. The section is hidden when there are none.
+
+Container, VM, bridge and tunnel interfaces (`docker`, `veth`, `vboxnet`,
+`virbr`, `br-`, `tun`, `wg`…) are never listed and never count as
+"Ethernet" for the bar icon; VPNs have their own row. The list refreshes on
+`nmcli monitor` events. Needs `nmcli` and `ip` (iproute2).
+
 ### NetBird
 
 With `vpn.providers` set to NetBird, the right sidebar's Network card shows

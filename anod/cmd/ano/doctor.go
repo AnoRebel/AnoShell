@@ -27,7 +27,7 @@ type feature struct {
 // Built from the binaries the shell actually spawns (grep of modules/ services/ scripts/).
 var features = []feature{
 	{"notifications from scripts", "", []string{"notify-send"}},
-	{"network panel", "", []string{"nmcli"}},
+	{"network panel (ip: which wired/tether link carries traffic)", "", []string{"nmcli", "ip"}},
 	{"watchers (nmcli monitor, wlsunset, cava, udevadm) end with the shell", "", []string{"setpriv"}},
 	{"clipboard history", "", []string{"cliphist", "wl-copy"}},
 	{"wallpaper + dynamic colours", "", []string{"awww", "matugen"}},
