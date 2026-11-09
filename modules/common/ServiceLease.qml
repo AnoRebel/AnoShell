@@ -12,8 +12,19 @@ QtObject {
     required property string name
     property bool active: true
 
-    function _sync() { root.active ? root.service?.acquire(root.name) : root.service?.release(root.name) }
+    // Leases are counted per name, so a holder releases only what it holds:
+    // one created inactive (or destroyed after going inactive) used to cancel
+    // another holder's lease under the same name.
+    property var _heldOn: null
+    function _sync() {
+        const want = root.active ? root.service : null
+        if (want === root._heldOn) return
+        root._heldOn?.release(root.name)
+        root._heldOn = want
+        want?.acquire(root.name)
+    }
     onActiveChanged: _sync()
+    onServiceChanged: _sync()
     Component.onCompleted: _sync()
-    Component.onDestruction: root.service?.release(root.name)
+    Component.onDestruction: { root._heldOn?.release(root.name); root._heldOn = null }
 }
