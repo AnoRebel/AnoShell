@@ -1210,6 +1210,15 @@
  {
   "page": 3,
   "card": "",
+  "label": "Reveal after resting",
+  "sublabel": "How long the pointer rests at the edge before the bar shows (passing over doesn't count)",
+  "keys": [
+   "bar.autoHide.revealDelay"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
   "label": "Show background",
   "sublabel": "showBackground",
   "keys": [
@@ -1624,6 +1633,7 @@
   "keys": [
    "dock.pinnedOnStartup",
    "dock.hoverToReveal",
+   "dock.revealDelay",
    "dock.showOnDesktop"
   ]
  },
@@ -1643,6 +1653,15 @@
   "sublabel": "Show dock when mouse enters the dock edge area",
   "keys": [
    "dock.hoverToReveal"
+  ]
+ },
+ {
+  "page": 4,
+  "card": "",
+  "label": "Reveal after resting",
+  "sublabel": "How long the pointer rests at the edge before the dock shows",
+  "keys": [
+   "dock.revealDelay"
   ]
  },
  {
