@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"ano/anod/internal/config"
@@ -16,8 +17,10 @@ func TestFeatureKeysExistInSchema(t *testing.T) {
 		if f.When == "" {
 			continue
 		}
-		if typ, ok := s.Leaves[f.When]; !ok || typ != "bool" {
-			t.Errorf("%s: %q is %q in the schema, want bool", f.Name, f.When, typ)
+		for _, k := range strings.Split(f.When, "|") {
+			if typ, ok := s.Leaves[k]; !ok || typ != "bool" {
+				t.Errorf("%s: %q is %q in the schema, want bool", f.Name, k, typ)
+			}
 		}
 	}
 }

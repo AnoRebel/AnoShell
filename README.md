@@ -252,7 +252,7 @@ The Settings UI has 13 pages, each owning a set of top-level config keys. The "R
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
-| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
+| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
 | Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, pinned apps |
@@ -260,7 +260,7 @@ The Settings UI has 13 pages, each owning a set of top-level config keys. The "R
 | AnoSpot      | `anoSpot`                                                                                | Position, per-widget visibility, click bindings, event border animation, drag/drop config + custom drop actions |
 | Appearance   | `appearance`, `background`, `animations`                                                 | Theme source (Material You / static) with hover-preview, font picker, bezel preview, animation speed, wallpaper rotation |
 | Overview     | `overview`                                                                               | AnoView layout selector (11 cards) |
-| Services     | `ai`, `gameMode`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` | Toggle and configure every optional service (see Optional services below) |
+| Services     | `ai`, `autostart`, `gameMode`, `performance`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` | Toggle and configure every optional service (see Optional services below) |
 | Displays     | `cursor`, `icons`                                                                        | Monitor arrangement, mode, scale, rotation, VRR and profiles (through anod), cursor and icon themes |
 | Keybinds     | `keyboard`                                                                               | Search, record, add, change or remove binds; keyboard layouts |
 | Atelier      | `atelier`                                                                                | Themes, looks, pieces, plugins, lock screens, wallpapers and rices: browse, preview, install, use, undo |
@@ -461,7 +461,9 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | Block | Purpose | Notable keys |
 |---|---|---|
 | `gameMode.enable` | Bar indicator while a game holds GameMode | — |
-| `performance` | Performance mode: what turns it on (`onGameMode` on by default, `onFullscreen`) and what it pauses | `stopAnimations`, `stopBlur`, `stopVisualizers`, `holdPopups`; IPC `performance toggle\|on\|off\|status` |
+| `performance` | Performance mode: what turns it on (`onGameMode` on by default, `onFullscreen`, `apps` globs) and what it pauses | `stopAnimations`, `stopBlur`, `stopVisualizers`, `holdPopups`, `stopShadows`, `hidePieces`, `slowPolling` + `pollInterval`, `manual`; IPC `performance toggle\|on\|off\|status` |
+| `sounds` | Sound effects: login, notifications, panels, alerts (all off) | `volume`, `alertThreshold`, `alertGap`; IPC `sounds play <name>` |
+| `autostart.entries` | Startup applications anod starts once per login | `[{desktopId \| command, enabled, delayMs}]` |
 | `powerProfiles.restoreOnStart` | Restore last `power-profiles-daemon` profile on shell start | `preferredProfile` (auto-populated when you change profiles) |
 | `network.usage` | Per-interface rx/tx polling for the sidebar bandwidth panel | `intervalMs`, `historyLength` |
 | `network.hotspot` | WiFi tethering toggle backed by `nmcli device wifi hotspot` | `ssid`, `password` (auto-generated on first enable) |
@@ -688,6 +690,9 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | News piece (`news`) | `curl` to `news.google.com` (RSS, no key; local news sends the place you set); source icons: Google's favicon service (`www.google.com/s2/favicons`, sends only the source's site; off with the widget's "Source icons" setting) | the widget says it couldn't reach Google News; no icons |
 | Clock | the system clock; keep it synchronised (`systemd-timesyncd`: `sudo timedatectl set-ntp true`, or chrony) — `ano doctor` warns when it isn't | the clock drifts |
 | EasyEffects quick toggle and presets (`audio.easyEffects.enable`) | `easyeffects` ≥ 7 running (its CLI: `-b`, `--bypass-toggle`, `-p`, `-l`); the shell never starts it | the pill stays hidden |
+| Sound effects and battery sounds (`sounds.*`) | `pipewire` (`pw-play`); battery sounds: a sound theme (`sound-theme-freedesktop`) | silence |
+| Startup applications (`autostart.entries`) | anod running; a systemd user manager (`systemd-run`, `systemctl`), else `setsid` (util-linux) | nothing starts at login |
+| Performance mode for listed apps (`performance.apps`) | nothing (the compositor's window list) | — |
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `glib2` (`gdbus`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
 | Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
@@ -723,7 +728,7 @@ Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanva
 
 ## Credits
 Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
-**Bioma** (GPL-3.0: palette cursors and icon themes, the Bioma Gate lock screen, the files launcher plugin, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list), **iNiR** theme presets (GPL-3.0: 37 colour themes).
+**Bioma** (GPL-3.0: palette cursors and icon themes, the Bioma Gate lock screen, the sound effects in `assets/sounds` and their player, the files launcher plugin, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list), **iNiR** theme presets (GPL-3.0: 37 colour themes).
 
 ## Licence
 

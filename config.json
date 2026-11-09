@@ -387,7 +387,14 @@
   },
   "sounds": {
     "battery": true,
-    "theme": "freedesktop"
+    "theme": "freedesktop",
+    "volume": 0.6,
+    "login": false,
+    "notifications": false,
+    "panels": false,
+    "alerts": false,
+    "alertThreshold": 90,
+    "alertGap": 300
   },
   "resources": {
     "updateInterval": 3000,
@@ -425,7 +432,13 @@
     "stopAnimations": true,
     "stopBlur": true,
     "stopVisualizers": true,
-    "holdPopups": true
+    "holdPopups": true,
+    "stopShadows": true,
+    "hidePieces": true,
+    "slowPolling": true,
+    "pollInterval": 10000,
+    "apps": [],
+    "manual": false
   },
   "powerProfiles": {
     "restoreOnStart": true,
@@ -699,5 +712,8 @@
         "enable": false
       }
     }
+  },
+  "autostart": {
+    "entries": []
   }
 }

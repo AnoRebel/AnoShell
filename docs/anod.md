@@ -148,6 +148,13 @@ Methods: `ping`, `version`, `status`, `subscribe`, `event.emit`
 sends the wrong `v` gets `version_mismatch`; the shell then shows a one-time
 notification and checks again the next time anod restarts.
 
+Startup applications (`anod/internal/autostart`): `autostart.list` (the
+entries of `autostart.entries` with their names, errors and when this anod
+started them, plus the read-only `~/.config/autostart` files and the launch
+mode) and `autostart.run` (`{"index"}`: start that entry now). The list itself
+is config, edited by Settings; anod starts the enabled entries once per session
+(marker `$XDG_RUNTIME_DIR/ano/autostart.session`).
+
 Methods also include `shutdown`, which a new session's anod uses to retire a
 stale one.
 

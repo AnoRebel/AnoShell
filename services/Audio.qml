@@ -1,6 +1,7 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 import qs.modules.common
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -115,14 +116,8 @@ Singleton {
         }
     }
 
-    // System sound playback
-    function playSystemSound(soundName) {
-        const theme = Config.options.sounds.theme
-        const ogaPath = `/usr/share/sounds/${theme}/stereo/${soundName}.oga`
-        const oggPath = `/usr/share/sounds/${theme}/stereo/${soundName}.ogg`
-        Quickshell.execDetached(["ffplay", "-nodisp", "-autoexit", ogaPath])
-        Quickshell.execDetached(["ffplay", "-nodisp", "-autoexit", oggPath])
-    }
+    // A freedesktop sound-theme sound (sounds.theme), through Sounds (pw-play).
+    function playSystemSound(soundName) { Sounds.named(soundName) }
 
     // IPC
     IpcHandler {

@@ -19,10 +19,11 @@ import qs.services
  *   clientCount  — gamemoded's ClientCount
  *   performance  — performance mode is on: while a game holds gamemode
  *                  (performance.onGameMode), optionally while any window is
- *                  fullscreen (performance.onFullscreen), or by hand
- *                  (IPC `performance toggle`, the quick toggle)
- *   stopAnimations / stopBlur / stopVisualizers / holdPopups — what it
- *                  stops, each switchable (performance.*)
+ *                  fullscreen (performance.onFullscreen) or a listed app is
+ *                  open (performance.apps), or by hand (IPC `performance
+ *                  toggle`, the quick toggle; kept in performance.manual)
+ *   stopAnimations / stopBlur / stopVisualizers / holdPopups / stopShadows /
+ *   hidePieces / slowPolling — what it stops, each switchable (performance.*)
  *
  * gameMode.enable only shows the bar indicator.
  */
@@ -36,23 +37,69 @@ Singleton {
     property int clientCount: 0
 
     // ─── Performance mode ─────────────────────────────────────────────────
-    property bool manual: false
+    // On by hand (performance.manual, kept across restarts) or while a
+    // trigger holds it: a game holding GameMode, a fullscreen window, or an
+    // open window whose app id matches performance.apps (globs, any case).
+    // Turned off by hand while a trigger holds it, it stays off until every
+    // trigger has gone (Bioma's rule: a game still running is no reason to
+    // turn it back on under the hand that just refused it).
+    readonly property bool manual: root.perf.manual === true
     readonly property bool _anyFullscreen: {
         void CompositorService.fullscreenRevision
         return Object.keys(CompositorService.fullscreenScreens ?? {}).some(k => !!CompositorService.fullscreenScreens[k])
     }
-    readonly property bool performance: root.manual
-        || ((root.perf.onGameMode ?? true) && root.active)
-        || ((root.perf.onFullscreen ?? false) && root._anyFullscreen)
-    readonly property string performanceReason: root.manual ? "turned on by hand"
-        : ((root.perf.onGameMode ?? true) && root.active) ? "a game holds GameMode"
-        : root.performance ? "a window is fullscreen" : ""
-    readonly property bool stopAnimations: root.performance && (root.perf.stopAnimations ?? true)
-    readonly property bool stopBlur: root.performance && (root.perf.stopBlur ?? true)
-    readonly property bool stopVisualizers: root.performance && (root.perf.stopVisualizers ?? true)
-    readonly property bool holdPopups: root.performance && (root.perf.holdPopups ?? true)
 
-    function toggle() { root.manual = !root.manual }
+    // performance.apps → one case-insensitive regex ("steam_app_*", "blender").
+    readonly property var _appGlobs: (root.perf.apps ?? []).map(g => String(g).trim()).filter(g => g.length > 0)
+    readonly property var _appRe: root._appGlobs.length === 0 ? null
+        : new RegExp("^(?:" + root._appGlobs.map(g => g.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+            .replace(/\*/g, ".*").replace(/\?/g, ".")).join("|") + ")$", "i")
+    // Windows are leased from the compositor only while there is a list.
+    readonly property bool _watchWindows: Config.ready && root._appRe !== null
+    on_WatchWindowsChanged: root._watchWindows ? CompositorService.acquireWindows("performance") : CompositorService.releaseWindows("performance")
+    Component.onDestruction: CompositorService.releaseWindows("performance")
+    readonly property var matchedApps: {
+        if (!root._appRe) return []
+        const seen = []
+        for (const w of CompositorService.windows ?? []) {
+            const id = String(w.appId ?? "")
+            if (id && root._appRe.test(id) && !seen.includes(id)) seen.push(id)
+        }
+        return seen
+    }
+
+    readonly property bool _byGame: (root.perf.onGameMode ?? true) && root.active
+    readonly property bool _byFullscreen: (root.perf.onFullscreen ?? false) && root._anyFullscreen
+    readonly property bool triggered: root._byGame || root._byFullscreen || root.matchedApps.length > 0
+    // Turned off by hand while triggered; forgotten when the last trigger goes.
+    property bool refused: false
+    onTriggeredChanged: if (!root.triggered) root.refused = false
+
+    readonly property bool performance: root.manual || (root.triggered && !root.refused)
+    readonly property string performanceReason: !root.performance ? ""
+        : root.manual ? "turned on by hand"
+        : root._byGame ? "a game holds GameMode"
+        : root.matchedApps.length > 0 ? `${root.matchedApps.join(", ")} ${root.matchedApps.length === 1 ? "is" : "are"} open`
+        : "a window is fullscreen"
+    function _lever(key) { return root.performance && (root.perf[key] ?? true) }
+    readonly property bool stopAnimations: root._lever("stopAnimations")
+    readonly property bool stopBlur: root._lever("stopBlur")
+    readonly property bool stopVisualizers: root._lever("stopVisualizers")
+    readonly property bool holdPopups: root._lever("holdPopups")
+    readonly property bool stopShadows: root._lever("stopShadows")
+    readonly property bool hidePieces: root._lever("hidePieces")
+    readonly property bool slowPolling: root._lever("slowPolling")
+    readonly property int pollInterval: Math.max(2000, root.perf.pollInterval ?? 10000)
+
+    function on() {
+        root.refused = false
+        if (!root.manual && !root.triggered) Config.setNestedValue("performance.manual", true)
+    }
+    function off() {
+        if (root.manual) Config.setNestedValue("performance.manual", false)
+        if (root.triggered) root.refused = true
+    }
+    function toggle() { root.performance ? root.off() : root.on() }
 
     // ─── gamemoded watch ──────────────────────────────────────────────────
     property bool _installed: false
@@ -111,11 +158,12 @@ Singleton {
     IpcHandler {
         target: "performance"
         function toggle(): void { root.toggle() }
-        function on(): void { root.manual = true }
-        function off(): void { root.manual = false }
+        function on(): void { root.on() }
+        function off(): void { root.off() }
         function status(): string {
             return JSON.stringify({ performance: root.performance, reason: root.performanceReason,
-                gameMode: root.active, clients: root.clientCount, manual: root.manual })
+                gameMode: root.active, clients: root.clientCount, manual: root.manual,
+                refused: root.refused, apps: root.matchedApps })
         }
     }
 }

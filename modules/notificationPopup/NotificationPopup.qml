@@ -188,7 +188,7 @@ Scope {
                         border.color: Appearance.borders.color
 
                         // Subtle shadow (floating only)
-                        layer.enabled: !root.connected
+                        layer.enabled: !root.connected && !GameMode.stopShadows
                         layer.effect: StyledDropShadow { radius: 12; verticalOffset: 3 }
 
                         // Hover glow

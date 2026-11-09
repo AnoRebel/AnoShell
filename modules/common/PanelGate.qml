@@ -68,7 +68,7 @@ Singleton {
         { id: "anoWelcome", source: "modules/onboarding/Welcome.qml", listed: false },
         { id: "anoDisplayConfirm", source: "modules/displayManager/DisplayConfirm.qml", listed: false },
         { id: "anoMorphLayer", source: "modules/common/widgets/TopLayerPanel.qml", listed: false, effective: "morphingPanels" },
-        { id: "anoPieces", source: "modules/pieces/PieceLayer.qml", key: "pieces.enable", listed: false },
+        { id: "anoPieces", source: "modules/pieces/PieceLayer.qml", key: "pieces.enable", listed: false, effective: "piecesShown" },
         { id: "anoScratchpad", source: "modules/scratchpad/ScratchpadPanel.qml", key: "scratchpad.enable", listed: false },
     ]
 
@@ -96,6 +96,8 @@ Singleton {
     readonly property bool morphingPanels: family === "hefty" ? true
         : family === "ano" ? (Config.options?.bar?.morphingPanels ?? false) : false
 
+    // Performance mode puts the pieces away (performance.hidePieces).
+    readonly property bool piecesShown: !GameMode.hidePieces
     function module(id) { return root.modules.find(m => m.id === id) ?? null }
 
     function _keyValue(path) {

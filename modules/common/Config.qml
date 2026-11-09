@@ -1314,9 +1314,23 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             // Sounds
             // ═══════════════════════════════════════════════════════════════
+            // Battery sounds + sound effects (services/Sounds.qml; effects all off by default)
             property JsonObject sounds: JsonObject {
                 property bool battery: true
                 property string theme: "freedesktop"
+                property real volume: 0.6
+                property bool login: false          // once per session
+                property bool notifications: false  // unless the sender brings its own
+                property bool panels: false         // a panel opening / closing
+                property bool alerts: false         // CPU/RAM over alertThreshold, battery critical
+                property int alertThreshold: 90     // %
+                property int alertGap: 300          // s a value must stay calm before it sounds again
+            }
+
+            // Startup applications, launched once per session by anod
+            // (anod/internal/autostart). Entry: {desktopId | command, enabled, delayMs}.
+            property JsonObject autostart: JsonObject {
+                property var entries: []
             }
 
             // ═══════════════════════════════════════════════════════════════
@@ -1601,6 +1615,12 @@ Singleton {
                 property bool stopBlur: true
                 property bool stopVisualizers: true
                 property bool holdPopups: true
+                property bool stopShadows: true
+                property bool hidePieces: true
+                property bool slowPolling: true
+                property int pollInterval: 10000   // ms, resource polling while slowed
+                property var apps: []              // app-id globs (case-insensitive) that turn it on while open
+                property bool manual: false        // turned on by hand (kept across restarts)
             }
 
             // Focus time tracker

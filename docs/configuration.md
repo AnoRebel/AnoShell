@@ -41,7 +41,7 @@ bundled Hyprland config), or as a standalone window with
 
 | Page | Config keys it owns |
 |---|---|
-| General | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `session` |
+| General | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `sounds.volume`, `sounds.login`, `sounds.notifications`, `sounds.panels`, `sounds.alerts`, `sounds.alertThreshold`, `sounds.alertGap`, `session` |
 | Modules | `disabledPanels`, `panelFamily`, `familyTransitionAnimation`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `hacks`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` |
 | Bar | `bar`, `bars`, `tray` |
 | Dock | `dock` |
@@ -49,7 +49,7 @@ bundled Hyprland config), or as a standalone window with
 | AnoSpot | `anoSpot` |
 | Appearance | `appearance`, `background`, `animations` |
 | Overview | `overview` |
-| Services | `ai`, `gameMode`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` |
+| Services | `ai`, `autostart`, `gameMode`, `performance`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` |
 | Displays | `cursor`, `icons` |
 | Keybinds | `keyboard` |
 | Atelier | `atelier` |
