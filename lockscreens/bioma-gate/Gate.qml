@@ -485,6 +485,11 @@ Item {
                 // it off again, so a password with figures in it would
                 // otherwise depend on what happened to the keymap since login.
                 Keys.onPressed: event => {
+                    // A key held through resume must not type or submit (faillock).
+                    if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) {
+                        event.accepted = true;
+                        return;
+                    }
                     if (!(event.modifiers & Qt.KeypadModifier))
                         return;
                     const figure = root.keypad[event.key];

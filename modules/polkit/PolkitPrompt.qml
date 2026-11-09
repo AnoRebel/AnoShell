@@ -200,8 +200,9 @@ Scope {
                             selectionColor: Appearance.colors.colPrimary
                             font.pixelSize: Appearance.font.pixelSize.normal
                             clip: true
-                            Keys.onReturnPressed: win.authenticate()
-                            Keys.onEnterPressed: win.authenticate()
+                            Keys.onReturnPressed: event => { if (!event.isAutoRepeat) win.authenticate() } // Keys runs this before onPressed
+                            Keys.onEnterPressed: event => { if (!event.isAutoRepeat) win.authenticate() }
+                            Keys.onPressed: event => { if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) event.accepted = true } // a key held through resume must not type or submit (faillock)
                             onEnabledChanged: if (enabled) forceActiveFocus()
                             Component.onCompleted: forceActiveFocus()
                         }

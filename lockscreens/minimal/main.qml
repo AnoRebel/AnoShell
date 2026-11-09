@@ -53,6 +53,7 @@ Item {
                 font.pixelSize: 24
                 enabled: !(root.ctx?.busy ?? false)
                 onAccepted: root.ctx?.submit(text)
+                Keys.onPressed: event => { if (event.isAutoRepeat && event.key !== Qt.Key_Backspace) event.accepted = true } // a key held through resume must not type or submit (faillock)
                 Text {
                     visible: field.text.length === 0
                     text: `Password for ${root.ctx?.user ?? ""}`
