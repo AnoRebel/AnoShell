@@ -246,6 +246,7 @@ func main() {
 		}
 		return st, nil
 	})
+	registerThemes(ctx, srv, wp)
 	srv.Handle("wallpaper.next", func(json.RawMessage) (any, error) { rot.Next(); return true, nil })
 	srv.Handle("wallpaper.status", func(json.RawMessage) (any, error) {
 		rs, _ := wallpaperSettings()
@@ -902,9 +903,11 @@ func wallpaperSettings() (wallpaper.RotationSettings, wallpaper.Settings) {
 		Prefer:       config.String(m, "appearance.colors.prefer", "saturation"),
 		PerWallpaper: config.Bool(m, "appearance.colors.perWallpaper", true),
 		Gtk:          config.Bool(m, "appearance.theme.gtk", true),
-		FixedColor: config.String(m, "appearance.theme.colorMode", "dynamicAccent") == "fixed" ||
-			config.String(m, "appearance.theme.source", "materialYou") == "static",
 	}
+	// A static theme's palette is applied by theme.apply; the brand palette
+	// (colour mode fixed) leaves app colours alone.
+	s.StaticTheme = config.String(m, "appearance.theme.source", "materialYou") == "static"
+	s.FixedColor = !s.StaticTheme && config.String(m, "appearance.theme.colorMode", "dynamicAccent") == "fixed"
 	// Which wallpaper sets the colours: the last one set ("last"), a chosen
 	// monitor's ("monitor") or the focused monitor's ("focused").
 	switch config.String(m, "appearance.colors.from", "last") {

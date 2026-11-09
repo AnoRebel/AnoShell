@@ -40,6 +40,7 @@ Singleton {
     readonly property var _slowMethods: ({
         "backup.create": 0, "backup.restore": 0,
         "wallpaper.set": 120000, "wallpaper.colors": 120000, "wallpaper.focus": 120000,
+        "theme.generate": 60000, "theme.save": 60000, "theme.apply": 120000,
         "palette.get": 120000, "palette.scan": 120000, "scan": 120000, "scanned": 120000,
         "reader.open": 60000, "cursor.themes": 60000, "keybinds.active": 30000,
         "atelier.refresh": 120000, "atelier.prepare": 180000, "atelier.commit": 60000, "atelier.riceApply": 180000, "atelier.riceUndo": 180000, "atelier.riceExport": 60000, "atelier.wallhaven": 30000, "atelier.wallhavenInstall": 150000

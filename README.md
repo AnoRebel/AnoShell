@@ -615,7 +615,7 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 |---------|---------|
 | `quickshell` (tested with 0.3.2) | Shell framework |
 | `awww` + `awww-daemon` | Wallpaper engine |
-| `matugen` ≥4.0 | Material You color generation |
+| `matugen` ≥4.0 | Material You color generation; the Theme studio |
 | `jq` | JSON parsing in scripts |
 | `brightnessctl` | Screen backlight |
 | `NetworkManager` (`nmcli`) | WiFi/Ethernet |

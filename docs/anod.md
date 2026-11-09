@@ -169,6 +169,18 @@ video still, cached by path, size and mtime; saved as it goes) and
 connection's other requests, so their replies can arrive after later ones
 (match replies by `id`).
 
+Theme methods (the Theme studio, and static themes): `theme.generate`
+(`{"primary", "secondary"?, "tertiary"?, "mode"?, "schemeType"?, "overrides"?}`: a full Material 3
+scheme from matugen, `{"colors": {role: hex}}`, nothing written; seeds are `#rrggbb`, a secondary or
+tertiary seed supplies that family, `overrides` replaces roles), `theme.save` (the same plus
+`"name"`: written to `~/.config/anoshell/themes/<slug>.json` and marked as made by the studio;
+returns `{"name": slug, "colors"}`; a built-in theme's name or a theme the studio didn't make is
+never overwritten), `theme.delete` (`{"name"}`: studio-made themes only) and `theme.apply`
+(`{"name"}`: a user or built-in theme's palette goes to `colors.json`, GTK and the colour hooks
+that don't read the wallpaper image, like a wallpaper's; the shell calls it when a static theme
+is picked). Under a static theme a wallpaper change leaves `colors.json` and the app colours alone.
+`theme.generate`, `theme.save` and `theme.apply` are slow methods.
+
 Downloads: `downloads.list` returns `{"dir", "active": [{"path", "name",
 "size", "rate"}], "finished": [{"path", "name", "size", "at"}]}`, the
 browsers' partial files (`.part`, `.crdownload`) growing in the download
