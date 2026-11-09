@@ -152,6 +152,13 @@ Singleton {
             describe: s => s.on ? "On" : "Off",
             run: (s, done) => { Notifications.silent = s.on === true; done("") }
         },
+        "focus": {
+            label: "Focus mode", icon: "center_focus_strong",
+            fresh: () => ({ type: "focus", on: true }),
+            fields: [{ key: "on", label: "Focus mode on", type: "bool" }],
+            describe: s => s.on ? "On (bar away, Do Not Disturb)" : "Off",
+            run: (s, done) => { FocusMode.set(s.on === true); done("") }
+        },
         "powerProfile": {
             label: "Power profile", icon: "battery_profile",
             fresh: () => ({ type: "powerProfile", profile: "balanced" }),

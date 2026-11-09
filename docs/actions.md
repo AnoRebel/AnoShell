@@ -39,6 +39,7 @@ The steps before it have already run.
 | Set volume | The default output's volume | 0–100 % |
 | Set brightness | Every display whose brightness can be set | 0–100 % |
 | Do not disturb | Notification popups off or on | on / off |
+| Focus mode | The bar away and Do Not Disturb on; off puts back what was there (also `qs -c ano ipc call focus toggle`) | on / off |
 | Power profile | power-profiles-daemon's profile | power saver, balanced, performance |
 | Performance mode | The shell's performance mode, by hand (still on while a game holds GameMode) | on / off |
 | Wallpaper | Applies a wallpaper the usual way (anod: colours and hooks) | image or video path |
@@ -75,7 +76,7 @@ step can't change `actions` itself.
 ```
 
 Step types and their fields: `launch` (`app`), `open` (`target`), `volume`
-(`percent`), `brightness` (`percent`), `dnd` (`on`), `powerProfile`
+(`percent`), `brightness` (`percent`), `dnd` (`on`), `focus` (`on`), `powerProfile`
 (`profile`: `power-saver` | `balanced` | `performance`), `performance` (`on`),
 `wallpaper` (`path`), `preset` (`path` of the preset file), `look` (`id`),
 `wait` (`seconds`), `command` (`command`), `config` (`key`, `value`). The
