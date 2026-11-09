@@ -34,6 +34,7 @@ import (
 	"ano/anod/internal/reader"
 	"ano/anod/internal/screentime"
 	"ano/anod/internal/secrets"
+	"ano/anod/internal/shelllog"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/version"
 	"ano/anod/internal/wallpaper"
@@ -572,6 +573,20 @@ func main() {
 		return err
 	}
 	registerAtelier(srv, hb)
+
+	// Settings → About → Errors: the running shell's QML warnings and errors
+	// from Quickshell's log ({pid?}: the asking shell's own process id).
+	srv.HandleSlow("shell.errors", func(p json.RawMessage) (any, error) {
+		var req struct {
+			PID int `json:"pid"`
+		}
+		json.Unmarshal(p, &req)
+		res, err := shelllog.Errors(req.PID)
+		if err != nil {
+			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
+		}
+		return res, nil
+	})
 
 	// Displays (Settings → Displays): live apply, 15 s confirm-or-revert run
 	// here (a shell crash can't strand a bad mode), managed include files, profiles.

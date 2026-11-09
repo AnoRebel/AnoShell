@@ -109,6 +109,7 @@ PanelWindow {
                                     font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                                     Layout.fillWidth: true
                                 }
+                                SettingsErrorBadge { visible: modelData.name === "About" && count > 0 }
                             }
 
                             onClicked: GlobalStates.settingsPage = index

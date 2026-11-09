@@ -273,6 +273,100 @@ ColumnLayout {
         }
     }
 
+    // ═══ Errors ═══
+    // QML warnings and errors the running shell logged since it started
+    // (services/ShellErrors.qml). Shown as plain text: log lines can carry
+    // anything a package printed.
+    SettingsCard {
+        id: errorsCard
+        icon: "bug_report"
+        title: "Errors"
+        subtitle: ShellErrors.count === 0 ? "No QML warnings or errors since the shell started"
+            : `${ShellErrors.total} warning${ShellErrors.total === 1 ? "" : "s"} and errors since the shell started`
+            + (ShellErrors.errors ? ` (${ShellErrors.errors} error${ShellErrors.errors === 1 ? "" : "s"})` : "")
+        configKeys: []
+        expanded: ShellErrors.count > 0
+
+        // Refreshed while the card is shown, never in the background.
+        onVisibleChanged: if (visible) ShellErrors.refresh()
+        Component.onCompleted: ShellErrors.refresh()
+        Timer { interval: 10000; repeat: true; running: errorsCard.visible && errorsCard.expanded; onTriggered: ShellErrors.refresh() }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            StyledText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                textFormat: Text.PlainText
+                color: ShellErrors.error ? Appearance.m3colors.m3error : Appearance.colors.colSubtext
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                text: ShellErrors.error || (ShellErrors.log ? `From ${ShellErrors.log}` : "")
+                    + (ShellErrors.dropped ? `\nShowing the newest ${ShellErrors.entries.length}; ${ShellErrors.dropped} older ones are left out.` : "")
+            }
+            RippleButtonWithIcon {
+                iconName: "refresh"
+                buttonText: ShellErrors.loading ? "Reading…" : "Refresh"
+                enabled: !ShellErrors.loading
+                onClicked: ShellErrors.refresh()
+            }
+            RippleButtonWithIcon {
+                visible: ShellErrors.entries.length > 0
+                iconName: "content_copy"
+                buttonText: "Copy"
+                onClicked: Quickshell.clipboardText = ShellErrors.entries.slice().reverse()
+                    .map(e => `${e.level} ${e.category}${e.count > 1 ? ` ×${e.count}` : ""} (${e.last}): ${e.message}`).join("\n")
+            }
+        }
+
+        Repeater {
+            // newest first
+            model: ShellErrors.entries.slice().reverse()
+            delegate: Rectangle {
+                id: errRow
+                required property var modelData
+                Layout.fillWidth: true
+                implicitHeight: errCol.implicitHeight + 12
+                radius: Appearance.rounding.small
+                color: Appearance.colors.colLayer2
+                ColumnLayout {
+                    id: errCol
+                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 6; leftMargin: 10; rightMargin: 10 }
+                    spacing: 2
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        StyledText {
+                            text: errRow.modelData.level === "ERROR" ? "Error" : "Warning"
+                            font.weight: Font.DemiBold
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: errRow.modelData.level === "ERROR" ? Appearance.m3colors.m3error : Appearance.colors.colWarning
+                        }
+                        StyledText {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: Appearance.colors.colSubtext
+                            text: `${errRow.modelData.category} · ${String(errRow.modelData.last).slice(11, 19)}`
+                                + (errRow.modelData.count > 1 ? ` · ×${errRow.modelData.count} since ${String(errRow.modelData.first).slice(11, 19)}` : "")
+                        }
+                    }
+                    StyledText {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WrapAnywhere
+                        maximumLineCount: 8
+                        elide: Text.ElideRight
+                        textFormat: Text.PlainText
+                        font.family: Appearance.font.family.monospace
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        text: String(errRow.modelData.message)
+                    }
+                }
+            }
+        }
+    }
+
     // ═══ System Details ═══
     SettingsCard {
         icon: "computer"

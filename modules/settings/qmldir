@@ -18,6 +18,7 @@ PresetsCard 1.0 PresetsCard.qml
 ServicesConfig 1.0 ServicesConfig.qml
 SettingsCard 1.0 SettingsCard.qml
 SettingsCommandPalette 1.0 SettingsCommandPalette.qml
+SettingsErrorBadge 1.0 SettingsErrorBadge.qml
 SettingsSearchButton 1.0 SettingsSearchButton.qml
 PreviewScreen 1.0 PreviewScreen.qml
 BarPreview 1.0 BarPreview.qml

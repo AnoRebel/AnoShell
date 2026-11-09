@@ -14,6 +14,7 @@ import (
 
 	"ano/anod/internal/config"
 	"ano/anod/internal/ipc"
+	"ano/anod/internal/shelllog"
 	"ano/anod/internal/supervisor"
 )
 
@@ -212,6 +213,10 @@ func runChecks() []check {
 		}
 	} else {
 		add("warn", "shell", "not running (%v)", err)
+	}
+	if r, err := shelllog.Errors(0); err == nil && r.Total > 0 {
+		add("warn", "shell errors", "%d QML warning(s)/error(s) since the shell started (%d distinct, %d errors): see Settings → About → Errors or %s",
+			r.Total, len(r.Entries)+r.Dropped, r.Errors, r.Log)
 	}
 	sock := ipc.DefaultSocketPath()
 	if res, err := ipc.Call(sock, "version", nil); err == nil {

@@ -55,7 +55,7 @@ is not restarted.
 | Command | What it does |
 |---|---|
 | `ano status [--json] [--frame]` | anod and shell state (version, uptime, supervisor, backend); `--frame` lists the surfaces fused into the connected frame |
-| `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash and competing wallpaper rotators. Exits 1 on any FAIL |
+| `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash, QML warnings/errors the running shell logged and competing wallpaper rotators. Exits 1 on any FAIL |
 | `ano reload` | reloads the shell |
 | `ano ipc <args…>` | passes through to `qs -c ano ipc`, e.g. `ano ipc call settings open`, `ano ipc show` |
 | `ano emit <event> [key=value …]` | sends a shell event to anod, which runs its hook (handy for testing hooks) |
@@ -224,6 +224,13 @@ Reader methods (see [reader.md](reader.md)): `reader.open` (`{"kind"}`:
 `anime`, `manga` or `novel`; starts the backend if needed and answers its
 `url`, token included; slow), `reader.close` (`{"kind"}`), `reader.status`
 and `reader.stop` (ends playback).
+
+`shell.errors` (`{"pid"?}`, Settings → About → Errors) reads the running shell's QML warnings and
+errors from Quickshell's log (`$XDG_RUNTIME_DIR/quickshell/by-pid/<pid>/log.log`; `pid` is the asking
+shell's own, else the newest running `qs -c ano` is used): only WARN/ERROR lines of the `qml` and
+`scene` categories, deduplicated with counts, the newest 200, from the log's last 8 MiB →
+`{"log", "pid", "total", "errors", "entries": [{"level", "category", "message", "count", "first", "last"}],
+"dropped", "partial"}`. `ano doctor` warns when there are any.
 
 Atelier methods (Settings → Atelier; see `anod/internal/atelier`): `atelier.list` (`{"type"?}`, cache only:
 `{"revision", "items", "catalog", "catalogs"}`), `atelier.refresh` (the same after fetching every catalog

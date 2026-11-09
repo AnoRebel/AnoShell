@@ -9,7 +9,7 @@ installed next to anod by `anod/install.sh` (see [Installation](installation.md)
 | Command | What it does |
 |---|---|
 | `ano status [--json] [--frame]` | anod's state (version, pid, uptime, clients, supervisor) and the shell's (running, compositor backend). `--frame` also lists the surfaces fused into the connected frame |
-| `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash and competing wallpaper rotators. Exits 1 on any FAIL |
+| `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash, QML warnings/errors the running shell logged and competing wallpaper rotators. Exits 1 on any FAIL |
 | `ano reload` | reloads the shell |
 | `ano ipc <args…>` | passes through to `qs -c ano ipc` |
 | `ano emit <event> [key=value …]` | sends a shell event to anod, which runs its hook |
