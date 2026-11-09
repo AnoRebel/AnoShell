@@ -1,0 +1,14 @@
+{
+  "id": "palette",
+  "name": "Palette",
+  "description": "The colours made from your wallpaper, as swatches; click one to copy its hex",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "PalettePiece.qml",
+  "preview": "preview.png",
+  "size": { "w": 4, "h": 3 },
+  "minSize": { "w": 2, "h": 1 },
+  "settings": [
+    { "key": "hex", "type": "bool", "label": "Hex on the swatches", "default": true }
+  ]
+}
