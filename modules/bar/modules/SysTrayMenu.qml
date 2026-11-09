@@ -246,6 +246,14 @@ PopupWindow {
             model: menuOpener.children
             delegate: SysTrayMenuEntry {
                 required property QsMenuEntry modelData
+                required property int index
+                // Leading, trailing and doubled separators are noise (apps
+                // send them around hidden items); show only ones that divide.
+                visible: {
+                    if (!modelData.isSeparator) return true
+                    const all = menuOpener.children.values
+                    return index > 0 && !all[index - 1].isSeparator && all.slice(index + 1).some(e => !e.isSeparator)
+                }
                 forceIconColumn: menuEntriesRepeater.iconColumnNeeded
                 forceSpecialInteractionColumn: menuEntriesRepeater.specialInteractionColumnNeeded
                 menuEntry: modelData
