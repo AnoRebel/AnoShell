@@ -104,7 +104,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 
 | Service | What it provides |
 |---------|------------------|
-| `Network` | nmcli-backed WiFi scanning/connect/disconnect, signal strength, hotspot toggle. |
+| `Network` | nmcli-backed WiFi scanning/connect/disconnect, signal strength, hotspot toggle; wired & tethering links (ethernet, USB/Bluetooth tether, mobile broadband) and which carries the default route. |
 | `NetworkUsage` | rx/tx throughput polled from `/proc/net/dev`. Opt-in via `network.usage.enable`. |
 | `VPN` | Connect/disconnect/status for tailscale, netbird, warp, wireguard, or custom providers. |
 | `BluetoothStatus` | Adapter state + paired/connected device list. |
@@ -620,11 +620,11 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 | `matugen` ≥4.0 | Material You color generation; the Theme studio |
 | `jq` | JSON parsing in scripts |
 | `brightnessctl` | Screen backlight |
-| `NetworkManager` (`nmcli`) | WiFi/Ethernet |
+| `NetworkManager` (`nmcli`) | WiFi/Ethernet, USB/Bluetooth tethering, mobile broadband |
 | `cliphist` + `wl-clipboard` | Clipboard, AnoSpot Copy-path action |
 | `curl` | HTTP (weather, AI chat, AnoSpot LocalSend send) |
 | `openssl` | Random fingerprint for AnoSpot LocalSend |
-| `iproute2` (`ip`) | Network introspection for AnoSpot LocalSend discovery |
+| `iproute2` (`ip`) | Network introspection for AnoSpot LocalSend discovery; the default route (which wired/tether link carries traffic) |
 | `libnotify` | Notifications, AnoSpot LocalSend status messages |
 | `python3` | Scripts (general + AnoSpot LocalSend discovery/send) |
 | `xdg-utils` (`xdg-open`) | AnoSpot Open / Reveal actions |

@@ -8,7 +8,8 @@ import qs.services
 import "."
 
 /**
- * Network detail expansion — bandwidth (rx/tx) + VPN status.
+ * Network detail expansion — bandwidth (rx/tx), wired & tethering links
+ * (WiredLinks, when any) + VPN status.
  *
  * Bandwidth row only renders when Config.options.network.usage.enable is
  * true (NetworkUsage service is otherwise dormant). VPN row renders when
@@ -22,7 +23,8 @@ Rectangle {
     readonly property bool showBandwidth: Config.options?.network?.usage?.enable ?? false
     readonly property bool showVpn: (Config.options?.vpn?.enable ?? true)
                                     && (Config.options?.vpn?.providers?.length ?? 0) > 0
-    readonly property bool hasContent: showBandwidth || showVpn
+    readonly property bool showLinks: Network.links.length > 0
+    readonly property bool hasContent: showBandwidth || showVpn || showLinks
 
     visible: hasContent
     implicitHeight: hasContent ? (col.implicitHeight + 20) : 0
@@ -121,6 +123,9 @@ Rectangle {
                 }
             }
         }
+
+        // ── Wired & tethering (hides itself when there are none) ─────
+        WiredLinks { Layout.fillWidth: true }
 
         // ── VPN ───────────────────────────────────────────────────────
         Loader {

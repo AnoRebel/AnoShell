@@ -72,7 +72,7 @@ Item {
                 MaterialSymbol { text: Network.materialSymbol; iconSize: 28; color: Appearance?.colors.colPrimary ?? "#65558F"; fill: 1 }
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 1
-                    StyledText { text: Network.ethernet ? "Ethernet" : (Network.wifi ? Network.networkName : "Disconnected"); font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+                    StyledText { text: Network.primaryLink ? Network.primaryLink.title : Network.ethernet ? "Ethernet" : (Network.wifi ? Network.networkName : "Disconnected"); font.pixelSize: Appearance.font.pixelSize.normal; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
                     StyledText { text: Network.wifiStatus; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.5 }
                 }
             }
@@ -89,6 +89,9 @@ Item {
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }
+
+            // Ethernet / USB / Bluetooth tethering / mobile broadband (hidden when none).
+            WiredLinks { Layout.fillWidth: true }
 
             Loader {
                 Layout.fillWidth: true; active: Network.wifi; visible: active

@@ -108,7 +108,9 @@ Item {
                 let eth = null, wifi = null, cur = null
                 const flush = () => {
                     if (!cur) return
-                    if (cur.type === "ethernet" && !eth) eth = cur
+                    // A real port, a connected one first (vboxnet, veth etc. are type ethernet too).
+                    if (cur.type === "ethernet" && !Network.isVirtualIface(cur.name)
+                        && (!eth || (!eth.state.startsWith("connected") && cur.state.startsWith("connected")))) eth = cur
                     else if (cur.type === "wifi" && !wifi) wifi = cur
                     cur = null
                 }

@@ -6,16 +6,28 @@ import Quickshell.Io
 import QtQuick
 import qs.modules.common
 import qs.services.network
+import "root:services/network/NetLinks.js" as NetLinks
 
 /**
  * Network service using nmcli. WiFi scanning, connecting, password management,
  * status monitoring, signal strength tracking, and a hotspot toggle.
+ * Also the non-Wi-Fi links (ethernet, USB/Bluetooth tethering, mobile
+ * broadband) and which one carries the default route (NetLinks.js).
  */
 Singleton {
     id: root
 
     property bool wifi: true
-    property bool ethernet: false
+    // A real wired link (ethernet or USB tether) is up; containers, VMs,
+    // bridges and tunnels don't count (NetLinks.isVirtual).
+    readonly property bool ethernet: links.some(l => l.connected && (l.kind === "ethernet" || l.kind === "usb"))
+    // [{ device, iface, kind, icon, title, state, connected, ip, primary }]:
+    // usable non-Wi-Fi links, the one carrying traffic first. Refreshed on
+    // `nmcli monitor` events with the rest of the status.
+    property var links: []
+    readonly property var primaryLink: links.find(l => l.primary) ?? null
+    property string linkBusy: ""      // device a connect/disconnect is running on
+    property string linkError: ""     // last failure, "<device>: <nmcli message>"
     property bool wifiEnabled: false
     property bool wifiScanning: false
     property bool wifiConnecting: connectProc.running
@@ -39,7 +51,9 @@ Singleton {
     property string networkName: ""
     property int networkStrength
 
-    property string materialSymbol: root.ethernet
+    property string materialSymbol: root.primaryLink
+        ? root.primaryLink.icon
+        : root.ethernet
         ? "lan"
         : root.wifiEnabled
             ? (networkStrength > 83 ? "signal_wifi_4_bar" :
@@ -88,6 +102,28 @@ Singleton {
 
     function forgetWifiNetwork(accessPoint): void {
         forgetProc.exec(["nmcli", "connection", "delete", accessPoint.ssid])
+    }
+
+    function isVirtualIface(name: string): bool { return NetLinks.isVirtual(name) }
+
+    // Connect or disconnect a wired / tether link. The device must be one
+    // of `links` (it is only ever an argv element).
+    function setLinkConnected(device: string, on: bool): void {
+        if (linkProc.running || !root.links.some(l => l.device === device)) return
+        root.linkBusy = device
+        root.linkError = ""
+        linkProc.exec(["nmcli", "device", on ? "connect" : "disconnect", device])
+    }
+
+    Process {
+        id: linkProc
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stderr: StdioCollector { id: linkErr }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0) root.linkError = `${root.linkBusy}: ${linkErr.text.trim().replace(/^Error: /, "") || "nmcli failed"}`
+            root.linkBusy = ""
+            linksProc.running = true
+        }
     }
 
     function openPublicWifiPortal() {
@@ -195,6 +231,23 @@ Singleton {
         wifiStatusProcess.running = true
         updateNetworkName.running = true
         updateNetworkStrength.running = true
+        linksProc.running = true
+    }
+
+    // One nmcli read of every device plus the default route, parsed in
+    // NetLinks.js. A constant script: nothing is interpolated into it.
+    Process {
+        id: linksProc
+        running: true
+        command: ["sh", "-c", "nmcli -t -f GENERAL.DEVICE,GENERAL.TYPE,GENERAL.STATE,GENERAL.CONNECTION,GENERAL.IP-IFACE,GENERAL.DRIVER,GENERAL.PRODUCT,IP4.ADDRESS device show; echo '@@ROUTES@@'; ip -j route show default"]
+        environment: ({ LANG: "C", LC_ALL: "C" })
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = this.text.split("@@ROUTES@@")
+                const links = NetLinks.parse(parts[0], parts[1] ?? "").links
+                if (JSON.stringify(links) !== JSON.stringify(root.links)) root.links = links
+            }
+        }
     }
 
     // `nmcli monitor` prints events in bursts; each refresh spawns several
@@ -224,17 +277,16 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             const lines = updateConnectionType.buffer.trim().split('\n')
             const connectivity = lines.pop()
-            let hasEthernet = false; let hasWifi = false; let ws = "disconnected"
+            let hasWifi = false; let ws = "disconnected"
             lines.forEach(line => {
-                if (line.includes("ethernet") && line.includes("connected")) hasEthernet = true
-                else if (line.includes("wifi:")) {
+                if (line.includes("wifi:")) {
                     if (line.includes("disconnected")) ws = "disconnected"
                     else if (line.includes("connected")) { hasWifi = true; ws = "connected"; if (connectivity === "limited") { hasWifi = false; ws = "limited" } }
                     else if (line.includes("connecting")) ws = "connecting"
                     else if (line.includes("unavailable")) ws = "disabled"
                 }
             })
-            root.wifiStatus = ws; root.ethernet = hasEthernet; root.wifi = hasWifi
+            root.wifiStatus = ws; root.wifi = hasWifi
         }
     }
 
