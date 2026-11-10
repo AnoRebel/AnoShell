@@ -24,6 +24,8 @@ features show as unavailable.
 A panel family is the set of modules the shell loads. Switching families only
 loads or unloads the modules that differ.
 
+![The four families: ano and hefty with the left sidebar, clean with the calendar, minimal with search](images/families.webp)
+
 | Family | Hosts |
 |---|---|
 | `ano` (default) | everything: bar, overlays, both sidebars, dock, HUD, task view, control panel, Network Orbit, media controls, weather, wallpaper selector, screen corners, Focus Time, Display Manager |

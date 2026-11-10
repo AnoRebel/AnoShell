@@ -98,7 +98,9 @@ bundled Hyprland and niri configs float it.
 
 ## Bars
 
+![The pill bar (the default) and the classic bar](images/bar-styles.webp)
 ![Bar forms, top to bottom: full, fit, islands, notch](images/bar-forms.webp)
+![A classic bar on each edge: top, bottom, left, right](images/bar-edges.webp)
 ![Settings → Bar: forms, groups and their modules](images/settings-bar.webp)
 
 Bars are defined in the `bars` array. Each bar sits on an edge (`top`,

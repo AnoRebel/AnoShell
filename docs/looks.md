@@ -6,7 +6,7 @@ material and texture, the typefaces and the motion. Colours are separate (see
 
 ## Built-in looks
 
-![The right sidebar in Liquid, Ink, Neo-tech and Clay](images/looks.webp)
+![The left sidebar in Liquid, Ink, Neo-tech and Clay](images/looks.webp)
 
 | Look | Feel |
 |---|---|
