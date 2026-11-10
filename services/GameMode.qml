@@ -121,7 +121,7 @@ Singleton {
 
     function _hyprEval(values) {
         const call = HyprPerf.configCall(values)
-        if (call) Quickshell.execDetached(["hyprctl", "eval", call])
+        if (call) CompositorService.backend?.evalConfig?.(call)
     }
     function _hyprSave(snap) {
         root._hyprSnap = snap
