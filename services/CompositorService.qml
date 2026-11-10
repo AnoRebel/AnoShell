@@ -22,6 +22,7 @@ Singleton {
     readonly property string swaySocket: Quickshell.env("SWAYSOCK")
     readonly property string mangoSocket: Quickshell.env("MANGO_INSTANCE_SIGNATURE")
     readonly property string labwcPid: Quickshell.env("LABWC_PID")
+    readonly property string umbrielSocket: Quickshell.env("UMBRIEL_SOCKET")
 
     property QtObject backend: null
     readonly property string backendName: backend?.name ?? "generic"
@@ -116,18 +117,23 @@ Singleton {
     Component { id: swayBackend; SwayBackend {} }
     Component { id: mangoBackend; MangoBackend {} }
     Component { id: labwcBackend; LabwcBackend {} }
+    Component { id: umbrielBackend; UmbrielBackend {} }
     Component { id: genericBackend; GenericBackend {} }
 
     function _pickBackend(): string {
         const forced = (Config.options?.compositor?.backend ?? "auto").trim()
         if (forced && forced !== "auto") return forced
+        const desktop = (Quickshell.env("XDG_CURRENT_DESKTOP") ?? "").toLowerCase().split(":")
+        // Before Hyprland: umbriel nested in Hyprland passes its children
+        // HYPRLAND_INSTANCE_SIGNATURE, but sets XDG_CURRENT_DESKTOP itself.
+        if (root.umbrielSocket && desktop.includes("umbriel")) return "umbriel"
         if (root.hyprlandSignature) return "hyprland"
         if (root.niriSocket) return "niri"
         // The desktop name first: sway exports SWAYSOCK (and labwc LABWC_PID)
         // into the systemd/D-Bus activation environment, so either can be
         // inherited by a later session of another compositor.
-        const desktop = (Quickshell.env("XDG_CURRENT_DESKTOP") ?? "").toLowerCase().split(":")
         for (const d of ["sway", "mango", "labwc"]) if (desktop.includes(d)) return d
+        if (root.umbrielSocket) return "umbriel"
         if (root.mangoSocket) return "mango"
         if (root.labwcPid) return "labwc"
         if (root.swaySocket) return "sway"
@@ -147,7 +153,7 @@ Singleton {
     function detectCompositor() {
         const name = root._pickBackend()
         const comp = { "hyprland": hyprlandBackend, "niri": niriBackend, "sway": swayBackend,
-            "mango": mangoBackend, "labwc": labwcBackend }[name] ?? genericBackend
+            "mango": mangoBackend, "labwc": labwcBackend, "umbriel": umbrielBackend }[name] ?? genericBackend
         root.backend?.destroy()
         root.backend = comp.createObject(root, { windowLeases: root._leaseTotal() })
         if (!root.backend) {
