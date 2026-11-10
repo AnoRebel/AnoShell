@@ -97,6 +97,26 @@ one sends its palette to GTK, Qt and your terminals through the same hooks a
 wallpaper uses (hooks that read the wallpaper image, like pywal and cava, are
 skipped). Going back to Material You redoes the wallpaper's colours.
 
+### The bundled themes
+
+75 static themes ship with AnoShell (`appearance.theme.source: "static"`,
+`appearance.theme.name: "<name>"`). Each picture below is Settings in that
+theme; the name under it is the file in `assets/themes/` without `.json`,
+in lower case with dashes (`Tokyo Night Dark` is `tokyo-night-dark`).
+
+**Crystal Neuo** comes in six materials, each dark and light: Refraction,
+Tactile, Signal, Folio, Bloom and Hybrid (`crystal-neuo-<material>-<dark|light>`).
+
+![The twelve Crystal Neuo themes](images/themes-crystal-neuo.webp)
+
+Dark themes:
+
+![The dark themes](images/themes-dark.webp)
+
+Light themes:
+
+![The light themes](images/themes-light.webp)
+
 ### Theme studio
 
 Settings → Appearance → Theme studio makes a static theme from your own

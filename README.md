@@ -502,7 +502,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `anoSpot.showLyrics` | Swap track title for the current lyric line | requires `lyrics.enable` |
 | `anoSpot.workspaceHoverPreview` | Hover the workspace pill to see live thumbnails | `openDelayMs`, `closeDelayMs`, `thumbnailWidth`, `thumbnailHeight` |
 | `dock.previews` | Rest on a running app in the dock to see its windows as live thumbnails (up to 6); click focuses, middle-click closes | — |
-| `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `static` (theme name) |
+| `appearance.theme` | Switch between dynamic Material You and bundled static themes | `source` (`materialYou`/`static`), `name` (theme name; see [the bundled themes](docs/looks.md#the-bundled-themes)) |
 
 `appearance.theme.source = "static"` activates the StaticThemeLoader, which reads `assets/themes/<name>.json` (or `~/.config/anoshell/themes/<name>.json` to override). 75 themes ship in the bundle (Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Kanagawa, Rosé Pine, Ayu, Eldritch, Noctalia, Aurora, Inir, Angel, Crystal Neuo's six materials — most with dark/light variants).
 
@@ -839,7 +839,7 @@ ano/
 │
 ├── services/                       # 42 service singletons (see Services section)
 │
-├── assets/themes/                  # 24 bundled static themes
+├── assets/themes/                  # 75 bundled static themes
 ├── layouts/                        # 11 overview layout algorithms
 │
 ├── scripts/
