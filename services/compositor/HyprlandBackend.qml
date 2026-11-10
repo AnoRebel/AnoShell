@@ -80,6 +80,9 @@ QtObject {
     // just takes the newer callback (the queue can't grow while unreachable).
     // Caps/Num Lock of the main keyboard (right with keyd and other virtual
     // keyboards): cb({ capsLock, numLock }).
+    // Apply config values live (`hl.config({…})` Lua; performance mode's levers).
+    function evalConfig(call) { if (call) Quickshell.execDetached(["hyprctl", "eval", call]) }
+
     function lockKeys(cb) {
         root._request("j/devices", d => {
             const kb = (d?.keyboards ?? []).find(k => k.main)
