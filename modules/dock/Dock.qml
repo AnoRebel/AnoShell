@@ -282,13 +282,14 @@ Scope {
                                 // pointer swells most, its neighbours less by distance,
                                 // and each lifts off the edge as it grows. Off: only
                                 // the hovered one grows a little.
-                                readonly property real _pointer: dockHover.containsMouse
-                                    ? (root.isVertical ? dockHover.mouseY : dockHover.mouseX) : -1e6
-                                readonly property real _center: {
-                                    void dockLayout.width; void dockLayout.height
-                                    const p = dockItem.mapToItem(dockHover, dockItem.width / 2, dockItem.height / 2)
+                                // Both in the dock layout's coordinates: the pointer
+                                // re-maps on every move, the centre follows x/y.
+                                readonly property real _pointer: {
+                                    if (!dockHover.containsMouse) return -1e6
+                                    const p = dockLayout.mapFromItem(dockHover, dockHover.mouseX, dockHover.mouseY)
                                     return root.isVertical ? p.y : p.x
                                 }
+                                readonly property real _center: root.isVertical ? dockItem.y + dockItem.height / 2 : dockItem.x + dockItem.width / 2
                                 readonly property real magnify: {
                                     if (!(Config.options?.dock?.magnify ?? true)) return iconMA.containsMouse ? 1.15 : 1
                                     const reach = root.iconSize * 2.4
