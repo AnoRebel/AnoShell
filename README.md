@@ -97,7 +97,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | Service | What it provides |
 |---------|------------------|
 | `Audio` | PipeWire default sink/source. Volume/mute, mic mute, volume protection. |
-| `Brightness` | `brightnessctl` for backlight + `ddcutil` for external monitors via DDC/CI. |
+| `Brightness` | Per screen: the backlight under its connector (`brightnessctl`; a firmware/ACPI one goes to the built-in panel; `light.device` overrides), else `ddcutil` over DDC/CI for an external monitor; a screen with neither isn't offered a slider. |
 | `Battery` | UPower charge/health/time-remaining + auto-suspend trigger. |
 | `KeyboardLayoutService` | Active XKB layout on both Hyprland and Niri; clicking cycles it where the backend can. |
 | `LockKeys` | Caps Lock / Num Lock state, read on demand (no polling) for the OSD and the lock screen warning. |
@@ -109,7 +109,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 
 | Service | What it provides |
 |---------|------------------|
-| `Network` | nmcli-backed WiFi scanning/connect/disconnect, signal strength, hotspot toggle; wired & tethering links (ethernet, USB/Bluetooth tether, mobile broadband) and which carries the default route; NetworkManager VPN and WireGuard connections on/off (Settings → Services → NetworkManager VPNs). |
+| `Network` | Wi-Fi state and networks read live from `Quickshell.Networking` (NetworkManager over D-Bus); nmcli for scans, connect/disconnect, hotspot toggle; wired & tethering links (ethernet, USB/Bluetooth tether, mobile broadband) and which carries the default route; NetworkManager VPN and WireGuard connections on/off (Settings → Services → NetworkManager VPNs). |
 | `NetworkUsage` | rx/tx throughput polled from `/proc/net/dev`. Opt-in via `network.usage.enable`. |
 | `VPN` | Connect/disconnect/status for tailscale, netbird, warp, wireguard, or custom providers. |
 | `BluetoothStatus` | Adapter state + paired/connected device list. |
@@ -169,8 +169,8 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | Service | What it provides |
 |---------|------------------|
 | `DateTime` | Formatted clock + uptime. |
-| `Weather` | wttr.in API client with optional GPS. |
-| `Notifications` | DBus notification server with persistent storage and popup management. |
+| `Weather` | wttr.in API client with optional GPS; official warnings from anod and a rain-soon notice (`bar.weather.alerts`). |
+| `Notifications` | DBus notification server with persistent storage and popup management: inline replies, per-app rules (normal / silent / blocked), Do Not Disturb that still lets critical ones pop up. |
 | `CalendarSync` | iCal/CalDAV pull from configured URLs. Opt-in. |
 | `Ai` | AI chat across OpenAI, Gemini, Anthropic, Mistral, OpenRouter, Ollama. Streaming + Anthropic thinking blocks. |
 | `FocusTime` | Daemon lifecycle for the per-app usage tracker (SQLite-backed Python daemon; Hyprland and niri IPC sockets). |
@@ -200,6 +200,8 @@ All settings in `config.json`. GUI via Settings overlay (`qs -c ano ipc call set
 | `Ctrl+1`..`Ctrl+9` | Jump to page N |
 | `Ctrl+0` | Jump to last page |
 | `Esc` | Close the panel (overlay) or quit (standalone) |
+| `Ctrl+Z` | Undo the last change made while Settings is open (resets included; up to 50), with a toast |
+| any letter or digit | Start a search with it (when no field has focus) |
 
 **Search (the field at the top of the page list, or `Ctrl+K`).** Search every setting by the words you see in Settings (card titles, control labels and descriptions) or by config key — case-insensitive, multi-word (every term must match somewhere), punctuation and spaces ignored ("wifi" finds Wi-Fi). Keys come live from the config; labels come from `modules/settings/settings-index.json` (generated, see *Keeping settings wired* below). Up/Down move the highlight, Enter jumps to the page that owns the key and scrolls to its card, Esc closes.
 
@@ -258,8 +260,8 @@ The Settings UI has 14 pages, opening on About, each owning a set of top-level c
 
 | Page         | Owns                                                                                     | What you'll find there |
 |--------------|------------------------------------------------------------------------------------------|------------------------|
-| About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, credits, global "Reset every setting" card |
-| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups, logout & shutdown confirmation, scroll speed |
+| About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, the shell's QML errors (Errors card; their count shows on About in the page list), credits, global "Reset every setting" card |
+| General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups and per-app rules, logout & shutdown confirmation, scroll speed |
 | Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
 | Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, window previews, pinned apps and their order |
@@ -273,7 +275,7 @@ The Settings UI has 14 pages, opening on About, each owning a set of top-level c
 | Atelier      | `atelier`                                                                                | Themes, looks, pieces, plugins, lock screens, wallpapers and rices: browse, preview, install, use, undo |
 | Actions      | `actions`                                                                                | Macros: build, reorder, test and run step lists; the ring on Super+Ctrl+X (see docs/actions.md) |
 
-Settings opens via `qs -c ano ipc call settings toggle`, the standalone window via `qs -n -p ~/.config/quickshell/ano/settings.qml`, or `Super+,` (Hyprland default).
+Settings opens via `qs -c ano ipc call settings toggle`, the standalone window via `qs -n -p ~/.config/quickshell/ano/settings.qml` (or **AnoShell Settings** in your app launcher: `anod/install.sh` writes `anoshell-settings.desktop`; the window's app id is `anoshell-settings`, floating under the bundled Hyprland and niri rules), or `Super+,` (Hyprland default).
 
 ### Bar System
 
@@ -532,21 +534,22 @@ qs -c ano ipc call <target> <method>
 | `overviewWorkspacesToggle` | `toggle` (workspace-strip overview) |
 | `settings` / `settingsStandalone` | `toggle`, `open` / `open` |
 | `audio` | `toggleMute`, `toggleMicMute`, `increment`, `decrement` |
-| `brightness` | `increment`, `decrement` |
+| `brightness` | `increment`, `decrement`, `status` (per screen: percent, backlight or DDC, as JSON) |
 | `mpris` | `pauseAll`, `playPause`, `previous`, `next` |
 | `idle` | `toggle`, `enable`, `disable` |
 | `hud` | `toggle`, `open`, `close` |
 | `session` | `toggle`, `open`, `close` |
 | `actions` | `run name` (queued if one runs), `list`, `ring` (toggle) |
 | `dock` | `toggle`, `pin`, `unpin` |
-| `notifications` | `toggleDnd`, `setDnd on`, `status`, `list`, `reply id text` |
+| `notifications` | `toggleDnd`, `setDnd on`, `clearAll`, `status`, `list`, `reply id text` |
 | `config` | `get key`, `set key json`, `reset key`, `undo` |
 | `focus` | `toggle`, `on`, `off`, `status` (bar away + Do Not Disturb) |
 | `undo` | `last`, `list` (the Undo toast after a removal) |
-| `pieces` | `add id`, `remove id`, `list`, `next`, `prev`, `page n`, `edit`, `done` |
-| `clock` | `toggle`, `countdown seconds`, `stopwatch`, `dismiss`, `snooze` |
-| `shelf` | `toggle` (the pill's shelf) |
-| `performance` | `toggle` (performance mode by hand) |
+| `pieces` | `add id`, `remove id`, `place id col row`, `move uid col row`, `list`, `grid`, `next`, `prev`, `page n`, `edit`, `done` |
+| `clock` | `toggle`, `open`, `close`, `countdown seconds`, `stopwatch`, `dismiss`, `snooze`, `next` |
+| `shelf` | `toggle`, `open`, `close` (the pill's shelf) |
+| `performance` | `toggle`, `on`, `off` (performance mode by hand), `status` |
+| `sharePicker` | `pick`, `pending`, `cancel` (used by `ano share-pick`, not by hand) |
 | `clipboard` / `cliphistService` | `toggle`, `open`, `close` / direct cliphist actions |
 | `altSwitcher` | `show`, `hide`, `next`, `prev`, `activate` |
 | `search` | `toggle`, `open`, `close` |
@@ -712,6 +715,8 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
 | Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
 | Long-running helpers (`nmcli monitor`, `wlsunset`, `cava`, `udevadm monitor`) | `setpriv` (util-linux): started with `--pdeathsig TERM` so they end with the shell, even a killed one | the helper fails to start |
+| Network (bar `network`, sidebar, Network Orbit, Settings → Services → NetworkManager VPNs) | NetworkManager running; Quickshell's `Quickshell.Networking` module (part of Quickshell when built with its network module, the default; reads Wi-Fi state and networks over NetworkManager's D-Bus); `nmcli` (scans, connect, hotspot, wired links, VPN and WireGuard profiles, `nmcli monitor`); `ip` (iproute2) for the link carrying traffic; a NetworkManager VPN plugin (e.g. `networkmanager-openvpn`) for that VPN type | no networks listed; a VPN type without its plugin won't connect |
+| Brightness (OSD keys, sliders, `brightness` IPC) | `brightnessctl` for backlights; `ddcutil` (and the `i2c-dev` module) for external monitors over DDC/CI | that screen gets no slider (an external screen without DDC is left alone) |
 | Removable drives (bar module `drives`) | `udisks2` (`udisksctl`), `util-linux` (`lsblk` ≥ 2.37 for `MOUNTPOINTS`), udev (`udevadm`: systemd-udev or eudev), `libnotify` (`notify-send`) | no drives listed / no notifications |
 | Night light (Settings → Services, bar/pill module `nightlight`, sidebar toggle) | `wlsunset`; a compositor with wlr-gamma-control (Hyprland, niri, sway) | the toggle does nothing |
 | Qt apps in the palette (`appearance.theme.qt`) | `qt6ct` (and `QT_QPA_PLATFORMTHEME=qt6ct`); `qt5ct` for Qt 5 apps; `kvantum` for the default Kvantum mode | Qt apps keep Qt's default look |

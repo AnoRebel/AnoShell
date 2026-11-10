@@ -61,6 +61,11 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Print / Shift+Print / Ctrl+Print / Super+Shift+S | screenshot: screen / region / window / region (a card offers copy, save, edit, delete) |
 | Super+Shift+X, Super+Shift+R | region text (OCR) to the clipboard with a card (Add to note, Pin), record a region |
 
+On Hyprland the Super tap is a release bind (`release = true`, Hyprland
+0.57+): it fires when Super is let go with nothing pressed alongside it, so
+Super+T and other combos never open search. Holding Super shows the
+workspace numbers instead.
+
 `go run ./cmd/keybinds-import [hyprland.lua niri.kdl]` (from `ano/anod`)
 writes `anod/internal/keybinds/import-report.md`: what a migration of those
 configs would replace and keep.
@@ -79,6 +84,10 @@ Your changes are kept apart from the defaults, in
 
 A bind there replaces the defaults on its chord, on the compositors it applies
 to (`"only": "hyprland"` or `"niri"` limits it). `remove` takes a chord away.
+
+niri rejects its whole config over one bad bind, so the generated niri file is
+checked with `niri validate` before it is written. A bind niri doesn't accept
+is reported as an error with niri's message, and the previous file stays.
 
 | Command | |
 |---|---|

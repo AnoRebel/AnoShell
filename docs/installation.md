@@ -63,7 +63,14 @@ isn't installed):
   `~/.config/niri/config.kdl`; it needs niri ≥ 26.04). For crash supervision,
   replace its two startup lines with `anod --supervise`.
 
-To start the shell by hand: `qs -c ano`.
+To start the shell by hand: `qs -c ano`. From your own compositor config,
+raise the open-file limit first, as the bundled ones do:
+`ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano`
+(`anod --supervise` does it itself).
+
+`install.sh` also adds **AnoShell Settings** to your app launcher
+(`~/.local/share/applications/anoshell-settings.desktop`), which opens the
+standalone Settings window.
 
 ## 4. Check the install
 

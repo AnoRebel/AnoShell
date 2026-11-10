@@ -6,7 +6,8 @@ one, in this order:
 1. **awww** shows the image, with the resize mode you chose
    (`background.resize`: `fit`, `crop`, `stretch` or `no`; default `fit`). The
    mode is recorded, so glass can sample exactly what is on screen. Change it in
-   Settings → Appearance → Wallpaper engine → Fit (Fit, Fill, Stretch, Center);
+   Settings → Appearance → Wallpaper engine → Fit (Fit, Fill, Stretch, Center
+   for `fit`, `crop`, `stretch`, `no`);
    the wallpaper on screen is redrawn straight away.
 2. **matugen** generates the Material colours from it, written where the shell
    reads them (`~/.local/state/anoshell/generated/colors.json`). The scheme is
@@ -144,8 +145,6 @@ slightly; with awww a translucent layer dims it. Windows, bars and pieces stay
 sharp. Turn it off with `settings.softenWallpaper` (Settings → Appearance →
 Wallpaper engine).
 
-## Rotation
-
 ## The wallpaper folder
 
 ![The wallpaper picker](images/wallpaper-picker.webp)
@@ -163,6 +162,8 @@ Pictures folder (`XDG_PICTURES_DIR`, usually `~/Pictures/Wallpapers`).
 Wallhaven's tab can also search by colour: the row of swatches under its
 filters is Wallhaven's own palette (the only colours its API takes); pick one
 again to clear it.
+
+## Rotation
 
 `background.randomize` changes the wallpaper on a timer, from the wallpaper
 folder, or from `directory` if you give rotation its own:

@@ -37,10 +37,15 @@ to date with `ano config migrate` (see [The `ano` CLI](cli.md#config)).
 
 Open Settings with `ano ipc call settings toggle` (bound to `Super+,` in the
 bundled Hyprland config), or as a standalone window with
-`qs -n -p ~/.config/quickshell/ano/settings.qml`. Both use the same pages.
+`qs -n -p ~/.config/quickshell/ano/settings.qml`. Both use the same pages and
+open on About. `anod/install.sh` also adds **AnoShell Settings** to your app
+launcher (`~/.local/share/applications/anoshell-settings.desktop`). The
+standalone window has its own app id, `anoshell-settings`, and icon; the
+bundled Hyprland and niri configs float it.
 
 | Page | Config keys it owns |
 |---|---|
+| About | `user` |
 | General | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `sounds.volume`, `sounds.login`, `sounds.notifications`, `sounds.panels`, `sounds.alerts`, `sounds.alertThreshold`, `sounds.alertGap`, `session` |
 | Modules | `disabledPanels`, `panelFamily`, `familyTransitionAnimation`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `hacks`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` |
 | Bar | `bar`, `bars`, `tray` |
@@ -53,12 +58,23 @@ bundled Hyprland config), or as a standalone window with
 | Displays | `cursor`, `icons` |
 | Keybinds | `keyboard` |
 | Atelier | `atelier` |
-| About | `user` |
+| Actions | `actions` |
 
 - **Search** at the top of the page list (or `Ctrl+K`) searches every setting
   by its label, description or config key, ignoring case, punctuation and
-  spaces ("wifi" finds Wi-Fi); Enter jumps to the card that owns it.
+  spaces ("wifi" finds Wi-Fi); Enter jumps to the card that owns it. Typing a
+  letter or digit while no field has focus starts a search with it.
 - `Ctrl+1` … `Ctrl+9` jump to a page; `Esc` closes.
+- `Ctrl+Z` undoes the last change made while Settings is open, resets
+  included (up to 50), and a toast names the key. A key that was at its
+  default goes back out of your file. A text field with focus undoes its own
+  text first. `qs -c ano ipc call config undo` does the same, and
+  `config reset <key>` puts one key back to its default.
+- **About → Errors** lists the QML warnings and errors the running shell
+  logged, deduplicated with counts (newest first; Refresh, and every 10 s
+  while it's open). Their number shows next to About in the page list. It
+  reads Quickshell's log through anod (`shell.errors`), so it needs anod;
+  `ano doctor` reports the same count.
 - **Previews you can edit** sit at the top of some pages and change the real
   shell as you go (written once, when you let go):
   - **Bar** and **AnoSpot**: a miniature of your screen with the bar, pill and
@@ -93,8 +109,9 @@ An auto-hidden bar (`bar.autoHide.enable`) shows when the pointer rests at
 its edge for `bar.autoHide.revealDelay` (150 ms), so passing over the edge
 on the way to a browser's tabs doesn't pull it out; it stays for
 `bar.autoHide.delay` after the pointer leaves. The dock works the same way
-(`dock.revealDelay`), and with `dock.magnify` its icons swell by distance from
-the pointer and lift off the edge.
+(`dock.revealDelay`, 150 ms), and with `dock.magnify` (on) its icons swell by
+distance from the pointer and lift off the edge. Pinned or not, the dock hides
+while a fullscreen window is up.
 
 ### Forms
 
@@ -223,6 +240,20 @@ Container, VM, bridge and tunnel interfaces (`docker`, `veth`, `vboxnet`,
 "Ethernet" for the bar icon; VPNs have their own row. The list refreshes on
 `nmcli monitor` events. Needs `nmcli` and `ip` (iproute2).
 
+### NetworkManager VPNs
+
+VPN and WireGuard connections you set up in NetworkManager
+(nm-connection-editor, `nmcli connection import`) are listed in
+Settings → Services → NetworkManager VPNs with a switch each
+(`nmcli connection up|down`). A VPN type needs its NetworkManager plugin
+(e.g. `networkmanager-openvpn`). While one is up the bar's network icon shows
+a small shield and its popout names the connection. The list follows
+`nmcli monitor`, like the wired links.
+
+Wi-Fi state and the network list come live from Quickshell's
+`Quickshell.Networking` module (NetworkManager over D-Bus), so nothing is
+re-read when they change; `nmcli` still runs scans, connects and the hotspot.
+
 ### NetBird
 
 With `vpn.providers` set to NetBird, the right sidebar's Network card shows
@@ -245,6 +276,18 @@ change.
   in your default browser.
 - The bar's network icon carries a small shield while the VPN is up, filled
   while traffic goes out an exit node; its popup names the exit node.
+
+## Overview and switchers
+
+The overview (Super+Tab, `qs -c ano ipc call anoview toggle`) lays windows out
+in the layout picked on Settings → Overview (`overview.layout`); the task view
+(Super+Grave) has its own (`taskView.layout`).
+
+`overview.liveThumbnails` (Settings → Overview): `off` (default, one still
+frame per window), `hovered` (only the hovered or selected window streams) or
+`all` (the first 12 stream). It covers the overview, the task view and the
+Alt+Tab list, and streams only while the view is open; the fan switcher is
+always live. Window capture needs Hyprland.
 
 ## anod hooks
 

@@ -45,6 +45,11 @@ A supervised shell runs with transparent huge pages off, which measured about
 100 MB less memory with no CPU cost. `shell.hugePages: true` in your config
 turns them back on (anod reads it when it starts).
 
+It also gets an open-file limit of 65536 (or the hard limit, if lower): a
+compositor hands its children 1024, and a shell that reloads often can run
+out. The bundled configs raise it the same way when they start the shell
+without anod (`ulimit -Sn 65536`).
+
 Supervision restarts the shell with exponential backoff (1 s, doubling, up to
 30 s). After 5 crashes within 2 minutes it stops and sends a notification with
 the path of the last Quickshell crash report. A clean exit (you quit the shell)
