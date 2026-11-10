@@ -11,6 +11,8 @@ They are off by default. Turn them on in Settings → Modules → Reader, or set
 
 ![The manga panel (Hot) and the anime panel (Popular), browsing](images/reader.webp)
 
+![The novel panel: Latest on FreeWebNovel, and a novel's page with its chapters](images/reader-novel.webp)
+
 ## Opening them
 
 | Keybind (bundled configs) | Command | Panel |
