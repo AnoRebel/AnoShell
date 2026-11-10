@@ -92,7 +92,8 @@ Singleton {
     // "blocked" drops it; "silent" keeps it in the history only.
     function ruleFor(n) {
         const ids = [n.desktopEntry, n.appName].filter(s => s).map(s => String(s).toLowerCase())
-        const has = list => Array.from(list ?? []).some(a => ids.includes(String(a).trim().toLowerCase()))
+        // (a lone string, from a hand-edited config, is one app, not its letters)
+        const has = list => (typeof list === "string" ? [list] : Array.from(list ?? [])).some(a => ids.includes(String(a).trim().toLowerCase()))
         if (has(Config.options?.notifications?.blockedApps)) return "blocked"
         if (has(Config.options?.notifications?.silentApps)) return "silent"
         // The shell's own quiet-hours notices (anod's weather warnings, rain soon).

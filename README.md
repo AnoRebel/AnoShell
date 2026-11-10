@@ -542,7 +542,7 @@ qs -c ano ipc call <target> <method>
 | `actions` | `run name` (queued if one runs), `list`, `ring` (toggle) |
 | `dock` | `toggle`, `pin`, `unpin` |
 | `notifications` | `toggleDnd`, `setDnd on`, `clearAll`, `status`, `list`, `reply id text` |
-| `config` | `get key`, `set key json`, `reset key`, `undo` |
+| `config` | `get key`, `set key json`, `reset key`, `undo` (a JSON array must start with a space, `' ["a","b"]'`: `qs ipc call` splits an argument that starts with `[`) |
 | `focus` | `toggle`, `on`, `off`, `status` (bar away + Do Not Disturb) |
 | `undo` | `last`, `list` (the Undo toast after a removal) |
 | `pieces` | `add id`, `remove id`, `place id col row`, `move uid col row`, `list`, `grid`, `next`, `prev`, `page n`, `edit`, `done` |

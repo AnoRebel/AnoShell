@@ -491,8 +491,9 @@ ColumnLayout {
             configKey: "notifications.silentApps"
             sublabel: "Silent: kept in the history, no popup. Blocked: dropped."
             property var extra: [] // typed in below, not yet given a rule
-            readonly property var silent: Array.from(Config.options?.notifications?.silentApps ?? [])
-            readonly property var blocked: Array.from(Config.options?.notifications?.blockedApps ?? [])
+            function _list(v) { return typeof v === "string" ? (v ? [v] : []) : Array.from(v ?? []) }
+            readonly property var silent: appRules._list(Config.options?.notifications?.silentApps)
+            readonly property var blocked: appRules._list(Config.options?.notifications?.blockedApps)
             readonly property var apps: {
                 const seen = {}, out = []
                 const add = n => { const k = String(n ?? "").trim(); if (k && !seen[k.toLowerCase()]) { seen[k.toLowerCase()] = true; out.push(k) } }
