@@ -1943,6 +1943,11 @@ Singleton {
             let v
             try { v = JSON.parse(json) } catch (e) { return `error: value is not JSON (${e})` }
             if (!root.isDeclared(key)) return `error: ${key} is not a setting`
+            // A list setting takes a list. (`qs ipc call` splits an argument
+            // that starts with "[" into several: start it with a space.)
+            const [cp, cl] = root._walkPath(root.options, key, false)
+            if (cp && root._isArrayLike(cp[cl]) && !Array.isArray(v))
+                return `error: ${key} is a list: pass a JSON array, starting with a space (' ["a","b"]') so qs doesn't split it`
             // Edges go through the swap rule (pill and dock never share one).
             if ((key === "anoSpot.position" || key === "dock.position") && root.edgeMover) root.edgeMover(key === "dock.position" ? "dock" : "pill", v)
             else root.setNestedValue(key, v)
