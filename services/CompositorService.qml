@@ -67,7 +67,27 @@ Singleton {
     // Each window: { key, id, title, appId, workspace, output, x, y, width,
     // height, focused, floating, fullscreen, toplevel } — toplevel is the
     // foreign-toplevel handle when matched (used for focus/close/screencopy).
-    readonly property var windows: backend?.windows ?? []
+    // Backends that can't name the toplevel themselves (sway, mango) get it
+    // matched here from foreign-toplevel: same app id and title, else the only
+    // unclaimed toplevel of that app. Without it the overview, Alt+Tab and
+    // the dock's previews couldn't show, focus or capture those windows.
+    readonly property var windows: {
+        const ws = backend?.windows ?? []
+        if (!ws.some(w => !w.toplevel)) return ws
+        const tls = Array.from(ToplevelManager.toplevels?.values ?? [])
+        const used = new Set(ws.filter(w => w.toplevel).map(w => w.toplevel))
+        const take = t => { used.add(t); return t }
+        const pass = ws.map(w => {
+            if (w.toplevel) return w
+            const t = tls.find(t => !used.has(t) && t.appId === w.appId && t.title === w.title)
+            return t ? Object.assign({}, w, { toplevel: take(t) }) : w
+        })
+        return pass.map(w => {
+            if (w.toplevel) return w
+            const free = tls.filter(t => !used.has(t) && t.appId === w.appId)
+            return free.length === 1 ? Object.assign({}, w, { toplevel: take(free[0]) }) : w
+        })
+    }
     // Counted per name: several instances (e.g. one per screen) may share a name.
     property var _windowLeases: ({})
     function _leaseTotal() { return Object.values(root._windowLeases).reduce((a, b) => a + b, 0) }
