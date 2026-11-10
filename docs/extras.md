@@ -119,7 +119,9 @@ the bar clock, press Super+Ctrl+C, or `qs -c ano ipc call clock toggle`
   (rechecked hourly, for daylight saving).
 - **Timer** and **stopwatch**: the same ones as the timer piece and the
   sidebar's Pomodoro card. The timer ends on time with the panel closed, with a
-  notification and the alarm sound.
+  notification and the alarm sound. From a script:
+  `qs -c ano ipc call clock countdown 300` sets a 5-minute timer and starts it;
+  `clock stopwatch` starts or pauses the stopwatch.
 
 Alarms and zones are kept in `~/.local/state/anoshell/clock.json`.
 
@@ -408,6 +410,25 @@ optional `delayMs` wait. Each app gets its own systemd scope
 systemd user manager. Restarting anod or the shell doesn't start them again;
 the play button in Settings starts one now. Apps in `~/.config/autostart` are
 listed there but not started unless you add them. This needs anod running.
+
+## Notifications
+
+- **Replies:** a chat app that offers an inline reply gets a **Reply** field on
+  its popup and in the notification centre. Enter sends it and closes the
+  notification; Escape cancels. `qs -c ano ipc call notifications list` prints
+  the notifications (id, app, summary, whether they take a reply) and
+  `notifications reply <id> "text"` answers one.
+- **Per-app rules** (Settings → General → Notifications → Per-app): every app
+  that has notified is listed, each **Normal**, **Silent** (kept in the
+  history, no popup) or **Blocked** (dropped). Add an app that hasn't notified
+  yet by typing its name. The names are kept in `notifications.silentApps` and
+  `notifications.blockedApps`, case ignored.
+- **Do Not Disturb** holds the popups, except critical ones (low battery, an
+  alarm, an extreme weather warning), which still pop up.
+- **Focus mode** is one switch for the bar going away and Do Not Disturb
+  coming on; turning it off puts back what was there before.
+  `qs -c ano ipc call focus toggle` (`on`, `off`, `status`), or the
+  "Focus mode" step in [Actions](actions.md).
 
 ## Lock keys and Do Not Disturb
 

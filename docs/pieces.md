@@ -222,7 +222,9 @@ keep working.
 `qs ipc call pieces list` prints every piece with its source and errors;
 `qs ipc call pieces add <id>` puts one on the focused screen's shown page
 (what the Atelier's **Add to desktop** does from the standalone Settings
-window); `qs ipc call pieces grid` shows each screen's grid.
+window); `qs ipc call pieces remove <id>` takes the first one of that id off
+the focused screen's shown page, with Undo; `qs ipc call pieces grid` shows
+each screen's grid.
 
 For scripts, columns and rows count from 1:
 
