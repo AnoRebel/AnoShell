@@ -1,0 +1,244 @@
+# =============================================================================
+# AnoShell — Umbriel configuration (umbriel >= 0.1.0, experimental backend)
+#
+# Usage: copy or symlink this to ~/.config/umbriel/config.toml
+#   cp ~/.config/quickshell/ano/external/umbriel/ano.toml ~/.config/umbriel/config.toml
+#   — or —
+#   ln -sf ~/.config/quickshell/ano/external/umbriel/ano.toml ~/.config/umbriel/config.toml
+# Check it with `umbriel config validate`; most changes apply when saved.
+#
+# All UI interactions (sidebars, overview, settings, OSD, notifications)
+# go through QuickShell IPC: qs -c ano ipc call <target> <method>
+# Settings → Keybinds doesn't edit this file yet: change the [keybinds] table
+# by hand. Docs: https://anoshell.anorebel.net (Compositors). Check what's
+# installed with `ano doctor`.
+#
+# Your own settings: put them in ~/.config/umbriel/local.toml (loaded last,
+# optional).
+# Reference: https://docs.noctalia.dev/umbriel/
+# =============================================================================
+
+[include.optional]
+files = ["local.toml"]
+
+# ─── General & startup ───────────────────────────────────────────────────────
+
+[general]
+autostart = [
+  # Legacy bars/notifiers out of the way, then the shell with more than the
+  # default 1024 open files (anod --supervise raises it itself).
+  "pkill -x waybar; pkill -x swaync; pkill -x swayosd; true",
+  "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano",
+  # anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
+  # For crash supervision, replace both lines with: anod --supervise (it starts qs).
+  "A=$(command -v anod || echo \"$HOME/.local/bin/anod\"); [ -x \"$A\" ] && exec \"$A\"",
+  "systemctl --user start hyprpolkitagent",
+  "nm-applet --indicator",
+  # Clipboard history (with QS IPC update)
+  "wl-paste --type text --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update'",
+  "wl-paste --type image --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update'",
+  # Wallpaper: awww draws it; rotation, colours and hooks are anod's.
+  "awww-daemon",
+  "kdeconnectd",
+]
+
+# Umbriel sets XDG_CURRENT_DESKTOP=umbriel and UMBRIEL_SOCKET itself; AnoShell
+# picks its Umbriel backend from them.
+[environment]
+QT_QPA_PLATFORMTHEME = "qt6ct"
+ELECTRON_OZONE_PLATFORM_HINT = "auto"
+XCURSOR_THEME = "Qogir"
+XCURSOR_SIZE = "16"
+_JAVA_AWT_WM_NONREPARENTING = "1"
+
+# ─── Input ───────────────────────────────────────────────────────────────────
+
+[input.keyboard]
+layout = "us"
+numlock_toggle = true
+
+[input.touchpad]
+tap = true
+natural_scroll = true
+
+# ─── Layout & look ───────────────────────────────────────────────────────────
+
+[layout]
+gap = 5
+extent_presets = [0.333, 0.5, 0.667]
+
+[layout.scrolling]
+default_extent_fraction = 0.5
+
+[appearance]
+border_width = 2
+
+[appearance.shadow]
+softness = 8
+offset_x = 0
+offset_y = 2
+
+# ─── Layer rules: AnoShell surfaces ──────────────────────────────────────────
+# Umbriel has no ext-background-effect-v1, so shell blur comes from these
+# rules (later rules override earlier ones). Same split as the bundled
+# Hyprland config: translucent surfaces blur; opaque cards and surfaces that
+# draw their own shapes don't (the blur can't be seen there and costs frames).
+
+[[layer_rule]]
+match.namespace = "^quickshell"
+blur = true
+blur_ignore_alpha = 0.1
+blur_popups = true
+
+# Surfaces that open over windows blur what's behind them live (the bar and
+# desktop surfaces keep the cached wallpaper blur).
+[[layer_rule]]
+match.namespace = "^quickshell:(sidebarLeft|sidebarRight|dock|anospot)$"
+blur_optimized = false
+
+[[layer_rule]]
+match.namespace = "^quickshell:(anoScreen|notifPopup|polkitPlain|controlPanel|networkOrbit|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|recordingOsd|familyTransition|frameExclusion|freeze|anospot:(edgePicker|peek|wspreview|stash))$"
+blur = false
+
+[[layer_rule]]
+match.namespace = "^quickshell:anospot$"
+blur_ignore_alpha = 0.3
+
+[[layer_rule]]
+match.namespace = "^rofi$"
+blur = true
+blur_ignore_alpha = 0.05
+
+# ─── Key bindings ────────────────────────────────────────────────────────────
+# Defining this table replaces Umbriel's built-in binds. Mod is Super (Alt when
+# Umbriel runs nested in another compositor). Actions: `umbriel msg --help`.
+
+[keybinds]
+
+# AnoShell UI (via IPC)
+"Mod" = { action = "spawn qs -c ano ipc call search toggle || pkill rofi || rofi -show drun -show-icons", repeat = false }
+"Mod+Tab" = { action = "spawn qs -c ano ipc call anoview toggle", repeat = false }
+"Mod+grave" = { action = "spawn qs -c ano ipc call taskView toggle", repeat = false }
+"Mod+B" = { action = "spawn qs -c ano ipc call sidebarLeft toggle", repeat = false }
+"Mod+N" = { action = "spawn qs -c ano ipc call sidebarRight toggle", repeat = false }
+"Mod+A" = { action = "spawn qs -c ano ipc call search toggle", repeat = false }
+"Mod+I" = { action = "spawn qs -c ano ipc call controlPanel toggle", repeat = false }
+"Mod+Comma" = { action = "spawn qs -c ano ipc call settings toggle", repeat = false }
+"Mod+Shift+I" = { action = "spawn qs -c ano ipc call hud toggle", repeat = false }
+"Alt+V" = { action = "spawn qs -c ano ipc call clipboard toggle", repeat = false }
+"Mod+Slash" = { action = "spawn qs -c ano ipc call cheatsheet toggle", repeat = false }
+"Mod+O" = { action = "spawn qs -c ano ipc call mediaControls toggle", repeat = false }
+"Mod+X" = { action = "spawn qs -c ano ipc call session toggle", repeat = false }
+"Mod+Shift+B" = { action = "spawn qs -c ano ipc call bar toggle", repeat = false }
+"Mod+Ctrl+T" = { action = "spawn qs -c ano ipc call wallpaperSelector toggle", repeat = false }
+"Mod+Ctrl+N" = { action = "spawn qs -c ano ipc call reader toggle novel", repeat = false }
+"Mod+Ctrl+M" = { action = "spawn qs -c ano ipc call reader toggle manga", repeat = false }
+"Mod+Ctrl+A" = { action = "spawn qs -c ano ipc call reader toggle anime", repeat = false }
+"Mod+Shift+W" = { action = "spawn qs -c ano ipc call weatherPanel toggle", repeat = false }
+"Mod+Shift+D" = { action = "spawn qs -c ano ipc call dock toggle", repeat = false }
+"Mod+Shift+F" = { action = "spawn qs -c ano ipc call focusTime toggle", repeat = false }
+"Mod+L" = { action = "spawn qs -c ano ipc call lock lock", repeat = false }
+"Mod+Ctrl+P" = { action = "spawn qs -c ano ipc call panelFamily cycle", repeat = false }
+"Mod+Ctrl+R" = { action = "spawn killall qs quickshell; sleep 0.3; qs -c ano", repeat = false }
+
+# Screenshots (AnoShell's capture; grim fallbacks)
+"Mod+Shift+S" = { action = "spawn qs -c ano ipc call screenshot region || grim -g \"$(slurp)\" - | wl-copy", repeat = false }
+"Mod+Shift+X" = { action = "spawn qs -c ano ipc call screenshot ocr", repeat = false }
+"Print" = { action = "spawn qs -c ano ipc call screenshot screen || grim - | wl-copy", repeat = false }
+"Shift+Print" = { action = "spawn grim -g \"$(slurp)\" - | swappy -f -", repeat = false }
+"Mod+Shift+C" = { action = "spawn hyprpicker -a && notify-send 'Color picked' \"$(wl-paste)\"", repeat = false }
+
+# Volume, brightness, media (through the shell so its OSD shows)
+"XF86AudioRaiseVolume" = { action = "spawn qs -c ano ipc call audio increment || wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5", allow_when_locked = true }
+"XF86AudioLowerVolume" = { action = "spawn qs -c ano ipc call audio decrement || wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-", allow_when_locked = true }
+"XF86AudioMute" = { action = "spawn qs -c ano ipc call audio toggleMute || wpctl set-mute @DEFAULT_SINK@ toggle", allow_when_locked = true, repeat = false }
+"XF86AudioMicMute" = { action = "spawn qs -c ano ipc call audio toggleMicMute || wpctl set-mute @DEFAULT_SOURCE@ toggle", allow_when_locked = true, repeat = false }
+"XF86MonBrightnessUp" = { action = "spawn qs -c ano ipc call brightness increment || brightnessctl s 5%+", allow_when_locked = true }
+"XF86MonBrightnessDown" = { action = "spawn qs -c ano ipc call brightness decrement || brightnessctl s 5%-", allow_when_locked = true }
+"XF86KbdBrightnessUp" = "spawn brightnessctl -d '*::kbd_backlight' s 10%+"
+"XF86KbdBrightnessDown" = "spawn brightnessctl -d '*::kbd_backlight' s 10%-"
+"XF86AudioPlay" = { action = "spawn qs -c ano ipc call mpris playPause || playerctl play-pause", allow_when_locked = true, repeat = false }
+"XF86AudioNext" = { action = "spawn qs -c ano ipc call mpris next || playerctl next", allow_when_locked = true, repeat = false }
+"XF86AudioPrev" = { action = "spawn qs -c ano ipc call mpris previous || playerctl previous", allow_when_locked = true, repeat = false }
+"XF86AudioStop" = { action = "spawn qs -c ano ipc call mpris pauseAll || playerctl stop", allow_when_locked = true, repeat = false }
+"Mod+Shift+P" = { action = "spawn qs -c ano ipc call mpris playPause || playerctl play-pause", repeat = false }
+"Mod+Shift+N" = { action = "spawn qs -c ano ipc call mpris next || playerctl next", repeat = false }
+
+# Apps (default apps go through `ano run`, apps.* in Settings)
+"Mod+Return" = { action = "spawn ano run terminal", repeat = false }
+"Mod+E" = { action = "spawn ano run files ~/Downloads", repeat = false }
+"Mod+Z" = { action = "spawn ano run browser", repeat = false }
+"Mod+D" = { action = "spawn vicinae toggle", repeat = false }
+"Mod+R" = { action = "spawn ~/.config/rofi/scripts/launcher.sh", repeat = false }
+"Mod+Period" = { action = "spawn wofi-emoji", repeat = false }
+"Ctrl+Alt+U" = { action = "spawn pavucontrol", repeat = false }
+"Mod+Shift+L" = { action = "spawn systemctl suspend || loginctl suspend", repeat = false }
+"Mod+Shift+Escape" = { action = "shortcuts-inhibit-toggle", allow_when_inhibited = true, repeat = false }
+
+# Windows
+"Mod+Shift+Q" = { action = "window-close", repeat = false }
+"Mod+Ctrl+Q" = { action = "session-quit", repeat = false }
+"Mod+F" = { action = "window-toggle-maximize", repeat = false }
+"Mod+Alt+F" = { action = "window-toggle-fullscreen", repeat = false }
+"Mod+Space" = { action = "window-toggle-floating", repeat = false }
+"Mod+P" = { action = "window-toggle-pinned", repeat = false }
+"Mod+C" = "column-center"
+"Mod+W" = { action = "column-toggle-tabbed", repeat = false }
+"Mod+BracketLeft" = "window-consume-or-expel-left"
+"Mod+BracketRight" = "window-consume-or-expel-right"
+"Mod+Shift+R" = "window-cycle-primary-extent"
+"Mod+Alt+R" = "window-cycle-secondary-extent"
+"Mod+Ctrl+Left" = "window-modify-primary-extent -0.05"
+"Mod+Ctrl+Right" = "window-modify-primary-extent +0.05"
+"Mod+Ctrl+Up" = "window-modify-secondary-extent -0.05"
+"Mod+Ctrl+Down" = "window-modify-secondary-extent +0.05"
+
+# Focus
+"Mod+Left" = "window-focus-left"
+"Mod+Right" = "window-focus-right"
+"Mod+Up" = "window-focus-or-workspace-up"
+"Mod+Down" = "window-focus-or-workspace-down"
+"Mod+H" = "window-focus-left"
+"Mod+Semicolon" = "window-focus-right"
+"Mod+K" = "window-focus-or-workspace-up"
+"Mod+J" = "window-focus-or-workspace-down"
+
+# Move
+"Mod+Shift+Left" = "column-move-left"
+"Mod+Shift+Right" = "column-move-right"
+"Mod+Shift+Up" = "window-move-or-workspace-up"
+"Mod+Shift+Down" = "window-move-or-workspace-down"
+"Mod+Shift+H" = "column-move-left"
+"Mod+Shift+Semicolon" = "column-move-right"
+"Mod+Shift+K" = "window-move-or-workspace-up"
+"Mod+Shift+J" = "window-move-or-workspace-down"
+
+# Workspaces (per output, numbered from 1)
+"Mod+1" = "workspace-switch 1"
+"Mod+2" = "workspace-switch 2"
+"Mod+3" = "workspace-switch 3"
+"Mod+4" = "workspace-switch 4"
+"Mod+5" = "workspace-switch 5"
+"Mod+6" = "workspace-switch 6"
+"Mod+7" = "workspace-switch 7"
+"Mod+8" = "workspace-switch 8"
+"Mod+9" = "workspace-switch 9"
+"Mod+0" = "workspace-switch 10"
+"Mod+Shift+1" = "column-move-to-workspace 1"
+"Mod+Shift+2" = "column-move-to-workspace 2"
+"Mod+Shift+3" = "column-move-to-workspace 3"
+"Mod+Shift+4" = "column-move-to-workspace 4"
+"Mod+Shift+5" = "column-move-to-workspace 5"
+"Mod+Shift+6" = "column-move-to-workspace 6"
+"Mod+Shift+7" = "column-move-to-workspace 7"
+"Mod+Shift+8" = "column-move-to-workspace 8"
+"Mod+Shift+9" = "column-move-to-workspace 9"
+"Mod+Shift+0" = "column-move-to-workspace 10"
+"Alt+Tab" = "workspace-next"
+"Alt+Shift+Tab" = "workspace-previous"
+"Mod+WheelDown" = { action = "workspace-next", cooldown_ms = 150 }
+"Mod+WheelUp" = { action = "workspace-previous", cooldown_ms = 150 }
+
+# Scratchpad
+"Mod+Shift+grave" = { action = "window-toggle-scratchpad", repeat = false }
+"Mod+Ctrl+grave" = "scratchpad-toggle"

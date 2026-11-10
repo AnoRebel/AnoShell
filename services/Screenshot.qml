@@ -13,7 +13,7 @@ import qs.services
  * temp file (the preview card copies, saves or edits it from there).
  *
  *   Hyprland (and other wlroots-likes): slurp + grim; the window's geometry
- *     comes from the compositor backend (Hyprland, sway, mango; not on the
+ *     comes from the compositor backend (Hyprland, sway, mango, umbriel; not on the
  *     generic and labwc backends).
  *   niri: its own actions (screenshot / screenshot-window / screenshot-screen
  *     --path); the region is niri's interactive screenshot UI.

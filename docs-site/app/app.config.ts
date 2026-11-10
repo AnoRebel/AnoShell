@@ -45,7 +45,7 @@ export default defineAppConfig({
       { slug: "lockscreens", group: "guide", title: "Lock screens", description: "The niri lock, previews, fallbacks and writing your own lock screen." },
       { slug: "reader", group: "guide", title: "Reader", description: "Novels, manga and anime: sources, library, playback and the Airing tab." },
       { slug: "cli", group: "guide", title: "The ano CLI", description: "status, doctor, config, setup, backup and looks from a terminal." },
-      { slug: "compositors", group: "guide", title: "Compositors", description: "Hyprland, niri, and the experimental sway, mango, labwc and generic backends." },
+      { slug: "compositors", group: "guide", title: "Compositors", description: "Hyprland, niri, and the experimental sway, mango, labwc, Umbriel and generic backends." },
       { slug: "anod", group: "internals", title: "anod", description: "The companion daemon: supervision, event hooks, socket protocol." },
       { slug: "contributing", group: "internals", title: "Contributing", description: "Checks, tests, running a test shell safely, and the conventions." },
       { slug: "architecture", group: "internals", title: "Architecture", description: "How the shell is put together and the constraints that shaped it." },

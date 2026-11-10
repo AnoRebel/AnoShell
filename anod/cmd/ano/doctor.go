@@ -133,18 +133,19 @@ func have(bin string) bool {
 	return false
 }
 
-// experimentalBackend picks sway, mango or labwc in CompositorService's
+// experimentalBackend picks sway, mango, labwc or umbriel in CompositorService's
 // order: the desktop name, then the session's own variables, SWAYSOCK last
 // (sway exports it, and labwc LABWC_PID, to the activation environment, so a
 // later session of another compositor can inherit them).
 func experimentalBackend() (name, bin string) {
 	label := map[string][2]string{
-		"sway":  {"sway (experimental)", "swaymsg"}, // tree and keyboard layouts
-		"mango": {"mango (experimental)", ""},       // its socket; no binary needed
-		"labwc": {"labwc (experimental)", "labwc"},  // labwc --exit
+		"sway":    {"sway (experimental)", "swaymsg"},    // tree and keyboard layouts
+		"mango":   {"mango (experimental)", ""},          // its socket; no binary needed
+		"labwc":   {"labwc (experimental)", "labwc"},     // labwc --exit
+		"umbriel": {"umbriel (experimental)", "umbriel"}, // umbriel subscribe / msg
 	}
 	pick := ""
-	for _, d := range []string{"sway", "mango", "labwc"} {
+	for _, d := range []string{"sway", "mango", "labwc", "umbriel"} {
 		if desktopIs(d) {
 			pick = d
 			break
@@ -152,6 +153,8 @@ func experimentalBackend() (name, bin string) {
 	}
 	switch {
 	case pick != "":
+	case os.Getenv("UMBRIEL_SOCKET") != "":
+		pick = "umbriel"
 	case os.Getenv("MANGO_INSTANCE_SIGNATURE") != "":
 		pick = "mango"
 	case os.Getenv("LABWC_PID") != "":
@@ -183,6 +186,9 @@ func runChecks() []check {
 	// Compositor and the binaries the shell can't run without.
 	comp, compBin := "generic (experimental)", ""
 	switch {
+	// Before Hyprland: umbriel nested in Hyprland passes HYPRLAND_INSTANCE_SIGNATURE on.
+	case os.Getenv("UMBRIEL_SOCKET") != "" && desktopIs("umbriel"):
+		comp, compBin = experimentalBackend()
 	case os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") != "":
 		comp, compBin = "hyprland", "hyprctl"
 	case os.Getenv("NIRI_SOCKET") != "":

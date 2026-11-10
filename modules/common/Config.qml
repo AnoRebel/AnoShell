@@ -700,8 +700,8 @@ Singleton {
             // ═══════════════════════════════════════════════════════════════
             property JsonObject compositor: JsonObject {
                 // "auto" = detect from the session environment; otherwise force a
-                // backend: "hyprland" | "niri" | "sway" | "mango" | "labwc" | "generic"
-                // (sway, mango and labwc are experimental).
+                // backend: "hyprland" | "niri" | "sway" | "mango" | "labwc" | "umbriel" | "generic"
+                // (sway, mango, labwc and umbriel are experimental).
                 property string backend: "auto"
             }
 

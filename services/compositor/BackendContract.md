@@ -3,7 +3,7 @@
 `services/CompositorService.qml` is the only compositor API the UI uses. It loads one
 backend from this directory and forwards to it. Nothing outside `services/compositor/`
 (and `services/NiriService.qml`, the niri IPC client the niri backend wraps) may import
-`Quickshell.Hyprland`, run `hyprctl`, or run `niri msg`. `scripts/dev/lint-compositor.sh`
+`Quickshell.Hyprland`, run `hyprctl`, `niri msg` or `umbriel msg`. `scripts/dev/lint-compositor.sh`
 enforces this.
 
 ## Selection
@@ -18,13 +18,15 @@ otherwise from the environment:
 | `SWAYSOCK` | `sway` (experimental) |
 | `MANGO_INSTANCE_SIGNATURE` | `mango` (experimental) |
 | `LABWC_PID` | `labwc` (experimental) |
+| `UMBRIEL_SOCKET` | `umbriel` (experimental; with `XDG_CURRENT_DESKTOP=umbriel` it is checked first, before Hyprland) |
 | anything else | `generic` |
 
-`SwayBackend`, `MangoBackend` and `LabwcBackend` extend `GenericBackend`
-(ext-workspace, foreign-toplevel) and override what their compositor's IPC
-does better; per-backend notes in `docs/compositors.md`. Their reply parsing
-lives in `SwayModel.js` / `MangoModel.js`, tested with node
-(`scripts/dev/test-sway-model.js`, `scripts/dev/test-mango-model.js`).
+`SwayBackend`, `MangoBackend`, `LabwcBackend` and `UmbrielBackend` extend
+`GenericBackend` (ext-workspace, foreign-toplevel) and override what their
+compositor's IPC does better; per-backend notes in `docs/compositors.md`.
+Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
+`UmbrielModel.js`, tested with node (`scripts/dev/test-sway-model.js`,
+`scripts/dev/test-mango-model.js`, `scripts/dev/test-umbriel-model.js`).
 
 ## Properties every backend provides
 
@@ -59,7 +61,7 @@ lives in `SwayModel.js` / `MangoModel.js`, tested with node
 | `setScreenShader(path)` | full-screen GLSL shader; `""` clears |
 | `applyOutputs(configs)` | `[{ name, width, height, rate, scale, x, y }]`, x/y `null` = auto; reads `outputs` (backend-native monitor objects) |
 | `switchKeyboardLayout(delta)` | |
-| `focusedWindowGeometry(cb)` | optional: `cb({x, y, width, height} \| null)` in layout coordinates; Hyprland, sway, mango |
+| `focusedWindowGeometry(cb)` | optional: `cb({x, y, width, height} \| null)` in layout coordinates; Hyprland, sway, mango, umbriel |
 | `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland |
 | `signal screencast(open, owner, name)` | optional: capture opened/closed (owner `monitor`, `window`, region); Hyprland |
 

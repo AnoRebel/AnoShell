@@ -2,7 +2,7 @@
 
 A Quickshell desktop shell for Wayland compositors (developed and tested on
 Quickshell 0.3.2 / Qt 6.11). **Hyprland** and **niri** are supported;
-**sway**, **mango** and **labwc** run on experimental backends, and any other
+**sway**, **mango**, **labwc** and **Umbriel** run on experimental backends, and any other
 compositor on a generic one ([docs/compositors.md](docs/compositors.md)). The
 backend is picked from the session at start.
 
@@ -83,7 +83,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 
 | Service | What it provides |
 |---------|------------------|
-| `CompositorService` | One API over the compositor backends in `services/compositor/` (Hyprland, niri; experimental: sway, mango, labwc, generic): workspaces, windows (leased), outputs, fullscreen, keyboard layout, actions. |
+| `CompositorService` | One API over the compositor backends in `services/compositor/` (Hyprland, niri; experimental: sway, mango, labwc, Umbriel, generic): workspaces, windows (leased), outputs, fullscreen, keyboard layout, actions. |
 | `NiriService` | Full Niri IPC over its UNIX socket — events, window list, workspace list, focus changes. |
 | `HyprlandKeybinds` / `NiriKeybinds` | Parsers for the live keybinds files. Power the cheatsheet. |
 | `AnoSocket` | Auto-reconnecting socket helper used by NiriService. |
@@ -664,7 +664,7 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 | `python3` | Scripts (general + AnoSpot LocalSend discovery/send) |
 | `xdg-utils` (`xdg-open`) | AnoSpot Open / Reveal actions |
 
-Sway (1.12+), Mango (0.18) and labwc (0.20) sessions run on experimental backends; see [docs/compositors.md](docs/compositors.md). Sway needs `swaymsg` (part of sway); Mango and labwc need nothing extra (labwc users with a `<privilegedInterfaces>` block must allow the protocols listed there).
+Sway (1.12+), Mango (0.18), labwc (0.20) and Umbriel (0.1) sessions run on experimental backends; see [docs/compositors.md](docs/compositors.md). Sway needs `swaymsg` (part of sway), Umbriel its `umbriel` CLI (part of umbriel; bundled config in `external/umbriel/ano.toml`); Mango and labwc need nothing extra (labwc users with a `<privilegedInterfaces>` block must allow the protocols listed there).
 
 For the Niri session specifically, **niri ≥ 26.04** is required — `~/.config/niri/ano.kdl` uses the `background-effect { blur }` and window-rule `popups { … }` blocks introduced in 26.04 for visual parity with Hyprland-Ano.
 
@@ -752,6 +752,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Frame jelly (`appearance.connectedCorners.jelly`) | nothing (a spring in the frame shader) | — |
 | Screen-share picker (Hyprland; `sharePicker.enable`, Settings → Services → Screen sharing) | `xdg-desktop-portal-hyprland` with `custom_picker_binary` in `~/.config/hypr/xdph.conf` set to `scripts/share-picker` (the Settings button or `ano share-pick install` writes it, after a backup); `ano` (`~/.local/bin` or PATH); region: `slurp`; fallback: `hyprland-share-picker` (ships with xdph) | the stock picker opens |
 | Actions (Settings → Actions, the ring on Super+Ctrl+X, `actions` IPC) | per step: open file/URL `xdg-utils` (`xdg-open`); shell command `sh`; brightness as for brightness (`brightnessctl`, or `ddcutil` for external monitors); power profile `power-profiles-daemon`; wallpaper anod (else `awww`) | that step fails, a notification names it, and the steps after it don't run |
+| Umbriel session (experimental backend) | `umbriel` ≥ 0.1 (its CLI: `umbriel subscribe` for workspaces, windows and layouts, `umbriel msg` for actions) and `UMBRIEL_SOCKET`, which umbriel exports; shell blur from the layer rules in `external/umbriel/ano.toml` | the generic backend (ext-workspace, foreign-toplevel); no blur |
 | Live pins (Super+Alt+P, `livePins`) | window capture: Hyprland (hyprland-toplevel-export) | not offered on other compositors |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.
