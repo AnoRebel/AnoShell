@@ -78,6 +78,22 @@
  {
   "page": 1,
   "card": "",
+  "label": "Output device",
+  "sublabel": "Where sound plays",
+  "keys": [],
+  "in": "Audio"
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Input device",
+  "sublabel": "The microphone apps record from",
+  "keys": [],
+  "in": "Audio"
+ },
+ {
+  "page": 1,
+  "card": "",
   "label": "EasyEffects quick toggle",
   "sublabel": "",
   "keys": [

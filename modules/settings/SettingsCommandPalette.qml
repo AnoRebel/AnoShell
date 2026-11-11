@@ -214,7 +214,8 @@ Loader {
                                         Layout.fillWidth: true
                                     }
                                     StyledText {
-                                        text: (paletteDelegate.modelData.label && !paletteDelegate.modelData.card ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
+                                        text: (paletteDelegate.modelData.inCard ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.inCard}`
+                                            : paletteDelegate.modelData.label && !paletteDelegate.modelData.card ? `${paletteDelegate.modelData.pageName} · ${paletteDelegate.modelData.key}` : paletteDelegate.modelData.pageName)
                                             + ({ "user": " · changed in your config", "migrated": " · migrated" }[Config.originOf(paletteDelegate.modelData.key)] ?? "")
                                             + (paletteDelegate.modelData.advanced ? " · Advanced" : "")
                                         font.pixelSize: Appearance?.font.pixelSize.smaller ?? 11
@@ -329,7 +330,7 @@ Loader {
     function _findCardForKey(pageItem, key) {
         if (!pageItem) return null;
         const top = key.split(".")[0];
-        const title = key.startsWith("card:") ? key.slice(5) : null;
+        const title = key.startsWith("card:") ? key.slice(5).split("#")[0] : null; // card:<title>[#<row>]
         const stack = [pageItem];
         while (stack.length > 0) {
             const cur = stack.shift();

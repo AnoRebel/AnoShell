@@ -62,13 +62,15 @@ ColumnLayout {
 
         ConfigRow {
             label: "Output device"
+            searchable: true
             sublabel: "Where sound plays"
-            AudioDevicePicker { Layout.preferredWidth: 420; outputs: true }
+            AudioDevicePicker { Layout.fillWidth: false; Layout.preferredWidth: 420; outputs: true }
         }
         ConfigRow {
             label: "Input device"
+            searchable: true
             sublabel: "The microphone apps record from"
-            AudioDevicePicker { Layout.preferredWidth: 420; outputs: false; inputs: true }
+            AudioDevicePicker { Layout.fillWidth: false; Layout.preferredWidth: 420; outputs: false; inputs: true }
         }
 
         ConfigSwitch {
