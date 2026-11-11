@@ -82,6 +82,10 @@ share of the screen's free area, and a command to run in it instead of your
 shell. Pressing the key while it is shown but another window has focus brings
 it back to the front; pressing it again hides it.
 
+![The dropdown terminal from the top edge](images/dropdown-terminal.webp)
+![The dropdown terminal from the left edge](images/dropdown-terminal-left.webp)
+![Its card in Settings → Modules](images/dropdown-terminal-settings.webp)
+
 | Compositor | Hidden on | Placed by the side setting |
 |---|---|---|
 | Hyprland | the special workspace `anodrop` | yes |
