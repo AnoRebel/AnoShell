@@ -306,7 +306,7 @@ lists. `bar.style: "pill"` (the default in the Ano family) makes the pill the
 bar instead. Edit groups on Settings → Bar (drag chips between groups, detach a
 group) or right-click a group on the bar.
 
-Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`, `weather`, `battery`, `network`, `bluetooth`, `tray`, `media`, `resources`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`, plus the ones listed in the add menu (drives, downloads, updates, KDE Connect…).
+Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`, `weather`, `battery`, `network`, `bluetooth`, `volume`, `tray`, `media`, `resources`, `keyboard` (alias `keyboardLayout`), `notifications`, `idle`, `privacy`, `gameMode`, plus the ones listed in the add menu (drives, downloads, updates, KDE Connect…).
 
 ### Panel Families
 Switch entire layout presets atomically. A family is the set of modules it hosts, declared in `modules/common/PanelGate.qml` (`familyModules`); switching only loads/unloads the modules that differ. Turning a module off in Settings → Modules (or its own enable key) works in every family:
@@ -713,6 +713,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Blur behind the polkit prompt (`polkit.blur`) | the bundled Hyprland/niri layer rules for `quickshell:polkit` / `quickshell:polkitPlain` | the compositor's own rules decide |
 | Sensitive clipboard entries skipped | `wl-clipboard` (`wl-paste --watch`) + `cliphist` (verified with 0.7.0) | password-manager copies land in the history |
 | Privacy: microphone, PipeWire cameras | PipeWire + WirePlumber | not shown |
+| Volume bar module (`volume`), output/input device pickers (Settings → General → Audio, sidebar, control panel) | PipeWire + WirePlumber | no volume, no devices listed |
 | Privacy: cameras opened directly | anod running (inotify on `/dev/video*`, no packages) | only PipeWire cameras shown |
 | Privacy: screen sharing | Hyprland (screencast events); portal casts via `xdg-desktop-portal` + `-hyprland` (or `-gnome` on niri) and PipeWire | not shown (a browser sharing its own tab is never visible to the desktop) |
 | Long-running helpers (`nmcli monitor`, `wlsunset`, `cava`, `udevadm monitor`) | `setpriv` (util-linux): started with `--pdeathsig TERM` so they end with the shell, even a killed one | the helper fails to start |
