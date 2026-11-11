@@ -11,6 +11,8 @@ import "."
 Rectangle {
     id: root
     property var brightnessMonitor
+    property bool pickOutput: false // the device lists under the volume and mic sliders
+    property bool pickInput: false
 
     implicitHeight: slidersColumn.implicitHeight + 16
     radius: Appearance?.rounding.normal ?? 12
@@ -49,7 +51,9 @@ Rectangle {
             Layout.fillWidth: true
             active: Config.options?.sidebar?.quickSliders?.showVolume ?? true
             visible: active
-            sourceComponent: RowLayout {
+            sourceComponent: ColumnLayout {
+              spacing: 4
+              RowLayout {
                 spacing: 8
                 MaterialSymbol {
                     text: Audio.sink?.audio?.muted ? "volume_off" : "volume_up"
@@ -70,6 +74,13 @@ Rectangle {
                     onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }
                     stopIndicatorValues: []
                 }
+                ToolbarButton {
+                    iconName: root.pickOutput ? "expand_less" : "expand_more"; iconSize: 18
+                    toolTipText: "Output device"
+                    onClicked: root.pickOutput = !root.pickOutput
+                }
+              }
+              AudioDevicePicker { visible: root.pickOutput; Layout.fillWidth: true; outputs: true }
             }
         }
 
@@ -78,7 +89,9 @@ Rectangle {
             Layout.fillWidth: true
             active: Config.options?.sidebar?.quickSliders?.showMic ?? false
             visible: active
-            sourceComponent: RowLayout {
+            sourceComponent: ColumnLayout {
+              spacing: 4
+              RowLayout {
                 spacing: 8
                 MaterialSymbol {
                     text: Audio.source?.audio?.muted ? "mic_off" : "mic"
@@ -93,6 +106,13 @@ Rectangle {
                     onMoved: { if (Audio.source?.audio) Audio.source.audio.volume = value }
                     stopIndicatorValues: []
                 }
+                ToolbarButton {
+                    iconName: root.pickInput ? "expand_less" : "expand_more"; iconSize: 18
+                    toolTipText: "Input device"
+                    onClicked: root.pickInput = !root.pickInput
+                }
+              }
+              AudioDevicePicker { visible: root.pickInput; Layout.fillWidth: true; outputs: false; inputs: true }
             }
         }
     }
