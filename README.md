@@ -545,6 +545,7 @@ qs -c ano ipc call <target> <method>
 | `config` | `get key`, `set key json`, `reset key`, `undo` (a JSON array must start with a space, `' ["a","b"]'`: `qs ipc call` splits an argument that starts with `[`) |
 | `focus` | `toggle`, `on`, `off`, `status` (bar away + Do Not Disturb) |
 | `undo` | `last`, `list` (the Undo toast after a removal) |
+| `dropTerminal` | `toggle`, `open`, `close`, `status` (Super+Shift+T; [extras](docs/extras.md#dropdown-terminal)) |
 | `pieces` | `add id`, `remove id`, `place id col row`, `move uid col row`, `list`, `grid`, `next`, `prev`, `page n`, `edit`, `done` |
 | `clock` | `toggle`, `open`, `close`, `countdown seconds`, `stopwatch`, `dismiss`, `snooze`, `next` |
 | `shelf` | `toggle`, `open`, `close` (the pill's shelf) |
@@ -669,7 +670,7 @@ Sway (1.12+), Mango (0.18), labwc (0.20) and Umbriel (0.1) sessions run on exper
 For the Niri session specifically, **niri ≥ 26.04** is required — `~/.config/niri/ano.kdl` uses the `background-effect { blur }` and window-rule `popups { … }` blocks introduced in 26.04 for visual parity with Hyprland-Ano.
 
 ### Recommended
-`pyprland` (dropdown terminal, minimize, lost windows), `pywal` (terminal colors), `ddcutil` (external monitors), `cava` (spectrum), `zenity` (file picker — required for AnoSpot's "Move to…" action), `ydotool` (paste), `translate-shell` (translator), `wf-recorder` (screen recording — drives AnoSpot's recording widget), `xdg-desktop-portal-*` (one of `-gtk`/`-kde`/`-hyprland` — file open/screenshare integration; almost always already installed by the desktop)
+`pyprland` (minimize, lost windows), `pywal` (terminal colors), `ddcutil` (external monitors), `cava` (spectrum), `zenity` (file picker — required for AnoSpot's "Move to…" action), `ydotool` (paste), `translate-shell` (translator), `wf-recorder` (screen recording — drives AnoSpot's recording widget), `xdg-desktop-portal-*` (one of `-gtk`/`-kde`/`-hyprland` — file open/screenshare integration; almost always already installed by the desktop)
 
 ### Optional
 `ffmpeg`, `hyprpicker`, `qalc` (calculator), `grim`+`slurp` (screenshot), `wlsunset` (night light — works on any wlroots session), `localsend` (the GUI app — only needed on the **receiving** device for AnoSpot's LocalSend action; the sender side ships ready-to-use scripts in `scripts/anoSpot/`)
@@ -753,6 +754,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Screen-share picker (Hyprland; `sharePicker.enable`, Settings → Services → Screen sharing) | `xdg-desktop-portal-hyprland` with `custom_picker_binary` in `~/.config/hypr/xdph.conf` set to `scripts/share-picker` (the Settings button or `ano share-pick install` writes it, after a backup); `ano` (`~/.local/bin` or PATH); region: `slurp`; fallback: `hyprland-share-picker` (ships with xdph) | the stock picker opens |
 | Actions (Settings → Actions, the ring on Super+Ctrl+X, `actions` IPC) | per step: open file/URL `xdg-utils` (`xdg-open`); shell command `sh`; brightness as for brightness (`brightnessctl`, or `ddcutil` for external monitors); power profile `power-profiles-daemon`; wallpaper anod (else `awww`) | that step fails, a notification names it, and the steps after it don't run |
 | Umbriel session (experimental backend) | `umbriel` ≥ 0.1 (its CLI: `umbriel subscribe` for workspaces, windows and layouts, `umbriel msg` for actions) and `UMBRIEL_SOCKET`, which umbriel exports; shell blur from the layer rules in `external/umbriel/ano.toml` | the generic backend (ext-workspace, foreign-toplevel); no blur |
+| Dropdown terminal (Super+Shift+T, `dropTerminal`) | a terminal that sets its window class: `kitty`, `foot`, `alacritty`, `ghostty` or `wezterm` (Settings → Default apps); on Umbriel the `anodrop` scratchpad from `external/umbriel/ano.toml` | a notification says the terminal can't; on Umbriel without that file it doesn't hide |
 | Live pins (Super+Alt+P, `livePins`) | window capture: Hyprland (hyprland-toplevel-export) | not offered on other compositors |
 
 Tested on Quickshell 0.3.2 (Qt 6.11), Hyprland (Lua config) and polkit with pam_faillock.

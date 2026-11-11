@@ -98,4 +98,17 @@ GenericBackend {
     }
     function focusWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-focus", [id]) : false }
     function closeWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-close", [id]) : false }
+    // Dropdown terminal (services/DropTerminal.qml): the "anodrop" scratchpad
+    // (external/umbriel/ano.toml gives ano.dropterm to it, with its size).
+    // Each msg is its own process, so the move waits for the reveal.
+    property var _dropMove: null
+    function showWindowAt(id, r, side) {
+        if (!UmbrielModel.validId(id)) return false
+        root._msg("window-focus", [id]) // reveals it from the hidden scratchpad
+        root._dropMove = { args: [({ top: "top", bottom: "bottom", left: "left", right: "right" })[side] ?? "center", 0, 0], window: id }
+        dropMoveTimer.restart()
+        return true
+    }
+    function hideWindow(id, side) { return UmbrielModel.validId(id) ? root._msg("scratchpad-toggle", ["anodrop"]) : false }
+    property Timer _dropMoveTimer: Timer { id: dropMoveTimer; interval: 150; onTriggered: root._msg("window-move-to", root._dropMove.args, { window: root._dropMove.window }) }
 }

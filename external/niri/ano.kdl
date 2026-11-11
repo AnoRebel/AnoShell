@@ -231,6 +231,9 @@ binds {
     // Task view (current workspace windows only)
     Mod+Grave { spawn-sh "qs -c ano ipc call taskView toggle"; }
 
+    // Dropdown terminal (dropTerminal.side picks the edge)
+    Mod+Shift+T { spawn-sh "qs -c ano ipc call dropTerminal toggle"; }
+
     // Sidebars (left = AI Chat + Notifications + Translator, right = controls + media + calendar)
     Mod+B { spawn-sh "qs -c ano ipc call sidebarLeft toggle"; }
     Mod+N { spawn-sh "qs -c ano ipc call sidebarRight toggle"; }
@@ -496,6 +499,12 @@ window-rule {
             xray true
         }
     }
+}
+
+// Dropdown terminal: floating from the start (the shell sizes and places it)
+window-rule {
+    match app-id="^ano\\.dropterm$"
+    open-floating true
 }
 
 // Kitty

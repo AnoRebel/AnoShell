@@ -558,11 +558,11 @@
     },
     {
       "chord": "Super+Shift+T",
-      "action": "exec",
+      "action": "shell",
       "args": [
-        "pypr-client toggle term"
-      ],
-      "only": "hyprland"
+        "dropTerminal",
+        "toggle"
+      ]
     },
     {
       "chord": "Super+Q",

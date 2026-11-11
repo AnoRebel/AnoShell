@@ -70,6 +70,29 @@ the same layout or keybinds), Undo says so and changes nothing. Removing an
 Atelier install, clearing the clipboard history and resetting all keybinds
 have no undo.
 
+## Dropdown terminal
+
+**Super+Shift+T** drops a terminal in from an edge of the focused screen and
+puts it away again; the session inside keeps running while it's hidden. It is
+your default terminal (Settings → Modules → Default Applications) started with
+its own window class, `ano.dropterm`, so it needs one that can set it: kitty,
+foot, Alacritty, Ghostty or WezTerm. Settings → Modules → Dropdown terminal
+picks the edge (top, bottom, left, right or center), its width and height as a
+share of the screen's free area, and a command to run in it instead of your
+shell. Pressing the key while it is shown but another window has focus brings
+it back to the front; pressing it again hides it.
+
+| Compositor | Hidden on | Placed by the side setting |
+|---|---|---|
+| Hyprland | the special workspace `anodrop` | yes |
+| sway | the scratchpad | yes |
+| niri | the empty workspace at the end of its screen | yes |
+| Umbriel | the `anodrop` scratchpad (from `external/umbriel/ano.toml`) | the edge, at the size in that file |
+| labwc, mango, others | minimized | no: the compositor places it |
+
+`qs -c ano ipc call dropTerminal toggle|open|close|status` drives it from
+anything else, e.g. a keybind on a compositor without a bundled config.
+
 ## Live pins
 
 Keep part of a window on screen, live: a video in a corner, a build log's
