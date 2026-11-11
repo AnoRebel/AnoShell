@@ -27,20 +27,15 @@ interface Node {
 }
 
 /*
- * A link to a clip in images/ plays inline on the site. As a link the router
- * took /images/x.webm for a page and showed its 404; GitHub keeps the link.
+ * A link to a clip in images/ plays inline on the site, in a Video.js player
+ * (app/components/content/DocVideo.vue). As a link
+ * the router took /images/x.webm for a page and showed its 404; GitHub keeps
+ * the link.
  */
 function videoOf(node: Node): Node | undefined {
   if (node.type !== "link" || !/^\/images\/[\w.-]+\.(webm|mp4)$/.test(node.url ?? "")) return;
   const label = node.children?.map((child) => (child as { value?: string }).value ?? "").join("") ?? "";
-  return {
-    type: "video",
-    data: {
-      hName: "video",
-      hProperties: { src: node.url, controls: true, muted: true, loop: true, playsinline: true, preload: "metadata", ariaLabel: label, className: ["rounded-md", "w-full", "my-4"] },
-    },
-    children: [],
-  };
+  return { type: "video", data: { hName: "doc-video", hProperties: { src: node.url, label } }, children: [] };
 }
 
 function walk(node: Node, branch: string) {
