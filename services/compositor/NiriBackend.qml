@@ -112,7 +112,8 @@ QtObject {
     function closeWindowById(id) { return (id === undefined || id === null) ? false : NiriService.closeWindow(id) }
     // Dropdown terminal (services/DropTerminal.qml). niri has no scratchpad:
     // hidden, it waits on the empty workspace at the end of its output; shown,
-    // it floats at r (relative to its output).
+    // it floats at r (niri places floats in its working area: the output
+    // less exclusive zones).
     function _wsOn(output) { return (NiriService.allWorkspaces ?? []).filter(w => w.output === output) }
     function showWindowAt(id, r, side) {
         const ws = root._wsOn(root.focusedOutput).find(w => w.is_active)

@@ -58,14 +58,18 @@ Singleton {
         const name = CompositorService.focusedMonitorName
         const s = Quickshell.screens.find(s => s.name === name) ?? Quickshell.screens[0]
         if (!s) return null
-        const r = CompositorService.backend?.reservedOf?.(s.name) ?? [0, 0, 0, 0]
+        // What the compositor reserves (Hyprland, sway), else the probe's free
+        // area, counted as reserved right and bottom: niri places floats in
+        // that area anyway, so only its size matters there.
+        const r = CompositorService.reservedOf(s.name)
+            ?? (probe.item && probe.item.screen === s ? [0, 0, s.width - probe.item.width, s.height - probe.item.height] : [0, 0, 0, 0])
         const gap = 8
         const ax = s.x + r[0] + gap, ay = s.y + r[1] + gap
         const aw = s.width - r[0] - r[2] - 2 * gap, ah = s.height - r[1] - r[3] - 2 * gap
         const w = Math.round(aw * root.widthFraction), h = Math.round(ah * root.heightFraction)
         const cx = Math.round(ax + (aw - w) / 2), cy = Math.round(ay + (ah - h) / 2)
         const pos = { top: [cx, ay], bottom: [cx, ay + ah - h], left: [ax, cy], right: [ax + aw - w, cy], center: [cx, cy] }[root.side] ?? [cx, ay]
-        return { x: pos[0], y: pos[1], width: w, height: h, screen: s }
+        return { x: pos[0], y: pos[1], width: w, height: h, screen: s, reserved: r }
     }
 
     function show() {
@@ -121,6 +125,24 @@ Singleton {
     Connections {
         target: root
         function onToplevelChanged() { if (root.toplevel && root._launching) placeLater.restart() }
+    }
+
+    // The focused screen's free area (the screen less every exclusive zone):
+    // an empty, click-through layer anchored to all edges is sized to it.
+    // Only where the backend can't say, and only while the terminal exists.
+    LazyLoader {
+        id: probe
+        active: root._exists && CompositorService.reservedOf(CompositorService.focusedMonitorName) === null
+        PanelWindow {
+            screen: Quickshell.screens.find(s => s.name === CompositorService.focusedMonitorName) ?? Quickshell.screens[0]
+            anchors { top: true; bottom: true; left: true; right: true }
+            exclusionMode: ExclusionMode.Normal
+            exclusiveZone: 0
+            WlrLayershell.layer: WlrLayer.Background
+            WlrLayershell.namespace: "quickshell:dropProbe"
+            color: "transparent"
+            mask: Region {}
+        }
     }
 
     IpcHandler {
