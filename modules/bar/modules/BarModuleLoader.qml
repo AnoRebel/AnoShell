@@ -21,6 +21,7 @@ QtObject {
         "battery",
         "network",
         "bluetooth",
+        "volume",
         "tray",
         "media",
         "resources",
@@ -45,6 +46,7 @@ QtObject {
         "battery": "Battery",
         "network": "Network",
         "bluetooth": "Bluetooth",
+        "volume": "Volume",
         "tray": "System tray",
         "media": "Media",
         "resources": "Resources",
@@ -80,6 +82,7 @@ QtObject {
             case "battery": return batteryModule
             case "network": return networkModule
             case "bluetooth": return bluetoothModule
+            case "volume": return volumeModule
             case "tray": return trayModule
             case "media": return mediaModule
             case "resources": return resourcesModule
@@ -108,6 +111,7 @@ QtObject {
     property Component batteryModule: Component { BatteryModule {} }
     property Component networkModule: Component { NetworkModule {} }
     property Component bluetoothModule: Component { BluetoothModule {} }
+    property Component volumeModule: Component { VolumeModule {} }
     property Component trayModule: Component { TrayModule {} }
     property Component mediaModule: Component { MediaModule {} }
     property Component resourcesModule: Component { ResourcesModule {} }

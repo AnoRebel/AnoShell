@@ -47,6 +47,7 @@ var features = []feature{
 	{"colour scripts and terminal colours (pkill recolours running kitty/Ghostty)", "", []string{"jq", "pkill"}},
 	{"lyrics (LRCLIB / NetEase lookups, local .lrc files)", "lyrics.enable", []string{"curl", "find"}},
 	{"audio spectrum", "", []string{"cava"}},
+	{"volume bar module and audio device pickers", "", []string{"pipewire", "wireplumber"}},
 	{"sound effects and battery sounds", "sounds.battery|sounds.login|sounds.notifications|sounds.panels|sounds.alerts", []string{"pw-play"}},
 	{"startup applications (anod; else setsid)", "", []string{"systemd-run|setsid"}},
 	{"alarm and timer sound (Clock panel)", "clock.alarmSound", []string{"pw-play"}},
