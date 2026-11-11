@@ -155,8 +155,18 @@ Item {
         enabled: root.shown
         function onRevisionChanged() { root._measure() }
     }
-    onPopupWidthChanged: if (shown) _measure()
-    onPopupHeightChanged: if (shown) _measure()
+    onPopupWidthChanged: if (shown) { _measure(); _remap() }
+    onPopupHeightChanged: if (shown) { _measure(); _remap() }
+    // A popup that changes size while open is moved with xdg_popup.reposition,
+    // and sway and labwc then put the grown popup in the wrong place (shifted
+    // by the growth, at its old size). Map it again instead, as Quickshell
+    // itself does without reposition; the reveal isn't replayed.
+    property bool _remapping: false
+    function _remap() {
+        if (!popupLoader.item?.visible) return
+        root._remapping = true
+        Qt.callLater(() => root._remapping = false)
+    }
 
     ConnectedSurfaceLease {
         key: `popout:${root}`
@@ -193,7 +203,7 @@ Item {
 
         sourceComponent: PopupWindow {
             id: popupWin
-            visible: root._open
+            visible: root._open && !root._remapping
             color: "transparent"
             implicitWidth: root.popupWidth + (root._vertical ? root._side * 2 : root.popupMargin + root._gap)
             implicitHeight: root.popupHeight + (root._vertical ? root.popupMargin + root._gap : root._side * 2)
@@ -220,7 +230,7 @@ Item {
             }
 
             mask: Region { item: body }
-            onBackingWindowVisibleChanged: { if (backingWindowVisible) surfaceUpTimer.restart(); else { surfaceUpTimer.stop(); root._surfaceUp = false } }
+            onBackingWindowVisibleChanged: { if (backingWindowVisible) { if (!root._surfaceUp) surfaceUpTimer.restart() } else if (!root._remapping) { surfaceUpTimer.stop(); root._surfaceUp = false } }
             Timer { id: surfaceUpTimer; interval: 32; onTriggered: root._surfaceUp = true }
 
             Item {

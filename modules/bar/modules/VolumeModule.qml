@@ -5,8 +5,8 @@ import QtQuick
 import QtQuick.Layouts
 
 /**
- * Volume icon. Hover: a popout with the output volume slider and the output
- * and input device lists; left-click pins it open; middle-click mutes.
+ * Volume icon. Hover: a popout with the output volume slider; left-click pins
+ * it open with the output and input device lists; middle-click mutes.
  */
 Item {
     id: root
@@ -69,9 +69,19 @@ Item {
                 }
             }
 
-            // Always there, not only when pinned: a popup that grows while open
-            // isn't resized by sway (it slides down by the growth instead).
-            AudioDevicePicker { Layout.fillWidth: true; outputs: true; inputs: true }
+            StyledText {
+                visible: !root.pinned
+                text: "Click for devices · middle-click mutes"
+                font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Loader {
+                Layout.fillWidth: true
+                active: root.pinned
+                visible: active
+                sourceComponent: AudioDevicePicker { outputs: true; inputs: true }
+            }
         }
     }
 }
