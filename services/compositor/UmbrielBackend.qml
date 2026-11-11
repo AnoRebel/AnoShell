@@ -99,16 +99,31 @@ GenericBackend {
     function focusWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-focus", [id]) : false }
     function closeWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-close", [id]) : false }
     // Dropdown terminal (services/DropTerminal.qml): the "anodrop" scratchpad
-    // (external/umbriel/ano.toml gives ano.dropterm to it, with its size).
-    // Each msg is its own process, so the move waits for the reveal.
-    property var _dropMove: null
-    function showWindowAt(id, r, side) {
-        if (!UmbrielModel.validId(id)) return false
-        root._msg("window-focus", [id]) // reveals it from the hidden scratchpad
-        root._dropMove = { args: [({ top: "top", bottom: "bottom", left: "left", right: "right" })[side] ?? "center", 0, 0], window: id }
-        dropMoveTimer.restart()
+    // (external/umbriel/ano.toml gives ano.dropterm to it). Shown: revealed
+    // and focused, resized by the difference to r (umbriel resizes the focused
+    // float by fractions of the working area) and anchored to `side`. The
+    // three run in order in one process; the values are arguments, never
+    // spliced into the script.
+    // The raw entry (the window list leaves hidden scratchpad windows out).
+    function _dropRaw(id, appId) { return root._windows.find(w => String(w.id) === String(id)) ?? root._windows.find(w => appId && w.app_id === appId) ?? null }
+    function showWindowAt(id, r, side, appId) {
+        const raw = root._dropRaw(id, appId)
+        id = raw ? String(raw.id) : id
+        if (!UmbrielModel.validId(id) || !r) return false
+        const w = raw ? { width: raw.w, height: raw.h } : null
+        const aw = r.screen.width - r.reserved[0] - r.reserved[2], ah = r.screen.height - r.reserved[1] - r.reserved[3]
+        const frac = v => (Number.isFinite(v) ? v : 0).toFixed(4)
+        const dw = w && aw > 0 ? frac((r.width - w.width) / aw) : "0", dh = w && ah > 0 ? frac((r.height - w.height) / ah) : "0"
+        const anchor = ({ top: "top", bottom: "bottom", left: "left", right: "right" })[side] ?? "center"
+        Quickshell.execDetached(["sh", "-c",
+            'umbriel msg window-focus "$1" && umbriel msg window-modify-width-right "$2"; umbriel msg window-modify-height-down "$3"; umbriel msg window-move-to "$4" 0 0 --window "$1"',
+            "sh", id, dw, dh, anchor])
         return true
     }
-    function hideWindow(id, side) { return UmbrielModel.validId(id) ? root._msg("scratchpad-toggle", ["anodrop"]) : false }
-    property Timer _dropMoveTimer: Timer { id: dropMoveTimer; interval: 150; onTriggered: root._msg("window-move-to", root._dropMove.args, { window: root._dropMove.window }) }
+    // The toggle would show a hidden one, so only when it is shown.
+    function hideWindow(id, side, appId) {
+        const raw = root._dropRaw(id, appId)
+        if (!raw || !UmbrielModel.validId(String(raw.id))) return false
+        return raw.visible ? root._msg("scratchpad-toggle", ["anodrop"]) : true
+    }
 }

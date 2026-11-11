@@ -87,7 +87,7 @@ it back to the front; pressing it again hides it.
 | Hyprland | the special workspace `anodrop` | yes |
 | sway | the scratchpad | yes |
 | niri | the empty workspace at the end of its screen | yes |
-| Umbriel | the `anodrop` scratchpad (from `external/umbriel/ano.toml`) | the edge, at the size in that file |
+| Umbriel | the `anodrop` scratchpad (from `external/umbriel/ano.toml`) | yes, flush against the edge |
 | labwc, mango, others | minimized | no: the compositor places it |
 
 `qs -c ano ipc call dropTerminal toggle|open|close|status` drives it from

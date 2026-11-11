@@ -245,7 +245,8 @@ blur_ignore_alpha = 0.05
 "Mod+Ctrl+grave" = "scratchpad-toggle"
 
 # Dropdown terminal (qs -c ano ipc call dropTerminal toggle): its own
-# scratchpad, floating at this size; the shell moves it to dropTerminal.side.
+# scratchpad, floating; the shell then sizes it and moves it to
+# dropTerminal.side (this size is only its first frame).
 [[scratchpad]]
 name = "anodrop"
 hide_when_empty = true
