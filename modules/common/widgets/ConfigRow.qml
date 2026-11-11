@@ -12,6 +12,9 @@ RowLayout {
     property string sublabel: ""
     // Dotted config key this control edits; shows a "Changed/Reset" chip when set by the user.
     property string configKey: ""
+    // A row that saves no setting (configKey empty) is still found by Settings
+    // search when this is set; scripts/dev/settings-index.py reads it.
+    property bool searchable: false
 
     spacing: 12
     Layout.fillWidth: true

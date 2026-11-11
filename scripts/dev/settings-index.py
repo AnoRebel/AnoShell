@@ -24,6 +24,7 @@ PAGES = ["AboutPage", "GeneralConfig", "ModulesConfig", "BarConfig", "DockConfig
 # Cards kept in their own files, indexed with the page that shows them.
 EXTRA = {"DisplaysPage": ["CursorCard"], "AboutPage": ["PresetsCard"]}
 ADVANCED_RE = re.compile(r"^\s*advanced\s*:\s*true\b", re.M)
+SEARCHABLE_RE = re.compile(r"\bsearchable\s*:\s*true\b")
 
 STR = r'"((?:\\.|[^"\\])*)"'
 OBJ_RE = re.compile(r"\b([A-Z][A-Za-z0-9_]*)\s*\{")
@@ -122,6 +123,13 @@ def build():
                     if ADVANCED_RE.search(own_body(body)):
                         e["advanced"] = True
                     entries.append(e)
+                    # Rows that save nothing but ask to be found (`searchable: true`):
+                    # listed under this card, which search then opens.
+                    for _, row in blocks(body):
+                        rp = own_props(row)
+                        if "label" in rp and not keys_written(row) and SEARCHABLE_RE.search(own_body(row)):
+                            entries.append({"page": idx, "card": "", "label": rp["label"],
+                                            "sublabel": rp.get("sublabel", ""), "keys": [], "in": props["title"]})
             elif "label" in props:
                 keys = keys_written(body)
                 if keys:

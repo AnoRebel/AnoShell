@@ -125,6 +125,13 @@ Singleton {
         for (const entry of out) byKey[entry.key] = entry;
         for (const item of index) {
             const words = [item.card, item.label, item.sublabel].join(" ").toLowerCase();
+            // A row that saves nothing, marked searchable: opens its card.
+            if (item.in) {
+                const page = root.pages[item.page];
+                if (page) out.push({ key: "card:" + item.in + "#" + item.label, label: item.label, inCard: item.in, pageIndex: item.page,
+                                     pageName: page.name, pageIcon: page.icon, haystack: words + " " + item.in.toLowerCase() + " " + page.name.toLowerCase() });
+                continue;
+            }
             // A card that writes no setting (Backup, Presets) is found by its title.
             if (!(item.keys || []).length && item.card && item.label === item.card) {
                 const page = root.pages[item.page];
