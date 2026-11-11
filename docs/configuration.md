@@ -164,7 +164,7 @@ between groups), or right-click a group on the bar for **Detach group** /
 
 Bar modules: `sidebarButton`, `activeWindow`, `workspaces`, `clock`,
 `weather`, `battery`, `network`, `bluetooth`, `volume` (hover: the volume
-slider and the output and input devices; click pins it; middle-click mutes), `tray`, `media`, `resources`,
+slider; click: output and input devices; middle-click mutes), `tray`, `media`, `resources`,
 `keyboard` (also `keyboardLayout`), `notifications`, `idle`, `privacy`,
 `drives`, `gamemode`, `nightlight` (click toggles, scroll sets the
 temperature), `downloads` (shown while a browser downloads into your
