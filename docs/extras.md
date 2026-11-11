@@ -88,7 +88,9 @@ it back to the front; pressing it again hides it.
 | sway | the scratchpad | yes |
 | niri | the empty workspace at the end of its screen | yes |
 | Umbriel | the `anodrop` scratchpad (from `external/umbriel/ano.toml`) | yes, flush against the edge |
-| labwc, mango, others | minimized | no: the compositor places it |
+| mango | minimized | yes (floats by the rule in `external/mango/ano.conf`) |
+| labwc | minimized | the rule in `external/labwc/rc.xml` (top edge, fixed size) |
+| others | minimized | no: the compositor places it |
 
 `qs -c ano ipc call dropTerminal toggle|open|close|status` drives it from
 anything else, e.g. a keybind on a compositor without a bundled config.

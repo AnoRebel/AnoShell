@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+  AnoShell — labwc configuration (labwc >= 0.20)
+
+  Usage: copy or symlink this directory's files to ~/.config/labwc/
+    mkdir -p ~/.config/labwc
+    for f in rc.xml autostart shutdown environment; do
+      ln -sf ~/.config/quickshell/ano/external/labwc/$f ~/.config/labwc/$f
+    done
+  Super+Shift+R reloads it (labwc's Reconfigure).
+
+  All UI interactions (sidebars, overview, settings, OSD, notifications) go
+  through QuickShell IPC: qs -c ano ipc call <target> <method>. Settings →
+  Keybinds doesn't edit this file: change the binds by hand. labwc has no
+  blur. Docs: https://anoshell.anorebel.net (Compositors); `ano doctor`.
+  Keep any <privilegedInterfaces> block of your own in step with docs/compositors.md.
+  Reference: man 5 labwc-config, man 5 labwc-actions
+-->
+<labwc_config>
+  <core><gap>5</gap></core>
+  <placement><policy>center</policy></placement>
+  <theme><cornerRadius>8</cornerRadius><dropShadows>yes</dropShadows></theme>
+  <desktops number="9" />
+  <libinput><device category="touchpad"><tap>yes</tap><naturalScroll>yes</naturalScroll></device></libinput>
+
+  <keyboard>
+    <numlock>on</numlock>
+    <!-- AnoShell UI (via IPC); a tap of Super opens search -->
+    <keybind key="Super_L" onRelease="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call search toggle || pkill rofi || rofi -show drun -show-icons'" /></keybind>
+    <keybind key="W-Tab"><action name="Execute" command="qs -c ano ipc call anoview toggle" /></keybind>
+    <keybind key="W-grave"><action name="Execute" command="qs -c ano ipc call taskView toggle" /></keybind>
+    <keybind key="W-S-t"><action name="Execute" command="qs -c ano ipc call dropTerminal toggle" /></keybind>
+    <keybind key="W-b"><action name="Execute" command="qs -c ano ipc call sidebarLeft toggle" /></keybind>
+    <keybind key="W-n"><action name="Execute" command="qs -c ano ipc call sidebarRight toggle" /></keybind>
+    <keybind key="W-a"><action name="Execute" command="qs -c ano ipc call search toggle" /></keybind>
+    <keybind key="W-i"><action name="Execute" command="qs -c ano ipc call controlPanel toggle" /></keybind>
+    <keybind key="W-comma"><action name="Execute" command="qs -c ano ipc call settings toggle" /></keybind>
+    <keybind key="W-S-i"><action name="Execute" command="qs -c ano ipc call hud toggle" /></keybind>
+    <keybind key="A-v"><action name="Execute" command="qs -c ano ipc call clipboard toggle" /></keybind>
+    <keybind key="W-slash"><action name="Execute" command="qs -c ano ipc call cheatsheet toggle" /></keybind>
+    <keybind key="W-o"><action name="Execute" command="qs -c ano ipc call mediaControls toggle" /></keybind>
+    <keybind key="W-x"><action name="Execute" command="qs -c ano ipc call session toggle" /></keybind>
+    <keybind key="W-S-b"><action name="Execute" command="qs -c ano ipc call bar toggle" /></keybind>
+    <keybind key="W-C-t"><action name="Execute" command="qs -c ano ipc call wallpaperSelector toggle" /></keybind>
+    <keybind key="W-C-n"><action name="Execute" command="qs -c ano ipc call reader toggle novel" /></keybind>
+    <keybind key="W-C-m"><action name="Execute" command="qs -c ano ipc call reader toggle manga" /></keybind>
+    <keybind key="W-C-a"><action name="Execute" command="qs -c ano ipc call reader toggle anime" /></keybind>
+    <keybind key="W-S-w"><action name="Execute" command="qs -c ano ipc call weatherPanel toggle" /></keybind>
+    <keybind key="W-S-d"><action name="Execute" command="qs -c ano ipc call dock toggle" /></keybind>
+    <keybind key="W-S-f"><action name="Execute" command="qs -c ano ipc call focusTime toggle" /></keybind>
+    <keybind key="W-l"><action name="Execute" command="qs -c ano ipc call lock lock" /></keybind>
+    <keybind key="W-C-p"><action name="Execute" command="qs -c ano ipc call panelFamily cycle" /></keybind>
+    <keybind key="W-C-r"><action name="Execute" command="sh -c 'killall qs quickshell; sleep 0.3; qs -c ano'" /></keybind>
+    <keybind key="W-S-s"><action name="Execute" command="sh -c 'qs -c ano ipc call screenshot region || grim -g &quot;$(slurp)&quot; - | wl-copy'" /></keybind>
+    <keybind key="W-S-x"><action name="Execute" command="qs -c ano ipc call screenshot ocr" /></keybind>
+    <keybind key="Print"><action name="Execute" command="sh -c 'qs -c ano ipc call screenshot screen || grim - | wl-copy'" /></keybind>
+    <keybind key="S-Print"><action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | swappy -f -'" /></keybind>
+    <keybind key="W-S-c"><action name="Execute" command="sh -c 'hyprpicker -a &amp;&amp; notify-send &quot;Color picked&quot; &quot;$(wl-paste)&quot;'" /></keybind>
+    <keybind key="W-S-p"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris playPause || playerctl play-pause'" /></keybind>
+    <keybind key="W-S-n"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris next || playerctl next'" /></keybind>
+    <keybind key="W-Return"><action name="Execute" command="ano run terminal" /></keybind>
+    <keybind key="W-e"><action name="Execute" command="ano run files ~/Downloads" /></keybind>
+    <keybind key="W-z"><action name="Execute" command="ano run browser" /></keybind>
+    <keybind key="W-d"><action name="Execute" command="vicinae toggle" /></keybind>
+    <keybind key="W-period"><action name="Execute" command="wofi-emoji" /></keybind>
+    <keybind key="C-A-u"><action name="Execute" command="pavucontrol" /></keybind>
+    <keybind key="W-S-l"><action name="Execute" command="sh -c 'systemctl suspend || loginctl suspend'" /></keybind>
+    <!-- Volume, brightness, media: through the shell so its OSD shows; work while locked -->
+    <keybind key="XF86AudioRaiseVolume" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call audio increment || wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%+ -l 1.5'" /></keybind>
+    <keybind key="XF86AudioLowerVolume" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call audio decrement || wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-'" /></keybind>
+    <keybind key="XF86AudioMute" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call audio toggleMute || wpctl set-mute @DEFAULT_SINK@ toggle'" /></keybind>
+    <keybind key="XF86AudioMicMute" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call audio toggleMicMute || wpctl set-mute @DEFAULT_SOURCE@ toggle'" /></keybind>
+    <keybind key="XF86MonBrightnessUp" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call brightness increment || brightnessctl s 5%+'" /></keybind>
+    <keybind key="XF86MonBrightnessDown" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call brightness decrement || brightnessctl s 5%-'" /></keybind>
+    <keybind key="XF86AudioPlay" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris playPause || playerctl play-pause'" /></keybind>
+    <keybind key="XF86AudioNext" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris next || playerctl next'" /></keybind>
+    <keybind key="XF86AudioPrev" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris previous || playerctl previous'" /></keybind>
+    <keybind key="XF86AudioStop" allowWhenLocked="yes"><action name="Execute" command="sh -c 'qs -c ano ipc call mpris pauseAll || playerctl stop'" /></keybind>
+    <keybind key="XF86KbdBrightnessUp"><action name="Execute" command="brightnessctl -d '*::kbd_backlight' s 10%+" /></keybind>
+    <keybind key="XF86KbdBrightnessDown"><action name="Execute" command="brightnessctl -d '*::kbd_backlight' s 10%-" /></keybind>
+    <!-- Windows -->
+    <keybind key="W-S-q"><action name="Close" /></keybind>
+    <keybind key="A-F4"><action name="Close" /></keybind>
+    <keybind key="W-C-q"><action name="Exit" /></keybind>
+    <keybind key="W-f"><action name="ToggleMaximize" /></keybind>
+    <keybind key="W-A-f"><action name="ToggleFullscreen" /></keybind>
+    <keybind key="W-p"><action name="ToggleAlwaysOnTop" /></keybind>
+    <keybind key="W-m"><action name="Iconify" /></keybind>
+    <keybind key="W-S-r"><action name="Reconfigure" /></keybind>
+    <keybind key="A-Tab"><action name="NextWindow" /></keybind>
+    <keybind key="A-S-Tab"><action name="PreviousWindow" /></keybind>
+    <keybind key="W-Left"><action name="SnapToEdge" direction="left" /></keybind>
+    <keybind key="W-Right"><action name="SnapToEdge" direction="right" /></keybind>
+    <keybind key="W-Up"><action name="SnapToEdge" direction="up" /></keybind>
+    <keybind key="W-Down"><action name="SnapToEdge" direction="down" /></keybind>
+    <keybind key="W-S-Left"><action name="MoveToEdge" direction="left" /></keybind>
+    <keybind key="W-S-Right"><action name="MoveToEdge" direction="right" /></keybind>
+    <keybind key="W-S-Up"><action name="MoveToEdge" direction="up" /></keybind>
+    <keybind key="W-S-Down"><action name="MoveToEdge" direction="down" /></keybind>
+    <!-- Workspaces (labwc's span every output) -->
+    <keybind key="W-1"><action name="GoToDesktop" to="1" /></keybind>
+    <keybind key="W-2"><action name="GoToDesktop" to="2" /></keybind>
+    <keybind key="W-3"><action name="GoToDesktop" to="3" /></keybind>
+    <keybind key="W-4"><action name="GoToDesktop" to="4" /></keybind>
+    <keybind key="W-5"><action name="GoToDesktop" to="5" /></keybind>
+    <keybind key="W-6"><action name="GoToDesktop" to="6" /></keybind>
+    <keybind key="W-7"><action name="GoToDesktop" to="7" /></keybind>
+    <keybind key="W-8"><action name="GoToDesktop" to="8" /></keybind>
+    <keybind key="W-9"><action name="GoToDesktop" to="9" /></keybind>
+    <keybind key="W-S-1"><action name="SendToDesktop" to="1" follow="no" /></keybind>
+    <keybind key="W-S-2"><action name="SendToDesktop" to="2" follow="no" /></keybind>
+    <keybind key="W-S-3"><action name="SendToDesktop" to="3" follow="no" /></keybind>
+    <keybind key="W-S-4"><action name="SendToDesktop" to="4" follow="no" /></keybind>
+    <keybind key="W-S-5"><action name="SendToDesktop" to="5" follow="no" /></keybind>
+    <keybind key="W-S-6"><action name="SendToDesktop" to="6" follow="no" /></keybind>
+    <keybind key="W-S-7"><action name="SendToDesktop" to="7" follow="no" /></keybind>
+    <keybind key="W-S-8"><action name="SendToDesktop" to="8" follow="no" /></keybind>
+    <keybind key="W-S-9"><action name="SendToDesktop" to="9" follow="no" /></keybind>
+    <keybind key="W-C-Right"><action name="GoToDesktop" to="right" /></keybind>
+    <keybind key="W-C-Left"><action name="GoToDesktop" to="left" /></keybind>
+  </keyboard>
+
+  <mouse>
+    <default />
+    <context name="Root">
+      <mousebind direction="W-Up" action="Scroll"><action name="GoToDesktop" to="left" /></mousebind>
+      <mousebind direction="W-Down" action="Scroll"><action name="GoToDesktop" to="right" /></mousebind>
+    </context>
+  </mouse>
+
+  <windowRules>
+    <!-- Dropdown terminal (Super+Shift+T): labwc has no IPC to place it, so
+         it opens 1440x640 at the top edge (labwc sizes in pixels; change them
+         here), centred; the shell hides and
+         shows it. -->
+    <windowRule identifier="ano.dropterm">
+      <action name="ResizeTo" width="1440" height="640" />
+      <action name="AutoPlace" policy="center" />
+      <action name="MoveToEdge" direction="up" snapWindows="no" />
+    </windowRule>
+    <windowRule identifier="ano.dropterm" skipWindowSwitcher="yes" serverDecoration="no" />
+  </windowRules>
+</labwc_config>

@@ -134,16 +134,16 @@ func have(bin string) bool {
 	return false
 }
 
-// experimentalBackend picks sway, mango, labwc or umbriel in CompositorService's
+// otherBackend picks sway, mango, labwc or umbriel in CompositorService's
 // order: the desktop name, then the session's own variables, SWAYSOCK last
 // (sway exports it, and labwc LABWC_PID, to the activation environment, so a
 // later session of another compositor can inherit them).
-func experimentalBackend() (name, bin string) {
+func otherBackend() (name, bin string) {
 	label := map[string][2]string{
-		"sway":    {"sway (experimental)", "swaymsg"},    // tree and keyboard layouts
-		"mango":   {"mango (experimental)", ""},          // its socket; no binary needed
-		"labwc":   {"labwc (experimental)", "labwc"},     // labwc --exit
-		"umbriel": {"umbriel (experimental)", "umbriel"}, // umbriel subscribe / msg
+		"sway":    {"sway", "swaymsg"},    // tree and keyboard layouts
+		"mango":   {"mango", ""},          // its socket; no binary needed
+		"labwc":   {"labwc", "labwc"},     // labwc --exit
+		"umbriel": {"umbriel", "umbriel"}, // umbriel subscribe / msg
 	}
 	pick := ""
 	for _, d := range []string{"sway", "mango", "labwc", "umbriel"} {
@@ -189,13 +189,13 @@ func runChecks() []check {
 	switch {
 	// Before Hyprland: umbriel nested in Hyprland passes HYPRLAND_INSTANCE_SIGNATURE on.
 	case os.Getenv("UMBRIEL_SOCKET") != "" && desktopIs("umbriel"):
-		comp, compBin = experimentalBackend()
+		comp, compBin = otherBackend()
 	case os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") != "":
 		comp, compBin = "hyprland", "hyprctl"
 	case os.Getenv("NIRI_SOCKET") != "":
 		comp, compBin = "niri", "niri"
 	default:
-		comp, compBin = experimentalBackend()
+		comp, compBin = otherBackend()
 	}
 	add("info", "compositor", "%s", comp)
 	for _, b := range []string{"qs", compBin} {

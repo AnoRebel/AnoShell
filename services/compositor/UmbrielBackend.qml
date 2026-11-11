@@ -5,7 +5,7 @@ import Quickshell.Wayland
 import "UmbrielModel.js" as UmbrielModel
 
 /**
- * Umbriel backend (experimental; written against umbriel 0.1.0, see
+ * Umbriel backend (written against umbriel 0.1.0; tested nested, see
  * BackendContract.md and docs/compositors.md).
  *
  * One `umbriel subscribe windows,workspaces,keyboard_layout` process drives
@@ -18,6 +18,7 @@ import "UmbrielModel.js" as UmbrielModel
  */
 GenericBackend {
     id: root
+    experimental: false // tested end to end (docs/compositors.md)
 
     name: "umbriel"
     supports: ({

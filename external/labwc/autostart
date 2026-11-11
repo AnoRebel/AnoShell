@@ -1,0 +1,23 @@
+# AnoShell — labwc autostart (~/.config/labwc/autostart), run by sh when labwc
+# starts. Every long-running line ends in `&`.
+
+# With systemd: tie graphical-session.target (portals, notifiers and other
+# services wanted by it) to this session. Stopping labwc then stops them, so
+# leave it off for a nested/test labwc. The shutdown file stops it.
+# systemctl --user --no-block start labwc-session.target
+
+# Legacy bars/notifiers out of the way, then the shell with more than the
+# default 1024 open files (anod --supervise raises it itself).
+pkill -x waybar; pkill -x swaync; pkill -x swayosd
+( ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano ) >/dev/null 2>&1 &
+# anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
+# For crash supervision, replace both lines with: anod --supervise & (it starts qs).
+A=$(command -v anod || echo "$HOME/.local/bin/anod"); [ -x "$A" ] && "$A" >/dev/null 2>&1 &
+systemctl --user start hyprpolkitagent >/dev/null 2>&1 &
+nm-applet --indicator >/dev/null 2>&1 &
+# Clipboard history (with QS IPC update)
+wl-paste --type text --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update' >/dev/null 2>&1 &
+wl-paste --type image --watch bash -c 'cliphist store && qs -c ano ipc call cliphistService update' >/dev/null 2>&1 &
+# Wallpaper: awww draws it; rotation, colours and hooks are anod's.
+awww-daemon >/dev/null 2>&1 &
+kdeconnectd >/dev/null 2>&1 &

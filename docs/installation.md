@@ -62,6 +62,17 @@ isn't installed):
 - **niri:** `external/niri/ano.kdl` (copy or symlink it to
   `~/.config/niri/config.kdl`; it needs niri ≥ 26.04). For crash supervision,
   replace its two startup lines with `anod --supervise`.
+- **sway:** `external/sway/ano.conf` → `~/.config/sway/config` (sway ≥ 1.12).
+- **mango:** `external/mango/ano.conf` → `~/.config/mango/config.conf`
+  (mango ≥ 0.18).
+- **labwc:** `external/labwc/` → `~/.config/labwc/` (`rc.xml`, `autostart`,
+  `shutdown`, `environment`; labwc ≥ 0.20).
+- **Umbriel:** `external/umbriel/ano.toml` → `~/.config/umbriel/config.toml`
+  (umbriel ≥ 0.1).
+
+For the last four, crash supervision is the same swap as on niri: replace the
+two startup lines with `anod --supervise`. Each file's header says how to
+check it ([compositors](compositors.md#bundled-configs)).
 
 To start the shell by hand: `qs -c ano`. From your own compositor config,
 raise the open-file limit first, as the bundled ones do:

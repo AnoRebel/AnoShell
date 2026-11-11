@@ -1,0 +1,11 @@
+# AnoShell — labwc environment (~/.config/labwc/environment)
+# One VARIABLE=value per line; read before labwc starts.
+# labwc sets XDG_CURRENT_DESKTOP (labwc:wlroots) and LABWC_PID itself;
+# AnoShell picks its labwc backend from LABWC_PID.
+XDG_SESSION_TYPE=wayland
+QT_QPA_PLATFORMTHEME=qt6ct
+ELECTRON_OZONE_PLATFORM_HINT=auto
+XCURSOR_THEME=Qogir
+XCURSOR_SIZE=16
+_JAVA_AWT_WM_NONREPARENTING=1
+XKB_DEFAULT_LAYOUT=us
