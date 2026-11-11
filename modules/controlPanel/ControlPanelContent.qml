@@ -78,7 +78,15 @@ ColumnLayout {
                 }
                 StyledSlider { Layout.fillWidth: true; configuration: StyledSlider.Configuration.S; value: Audio.sink?.audio?.volume ?? 0; onMoved: { if (Audio.sink?.audio) Audio.sink.audio.volume = value }
                 stopIndicatorValues: [1] }
+                ToolbarButton {
+                    id: devicesButton
+                    property bool open: false
+                    iconName: open ? "expand_less" : "expand_more"; iconSize: 18
+                    toolTipText: "Audio devices"
+                    onClicked: open = !open
+                }
             }
+            AudioDevicePicker { visible: devicesButton.open; Layout.fillWidth: true; outputs: true; inputs: true }
         }
     }
 

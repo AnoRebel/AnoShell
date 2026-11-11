@@ -60,6 +60,17 @@ ColumnLayout {
 
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"; opacity: 0.2 }
 
+        ConfigRow {
+            label: "Output device"
+            sublabel: "Where sound plays"
+            AudioDevicePicker { Layout.preferredWidth: 420; outputs: true }
+        }
+        ConfigRow {
+            label: "Input device"
+            sublabel: "The microphone apps record from"
+            AudioDevicePicker { Layout.preferredWidth: 420; outputs: false; inputs: true }
+        }
+
         ConfigSwitch {
             label: "EasyEffects quick toggle"
             configKey: "audio.easyEffects.enable"
