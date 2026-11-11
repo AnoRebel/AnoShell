@@ -242,8 +242,16 @@ Singleton {
                 if (e.haystack.indexOf(tokens[i]) < 0 && (sq[i].length === 0 || e._squashed.indexOf(sq[i]) < 0)) return false;
             return true;
         });
-        // Rank: shorter key wins (more specific matches surface first).
+        // Rank: the label typed exactly, then a label holding every token, then
+        // a key path holding every token; shorter key wins ties.
+        const whole = sq.join("");
+        const labelRank = e => {
+            const l = squash(String(e.label ?? "").toLowerCase());
+            return l.length === 0 ? 0 : l === whole ? 2 : sq.every(t => l.indexOf(t) >= 0) ? 1 : 0;
+        };
         matches.sort((a, b) => {
+            const lr = labelRank(b) - labelRank(a);
+            if (lr !== 0) return lr;
             // Prefer entries whose key path itself contains all tokens
             const aKey = a.key.toLowerCase();
             const bKey = b.key.toLowerCase();
