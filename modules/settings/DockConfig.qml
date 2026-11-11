@@ -566,6 +566,7 @@ ColumnLayout {
             configKey: "dock.screenList"
             sublabel: "Comma-separated monitor names (empty = all screens)"
             StyledTextInput {
+                boxed: true
                 text: (Config.options?.dock?.screenList ?? []).join(", ")
                 font.family: Appearance?.font.family.mono ?? "monospace"
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12

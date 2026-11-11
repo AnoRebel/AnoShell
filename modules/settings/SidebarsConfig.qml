@@ -208,6 +208,7 @@ ColumnLayout {
             label: "todo.txt"; configKey: "todo.file"
             sublabel: "Empty: ~/.local/share/anoshell/todo.txt"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.todo?.file ?? ""
                 onEditingFinished: Config.setNestedValue("todo.file", text.trim())
                 Layout.fillWidth: true

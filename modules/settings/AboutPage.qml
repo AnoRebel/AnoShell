@@ -236,6 +236,7 @@ ColumnLayout {
             configKey: "user.avatarPath"
             sublabel: "Override ~/.face with a custom path (leave empty for default)"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.user?.avatarPath ?? ""
                 onEditingFinished: Config.setNestedValue("user.avatarPath", text)
                 Layout.fillWidth: true

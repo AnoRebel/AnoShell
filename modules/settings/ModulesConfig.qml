@@ -488,6 +488,7 @@ ColumnLayout {
             configKey: "screenshot.saveDir"
             sublabel: "Empty: Pictures/Screenshots"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.screenshot?.saveDir ?? ""
                 onEditingFinished: Config.setNestedValue("screenshot.saveDir", text.trim())
                 Layout.preferredWidth: 200
@@ -505,6 +506,7 @@ ColumnLayout {
             configKey: "screenshot.ocrLanguages"
             sublabel: "Super+Shift+X copies the text in a region. tesseract codes, comma separated (eng, deu, fra, chi_sim…); each needs its tesseract-data package"
             StyledTextInput {
+                boxed: true
                 text: (Config.options?.screenshot?.ocrLanguages ?? ["eng"]).join(", ")
                 onEditingFinished: {
                     const l = text.split(/[\s,+]+/).filter(x => /^[A-Za-z_]+$/.test(x))
@@ -604,6 +606,7 @@ ColumnLayout {
             sublabel: "Empty: paru if installed, else yay"
             visible: Config.options?.search?.plugins?.packages?.enable ?? false
             StyledTextInput {
+                boxed: true
                 text: Config.options?.search?.plugins?.packages?.helper ?? ""
                 onEditingFinished: Config.setNestedValue("search.plugins.packages.helper", text.trim())
                 Layout.preferredWidth: 120
@@ -673,6 +676,7 @@ ColumnLayout {
                             ? `${appCol.program} is not installed — using ${appCol.effective}`
                         : `Opens: ${appCol.effective}`
                     StyledTextInput {
+                        boxed: true
                         // Any command line (e.g. "kitty -1"); the picks below fill it in.
                         text: appCol.configured
                         onEditingFinished: Config.setNestedValue(`apps.${appCol.key}`, text.trim())
@@ -756,6 +760,7 @@ ColumnLayout {
             configKey: "dropTerminal.command"
             sublabel: "Run in it instead of your shell (empty: your shell). Applies the next time it starts."
             StyledTextInput {
+                boxed: true
                 text: Config.options?.dropTerminal?.command ?? ""
                 onEditingFinished: Config.setNestedValue("dropTerminal.command", text.trim())
                 Layout.preferredWidth: 160
@@ -794,6 +799,7 @@ ColumnLayout {
             RowLayout {
                 spacing: 6
                 StyledTextInput {
+                    boxed: true
                     text: Config.options?.compositor?.backend ?? "auto"
                     onEditingFinished: Config.setNestedValue("compositor.backend", text.trim() || "auto")
                     Layout.preferredWidth: 120
@@ -808,6 +814,7 @@ ColumnLayout {
             configKey: "display.primaryMonitor"
             sublabel: "Leave empty for auto"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.display?.primaryMonitor ?? ""
                 onEditingFinished: Config.setNestedValue("display.primaryMonitor", text)
                 Layout.preferredWidth: 160
@@ -972,6 +979,7 @@ ColumnLayout {
             configKey: "focusTime.excludeApps"
             sublabel: "Comma-separated list of apps to ignore"
             StyledTextInput {
+                boxed: true
                 text: (Config.options?.focusTime?.excludeApps ?? []).join(", ")
                 onEditingFinished: Config.setNestedValue("focusTime.excludeApps", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
                 Layout.fillWidth: true
@@ -1136,6 +1144,7 @@ ColumnLayout {
             configKey: "reader.python"
             sublabel: "Interpreter for sources set to Python (a venv with flask, requests, curl_cffi)"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.reader?.python ?? "python3"
                 onEditingFinished: Config.setNestedValue("reader.python", text.trim() || "python3")
                 Layout.fillWidth: true
@@ -1166,6 +1175,7 @@ ColumnLayout {
             label: "Sound theme"
             configKey: "sounds.theme"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.sounds?.theme ?? "freedesktop"
                 onEditingFinished: Config.setNestedValue("sounds.theme", text)
                 Layout.preferredWidth: 160
@@ -1203,6 +1213,7 @@ ColumnLayout {
             configKey: "media.preferredPlayer"
             sublabel: "Name to track first when nothing is playing (e.g. spotify); empty = automatic"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.media?.preferredPlayer ?? ""
                 onEditingFinished: Config.setNestedValue("media.preferredPlayer", text.trim())
                 Layout.preferredWidth: 160
