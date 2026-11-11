@@ -3,7 +3,7 @@
 // commas, one `","` for `:`). Run: node scripts/dev/test-sway-model.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/compositor/SwayModel.js'), 'utf8').replace('.pragma library', '')
-const M = new Function(src + ';return {occupied, fullscreen, windows, layouts, layoutsFromEvent};')()
+const M = new Function(src + ';return {occupied, fullscreen, windows, layouts, layoutsFromEvent, reserved};')()
 const fx = n => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/sway', n + '.json'), 'utf8'))
 const a = (c, m) => { if (!c) throw new Error(m) }
 
@@ -42,4 +42,8 @@ t4.nodes.push({ type: 'output', name: 'HDMI-A-1', current_workspace: '2', nodes:
 t4.nodes[1].nodes[0].nodes[0].fullscreen_mode = 2
 a(JSON.stringify(M.fullscreen(t4)) === '{"eDP-1":true,"HDMI-A-1":true}', 'global fullscreen covers every output')
 a(w.every(x => x.workspaceName === '1'), 'windows carry their workspace name')
+const t5 = { nodes: [{ type: 'output', name: 'O', current_workspace: '1', rect: { x: 100, y: 0, width: 1000, height: 800 },
+    nodes: [{ type: 'workspace', name: '1', rect: { x: 100, y: 44, width: 1000, height: 708 }, nodes: [], floating_nodes: [] }] }] }
+a(JSON.stringify(M.reserved(t5, 'O')) === '[0,44,0,48]', 'reserved = output rect minus the workspace rect')
+a(M.reserved(t5, 'X') === null, 'unknown output: null')
 console.log('sway model ok')

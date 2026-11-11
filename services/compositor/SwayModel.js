@@ -61,6 +61,16 @@ function fullscreen(tree) {
     return out
 }
 
+// [left, top, right, bottom] an output reserves for panels: its shown
+// workspace's rect (the usable area) inside the output's rect; null unknown.
+function reserved(tree, outputName) {
+    const e = _workspaces(tree).find(e => e.output.name === outputName
+        && (e.output.current_workspace === undefined || e.output.current_workspace === e.workspace.name))
+    const o = e && e.output.rect, w = e && e.workspace.rect
+    if (!o || !w) return null
+    return [w.x - o.x, w.y - o.y, (o.x + o.width) - (w.x + w.width), (o.y + o.height) - (w.y + w.height)].map(v => Math.max(0, v))
+}
+
 // The contract's window list, ids being sway container ids (for `[con_id=…]`).
 function windows(tree) {
     const out = []

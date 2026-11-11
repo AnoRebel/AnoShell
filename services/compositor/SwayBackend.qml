@@ -122,6 +122,7 @@ GenericBackend {
         return true
     }
     function focusWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] focus`) : false }
+    function reservedOf(outputName) { return root._tree ? SwayModel.reserved(root._tree, outputName) : null }
     // Dropdown terminal (services/DropTerminal.qml): sway's scratchpad. By
     // app id: the window list leaves scratchpad windows out, so a hidden one
     // has no id after a reload.
