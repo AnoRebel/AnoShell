@@ -350,6 +350,7 @@ ColumnLayout {
             RowLayout {
                 spacing: 8
                 StyledTextInput {
+                    boxed: true
                     text: Config.options?.time?.[tfRow.formatKey] ?? tfRow.defaultValue
                     onEditingFinished: Config.setNestedValue(`time.${tfRow.formatKey}`, text)
                     Layout.preferredWidth: tfRow.inputWidth
@@ -537,6 +538,7 @@ ColumnLayout {
                     }
                 }
                 StyledTextInput {
+                    boxed: true
                     Layout.fillWidth: true
                     // An app that hasn't notified yet: add it by name, then pick its rule.
                     onAccepted: { const n = text.trim(); if (n) appRules.extra = appRules.extra.concat([n]); text = "" }
@@ -546,6 +548,8 @@ ColumnLayout {
                         opacity: 0.45
                         visible: parent.text.length === 0
                         font.pixelSize: parent.font.pixelSize
+                        leftPadding: parent.leftPadding
+                        topPadding: parent.topPadding
                     }
                 }
             }

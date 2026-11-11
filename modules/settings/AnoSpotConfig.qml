@@ -618,6 +618,7 @@ ColumnLayout {
                             Layout.preferredWidth: 64
                         }
                         StyledTextInput {
+                            boxed: true
                             Layout.fillWidth: true
                             text: modelData.name ?? ""
                             onEditingFinished: root._updateRule(index, "name", text)
@@ -627,6 +628,7 @@ ColumnLayout {
                             font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.7
                         }
                         StyledTextInput {
+                            boxed: true
                             Layout.preferredWidth: 110
                             text: modelData.icon ?? "play_arrow"
                             onEditingFinished: root._updateRule(index, "icon", text)
@@ -681,6 +683,7 @@ ColumnLayout {
                             Layout.preferredWidth: 64
                         }
                         StyledTextInput {
+                            boxed: true
                             Layout.fillWidth: true
                             text: modelData.command ?? ""
                             font.family: Appearance?.font.family.monospace ?? "monospace"

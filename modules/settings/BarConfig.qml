@@ -976,6 +976,7 @@ ColumnLayout {
                 ? `Using your location (${Location.city || Location.source}) from Settings → Services → Location; this city is used when location is off`
                 : "Used when location (Settings → Services → Location) is off or unknown; empty: guessed from your IP address"
             StyledTextInput {
+                boxed: true
                 text: Config.options?.bar?.weather?.city ?? ""
                 onEditingFinished: Config.setNestedValue("bar.weather.city", text)
                 Layout.preferredWidth: 180
@@ -1054,6 +1055,7 @@ ColumnLayout {
             RowLayout {
                 spacing: 6
                 StyledTextInput {
+                    boxed: true
                     text: Config.options?.bar?.weather?.alerts?.quietFrom ?? "22:00"
                     validator: RegularExpressionValidator { regularExpression: /^([01]?\d|2[0-3]):[0-5]\d$/ }
                     onEditingFinished: Config.setNestedValue("bar.weather.alerts.quietFrom", text.trim())
@@ -1061,6 +1063,7 @@ ColumnLayout {
                 }
                 StyledText { text: "–" }
                 StyledTextInput {
+                    boxed: true
                     text: Config.options?.bar?.weather?.alerts?.quietTo ?? "07:00"
                     validator: RegularExpressionValidator { regularExpression: /^([01]?\d|2[0-3]):[0-5]\d$/ }
                     onEditingFinished: Config.setNestedValue("bar.weather.alerts.quietTo", text.trim())

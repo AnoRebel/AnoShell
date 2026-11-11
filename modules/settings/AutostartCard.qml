@@ -124,6 +124,7 @@ SettingsCard {
                 }
             }
             StyledTextInput {
+                boxed: true
                 Layout.preferredWidth: 36
                 horizontalAlignment: TextInput.AlignRight
                 validator: IntValidator { bottom: 0; top: 600 }

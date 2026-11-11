@@ -254,6 +254,7 @@ ColumnLayout {
             configKey: "ai.defaultModel"
             sublabel: "One of: " + Ai.modelList.join(", ")
             StyledTextInput {
+                boxed: true
                 text: Config.options?.ai?.defaultModel ?? ""
                 onEditingFinished: Config.setNestedValue("ai.defaultModel", text)
                 Layout.preferredWidth: 200
@@ -424,6 +425,7 @@ ColumnLayout {
             configKey: "light.device"
             sublabel: "Leave empty for auto-detect. Use 'brightnessctl -l' to list devices."
             StyledTextInput {
+                boxed: true
                 text: Config.options?.light?.device ?? ""
                 onEditingFinished: Config.setNestedValue("light.device", text)
                 Layout.preferredWidth: 200
@@ -498,6 +500,7 @@ ColumnLayout {
             configKey: "performance.apps"
             sublabel: "App ids, comma-separated; * and ? match anything, case doesn't matter (e.g. steam_app_*, blender)"
             StyledTextInput {
+                boxed: true
                 text: (Config.options?.performance?.apps ?? []).join(", ")
                 onEditingFinished: Config.setNestedValue("performance.apps", text.split(",").map(s => s.trim()).filter(s => s.length > 0))
                 Layout.fillWidth: true
@@ -1273,6 +1276,7 @@ ColumnLayout {
             sublabel: "Path for local .lrc files. Supports `~` expansion."
             enabled: lyEnable.checked
             StyledTextInput {
+                boxed: true
                 text: Config.options?.lyrics?.dir ?? "~/.config/anoshell/lyrics"
                 onEditingFinished: Config.setNestedValue("lyrics.dir", text.trim())
                 Layout.preferredWidth: 220
