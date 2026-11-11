@@ -14,4 +14,5 @@ TextInput {
     selectionColor: Appearance?.colors.colPrimary ?? "#65558F"
     selectedTextColor: Appearance?.m3colors.m3onPrimary ?? "white"
     selectByMouse: true
+    clip: true // a value longer than the field scrolls inside it instead of drawing over its neighbours
 }
