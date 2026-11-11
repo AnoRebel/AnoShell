@@ -241,8 +241,13 @@ blur_ignore_alpha = 0.05
 "Mod+WheelUp" = { action = "workspace-previous", cooldown_ms = 150 }
 
 # Scratchpad
-"Mod+Shift+grave" = { action = "window-toggle-scratchpad", repeat = false }
-"Mod+Ctrl+grave" = "scratchpad-toggle"
+# (with named scratchpads defined below, every scratchpad bind names one)
+"Mod+Shift+grave" = { action = "window-toggle-scratchpad main", repeat = false }
+"Mod+Ctrl+grave" = "scratchpad-toggle main"
+
+# Your scratchpad (Mod+Shift+grave sends a window to it, Mod+Ctrl+grave shows it).
+[[scratchpad]]
+name = "main"
 
 # Dropdown terminal (qs -c ano ipc call dropTerminal toggle): its own
 # scratchpad, floating; the shell then sizes it and moves it to
