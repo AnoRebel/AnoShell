@@ -122,5 +122,18 @@ GenericBackend {
         return true
     }
     function focusWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] focus`) : false }
+    // Dropdown terminal (services/DropTerminal.qml): sway's scratchpad. By
+    // app id: the window list leaves scratchpad windows out, so a hidden one
+    // has no id after a reload.
+    function _dropCriteria(id, appId) {
+        if (/^[\w.-]+$/.test(appId ?? "")) return `[app_id="^${String(appId).replace(/\./g, "\\.")}$"]`
+        return Number.isInteger(id) ? `[con_id=${id}]` : ""
+    }
+    function showWindowAt(id, r, side, appId) {
+        const c = root._dropCriteria(id, appId)
+        if (!c || !r) return false
+        return root._run(`${c} move scratchpad, scratchpad show, resize set width ${Math.round(r.width)} px height ${Math.round(r.height)} px, move absolute position ${Math.round(r.x)} px ${Math.round(r.y)} px, focus`)
+    }
+    function hideWindow(id, side, appId) { const c = root._dropCriteria(id, appId); return c ? root._run(`${c} move scratchpad`) : false }
     function closeWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] kill`) : false }
 }

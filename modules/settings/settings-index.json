@@ -878,6 +878,51 @@
  },
  {
   "page": 2,
+  "card": "Dropdown terminal",
+  "label": "Dropdown terminal",
+  "sublabel": "Super+Shift+T drops your terminal in from an edge and puts it away again, keeping its session. Needs a terminal that can set its window class: kitty, foot, Alacritty, Ghostty or WezTerm.",
+  "keys": [
+   "dropTerminal"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Opens from",
+  "sublabel": "hyprland",
+  "keys": [
+   "dropTerminal.side"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Width",
+  "sublabel": "Of the screen's free area",
+  "keys": [
+   "dropTerminal.width"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Height",
+  "sublabel": "",
+  "keys": [
+   "dropTerminal.height"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Command",
+  "sublabel": "Run in it instead of your shell (empty: your shell). Applies the next time it starts.",
+  "keys": [
+   "dropTerminal.command"
+  ]
+ },
+ {
+  "page": 2,
   "card": "Compositor",
   "label": "Compositor",
   "sublabel": "Wayland compositor settings",

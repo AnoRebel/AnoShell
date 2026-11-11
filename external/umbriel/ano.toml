@@ -119,6 +119,7 @@ blur_ignore_alpha = 0.05
 "Mod" = { action = "spawn qs -c ano ipc call search toggle || pkill rofi || rofi -show drun -show-icons", repeat = false }
 "Mod+Tab" = { action = "spawn qs -c ano ipc call anoview toggle", repeat = false }
 "Mod+grave" = { action = "spawn qs -c ano ipc call taskView toggle", repeat = false }
+"Mod+Shift+T" = { action = "spawn qs -c ano ipc call dropTerminal toggle", repeat = false }
 "Mod+B" = { action = "spawn qs -c ano ipc call sidebarLeft toggle", repeat = false }
 "Mod+N" = { action = "spawn qs -c ano ipc call sidebarRight toggle", repeat = false }
 "Mod+A" = { action = "spawn qs -c ano ipc call search toggle", repeat = false }
@@ -242,3 +243,15 @@ blur_ignore_alpha = 0.05
 # Scratchpad
 "Mod+Shift+grave" = { action = "window-toggle-scratchpad", repeat = false }
 "Mod+Ctrl+grave" = "scratchpad-toggle"
+
+# Dropdown terminal (qs -c ano ipc call dropTerminal toggle): its own
+# scratchpad, floating at this size; the shell moves it to dropTerminal.side.
+[[scratchpad]]
+name = "anodrop"
+hide_when_empty = true
+
+[[window_rule]]
+match.app_id = "^ano\\.dropterm$"
+default_scratchpad = "anodrop"
+default_floating = true
+default_floating_size_px = { width = 1440, height = 640 }

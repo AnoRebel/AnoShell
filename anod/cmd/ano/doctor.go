@@ -41,6 +41,7 @@ var features = []feature{
 	{"screenshots (Hyprland and other wlroots; niri uses its own)", "", []string{"grim", "slurp"}},
 	{"text recognition (Super+Shift+X; language data: tesseract-data-*)", "", []string{"tesseract"}},
 	{"scratchpad (copy, failed-command notices)", "scratchpad.enable", []string{"wl-copy", "notify-send"}},
+	{"dropdown terminal (Super+Shift+T; a terminal that sets its window class)", "", []string{"kitty|foot|alacritty|ghostty|wezterm"}},
 	{"brightness", "", []string{"brightnessctl"}},
 	{"brightness of external monitors (DDC/CI)", "", []string{"ddcutil"}},
 	{"colour scripts and terminal colours (pkill recolours running kitty/Ghostty)", "", []string{"jq", "pkill"}},

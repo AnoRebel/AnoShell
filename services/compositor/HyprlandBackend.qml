@@ -159,6 +159,22 @@ QtObject {
 
     function focusWindowById(id) { return id ? root._lua(`hl.dsp.focus({ window = "address:${id}" })`) : false }
     function closeWindowById(id) { return id ? root._lua(`hl.dsp.window.close({ window = "address:${id}" })`) : false }
+    // Dropdown terminal (services/DropTerminal.qml): kept on a special
+    // workspace while hidden; shown floating at r (global logical px).
+    function showWindowAt(id, r, side) {
+        const ws = root._focusedMon?.activeWorkspace?.id
+        if (!/^0x[0-9a-f]+$/i.test(String(id)) || !r || !(ws > 0)) return false
+        const w = `window = "address:${id}"`
+        root._lua(`hl.dsp.window.move({ ${w}, workspace = ${ws} })`)
+        root._lua(`hl.dsp.window.float({ ${w}, action = "enable" })`)
+        root._lua(`hl.dsp.window.resize({ ${w}, x = ${Math.round(r.width)}, y = ${Math.round(r.height)} })`)
+        root._lua(`hl.dsp.window.move({ ${w}, x = ${Math.round(r.x)}, y = ${Math.round(r.y)} })`)
+        return root._lua(`hl.dsp.focus({ ${w} })`)
+    }
+    function hideWindow(id, side) {
+        if (!/^0x[0-9a-f]+$/i.test(String(id))) return false
+        return root._lua(`hl.dsp.window.move({ window = "address:${id}", workspace = "special:anodrop", follow = false })`)
+    }
 
     // True fullscreen (mode 2) on a monitor's visible workspace. `hasfullscreen`
     // is also set by maximize, so clients are only fetched when it is set.

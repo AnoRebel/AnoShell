@@ -110,6 +110,27 @@ QtObject {
 
     function focusWindowById(id) { return (id === undefined || id === null) ? false : NiriService.focusWindow(id) }
     function closeWindowById(id) { return (id === undefined || id === null) ? false : NiriService.closeWindow(id) }
+    // Dropdown terminal (services/DropTerminal.qml). niri has no scratchpad:
+    // hidden, it waits on the empty workspace at the end of its output; shown,
+    // it floats at r (relative to its output).
+    function _wsOn(output) { return (NiriService.allWorkspaces ?? []).filter(w => w.output === output) }
+    function showWindowAt(id, r, side) {
+        const ws = root._wsOn(root.focusedOutput).find(w => w.is_active)
+        if (!Number.isInteger(id) || !r || !ws) return false
+        NiriService.send({ "Action": { "MoveWindowToWorkspace": { "window_id": id, "reference": { "Id": ws.id }, "focus": true } } })
+        NiriService.send({ "Action": { "MoveWindowToFloating": { "id": id } } })
+        NiriService.send({ "Action": { "SetWindowWidth": { "id": id, "change": { "SetFixed": Math.round(r.width) } } } })
+        NiriService.send({ "Action": { "SetWindowHeight": { "id": id, "change": { "SetFixed": Math.round(r.height) } } } })
+        NiriService.send({ "Action": { "MoveFloatingWindow": { "id": id, "x": { "SetFixed": r.x - r.screen.x }, "y": { "SetFixed": r.y - r.screen.y } } } })
+        return NiriService.focusWindow(id)
+    }
+    function hideWindow(id, side) {
+        const w = (NiriService.windows ?? []).find(w => w.id === id)
+        const out = (NiriService.allWorkspaces ?? []).find(ws => ws.id === w?.workspace_id)?.output ?? root.focusedOutput
+        const last = root._wsOn(out).reduce((a, b) => (a === null || b.idx > a.idx) ? b : a, null)
+        if (!Number.isInteger(id) || !last || last.id === w?.workspace_id) return false
+        return NiriService.send({ "Action": { "MoveWindowToWorkspace": { "window_id": id, "reference": { "Id": last.id }, "focus": false } } })
+    }
 
     readonly property string keyboardLayout: NiriService.getCurrentKeyboardLayoutName()
     readonly property var keyboardLayouts: NiriService.keyboardLayoutNames ?? []

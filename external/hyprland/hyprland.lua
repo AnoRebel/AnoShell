@@ -862,7 +862,8 @@ hl.bind(MAIN_MOD .. " + F1", hl.dsp.exec_cmd("~/.config/hypr/Ano/scripts/gamemod
 
 -- ─── pypr (scratchpads, minimize, lost windows) ─────────────────────────────
 
-hl.bind(MAIN_MOD .. " + SHIFT + T", hl.dsp.exec_cmd(PYPR .. " toggle term"))
+-- Dropdown terminal: AnoShell's (dropTerminal.side picks the edge)
+hl.bind(MAIN_MOD .. " + SHIFT + T", hl.dsp.exec_cmd(qs_ipc("dropTerminal", "toggle")))
 
 -- Minimize emulation: special workspace "minimized"
 hl.bind(MAIN_MOD .. " + M", hl.dsp.workspace.toggle_special("minimized"))

@@ -67,6 +67,7 @@ ShellRoot {
         void Chrono;      // clock IPC; alarms ring with the Clock panel closed
         void Undo;        // `undo last` IPC (removals push to it)
         void FocusMode;   // `focus toggle` IPC (bar away + Do Not Disturb)
+        void DropTerminal; // `dropTerminal toggle` IPC (Super+Shift+T)
     }
 
     // ═══════════════════════════════════════════════════════════════════════

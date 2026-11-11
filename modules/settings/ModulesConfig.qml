@@ -27,7 +27,7 @@ ColumnLayout {
         subtitle: "Enable/disable shell modules, OSD, hot corners, apps, advanced"
         configRoots: [
             "disabledPanels", "enabledPanels", "panelFamily", "familyTransitionAnimation",
-            "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "focusTime",
+            "osd", "deviceEvents", "screenCorners", "altSwitcher", "apps", "dropTerminal", "focusTime",
             "taskView", "media", "compositor", "hacks", "displayManager",
             "display.primaryMonitor", "sounds.theme", "bar.morphingPanels", "reader", "search", "screenshot", "livePins", "controlPanel", "pieces"
         ]
@@ -704,6 +704,62 @@ ColumnLayout {
                         return cmd ? `${a.name} (${cmd})` : a.name
                     }).join("  ·  ")
                 }
+            }
+        }
+    }
+
+    // ═══ Dropdown terminal ═══
+    SettingsCard {
+        icon: "terminal"
+        title: "Dropdown terminal"
+        subtitle: "Super+Shift+T drops your terminal in from an edge and puts it away again, keeping its session. Needs a terminal that can set its window class: kitty, foot, Alacritty, Ghostty or WezTerm."
+        configKeys: ["dropTerminal"]
+        expanded: false
+
+        ConfigRow {
+            label: "Opens from"
+            configKey: "dropTerminal.side"
+            sublabel: ["hyprland", "niri", "sway", "umbriel"].includes(CompositorService.backendName)
+                ? "The edge of the focused screen it sits against"
+                : "This compositor places it itself (it is minimized and restored)"
+            ChoiceRow {
+                compact: false
+                itemSpacing: 4
+                model: [{ value: "top", label: "Top", icon: "vertical_align_top" },
+                        { value: "bottom", label: "Bottom", icon: "vertical_align_bottom" },
+                        { value: "left", label: "Left", icon: "align_horizontal_left" },
+                        { value: "right", label: "Right", icon: "align_horizontal_right" },
+                        { value: "center", label: "Center", icon: "filter_center_focus" }]
+                current: Config.options?.dropTerminal?.side ?? "top"
+                onChose: value => Config.setNestedValue("dropTerminal.side", value)
+            }
+        }
+        ConfigSlider {
+            label: "Width"
+            configKey: "dropTerminal.width"
+            sublabel: "Of the screen's free area"
+            from: 0.2; to: 1; stepSize: 0.05
+            value: Config.options?.dropTerminal?.width ?? 0.75
+            valueText: `${Math.round(value * 100)}%`
+            onValueChanged: Config.setNestedValue("dropTerminal.width", Math.round(value * 100) / 100)
+        }
+        ConfigSlider {
+            label: "Height"
+            configKey: "dropTerminal.height"
+            from: 0.2; to: 1; stepSize: 0.05
+            value: Config.options?.dropTerminal?.height ?? 0.6
+            valueText: `${Math.round(value * 100)}%`
+            onValueChanged: Config.setNestedValue("dropTerminal.height", Math.round(value * 100) / 100)
+        }
+        ConfigRow {
+            label: "Command"
+            configKey: "dropTerminal.command"
+            sublabel: "Run in it instead of your shell (empty: your shell). Applies the next time it starts."
+            StyledTextInput {
+                text: Config.options?.dropTerminal?.command ?? ""
+                onEditingFinished: Config.setNestedValue("dropTerminal.command", text.trim())
+                Layout.preferredWidth: 160
+                font.family: Appearance?.font.family.mono ?? "monospace"
             }
         }
     }

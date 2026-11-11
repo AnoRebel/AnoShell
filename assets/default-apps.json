@@ -9,7 +9,11 @@
         "apt": "kitty",
         "dnf": "kitty"
       },
-      "exec": []
+      "exec": [],
+      "appId": [
+        "--class",
+        "{id}"
+      ]
     },
     {
       "command": "ghostty",
@@ -20,6 +24,9 @@
       },
       "exec": [
         "-e"
+      ],
+      "appId": [
+        "--class={id}"
       ]
     },
     {
@@ -32,6 +39,10 @@
       },
       "exec": [
         "-e"
+      ],
+      "appId": [
+        "--class",
+        "{id}"
       ]
     },
     {
@@ -42,7 +53,11 @@
         "apt": "foot",
         "dnf": "foot"
       },
-      "exec": []
+      "exec": [],
+      "appId": [
+        "--app-id",
+        "{id}"
+      ]
     },
     {
       "command": "wezterm",
@@ -54,6 +69,11 @@
       "exec": [
         "start",
         "--"
+      ],
+      "appId": [
+        "start",
+        "--class",
+        "{id}"
       ]
     },
     {

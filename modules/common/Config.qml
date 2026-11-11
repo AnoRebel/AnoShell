@@ -1455,6 +1455,15 @@ Singleton {
                 property string browser: "zen-browser"
             }
 
+            // Dropdown terminal (services/DropTerminal.qml): apps.terminal
+            // with its own window class, dropped in from a side.
+            property JsonObject dropTerminal: JsonObject {
+                property string side: "top"   // top | bottom | left | right | center
+                property real width: 0.75     // fraction of the screen's free area
+                property real height: 0.6
+                property string command: ""   // run in it instead of your shell
+            }
+
             // Logged-in user presentation
             property JsonObject user: JsonObject {
                 property string avatarPath: ""
