@@ -45,6 +45,9 @@ export default defineNuxtConfig({
     },
   },
 
+  // The clips' Video.js player (app/components/content/DocVideo.vue) is custom elements, not Vue components.
+  vue: { compilerOptions: { isCustomElement: (tag) => tag === "video-player" || tag === "video-skin" } },
+
   // Icons named only in app.config strings aren't found by the scan; bundle them.
   icon: { clientBundle: { icons: ["lucide:book-open", "lucide:cpu", "lucide:files"] } },
 

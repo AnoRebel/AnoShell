@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@nuxt/content": "3.16.2",
+    "@videojs/html": "10.3.0",
     "docus": "5.15.0",
     "nuxt": "4.6.1"
   }
