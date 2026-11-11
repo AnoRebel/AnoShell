@@ -16,7 +16,7 @@ QtObject {
 
     // Overridable by the backends built on this one (sway, mango, labwc).
     property string name: "generic"
-    property bool experimental: true
+    property bool experimental: true // the named backends built on this one set false
     property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: false, outputConfig: false, exit: false,

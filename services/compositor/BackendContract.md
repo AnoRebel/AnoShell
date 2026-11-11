@@ -15,10 +15,10 @@ otherwise from the environment:
 |---|---|
 | `HYPRLAND_INSTANCE_SIGNATURE` | `hyprland` |
 | `NIRI_SOCKET` | `niri` |
-| `SWAYSOCK` | `sway` (experimental) |
-| `MANGO_INSTANCE_SIGNATURE` | `mango` (experimental) |
-| `LABWC_PID` | `labwc` (experimental) |
-| `UMBRIEL_SOCKET` | `umbriel` (experimental; with `XDG_CURRENT_DESKTOP=umbriel` it is checked first, before Hyprland) |
+| `SWAYSOCK` | `sway` |
+| `MANGO_INSTANCE_SIGNATURE` | `mango` |
+| `LABWC_PID` | `labwc` |
+| `UMBRIEL_SOCKET` | `umbriel` (with `XDG_CURRENT_DESKTOP=umbriel` it is checked first, before Hyprland) |
 | anything else | `generic` |
 
 `SwayBackend`, `MangoBackend`, `LabwcBackend` and `UmbrielBackend` extend
@@ -33,7 +33,7 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 | Property | Type | Meaning |
 |---|---|---|
 | `name` | string | `hyprland`, `niri`, `generic`, … |
-| `experimental` | bool | shown as a badge in Settings and `ano doctor` |
+| `experimental` | bool | shown as a badge in Settings and `ano doctor`; only `generic` |
 | `supports` | object | capability flags, listed below |
 | `focusedOutput` | string | name of the focused output |
 | `activeWorkspaceNumber` | int | 1-based number of the focused workspace on the focused output |

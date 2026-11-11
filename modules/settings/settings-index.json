@@ -935,7 +935,7 @@
   "page": 2,
   "card": "",
   "label": "Force backend",
-  "sublabel": "auto, hyprland, niri, sway, mango, labwc, umbriel or generic — auto detects from the session; sway, mango, labwc and umbriel are experimental",
+  "sublabel": "auto, hyprland, niri, sway, mango, labwc, umbriel or generic — auto detects from the session; generic (any other compositor) is experimental",
   "keys": [
    "compositor.backend"
   ]

@@ -18,7 +18,7 @@ Singleton {
     // Backend selection ─────────────────────────────────────────────────────
     readonly property string hyprlandSignature: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
     readonly property string niriSocket: Quickshell.env("NIRI_SOCKET")
-    // Experimental backends (BackendContract.md).
+    // The other backends (BackendContract.md).
     readonly property string swaySocket: Quickshell.env("SWAYSOCK")
     readonly property string mangoSocket: Quickshell.env("MANGO_INSTANCE_SIGNATURE")
     readonly property string labwcPid: Quickshell.env("LABWC_PID")

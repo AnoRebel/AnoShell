@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 
 /**
- * labwc backend (experimental; written against labwc 0.20, see
+ * labwc backend (written against labwc 0.20; tested headless, see
  * BackendContract.md). labwc has no IPC: workspaces and windows come from
  * ext-workspace-v1 and foreign-toplevel like the generic backend, and the
  * session ends with `labwc --exit` (SIGTERM to $LABWC_PID, labwc(1)).
@@ -13,6 +13,7 @@ import Quickshell
  */
 GenericBackend {
     id: root
+    experimental: false // tested end to end (docs/compositors.md)
 
     name: "labwc"
     supports: ({

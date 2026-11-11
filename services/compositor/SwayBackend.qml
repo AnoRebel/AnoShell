@@ -5,7 +5,7 @@ import Quickshell.I3
 import "SwayModel.js" as SwayModel
 
 /**
- * Sway backend (experimental; written against sway 1.12, see BackendContract.md).
+ * Sway backend (written against sway 1.12; tested headless, see BackendContract.md).
  *
  * Workspaces come from ext-workspace-v1 like the generic backend (sway has it
  * since 1.12); Quickshell.I3 gives the focused output and runs commands; the
@@ -16,6 +16,7 @@ import "SwayModel.js" as SwayModel
  */
 GenericBackend {
     id: root
+    experimental: false // tested end to end (docs/compositors.md)
 
     name: "sway"
     supports: ({

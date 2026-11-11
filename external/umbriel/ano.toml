@@ -1,5 +1,5 @@
 # =============================================================================
-# AnoShell — Umbriel configuration (umbriel >= 0.1.0, experimental backend)
+# AnoShell — Umbriel configuration (umbriel >= 0.1.0)
 #
 # Usage: copy or symlink this to ~/.config/umbriel/config.toml
 #   cp ~/.config/quickshell/ano/external/umbriel/ano.toml ~/.config/umbriel/config.toml

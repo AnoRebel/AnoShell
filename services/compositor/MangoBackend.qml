@@ -4,7 +4,7 @@ import Quickshell.Io
 import "MangoModel.js" as MangoModel
 
 /**
- * Mango backend (experimental; written against mango 0.18.3, see
+ * Mango backend (written against mango 0.18.3; tested headless on 0.18.5, see
  * BackendContract.md).
  *
  * Mango's IPC is a Unix socket at $MANGO_INSTANCE_SIGNATURE taking one text
@@ -17,6 +17,7 @@ import "MangoModel.js" as MangoModel
  */
 GenericBackend {
     id: root
+    experimental: false // tested end to end (docs/compositors.md)
 
     name: "mango"
     supports: ({
@@ -128,4 +129,26 @@ GenericBackend {
     }
     function focusWindowById(id) { return root._dispatch("focusid", [], id) }
     function closeWindowById(id) { return root._dispatch("killclient", [], id) }
+    // Dropdown terminal (services/DropTerminal.qml): minimized while hidden.
+    // Shown: restored, resized by the difference to r, centred, then pushed
+    // to the edge (smartmovewin steps past other windows and the centre, so
+    // three times; at the edge it stays). Floating comes from the window rule
+    // in external/mango/ano.conf. The queue sends these in order.
+    function _dropClient(id, appId) { return root._clients.find(c => c.id === id) ?? root._clients.find(c => appId && c.appid === appId) ?? null }
+    function showWindowAt(id, r, side, appId) {
+        const c = root._dropClient(id, appId)
+        if (!c || !r) return false
+        const dw = Math.round(r.width - (c.width || 0)), dh = Math.round(r.height - (c.height || 0))
+        const sign = v => (v < 0 ? String(v) : `+${v}`)
+        root._dispatch("restore_minimized", [], c.id)
+        if (dw !== 0 || dh !== 0) root._dispatch("resizewin", [sign(dw), sign(dh)], c.id)
+        root._dispatch("centerwin", [], c.id)
+        const dir = ({ top: "up", bottom: "down", left: "left", right: "right" })[side]
+        if (dir) for (let i = 0; i < 3; i++) root._dispatch("smartmovewin", [dir], c.id)
+        return root._dispatch("focusid", [], c.id)
+    }
+    function hideWindow(id, side, appId) {
+        const c = root._dropClient(id, appId)
+        return c ? root._dispatch("minimized", [], c.id) : false
+    }
 }

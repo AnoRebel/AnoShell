@@ -9,31 +9,56 @@ backend from the session, or from `compositor.backend` when you force one
 |---|---|---|
 | `hyprland` | `HYPRLAND_INSTANCE_SIGNATURE` | supported |
 | `niri` | `NIRI_SOCKET` | supported (niri ≥ 26.04) |
-| `sway` | `SWAYSOCK` | experimental |
-| `mango` | `MANGO_INSTANCE_SIGNATURE` | experimental |
-| `labwc` | `LABWC_PID` | experimental |
-| `umbriel` | `UMBRIEL_SOCKET` | experimental |
+| `sway` | `SWAYSOCK` | supported (sway ≥ 1.12) |
+| `mango` | `MANGO_INSTANCE_SIGNATURE` | supported (mango ≥ 0.18) |
+| `labwc` | `LABWC_PID` | supported (labwc ≥ 0.20) |
+| `umbriel` | `UMBRIEL_SOCKET` | supported (umbriel ≥ 0.1) |
 | `generic` | anything else | experimental |
 
 `UMBRIEL_SOCKET` with `XDG_CURRENT_DESKTOP=umbriel` comes before everything,
 Hyprland included: umbriel run nested in Hyprland passes
 `HYPRLAND_INSTANCE_SIGNATURE` on to its clients. When several of the
-experimental backends' variables are set, a matching `XDG_CURRENT_DESKTOP`
+other backends' variables are set, a matching `XDG_CURRENT_DESKTOP`
 wins, then `UMBRIEL_SOCKET`, `MANGO_INSTANCE_SIGNATURE`, `LABWC_PID`
 and `SWAYSOCK` last (sway exports it, and labwc `LABWC_PID`, to the
 systemd/D-Bus activation environment, where a later session can inherit it).
 
-An experimental backend shows a badge in Settings and in `ano doctor`. It
-has workspaces, the focused output, fullscreen detection and window
-focus/close, but not everything Hyprland and niri have: no blur rules,
-cursor zoom, screen shader or output configuration, and the Hyprland/niri
-keybind and display pages don't apply. Sway, mango and labwc haven't been
-run against a live session yet; they are written from the compositors'
-documentation and source, and tested against recorded replies
-(`scripts/dev/test-sway-model.js`, `scripts/dev/test-mango-model.js`).
-The Umbriel backend was written against a nested umbriel 0.1.0, and its
-parsing is tested against lines recorded there
-(`scripts/dev/test-umbriel-model.js`).
+Sway, mango, labwc and Umbriel have workspaces, the focused output,
+fullscreen detection, the window list (overview, Alt+Tab, dock previews),
+window focus/close and the dropdown terminal, and the shell runs on each of
+them: tested headless (sway, labwc, mango) or nested (Umbriel), panels,
+Settings and overview included. They don't have everything Hyprland and
+niri have: no runtime blur rules, cursor zoom, screen shader or output
+configuration, and Settings → Keybinds and Displays only edit Hyprland and
+niri. Their reply parsing is tested against recorded replies
+(`scripts/dev/test-sway-model.js`, `scripts/dev/test-mango-model.js`,
+`scripts/dev/test-umbriel-model.js`).
+
+`generic` (any other compositor) shows an "experimental" badge in Settings
+and `ano doctor`: it has only what the shared protocols give.
+
+## Bundled configs
+
+`external/` has an AnoShell config for each compositor: it starts the shell
+and anod, has the AnoShell keybinds (`qs -c ano ipc call …`, Super+Shift+T
+for the dropdown terminal included) and the window and layer rules the shell
+wants. Copy or link it; each file's header says where it goes and how to
+check it.
+
+| Compositor | Files | Check with |
+|---|---|---|
+| Hyprland | `external/hyprland/hyprland.lua` (+ `custom/`, `scripts/`) | `Hyprland --verify-config` |
+| niri | `external/niri/ano.kdl` | `niri validate -c` |
+| sway | `external/sway/ano.conf` → `~/.config/sway/config` | `sway -C -c` |
+| mango | `external/mango/ano.conf` → `~/.config/mango/config.conf` | `mango -p -c` |
+| labwc | `external/labwc/{rc.xml,autostart,shutdown,environment}` → `~/.config/labwc/` | labwc's log on start |
+| Umbriel | `external/umbriel/ano.toml` → `~/.config/umbriel/config.toml` | `umbriel config validate` |
+
+The sway, mango and Umbriel files load your own additions from a file
+loaded last (`~/.config/<compositor>/local.conf`, `local.toml` for
+Umbriel), so the bundled one can be replaced on update. The labwc
+autostart leaves `labwc-session.target` off: starting it ties
+graphical-session.target (portals, notifiers) to labwc's lifetime.
 
 ## Sway
 
@@ -76,6 +101,13 @@ Written against mango 0.18.3 ([IPC](https://mangowm.github.io/docs/ipc/),
   list the layouts), `focusid` and `killclient` with `client,<id>`.
 - Fullscreen and maximised clients come from the client list. With two tags
   shown on a monitor, its windows count as on the first.
+- The dropdown terminal is minimized while hidden (`minimized`,
+  `restore_minimized`) and placed with `resizewin`, `centerwin` and
+  `smartmovewin`; it floats through the window rule in
+  `external/mango/ano.conf` (without it, it opens tiled).
+- The bundled config uses mango 0.18's keyword names (`exec_once`,
+  `window_rule`, `layer_rule`, `border_px`); mango's newer docs spell some
+  differently. Lines are read up to 255 bytes.
 
 ## Umbriel
 
@@ -121,7 +153,9 @@ Written against labwc 0.20 ([labwc(1)](https://github.com/labwc/labwc/blob/0.20.
 
 labwc has no IPC. Workspaces and windows come from ext-workspace-v1 and the
 foreign-toplevel protocol, as on the generic backend, and the session ends
-with `labwc --exit`.
+with `labwc --exit`. The dropdown terminal is minimized and restored through
+foreign-toplevel; where it opens comes from the window rule in
+`external/labwc/rc.xml` (1440×640 at the top edge; labwc sizes in pixels).
 
 If your `rc.xml` has a `<privilegedInterfaces>` block, labwc hides every
 privileged protocol it doesn't list from non-sandboxed clients. AnoShell

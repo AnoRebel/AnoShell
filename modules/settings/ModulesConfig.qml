@@ -790,7 +790,7 @@ ColumnLayout {
         ConfigRow {
             label: "Force backend"
             configKey: "compositor.backend"
-            sublabel: "auto, hyprland, niri, sway, mango, labwc, umbriel or generic — auto detects from the session; sway, mango, labwc and umbriel are experimental"
+            sublabel: "auto, hyprland, niri, sway, mango, labwc, umbriel or generic — auto detects from the session; generic (any other compositor) is experimental"
             RowLayout {
                 spacing: 6
                 StyledTextInput {
