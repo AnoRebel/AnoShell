@@ -54,14 +54,22 @@ ANO_RELEASE=v0.2.0 ~/.config/quickshell/ano/anod/install.sh --prebuilt
 
 ## 3. Start it with your compositor
 
-The bundled compositor configs start the shell and anod (and skip anod if it
-isn't installed):
+One line in your compositor's startup does it:
 
-- **Hyprland:** `external/hyprland/hyprland.lua`. Set `ANOD_SUPERVISE = true`
-  in it to let anod start the shell itself and restart it after crashes.
+```sh
+ano start
+```
+
+It runs anod, which starts the shell (`qs -c ano`), restarts it after crashes
+and raises its open-file limit. `ano stop` stops both, `ano restart` restarts
+them, and `ano start -d` starts them in the background from a terminal.
+
+The bundled compositor configs already use it (and start just the shell when
+`ano` isn't installed):
+
+- **Hyprland:** `external/hyprland/hyprland.lua`.
 - **niri:** `external/niri/ano.kdl` (copy or symlink it to
-  `~/.config/niri/config.kdl`; it needs niri ≥ 26.04). For crash supervision,
-  replace its two startup lines with `anod --supervise`.
+  `~/.config/niri/config.kdl`; it needs niri ≥ 26.04).
 - **sway:** `external/sway/ano.conf` → `~/.config/sway/config` (sway ≥ 1.12).
 - **mango:** `external/mango/ano.conf` → `~/.config/mango/config.conf`
   (mango ≥ 0.18).
@@ -70,14 +78,15 @@ isn't installed):
 - **Umbriel:** `external/umbriel/ano.toml` → `~/.config/umbriel/config.toml`
   (umbriel ≥ 0.1).
 
-For the last four, crash supervision is the same swap as on niri: replace the
-two startup lines with `anod --supervise`. Each file's header says how to
-check it ([compositors](compositors.md#bundled-configs)).
+Each file's header says how to check it
+([compositors](compositors.md#bundled-configs)). Their Super+Ctrl+R runs
+`ano restart`.
 
-To start the shell by hand: `qs -c ano`. From your own compositor config,
-raise the open-file limit first, as the bundled ones do:
-`ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano`
-(`anod --supervise` does it itself).
+Your own compositor config: `exec-once = ano start` (Hyprland),
+`spawn-at-startup "ano start"` (niri), `exec ano start` (sway). If its startup
+`PATH` lacks `~/.local/bin`, give the full path. To run just the shell
+without anod: `qs -c ano`, after raising the open-file limit
+(`ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano`).
 
 `install.sh` also adds **AnoShell Settings** to your app launcher
 (`~/.local/share/applications/anoshell-settings.desktop`), which opens the

@@ -61,8 +61,8 @@ Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writ
 git clone https://github.com/AnoRebel/AnoShell.git ~/.config/quickshell/ano
 ~/.config/quickshell/ano/anod/install.sh     # anod + ano into ~/.local/bin
 
-# Launch it
-qs -c ano
+# Launch it (from a terminal; in your compositor's startup it's just "ano start")
+ano start -d
 
 # Check what's installed and what's missing
 ano doctor

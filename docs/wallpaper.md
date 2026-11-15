@@ -192,7 +192,7 @@ shell string) with:
 |---|---|
 | `name` | shown in logs and in `ano wallpaper set`'s report |
 | `enable` | `false` skips it |
-| `command` | the program and its arguments; `{image}` (for a video wallpaper, a still frame of it), `{mode}` (`dark`/`light`) and `{colors}` (the colours file) are filled in |
+| `command` | the program and its arguments; `{image}` (for a video wallpaper, a still frame of it), `{mode}` (`dark`/`light`), `{colors}` (the colours file) and `{shell}` (the shell's own folder) are filled in |
 | `timeoutSeconds` | killed after this long (default 20) |
 | `builtin` | `"cava"` instead of a command: recolours cava from pywal and asks it to reload |
 
@@ -205,7 +205,7 @@ The defaults reproduce the usual chain:
 "hooks": [
   { "name": "pywal", "enable": true, "command": ["wal", "-i", "{image}", "-n", "-q"], "timeoutSeconds": 30 },
   { "name": "swaync", "enable": true, "command": ["swaync-client", "--reload-css"] },
-  { "name": "apps", "enable": true, "command": ["~/.config/quickshell/ano/scripts/colors/applycolor.sh", "--mode", "{mode}"], "timeoutSeconds": 30 },
+  { "name": "apps", "enable": true, "command": ["{shell}/scripts/colors/applycolor.sh", "--mode", "{mode}"], "timeoutSeconds": 30 },
   { "name": "cava", "enable": true, "builtin": "cava" },
   { "name": "themes", "enable": true, "command": ["~/.config/awww/scripts/awww_generate_themes.sh"], "timeoutSeconds": 30 }
 ]

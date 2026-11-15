@@ -49,6 +49,10 @@ func setupCmd(args []string) int {
 		fmt.Fprint(os.Stderr, setupUsage)
 		return 2
 	}
+	if config.Packaged() && args[0] != "status" && args[0] != "help" && args[0] != "-h" && args[0] != "--help" {
+		fmt.Fprintf(os.Stderr, "ano setup: the shell at %s came from a package; update it with your package manager\n", config.ShellDir())
+		return 1
+	}
 	fs := flag.NewFlagSet("setup "+args[0], flag.ExitOnError)
 	dry := fs.Bool("dry-run", false, "print the steps without running them")
 	noRestart := fs.Bool("no-restart", false, "don't restart anod or reload the shell")

@@ -102,6 +102,7 @@ type StepResult struct {
 type Pipeline struct {
 	ColorsPath string // $XDG_STATE_HOME/anoshell/generated/colors.json
 	StatePath  string // $XDG_STATE_HOME/anoshell/wallpaper.json
+	ShellDir   string // fills {shell} in hook commands (the shell's own scripts)
 	Logf       func(string, ...any)
 	// Still returns a frame of a video (the palette cache's); colours and
 	// hooks use it, since matugen and most hooks can't read a video.
@@ -269,6 +270,11 @@ func (p *Pipeline) hooks(ctx context.Context, s Settings, img, src string, theme
 			a = strings.ReplaceAll(a, "{image}", src)
 			a = strings.ReplaceAll(a, "{mode}", s.Mode)
 			a = strings.ReplaceAll(a, "{colors}", p.ColorsPath)
+			if p.ShellDir != "" {
+				a = strings.ReplaceAll(a, "{shell}", p.ShellDir)
+				// Older configs spelled the shell's path out.
+				a = strings.Replace(a, "~/.config/quickshell/ano/", p.ShellDir+"/", 1)
+			}
 			argv[i] = a
 		}
 		argv[0] = expandHome(argv[0])

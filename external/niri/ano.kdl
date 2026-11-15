@@ -179,11 +179,10 @@ cursor {
 // Ano QuickShell — main shell (replaces waybar + swaync + swayosd)
 // Guard: kill any lingering legacy bars/notifiers before spawning the shell.
 spawn-sh-at-startup "pkill -x waybar; pkill -x swaync; pkill -x swayosd; true"
-// More than the 1024 open files niri hands its children (anod --supervise raises it itself).
-spawn-sh-at-startup "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano"
-// anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
-// For crash supervision, replace both lines with: anod --supervise (it starts qs).
-spawn-sh-at-startup "A=$(command -v anod || echo \"$HOME/.local/bin/anod\"); [ -x \"$A\" ] && exec \"$A\""
+// The shell: `ano start` runs anod (docs/anod.md), which starts `qs -c ano`,
+// restarts it after crashes and raises its open-file limit. Without ano
+// installed, just the shell with more than the default 1024 open files.
+spawn-sh-at-startup "A=$(command -v ano || echo \"$HOME/.local/bin/ano\"); [ -x \"$A\" ] && exec \"$A\" start; ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano"
 
 // XWayland support for Niri — runs as a background daemon, no visible window.
 // Required for X11 apps (Discord, Steam, older Electron) to work under Niri.

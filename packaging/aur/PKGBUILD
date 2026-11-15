@@ -1,0 +1,141 @@
+# Maintainer: AnoRebel <https://github.com/AnoRebel>
+#
+# AnoShell from the main branch. The shell goes where Quickshell looks for
+# configs (/etc/xdg/quickshell/ano), anod and ano into /usr/bin; start it with
+# `ano start` in the compositor's startup. A ~/.config/quickshell/ano checkout
+# takes precedence over this one.
+
+pkgname=anoshell-git
+_name=AnoShell
+pkgver=0.1.0.r0.g0000000
+pkgrel=1
+pkgdesc="Desktop shell for Wayland compositors (Hyprland, niri, sway, mango, labwc, Umbriel), built on Quickshell"
+arch=('x86_64' 'aarch64')
+url="https://github.com/AnoRebel/AnoShell"
+license=('GPL-3.0-only')
+depends=(
+  'quickshell'
+  'qt6-5compat'
+  'qt6-multimedia'
+  'awww'
+  'matugen'
+  'jq'
+  'brightnessctl'
+  'networkmanager'
+  'cliphist'
+  'wl-clipboard'
+  'curl'
+  'openssl'
+  'iproute2'
+  'libnotify'
+  'python'
+  'xdg-utils'
+  'util-linux'
+  'procps-ng'
+  'glib2'
+)
+makedepends=('git' 'go>=2:1.27')
+optdepends=(
+  'pipewire: volume, device pickers, privacy indicators, sounds'
+  'wireplumber: volume and audio devices'
+  'qt6-positioning: automatic location (with geoclue)'
+  'geoclue: automatic location'
+  'ddcutil: external monitor brightness'
+  'udisks2: removable drives module'
+  'wlsunset: night light'
+  'cava: audio spectrum'
+  'grim: screenshots'
+  'slurp: screenshot regions'
+  'tesseract: text recognition in screenshots'
+  'tesseract-data-eng: English text recognition'
+  'wf-recorder: screen recording'
+  'hyprpicker: colour picker'
+  'libqalculate: launcher calculator'
+  'fd: launcher file search'
+  'zenity: AnoSpot "Move to…" file picker'
+  'ydotool: paste from the clipboard history'
+  'translate-shell: translator'
+  'ffmpeg: video wallpaper stills'
+  'imagemagick: palette cursors and icons'
+  'librsvg: palette cursors and icons'
+  'qt6ct: Qt apps in the palette'
+  'kvantum: Qt apps in the palette (Kvantum mode)'
+  'pacman-contrib: package update count'
+  'songrec: music recognition'
+  'kdeconnect: phone integration'
+  'fprintd: fingerprint unlock'
+  'gamemode: game mode indicator'
+  'easyeffects: EasyEffects toggle and presets'
+  'sound-theme-freedesktop: battery and alarm sounds'
+  'xdg-desktop-portal: file pickers and screen sharing'
+)
+provides=('anoshell')
+conflicts=('anoshell')
+install=anoshell.install
+source=("$_name::git+$url.git#branch=main")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$_name"
+  local base
+  base=$(sed -n 's/^var Version = "\(.*\)"/\1/p' anod/internal/version/version.go)
+  printf '%s.r%s.g%s' "$base" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+  cd "$_name/anod"
+  export GOPATH="$srcdir/gopath"
+  go mod download -modcacherw
+}
+
+build() {
+  cd "$_name/anod"
+  export GOPATH="$srcdir/gopath"
+  export CGO_CPPFLAGS="${CPPFLAGS}"
+  export CGO_CFLAGS="${CFLAGS}"
+  export CGO_CXXFLAGS="${CXXFLAGS}"
+  export CGO_LDFLAGS="${LDFLAGS}"
+  export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
+  local cmd
+  for cmd in anod ano; do
+    go build -o "build/$cmd" \
+      -ldflags "-linkmode external -extldflags '${LDFLAGS}' -X ano/anod/internal/version.Version=$pkgver" \
+      "./cmd/$cmd"
+  done
+}
+
+check() {
+  cd "$_name/anod"
+  export GOPATH="$srcdir/gopath"
+  export GOFLAGS="-mod=readonly -modcacherw" # no -trimpath: tests find repo files from their own path
+  go test ./...
+}
+
+package() {
+  cd "$_name"
+  install -Dm755 anod/build/anod anod/build/ano -t "$pkgdir/usr/bin"
+
+  # The shell's tracked files, without the Go source, docs site and repo tooling.
+  local dest="$pkgdir/etc/xdg/quickshell/ano"
+  install -dm755 "$dest"
+  git archive --format=tar HEAD | tar -x -C "$dest"
+  rm -rf "$dest"/{anod,docs,docs-site,packaging,.github,.gitignore}
+
+  install -Dm644 README.md -t "$pkgdir/usr/share/doc/$pkgname"
+  cp -r docs/. "$pkgdir/usr/share/doc/$pkgname/"
+  install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"
+
+  # Standalone Settings in app launchers (its windows' app id is anoshell-settings).
+  install -Dm644 assets/icons/anoshell-settings.svg -t "$pkgdir/usr/share/icons/hicolor/scalable/apps"
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/anoshell-settings.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=AnoShell Settings
+Comment=Settings for the AnoShell desktop shell
+Exec=qs -n -p /etc/xdg/quickshell/ano/settings.qml
+Icon=anoshell-settings
+StartupWMClass=anoshell-settings
+Categories=Settings;DesktopSettings;
+Keywords=shell;bar;theme;wallpaper;keybinds;
+DESKTOP
+}

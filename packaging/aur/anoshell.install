@@ -1,0 +1,15 @@
+post_install() {
+  cat <<'MSG'
+==> AnoShell is in /etc/xdg/quickshell/ano.
+    Start it with your compositor by adding one line to its startup:
+      Hyprland:  exec-once = ano start
+      niri:      spawn-at-startup "ano start"
+      sway:      exec ano start
+    Or use a bundled compositor config from /etc/xdg/quickshell/ano/external/.
+    From a terminal: ano start -d. Check optional tools with: ano doctor
+MSG
+}
+
+post_upgrade() {
+  echo "==> AnoShell updated: run 'ano restart' to load it."
+}

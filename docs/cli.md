@@ -8,6 +8,9 @@ installed next to anod by `anod/install.sh` (see [Installation](installation.md)
 
 | Command | What it does |
 |---|---|
+| `ano start [-d]` | starts anod, which starts the shell, restarts it after crashes and raises its open-file limit: the one line for a compositor's startup. `-d` starts them in the background and returns once anod answers. Already running: says so |
+| `ano stop` | stops anod and the shell it supervises (or a shell started on its own) |
+| `ano restart` | `ano stop`, then `ano start -d` |
 | `ano status [--json] [--frame]` | anod's state (version, pid, uptime, clients, supervisor) and the shell's (running, compositor backend). `--frame` also lists the surfaces fused into the connected frame |
 | `ano doctor [--json]` | checks required and optional dependencies, the config, sockets, the last crash, QML warnings/errors the running shell logged and competing wallpaper rotators. Exits 1 on any FAIL |
 | `ano reload` | reloads the shell |

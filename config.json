@@ -360,7 +360,7 @@
         "name": "apps",
         "enable": true,
         "command": [
-          "~/.config/quickshell/ano/scripts/colors/applycolor.sh",
+          "{shell}/scripts/colors/applycolor.sh",
           "--mode",
           "{mode}"
         ],

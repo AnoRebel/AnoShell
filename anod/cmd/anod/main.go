@@ -137,6 +137,7 @@ func main() {
 	wp := &wallpaper.Pipeline{
 		ColorsPath: filepath.Join(stateDir, "generated", "colors.json"),
 		StatePath:  filepath.Join(stateDir, "wallpaper.json"),
+		ShellDir:   config.ShellDir(),
 		Choices:    &wallpaper.Choices{Path: filepath.Join(stateDir, "wallpaper-colors.json")},
 		ColorCache: filepath.Join(xdgCache(), "anoshell", "colors"),
 		GtkDirs: []string{filepath.Join(filepath.Dir(filepath.Dir(config.UserPath())), "gtk-3.0"),

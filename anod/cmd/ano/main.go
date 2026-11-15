@@ -22,6 +22,10 @@ import (
 
 const usage = `usage: ano <command> [args]
 
+  start [-d]                 start anod and the shell, restarting the shell after crashes
+                             (put "ano start" in your compositor's startup; -d: background)
+  stop                       stop the shell and anod
+  restart                    stop, then start in the background
   status [--json]            anod and shell state
   doctor [--json]            check deps, config, sockets and crashes (exit 1 on failures)
   reload                     reload the shell (qs -c ano)
@@ -62,6 +66,15 @@ func main() {
 		err = status(args)
 	case "doctor":
 		os.Exit(doctor(args))
+	case "start":
+		os.Exit(startCmd(args))
+	case "stop":
+		os.Exit(stopCmd())
+	case "restart":
+		if c := stopCmd(); c != 0 {
+			os.Exit(c)
+		}
+		os.Exit(startCmd([]string{"-d"}))
 	case "reload":
 		os.Exit(shellIPC("call", "shell", "reload"))
 	case "ipc":

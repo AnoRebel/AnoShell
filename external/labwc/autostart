@@ -6,13 +6,12 @@
 # leave it off for a nested/test labwc. The shutdown file stops it.
 # systemctl --user --no-block start labwc-session.target
 
-# Legacy bars/notifiers out of the way, then the shell with more than the
-# default 1024 open files (anod --supervise raises it itself).
+# Legacy bars/notifiers out of the way, then the shell.
 pkill -x waybar; pkill -x swaync; pkill -x swayosd
-( ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano ) >/dev/null 2>&1 &
-# anod, the shell's companion daemon (docs/anod.md); skipped if not installed.
-# For crash supervision, replace both lines with: anod --supervise & (it starts qs).
-A=$(command -v anod || echo "$HOME/.local/bin/anod"); [ -x "$A" ] && "$A" >/dev/null 2>&1 &
+# The shell: `ano start` runs anod (docs/anod.md), which starts `qs -c ano`,
+# restarts it after crashes and raises its open-file limit. Without ano
+# installed, just the shell with more than the default 1024 open files.
+( A=$(command -v ano || echo "$HOME/.local/bin/ano"); [ -x "$A" ] && exec "$A" start; ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c ano ) >/dev/null 2>&1 &
 systemctl --user start hyprpolkitagent >/dev/null 2>&1 &
 nm-applet --indicator >/dev/null 2>&1 &
 # Clipboard history (with QS IPC update)

@@ -87,7 +87,7 @@ Singleton {
     // higher-level orchestration (e.g. LocalSend's discover → pick → send
     // flow) is owned by the popout UI.
 
-    readonly property string scriptsDir: Quickshell.env("HOME") + "/.config/quickshell/ano/scripts/anoSpot"
+    readonly property string scriptsDir: Directories.shellRoot + "/scripts/anoSpot"
     readonly property string discoverScript: scriptsDir + "/localsend_discover.sh"
     readonly property string sendScript: scriptsDir + "/localsend_send.sh"
 

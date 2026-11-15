@@ -8,8 +8,9 @@
 -- ║                                                                          ║
 -- ║   User overrides live in custom/*.lua and are sourced at the very end.   ║
 -- ║                                                                          ║
--- ║   Starts anod and `qs -c ano`. Binds edited in Settings → Keybinds land  ║
--- ║   in an ano-managed file after `ano keybinds migrate` (reversible).      ║
+-- ║   Starts the shell with `ano start`. Binds edited in Settings →          ║
+-- ║   Keybinds land in an ano-managed file after `ano keybinds               ║
+-- ║   migrate` (reversible).                                                 ║
 -- ║   Docs: https://anoshell.anorebel.net · check deps with `ano doctor`.    ║
 -- ╚═══════════════════════════════════════════════════════════════════════════╝
 
@@ -18,6 +19,10 @@
 -- QuickShell config name, stored at ~/.config/quickshell/<name>/. Every ano
 -- IPC call below resolves via `qs -c QS_CONFIG ipc call <target> <method>`.
 local QS_CONFIG = "ano"
+-- `ano` from PATH, else where anod/install.sh puts it (startup PATH may lack it).
+local ANO = 'A=$(command -v ano || echo "$HOME/.local/bin/ano")'
+local ANO_START = ANO .. '; [ -x "$A" ] && exec "$A" start; '
+	.. "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c " .. QS_CONFIG
 
 -- Primary modifier key for window-management binds.
 local MAIN_MOD = "SUPER"
@@ -102,22 +107,10 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 	hl.exec_cmd("sleep 1 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 
-	-- QuickShell (Ano UI) — the main shell — and anod, its companion daemon
-	-- (docs/anod.md). With ANOD_SUPERVISE, anod starts qs itself and restarts it
-	-- after crashes; otherwise both start here. Skipped if anod isn't installed
-	-- (build it with anod/install.sh).
-	local ANOD_SUPERVISE = false
-	-- The shell gets more than the 1024 open files Hyprland hands its
-	-- children (a day of reloads ran out of descriptors). anod --supervise
-	-- raises it itself.
-	local QS_START = "ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c " .. QS_CONFIG
-	local ANOD = 'A=$(command -v anod || echo "$HOME/.local/bin/anod"); [ -x "$A" ] && exec "$A"'
-	if ANOD_SUPERVISE then
-		hl.exec_cmd(ANOD .. " --supervise || " .. QS_START)
-	else
-		hl.exec_cmd(QS_START)
-		hl.exec_cmd(ANOD)
-	end
+	-- The shell: `ano start` runs anod (docs/anod.md), which starts `qs -c ano`,
+	-- restarts it after crashes and raises its open-file limit. Without ano
+	-- installed, just the shell (with more than the default 1024 open files).
+	hl.exec_cmd(ANO_START)
 
 	-- Core components
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
@@ -682,7 +675,7 @@ hl.bind("CTRL + " .. MAIN_MOD .. " + B", hl.dsp.exec_cmd(qs_ipc("antiFlashbang",
 hl.bind("CTRL + " .. MAIN_MOD .. " + P", hl.dsp.exec_cmd(qs_ipc("panelFamily", "cycle")))
 hl.bind(
 	"CTRL + " .. MAIN_MOD .. " + R",
-	hl.dsp.exec_cmd("killall qs quickshell; sleep 0.3; ulimit -Sn 65536 2>/dev/null || ulimit -Sn $(ulimit -Hn); exec qs -c " .. QS_CONFIG)
+	hl.dsp.exec_cmd(ANO .. '; "$A" restart')
 )
 
 -- Clipboard (QS first, rofi fallback)

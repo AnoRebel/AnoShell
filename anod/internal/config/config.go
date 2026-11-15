@@ -29,7 +29,27 @@ func ShellDir() string {
 	if d := os.Getenv("ANO_SHELL_DIR"); d != "" {
 		return d
 	}
+	// Quickshell's own search order for `qs -c ano`: XDG_CONFIG_HOME, then each
+	// XDG_CONFIG_DIRS entry (a package installs to /etc/xdg/quickshell/ano).
+	dirs := []string{configHome()}
+	sys := os.Getenv("XDG_CONFIG_DIRS")
+	if sys == "" {
+		sys = "/etc/xdg"
+	}
+	dirs = append(dirs, filepath.SplitList(sys)...)
+	for _, d := range dirs {
+		p := filepath.Join(d, "quickshell", "ano")
+		if _, err := os.Stat(filepath.Join(p, "shell.qml")); err == nil {
+			return p
+		}
+	}
 	return filepath.Join(configHome(), "quickshell", "ano")
+}
+
+// Packaged reports whether the shell came from a system package (it lives
+// outside the user's config dir), so git-based updates don't apply.
+func Packaged() bool {
+	return !strings.HasPrefix(ShellDir(), filepath.Join(configHome(), "quickshell")+string(filepath.Separator))
 }
 
 func UserPath() string    { return filepath.Join(configHome(), "anoshell", "config.json") }
