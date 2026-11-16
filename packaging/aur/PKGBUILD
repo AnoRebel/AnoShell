@@ -12,7 +12,7 @@ pkgrel=1
 pkgdesc="Desktop shell for Wayland compositors (Hyprland, niri, sway, mango, labwc, Umbriel), built on Quickshell"
 arch=('x86_64' 'aarch64')
 url="https://github.com/AnoRebel/AnoShell"
-license=('GPL-3.0-only')
+license=('GPL-3.0-or-later')
 depends=(
   'quickshell'
   'qt6-5compat'
