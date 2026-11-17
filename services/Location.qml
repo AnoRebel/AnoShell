@@ -13,12 +13,13 @@ import qs.modules.common
  *   location.enable  off: nothing is looked up; weather falls back to its
  *                    city setting (or wttr.in's own guess), sun schedules wait.
  *   location.mode    "auto": GeoClue (Qt Positioning's geoclue2 plugin; Wi-Fi
- *                    or GPS, as GeoClue is set up), and if it gives nothing
- *                    within 20 s or is refused, the IP address (ip-api.com,
- *                    city level). "manual": location.latitude/longitude and
+ *                    or GPS, as GeoClue is set up); if it gives nothing within
+ *                    20 s or is refused, the Wi-Fi access points around you
+ *                    (location.wifi; beaconDB, scripts/location/wifi-locate.sh),
+ *                    then the IP address (ip-api.com, city level). "manual": location.latitude/longitude and
  *                    location.city as you set them.
  *
- * Exposes valid, latitude, longitude, city, source ("geoclue" | "ip" |
+ * Exposes valid, latitude, longitude, city, source ("geoclue" | "wifi" | "ip" |
  * "manual") and problem.
  */
 Singleton {
@@ -28,6 +29,7 @@ Singleton {
     readonly property bool enabled: root.cfg?.enable ?? true
     readonly property string mode: root.cfg?.mode ?? "auto"
     readonly property bool manual: root.mode === "manual"
+    readonly property bool wifi: root.cfg?.wifi ?? true
 
     // Manual: what you typed (0,0 counts as unset).
     readonly property real manualLat: root.cfg?.latitude ?? 0
@@ -84,7 +86,30 @@ Singleton {
     Timer { id: geoTimeout; interval: 20000; onTriggered: if (root.looking) root._fallBack() }
     function _fallBack(): void {
         geoTimeout.stop()
-        if (!ipLookup.running) ipLookup.running = true
+        if (root.wifi) { if (!wifiLookup.running) wifiLookup.running = true }
+        else if (!ipLookup.running) ipLookup.running = true
+    }
+
+    // ── Wi-Fi access points (beaconDB), before the IP address ──
+    Process {
+        id: wifiLookup
+        command: [Directories.shellRoot + "/scripts/location/wifi-locate.sh"]
+        property bool found: false
+        onStarted: found = false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let j = null
+                try { j = JSON.parse(text) } catch (e) {}
+                if (typeof j?.lat !== "number" || typeof j?.lon !== "number" || root.autoSource === "geoclue") return
+                wifiLookup.found = true
+                root.autoLat = j.lat
+                root.autoLon = j.lon
+                root.autoSource = "wifi"
+                root.autoValid = true
+            }
+        }
+        // Not placed (no coverage, Wi-Fi off, no NetworkManager): the IP address. Placed: the IP lookup still names the city.
+        onExited: if (!ipLookup.running) ipLookup.running = true
     }
 
     // ── IP address (fallback, and the city name) ──
@@ -97,7 +122,8 @@ Singleton {
                 try { j = JSON.parse(text) } catch (e) {}
                 if (j?.status !== "success") return
                 if (j.city) root.autoCity = j.city
-                if (root.autoSource !== "geoclue") {
+                // A Wi-Fi fix from this round stays; an older one gives way (it may be from somewhere else).
+                if (root.autoSource !== "geoclue" && !(root.autoSource === "wifi" && root.wifi && wifiLookup.found)) {
                     root.autoLat = j.lat
                     root.autoLon = j.lon
                     root.autoSource = "ip"
@@ -107,9 +133,9 @@ Singleton {
         }
         onExited: root.looking = false
     }
-    // An IP fix is coarse and can change (VPN, travel): look again every 2 h.
+    // An IP or Wi-Fi fix can change (VPN, travel, a laptop moving): look again every 2 h.
     Timer {
-        running: root.enabled && !root.manual && root.autoSource === "ip"
+        running: root.enabled && !root.manual && (root.autoSource === "ip" || root.autoSource === "wifi")
         interval: 2 * 60 * 60 * 1000
         repeat: true
         onTriggered: root.refresh()

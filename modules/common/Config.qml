@@ -1064,6 +1064,7 @@ Singleton {
             property JsonObject location: JsonObject {
                 property bool enable: true
                 property string mode: "auto"
+                property bool wifi: true // auto: nearby Wi-Fi access points (beaconDB) before the IP address
                 property string city: ""
                 property real latitude: 0
                 property real longitude: 0

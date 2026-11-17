@@ -308,10 +308,18 @@ Bioma pieces:
   sunset schedule waits.
 - `mode` `"auto"` (default): GeoClue through Qt Positioning (needs the
   `geoclue` service and `qt6-positioning`; Wi-Fi or GPS as GeoClue is set
-  up). If it gives nothing within 20 s or refuses, the IP address through
-  ip-api.com (`curl`; city-level, and it sends your IP address to them),
-  looked up again every 2 hours. `"manual"`: `city`, `latitude` and
+  up). If it gives nothing within 20 s or refuses, the Wi-Fi access points
+  around you (`wifi`, below), then the IP address through ip-api.com
+  (`curl`; city-level, and it sends your IP address to them). A Wi-Fi or IP
+  fix is looked up again every 2 hours. `"manual"`: `city`, `latitude` and
   `longitude` as you set them.
+
+- `wifi` (on): in `"auto"`, before the IP address, ask
+  [beaconDB](https://beacondb.net) where the access points NetworkManager
+  sees are (`nmcli`, `jq`, `curl`; `scripts/location/wifi-locate.sh`). It sends
+  their hardware addresses and signal strengths, not their names, and skips
+  networks named `…_nomap` and randomised addresses. beaconDB is young, so it
+  may not know your area; then the IP address is used.
 
 `qs ipc call location get` prints what's known; `refresh` looks again.
 

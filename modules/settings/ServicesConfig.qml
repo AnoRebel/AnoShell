@@ -748,7 +748,7 @@ ColumnLayout {
             label: "Find it"
             configKey: "location.mode"
             enabled: Config.options?.location?.enable ?? true
-            sublabel: Location.valid ? `${Location.city ? Location.city + " · " : ""}${Location.latitude.toFixed(3)}, ${Location.longitude.toFixed(3)} · from ${({ geoclue: "GeoClue", ip: "your IP address", manual: "what you set" })[Location.source] ?? Location.source}`
+            sublabel: Location.valid ? `${Location.city ? Location.city + " · " : ""}${Location.latitude.toFixed(3)}, ${Location.longitude.toFixed(3)} · from ${({ geoclue: "GeoClue", wifi: "Wi-Fi nearby", ip: "your IP address", manual: "what you set" })[Location.source] ?? Location.source}`
                 : Location.problem
             ChoiceRow {
                 model: [{ value: "auto", label: "Automatically", icon: "my_location" }, { value: "manual", label: "Set it myself", icon: "edit_location" }]
@@ -759,9 +759,17 @@ ColumnLayout {
         StyledText {
             visible: (Config.options?.location?.mode ?? "auto") === "auto"
             Layout.fillWidth: true; wrapMode: Text.Wrap
-            text: "Automatically: GeoClue (Wi-Fi or GPS, needs the geoclue service), else your IP address through ip-api.com, which gives your city, roughly."
+            text: "Automatically: GeoClue (Wi-Fi or GPS, needs the geoclue service), else the Wi-Fi networks around you (below), else your IP address through ip-api.com, which gives your city, roughly."
             color: Appearance.colors.colSubtext
             font.pixelSize: Appearance.font.pixelSize.smaller
+        }
+        ConfigSwitch {
+            visible: (Config.options?.location?.mode ?? "auto") === "auto"
+            label: "Use nearby Wi-Fi networks"
+            configKey: "location.wifi"
+            sublabel: "When GeoClue gives nothing: sends the hardware addresses and signal strengths of the access points around you (not their names) to beaconDB, which may not cover your area yet"
+            checked: Config.options?.location?.wifi ?? true
+            onCheckedChanged: if (checked !== (Config.options?.location?.wifi ?? true)) Config.setNestedValue("location.wifi", checked)
         }
         ConfigRow {
             visible: (Config.options?.location?.mode ?? "auto") === "manual"

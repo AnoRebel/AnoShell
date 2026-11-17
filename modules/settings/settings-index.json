@@ -3671,6 +3671,15 @@
  {
   "page": 9,
   "card": "",
+  "label": "Use nearby Wi-Fi networks",
+  "sublabel": "When GeoClue gives nothing: sends the hardware addresses and signal strengths of the access points around you (not their names) to beaconDB, which may not cover your area yet",
+  "keys": [
+   "location.wifi"
+  ]
+ },
+ {
+  "page": 9,
+  "card": "",
   "label": "City",
   "sublabel": "The name shown, and what the weather looks up if no coordinates are set",
   "keys": [

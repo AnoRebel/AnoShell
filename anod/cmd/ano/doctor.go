@@ -64,6 +64,7 @@ var features = []feature{
 	{"game mode (and performance mode during games)", "gameMode.enable", []string{"gamemoded", "dbus-monitor", "busctl"}},
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},
+	{"location from nearby Wi-Fi (beaconDB, before the IP address)", "location.wifi", []string{"nmcli", "jq", "curl"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},
 	{"palette piece (copy) and world clock piece (zone offsets)", "pieces.enable", []string{"wl-copy", "date"}},
 	{"opening files and folders (downloads, drives)", "", []string{"xdg-open"}},

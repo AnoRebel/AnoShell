@@ -294,6 +294,7 @@
   "location.latitude": "real",
   "location.longitude": "real",
   "location.mode": "string",
+  "location.wifi": "bool",
   "lock.dim.enable": "bool",
   "lock.dim.idleMs": "int",
   "lock.dim.opacity": "real",
