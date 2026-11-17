@@ -238,6 +238,13 @@ func runChecks() []check {
 	} else {
 		add("warn", "anod", "not running (%s): daemon features unavailable", sock)
 	}
+	if st, err := openHistory().stats(); err == nil && st.Enable {
+		if st.Error != "" {
+			add("warn", "notification history", "can't write %s: %s (notifications.history.path)", st.Dir, st.Error)
+		} else {
+			add("ok", "notification history", "%d kept in %s", st.Count, st.Dir)
+		}
+	}
 
 	// Config.
 	eff := map[string]any{}

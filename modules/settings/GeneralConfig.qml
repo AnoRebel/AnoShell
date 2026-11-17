@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -573,6 +574,101 @@ ColumnLayout {
             buttonText: "Send a test notification"
             onClicked: Quickshell.execDetached(["notify-send", "-a", "AnoShell", "Test notification",
                 "This is where notifications appear, and how long they stay."])
+        }
+    }
+
+    // ═══ Notification history ═══
+    SettingsCard {
+        id: historyCard
+        icon: "history"
+        title: "Notification history"
+        subtitle: "Every notification you receive, kept after you dismiss it: searchable, with how long and where it's kept"
+        configKeys: ["notifications.history"]
+        readonly property var hcfg: Config.options?.notifications?.history
+        property var stats: ({})
+        function refreshStats() { Anod.call("notifhistory.stats", null, res => historyCard.stats = res ?? {}) }
+        Component.onCompleted: refreshStats()
+        Connections {
+            target: Anod
+            function onAvailableChanged() { historyCard.refreshStats() }
+            function onEvent(name, data) { if (name === "notifhistory_changed") historyCard.refreshStats() }
+        }
+
+        ConfigSwitch {
+            label: "Keep a history"
+            configKey: "notifications.history.enable"
+            sublabel: Anod.available ? `${historyCard.stats.count ?? 0} kept, ${((historyCard.stats.bytes ?? 0) / 1048576).toFixed(1)} MB in ${historyCard.stats.files ?? 0} file(s)`
+                : "Needs anod (start the shell with \"ano start\"); without it nothing is kept"
+            checked: historyCard.hcfg?.enable ?? true
+            onCheckedChanged: if (checked !== (historyCard.hcfg?.enable ?? true)) Config.setNestedValue("notifications.history.enable", checked)
+        }
+        ConfigRow {
+            label: "Folder"
+            configKey: "notifications.history.path"
+            enabled: historyCard.hcfg?.enable ?? true
+            sublabel: (historyCard.stats.error ?? "") !== "" ? `Can't write there: ${historyCard.stats.error}`
+                : `Empty: ~/.local/share/anoshell/notifications. Old files stay where they were. Now: ${historyCard.stats.dir ?? "…"}`
+            ConfigTextInput {
+                Layout.preferredWidth: 220
+                text: historyCard.hcfg?.path ?? ""
+                onEditingFinished: { Config.setNestedValue("notifications.history.path", text.trim()); historyCard.refreshStats() }
+            }
+        }
+        ConfigSlider {
+            label: "Keep for"
+            configKey: "notifications.history.keepDays"
+            sublabel: "Older notifications are deleted; 0 keeps them forever"
+            enabled: historyCard.hcfg?.enable ?? true
+            from: 0; to: 365; stepSize: 1
+            value: historyCard.hcfg?.keepDays ?? 30
+            onValueChanged: Config.setNestedValue("notifications.history.keepDays", Math.round(value))
+            valueText: Math.round(value) === 0 ? "Forever" : `${Math.round(value)} days`
+        }
+        ConfigSlider {
+            label: "At most"
+            configKey: "notifications.history.maxEntries"
+            sublabel: "The oldest go first past this; 0 has no limit"
+            enabled: historyCard.hcfg?.enable ?? true
+            from: 0; to: 50000; stepSize: 500
+            value: historyCard.hcfg?.maxEntries ?? 5000
+            onValueChanged: Config.setNestedValue("notifications.history.maxEntries", Math.round(value))
+            valueText: Math.round(value) === 0 ? "No limit" : `${Math.round(value)} notifications`
+        }
+        ConfigSlider {
+            label: "New file after"
+            configKey: "notifications.history.rotateSizeMB"
+            sublabel: "The history file is rotated past this size; 0 never rotates"
+            enabled: historyCard.hcfg?.enable ?? true
+            from: 0; to: 100; stepSize: 1
+            value: historyCard.hcfg?.rotateSizeMB ?? 5
+            onValueChanged: Config.setNestedValue("notifications.history.rotateSizeMB", Math.round(value))
+            valueText: Math.round(value) === 0 ? "Never" : `${Math.round(value)} MB`
+        }
+        ConfigSlider {
+            label: "Rotated files kept"
+            configKey: "notifications.history.rotateKeep"
+            sublabel: "Older rotated files are deleted (still searchable while kept)"
+            enabled: (historyCard.hcfg?.enable ?? true) && (historyCard.hcfg?.rotateSizeMB ?? 5) > 0
+            from: 0; to: 20; stepSize: 1
+            value: historyCard.hcfg?.rotateKeep ?? 5
+            onValueChanged: Config.setNestedValue("notifications.history.rotateKeep", Math.round(value))
+            valueText: `${Math.round(value)}`
+        }
+        ConfigRow {
+            label: "Never keep"
+            configKey: "notifications.history.excludeApps"
+            sublabel: "App names or desktop entries, comma-separated: shown as usual, never written to the history"
+            enabled: historyCard.hcfg?.enable ?? true
+            ConfigTextInput {
+                Layout.preferredWidth: 220
+                text: Array.from(historyCard.hcfg?.excludeApps ?? []).join(", ")
+                onEditingFinished: Config.setNestedValue("notifications.history.excludeApps", text.split(",").map(t => t.trim()).filter(t => t !== ""))
+            }
+        }
+        RippleButton {
+            buttonText: "Open the history"
+            enabled: Anod.available
+            onClicked: GlobalStates.notificationHistoryOpen = true
         }
     }
 

@@ -335,6 +335,78 @@
  },
  {
   "page": 1,
+  "card": "Notification history",
+  "label": "Notification history",
+  "sublabel": "Every notification you receive, kept after you dismiss it: searchable, with how long and where it's kept",
+  "keys": [
+   "notifications.history"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Keep a history",
+  "sublabel": "",
+  "keys": [
+   "notifications.history.enable"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Folder",
+  "sublabel": "",
+  "keys": [
+   "notifications.history.path"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Keep for",
+  "sublabel": "Older notifications are deleted; 0 keeps them forever",
+  "keys": [
+   "notifications.history.keepDays"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "At most",
+  "sublabel": "The oldest go first past this; 0 has no limit",
+  "keys": [
+   "notifications.history.maxEntries"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "New file after",
+  "sublabel": "The history file is rotated past this size; 0 never rotates",
+  "keys": [
+   "notifications.history.rotateSizeMB"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Rotated files kept",
+  "sublabel": "Older rotated files are deleted (still searchable while kept)",
+  "keys": [
+   "notifications.history.rotateKeep"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Never keep",
+  "sublabel": "App names or desktop entries, comma-separated: shown as usual, never written to the history",
+  "keys": [
+   "notifications.history.excludeApps"
+  ]
+ },
+ {
+  "page": 1,
   "card": "Session",
   "label": "Session",
   "sublabel": "Confirmation for logout and shutdown",

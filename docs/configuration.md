@@ -323,6 +323,31 @@ Bioma pieces:
 
 `qs ipc call location get` prints what's known; `refresh` looks again.
 
+## Notification history
+
+`notifications.history` keeps every notification the shell receives, also
+after you dismiss or clear it, so you can look it up later (the History
+button on the notification card, Settings → General → Notification history,
+`qs -c ano ipc call notificationHistory toggle` or `search "<text>"`, and
+`ano notifications history`). anod writes it; without anod nothing is kept.
+
+- `enable` (on).
+- `path` (`""`): the folder, `~` allowed; empty is
+  `$XDG_DATA_HOME/anoshell/notifications`. Changing it starts writing there;
+  the old files stay where they were.
+- `keepDays` (30, 0 forever) and `maxEntries` (5000, 0 no limit): older
+  entries and those past the cap are deleted.
+- `rotateSizeMB` (5, 0 never) and `rotateKeep` (5): past the size the file
+  is set aside as `history.1.jsonl`; that many set-aside files are kept and
+  still searched.
+- `excludeApps` (`[]`): app names or desktop entries never written (they
+  still show). Blocked apps (`blockedApps`) are never recorded either.
+
+The history panel searches summaries, text and app names, filters by app,
+urgency and time, and pages 50 at a time. Deleting one entry is immediate;
+deleting an app's entries, the matches or everything asks first, naming how
+many go, and can't be undone.
+
 ## Weather warnings
 
 `bar.weather.alerts` (Settings → Bar → Weather):

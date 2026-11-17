@@ -1235,6 +1235,16 @@ Singleton {
                 // the history (no popup, unread or lock-screen entry); blocked ones are dropped.
                 property var silentApps: []
                 property var blockedApps: []
+                // The persistent history (anod: notifhistory; modules/notificationHistory). path "": $XDG_DATA_HOME/anoshell/notifications.
+                property JsonObject history: JsonObject {
+                    property bool enable: true
+                    property string path: ""
+                    property int keepDays: 30      // 0: forever
+                    property int maxEntries: 5000  // 0: no limit
+                    property int rotateSizeMB: 5   // 0: never rotate
+                    property int rotateKeep: 5
+                    property var excludeApps: []
+                }
             }
 
             // ═══════════════════════════════════════════════════════════════

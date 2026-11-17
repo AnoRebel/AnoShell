@@ -39,6 +39,7 @@ Singleton {
         { id: "anoControlPanel", name: "Control Panel", icon: "tune", desc: "Quick-access system controls", category: "Overlays", source: "modules/controlPanel/ControlPanel.qml" },
         { id: "anoNetworkOrbit", name: "Network Orbit", icon: "hub", desc: "Animated Wi-Fi / Bluetooth / VPN panel (network.panelStyle \"orbit\")", category: "Overlays", source: "modules/networkOrbit/NetworkOrbit.qml" },
         { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel", category: "Overlays", source: "modules/mediaControls/MediaControls.qml" },
+        { id: "anoNotificationHistory", name: "Notification History", icon: "history", desc: "Search and prune every notification received (notifications.history)", category: "Overlays", source: "modules/notificationHistory/NotificationHistoryPanel.qml" },
         { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information", category: "Overlays", source: "modules/weather/WeatherPanel.qml" },
         { id: "anoCalendar", name: "Calendar", icon: "calendar_month", desc: "Calendar panel with events and holidays", category: "Overlays", source: "modules/calendar/CalendarPanel.qml" },
         { id: "anoClock", name: "Clock", icon: "alarm", desc: "Alarms, world clocks, timer and stopwatch (alarms ring even with it off)", category: "Overlays", source: "modules/clock/ClockPanel.qml" },
@@ -81,7 +82,7 @@ Singleton {
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen", "anoPolkit",
         "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions", "anoSharePicker"]
-    readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar", "anoClock"]
+    readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoNotificationHistory", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar", "anoClock"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote", "anoLivePins"]
     readonly property var familyModules: ({

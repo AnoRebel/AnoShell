@@ -71,6 +71,9 @@ bundled `config.json` (see [Configuration](configuration.md)).
 | Command | What it does |
 |---|---|
 | `ano reader anime\|manga\|novel [open\|close\|toggle]` | shows or hides a reader panel (toggle by default). See [Reader](reader.md) |
+| `ano notifications history [--search T] [--app A] [--urgency U] [--since today\|7d\|30d\|12h] [--limit N] [--json]` | the notification history, newest first (through anod, or the files when it isn't running) |
+| `ano notifications history clear [filters] \| --all [--yes]` | deletes what matches, or everything with `--all`; asks first unless `--yes` |
+| `ano notifications history stats [--json]` | where the history is, how many entries and how big |
 | `ano reader status [--json]` | whether anod's reader backend is running, the open panels and playback |
 
 ## Setup: install, update, refresh

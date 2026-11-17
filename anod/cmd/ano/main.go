@@ -45,6 +45,8 @@ const usage = `usage: ano <command> [args]
   run [--print] terminal|browser|files [args…]   open your default app (apps.*; falls back to an installed one)
   share-pick [--allow-token] | status | install [--picker P] [--dry-run]
                                                  Hyprland screen-share picker (xdph's custom_picker_binary)
+  notifications history [--search T] [--app A] [--since 7d] [--limit N] [--json]   the notification history
+  notifications history clear [filters] | --all [--yes]  |  stats      delete from it / where and how big
   welcome                                        run the first-start wizard again
   keybinds list [--json] | apply                 ano's keybind set / regenerate the compositor bind files
   keybinds migrate [--dry-run] | --revert        move the binds out of hyprland.lua / config.kdl into ano (backups first)
@@ -101,6 +103,8 @@ func main() {
 		os.Exit(keybindsCmd(args))
 	case "atelier":
 		os.Exit(atelierCmd(args))
+	case "notifications":
+		os.Exit(notificationsCmd(args))
 	case "welcome":
 		os.Exit(shellIPC("call", "welcome", "open"))
 	case "help", "-h", "--help":

@@ -30,6 +30,7 @@ import (
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/keybinds"
+	"ano/anod/internal/notifhistory"
 	"ano/anod/internal/palette"
 	"ano/anod/internal/reader"
 	"ano/anod/internal/screentime"
@@ -296,6 +297,45 @@ func main() {
 			dls.Clear(p.Path)
 			return dls.State(), nil
 		})
+	}
+
+	// Notification history (notifications.history.*): the shell sends each notification it receives.
+	{
+		nh := &notifhistory.Store{Settings: notifHistorySettings, Changed: srv.Broadcast, Logf: log.Printf}
+		go nh.Run(ctx)
+		srv.Handle("notifhistory.add", func(raw json.RawMessage) (any, error) {
+			var e notifhistory.Entry
+			if err := json.Unmarshal(raw, &e); err != nil || strings.TrimSpace(e.App+e.Summary+e.Body) == "" {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want an entry {app, summary, body, …}")
+			}
+			ok, err := nh.Add(e)
+			if err == notifhistory.ErrDisabled {
+				return false, nil
+			}
+			return ok, err
+		})
+		srv.Handle("notifhistory.query", func(raw json.RawMessage) (any, error) {
+			var q notifhistory.Query
+			if len(raw) > 0 && string(raw) != "null" {
+				if err := json.Unmarshal(raw, &q); err != nil {
+					return nil, ipc.Errorf(ipc.CodeBadInput, "bad query: %v", err)
+				}
+			}
+			return nh.Query(q), nil
+		})
+		srv.Handle("notifhistory.delete", func(raw json.RawMessage) (any, error) {
+			var req struct {
+				notifhistory.Query
+				All bool `json:"all"`
+			}
+			if err := json.Unmarshal(raw, &req); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "bad delete: %v", err)
+			}
+			n, err := nh.Delete(req.Query, req.All)
+			return map[string]int{"deleted": n}, err
+		})
+		srv.Handle("notifhistory.apps", func(json.RawMessage) (any, error) { return nh.Apps(), nil })
+		srv.Handle("notifhistory.stats", func(json.RawMessage) (any, error) { return nh.Stats(), nil })
 	}
 
 	// Official weather warnings for the place the shell reports (alerts.where).
@@ -1024,6 +1064,16 @@ func notify(title, body string) {
 	if err := exec.Command("notify-send", "-a", "anod", "-u", "critical", title, body).Run(); err != nil {
 		log.Printf("notify: %v", err)
 	}
+}
+
+// notifHistorySettings reads notifications.history.* (live, before each operation).
+func notifHistorySettings() notifhistory.Settings {
+	m, err := config.Effective()
+	if err != nil {
+		m = map[string]any{}
+	}
+	home, _ := os.UserHomeDir()
+	return notifhistory.FromConfig(m, xdgData(), home)
 }
 
 // alertSettings reads bar.weather.alerts.* (live, before each poll).

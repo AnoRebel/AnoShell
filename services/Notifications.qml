@@ -190,8 +190,47 @@ Singleton {
             // A sound only for one that pops up (not silent, not held by performance mode).
             if (newNotifObject.popup && root.popupList.includes(newNotifObject)) Sounds.notification(notification)
             if (rule !== "silent") root.notify(newNotifObject)
+            root.record(newNotifObject, notification.desktopEntry)
             notifFileView.setText(stringifyList(root.list))
         }
+    }
+
+    // ── Persistent history (notifications.history.*; anod's notifhistory store) ──
+    // Every notification received (silent ones too; blocked ones never get here) is sent to anod, which skips the
+    // excluded apps. While anod is away they wait here, in order, and go when it is back (lost if the shell restarts first).
+    readonly property bool historyEnabled: Config.options?.notifications?.history?.enable ?? true
+    property var _historyQueue: []
+    property bool _historySending: false
+    function _historyUrgency(u) {
+        const t = String(u)
+        if (t === String(NotificationUrgency.Critical) || /critical/i.test(t)) return "critical"
+        if (t === String(NotificationUrgency.Low) || /low/i.test(t)) return "low"
+        return "normal"
+    }
+    function record(n, desktopEntry) {
+        if (!root.historyEnabled || !n) return
+        root._historyQueue.push({
+            app: n.appName || "", desktop: desktopEntry || "", icon: n.appIcon || "",
+            summary: n.summary || "", body: n.body || "", urgency: root._historyUrgency(n.urgency),
+            time: Math.round(n.time || Date.now()), actions: (n.actions ?? []).map(a => a.text).filter(t => !!t),
+        })
+        if (root._historyQueue.length > 500) root._historyQueue.shift() // a long anod outage: keep the newest 500
+        root._flushHistory()
+    }
+    function _flushHistory() {
+        if (root._historySending || root._historyQueue.length === 0 || !Anod.available) return
+        root._historySending = true
+        Anod.call("notifhistory.add", root._historyQueue[0], (res, err) => {
+            root._historySending = false
+            if (err?.code === "unavailable" || err?.code === "timeout") return // try again when anod is back
+            if (err) console.warn("notification history:", err.message ?? err.code)
+            root._historyQueue.shift()
+            root._flushHistory()
+        })
+    }
+    Connections {
+        target: Anod
+        function onAvailableChanged() { if (Anod.available) root._flushHistory() }
     }
 
     // A notification from the shell itself (no D-Bus round trip): listed,
@@ -210,6 +249,7 @@ Singleton {
             root.unread++
         }
         root.notify(n)
+        root.record(n, "")
         notifFileView.setText(stringifyList(root.list))
         return id
     }

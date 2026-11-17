@@ -219,6 +219,20 @@ quiet hours (`quiet`, `quietFrom`–`quietTo`) it carries the
 "area", "onset", "expires"}], "feed", "country", "updated", "error"}`;
 the `weather_alerts` event carries the same. `alerts.refresh` polls now.
 
+Notification history (`notifications.history.*`; see `anod/internal/notifhistory`): the shell sends
+every notification it receives with `notifhistory.add` (`{"app", "desktop", "icon", "summary", "body",
+"urgency", "time", "actions"}` → `true`, or `false` when the history is off or the app is in
+`excludeApps`). Files are JSON Lines in `path` (default `$XDG_DATA_HOME/anoshell/notifications`):
+`history.jsonl`, rotated to `history.1.jsonl` … `history.<rotateKeep>.jsonl` past `rotateSizeMB`.
+Entries older than `keepDays` or past `maxEntries` are never returned and are deleted at start, daily,
+and when the files hold 10% more than the cap. `notifhistory.query` (`{"text", "app", "urgency": [],
+"since", "until", "cursor", "limit"}`, all optional) → `{"entries", "next", "total"}`, newest first,
+50 per page (`next` is the cursor for the following page); `notifhistory.delete` (the same filters plus
+`"ids": []`, or `{"all": true}`; an empty filter deletes nothing) → `{"deleted"}`;
+`notifhistory.apps` → `[{"app", "icon", "count"}]`; `notifhistory.stats` → `{"enable", "dir", "count",
+"bytes", "files", "oldest", "error"}`. Any change broadcasts `notifhistory_changed`. While anod is down
+the shell keeps new notifications (up to 500) and sends them once it is back.
+
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),
 written atomically; an empty value removes it. The shell reads the file

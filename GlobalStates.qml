@@ -70,6 +70,7 @@ Singleton {
     property bool regionSelectorOpen: false
     property bool searchOpen: false
     property bool weatherPanelOpen: false
+    property bool notificationHistoryOpen: false
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false
     property bool anoSpotStashOpen: false

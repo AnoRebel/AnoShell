@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
@@ -33,6 +34,12 @@ Rectangle {
                 text: `${Notifications.list.length}`
                 font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
                 opacity: 0.5
+            }
+            ToolbarButton {
+                visible: Notifications.historyEnabled
+                iconName: "history"; iconSize: 16
+                toolTipText: "History"
+                onClicked: GlobalStates.notificationHistoryOpen = true
             }
             ToolbarButton {
                 visible: Notifications.list.length > 0
