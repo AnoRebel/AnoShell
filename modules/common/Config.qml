@@ -65,6 +65,21 @@ Singleton {
         return [cur, keys[keys.length - 1]];
     }
 
+    // The `var` property (a plain JS object, not a JsonObject) a dot-path goes
+    // into, if any: { holder, key, rest }, holder[key] being that property and
+    // rest the path inside it. null when the path ends on a declared property.
+    function _varHolder(dotPath) {
+        const keys = dotPath.split(".");
+        let cur = root.options;
+        for (let i = 0; i < keys.length - 1; ++i) {
+            const next = cur?.[keys[i]];
+            if (!next || typeof next !== "object" || root._isArrayLike(next)) return null;
+            if (typeof next.objectName !== "string") return { holder: cur, key: keys[i], rest: keys.slice(i + 1).join(".") };
+            cur = next;
+        }
+        return null;
+    }
+
     // Whether a dot-path names a key the schema declares. Assigning an
     // undeclared property on a JsonAdapter/JsonObject throws, which would
     // stop a write or a preview halfway; below a `var` property (a plain JS
@@ -143,8 +158,12 @@ Singleton {
 
         if (root._undeclared(nestedKey)) return;
 
-        // 1. Live in-memory mutation — UI sees the change this tick
-        const [liveParent, liveLeaf] = root._walkPath(root.options, nestedKey, true);
+        // 1. Live in-memory mutation — UI sees the change this tick. A key
+        // inside a `var` property (a plain JS object) is changed on a copy
+        // that's assigned back: changed in place, nothing bound to it updates.
+        const vh = root._varHolder(nestedKey);
+        const liveCopy = vh ? root._deepClone(vh.holder[vh.key]) : null;
+        const [liveParent, liveLeaf] = vh ? root._walkPath(liveCopy, vh.rest, true) : root._walkPath(root.options, nestedKey, true);
         if (root.recordUndo && JSON.stringify(liveParent[liveLeaf]) !== JSON.stringify(convertedValue))
             root._pushUndo({ key: nestedKey, mine: root.originOf(nestedKey) === "user", old: liveParent[liveLeaf] === undefined ? null : JSON.parse(JSON.stringify(liveParent[liveLeaf])) });
         // No-op when nothing changes. Controls echo their initial value
@@ -153,6 +172,7 @@ Singleton {
         // into an untouched config on first start).
         if (JSON.stringify(liveParent[liveLeaf]) === JSON.stringify(convertedValue)) return;
         liveParent[liveLeaf] = convertedValue;
+        if (vh) vh.holder[vh.key] = liveCopy;
 
         // 2. User delta mutation — persists to disk
         const [deltaParent, deltaLeaf] = root._walkPath(root._userDelta, nestedKey, true);
@@ -380,7 +400,15 @@ Singleton {
                 }
                 target[key] = arr;
             } else if (isPlainObject && target[key] && typeof target[key] === "object" && !root._isArrayLike(target[key])) {
-                root._deepMergeInto(target[key], value, path);
+                if (typeof target[key].objectName === "string") {
+                    root._deepMergeInto(target[key], value, path); // a JsonObject: its own properties notify
+                } else {
+                    // A `var` property's object: merged into a copy that's assigned back when it differs,
+                    // so what's bound to it updates (changed in place, nothing would).
+                    const copy = root._deepClone(target[key]);
+                    root._deepMergeInto(copy, value, path);
+                    if (JSON.stringify(copy) !== JSON.stringify(target[key])) target[key] = copy;
+                }
             } else {
                 try {
                     target[key] = value;
