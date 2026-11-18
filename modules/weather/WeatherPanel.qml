@@ -7,6 +7,8 @@ import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import QtQuick.Effects
+import "." as Here
 
 /**
  * Standalone weather panel — detailed weather overlay with current conditions,
@@ -62,24 +64,42 @@ Scope {
                 anchors { fill: parent; margins: 24 }
                 spacing: 16
 
-                // City + temperature hero
-                ColumnLayout {
-                    Layout.alignment: Qt.AlignHCenter; spacing: 4
-                    StyledText {
-                        text: Weather.data.city || (Weather.problem ? "Weather unavailable" : "Loading…")
-                        font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
-                        opacity: 0.6; Layout.alignment: Qt.AlignHCenter
+                // City + temperature hero, over the weather scene (bar.weather.scene.enable)
+                Item {
+                    id: hero
+                    readonly property bool scene: Config.options?.bar?.weather?.scene?.enable ?? true
+                    Layout.fillWidth: true
+                    implicitHeight: Math.max(heroText.implicitHeight + (hero.scene ? 36 : 0), hero.scene ? 170 : 0)
+                    Loader {
+                        anchors.fill: parent
+                        active: hero.scene
+                        sourceComponent: Here.WeatherScene { live: GlobalStates.weatherPanelOpen; radius: Appearance.rounding.normal }
                     }
-                    StyledText {
-                        text: Weather.data.temp || "--"
-                        font.pixelSize: 56; font.weight: Font.Bold
-                        font.family: Appearance?.font.family.numbers ?? "monospace"
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    StyledText {
-                        text: `Feels like ${Weather.data.tempFeelsLike || "--"}`
-                        font.pixelSize: Appearance?.font.pixelSize.small ?? 14
-                        opacity: 0.5; Layout.alignment: Qt.AlignHCenter
+                    ColumnLayout {
+                        id: heroText
+                        anchors.centerIn: parent
+                        spacing: 4
+                        // Over the scene: light text with a shadow.
+                        readonly property color ink: hero.scene ? "white" : Appearance.colors.colOnLayer0
+                        layer.enabled: hero.scene
+                        layer.effect: MultiEffect { shadowEnabled: true; shadowColor: "black"; shadowOpacity: 0.55; shadowBlur: 0.6; shadowVerticalOffset: 1 }
+                        StyledText {
+                            text: Weather.data.city || (Weather.problem ? "Weather unavailable" : "Loading…")
+                            font.pixelSize: Appearance?.font.pixelSize.normal ?? 16
+                            color: heroText.ink; opacity: 0.8; Layout.alignment: Qt.AlignHCenter
+                        }
+                        StyledText {
+                            text: Weather.data.temp || "--"
+                            font.pixelSize: 56; font.weight: Font.Bold
+                            font.family: Appearance?.font.family.numbers ?? "monospace"
+                            color: heroText.ink
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+                        StyledText {
+                            text: `Feels like ${Weather.data.tempFeelsLike || "--"}`
+                            font.pixelSize: Appearance?.font.pixelSize.small ?? 14
+                            color: heroText.ink; opacity: 0.7; Layout.alignment: Qt.AlignHCenter
+                        }
                     }
                 }
 

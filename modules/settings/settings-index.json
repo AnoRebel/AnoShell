@@ -1660,6 +1660,24 @@
  {
   "page": 3,
   "card": "",
+  "label": "Animated scene",
+  "sublabel": "Sky, sun or moon, clouds and rain or snow at the top of the weather panel, following the real sunrise and sunset",
+  "keys": [
+   "bar.weather.scene.enable"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
+  "label": "Scene strength",
+  "sublabel": "How heavy rain, snow, mist and lightning look",
+  "keys": [
+   "bar.weather.scene.strength"
+  ]
+ },
+ {
+  "page": 3,
+  "card": "",
   "label": "Official weather warnings",
   "sublabel": "",
   "keys": [

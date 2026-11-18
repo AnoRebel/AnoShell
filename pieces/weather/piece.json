@@ -9,6 +9,7 @@
   "minSize": { "w": 2, "h": 2 },
   "settings": [
     { "key": "hourly", "type": "bool", "label": "Today's hours", "default": true },
-    { "key": "daily", "type": "bool", "label": "Next days", "default": true }
+    { "key": "daily", "type": "bool", "label": "Next days", "default": true },
+    { "key": "scene", "type": "bool", "label": "Animated scene", "default": false }
   ]
 }

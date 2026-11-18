@@ -37,7 +37,7 @@ tiled windows are); the window hides them, but their timers keep running.
 |---|---|---|
 | Clock | the time, large, with the date | seconds |
 | Profile | your picture (`~/.face`), name, uptime, a status line; lock, settings, power | status, picture |
-| Weather | current weather; today's hours and the next days when tall enough (wttr.in, the city from Settings → Bar → Weather) | hourly, daily |
+| Weather | current weather; today's hours and the next days when tall enough (wttr.in, the city from Settings → Bar → Weather); with *Animated scene* on, the weather scene behind the current weather | hourly, daily, scene |
 | Media | cover, title, artist, controls (the sidebar's media card) | |
 | Photo frame | a picture, or a folder's pictures in turn | path, interval, shuffle |
 | System | CPU, memory, battery; CPU temperature and disk use of `/` if you want them | temperature, disk |

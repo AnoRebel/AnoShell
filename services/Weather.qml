@@ -7,6 +7,7 @@ import QtQuick
 import qs.modules.common
 import qs.modules.common.functions
 import qs.services
+import "../modules/weather/scene.js" as Scene
 
 /**
  * Weather service using wttr.in API with optional GPS positioning.
@@ -36,6 +37,7 @@ Singleton {
         windDir: 0, wCode: 0, city: 0, wind: 0,
         precip: 0, visib: 0, press: 0, temp: 0,
         tempFeelsLike: 0, lastRefresh: 0,
+        sunriseMin: NaN, sunsetMin: NaN, windKmph: 0,
     })
 
     property var days: []   // [{ date, max, min, code }]
@@ -78,6 +80,10 @@ Singleton {
         temp.wCode = raw?.current?.weatherCode || "113"
         temp.city = raw?.location?.areaName[0]?.value || "City"
         temp.temp = ""; temp.tempFeelsLike = ""
+        // For the weather scene: sunrise/sunset in minutes after midnight (whatever the time format) and wind in km/h.
+        temp.sunriseMin = Scene.minutesOf(raw?.astronomy?.sunrise)
+        temp.sunsetMin = Scene.minutesOf(raw?.astronomy?.sunset)
+        temp.windKmph = +(raw?.current?.windspeedKmph || 0)
 
         if (root.timeFormat === "hh:mm") {
             temp.sunrise = convertTo24Hour(raw?.astronomy?.sunrise)

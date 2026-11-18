@@ -275,7 +275,7 @@ Singleton {
     }
 
     // Chat save/load
-    property string chatSavePath: `${Directories.cache}/anoshell/ai_chats`
+    property string chatSavePath: FileUtils.trimFileProtocol(`${Directories.cache}/anoshell/ai_chats`)
 
     // Chat names come from the /save and /load commands: keep them to a
     // plain file name (no separators, no "..").

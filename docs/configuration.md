@@ -374,6 +374,23 @@ Esc closes the details, then the monitor. `bubbleMonitor`:
 Processes, apps and sensors come from anod (`sysmon.*`), sampled once a second
 and only while a bubble view is open.
 
+## Weather scene
+
+`bar.weather.scene` (Settings → Bar → Weather) draws the current weather at
+the top of the weather panel (and in the weather piece with its *Animated
+scene* setting): the sky follows the real sunrise and sunset (06:00–18:00
+when wttr.in doesn't say), with dawn and dusk colours, the sun or the moon in
+its real phase on an arc, and stars at night; clear, cloudy, overcast, mist,
+rain, snow (lying on the hills) and storm (with lightning), drifting with the
+wind. A change of weather eases over a couple of seconds: clouds gather before
+rain, rain stops before it clears. It animates only while shown; with reduced
+motion it is a still picture.
+
+- `enable` (on).
+- `look` (`"flat"`): `"pixel"` (drawn at a quarter of the size, unsmoothed) or
+  `"soft"` (blurred, muted).
+- `strength` (1): 0.2–1, how heavy rain, snow, mist and lightning look.
+
 ## Weather warnings
 
 `bar.weather.alerts` (Settings → Bar → Weather):

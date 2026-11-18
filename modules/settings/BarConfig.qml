@@ -1002,6 +1002,35 @@ ColumnLayout {
         }
 
         ConfigSwitch {
+            label: "Animated scene"
+            configKey: "bar.weather.scene.enable"
+            sublabel: "Sky, sun or moon, clouds and rain or snow at the top of the weather panel, following the real sunrise and sunset"
+            checked: Config.options?.bar?.weather?.scene?.enable ?? true
+            onCheckedChanged: Config.setNestedValue("bar.weather.scene.enable", checked)
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            visible: Config.options?.bar?.weather?.scene?.enable ?? true
+            model: [
+                { value: "flat", label: "Flat", icon: "landscape" },
+                { value: "pixel", label: "Pixel", icon: "grid_on" },
+                { value: "soft", label: "Soft", icon: "blur_on" }
+            ]
+            current: Config.options?.bar?.weather?.scene?.look ?? "flat"
+            onChose: v => Config.setNestedValue("bar.weather.scene.look", v)
+        }
+        ConfigSlider {
+            visible: Config.options?.bar?.weather?.scene?.enable ?? true
+            label: "Scene strength"
+            configKey: "bar.weather.scene.strength"
+            sublabel: "How heavy rain, snow, mist and lightning look"
+            from: 0.2; to: 1; stepSize: 0.1
+            value: Config.options?.bar?.weather?.scene?.strength ?? 1
+            onValueChanged: Config.setNestedValue("bar.weather.scene.strength", Math.round(value * 10) / 10)
+            valueText: `${Math.round(value * 100)}%`
+        }
+
+        ConfigSwitch {
             label: "Official weather warnings"
             configKey: "bar.weather.alerts.enable"
             sublabel: Anod.available

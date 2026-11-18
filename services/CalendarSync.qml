@@ -53,7 +53,7 @@ Singleton {
     signal fetchFinished(bool success)
     signal sourceError(string sourceId, string error)
 
-    readonly property string cachePath: Directories.genericCache + "/anoshell/calendar-sync.json"
+    readonly property string cachePath: FileUtils.trimFileProtocol(Directories.genericCache + "/anoshell/calendar-sync.json")
 
     Component.onCompleted: {
         loadCache()

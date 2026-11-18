@@ -3,36 +3,48 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import "../../modules/weather"
 
 // Bundled piece: services/Weather (wttr.in; the city in Settings → Bar →
-// Weather). Hours and days show when enabled and the card is tall enough.
+// Weather). Hours and days show when enabled and the card is tall enough;
+// with `scene` on, the animated weather scene sits behind the current weather.
 Item {
     id: root
     property var ctx
     property var settings: ({})
     readonly property bool roomy: root.height > 200
     readonly property var d: Weather.data
+    readonly property bool scene: root.settings?.scene ?? false
+
+    // Behind the current weather, a little larger than its row.
+    Loader {
+        x: -4; y: -4
+        width: root.width + 8; height: current.height + 8
+        active: root.scene
+        sourceComponent: WeatherScene { live: root.ctx?.live ?? false; radius: Appearance.rounding.small }
+    }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 8
         RowLayout {
+            id: current
             Layout.fillWidth: true
             spacing: 12
             MaterialSymbol {
                 text: Weather.iconFor(root.d.wCode)
                 iconSize: Math.min(root.height * 0.3, 64)
                 fill: 1
-                color: Appearance.colors.colPrimary
+                color: root.scene ? "white" : Appearance.colors.colPrimary
             }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0
-                StyledText { text: root.d.temp || "--"; font.pixelSize: Math.min(root.height * 0.22, 44); font.weight: Font.Light }
+                StyledText { text: root.d.temp || "--"; font.pixelSize: Math.min(root.height * 0.22, 44); font.weight: Font.Light; color: root.scene ? "white" : Appearance.colors.colOnLayer1 }
                 StyledText {
                     Layout.fillWidth: true; elide: Text.ElideRight
                     text: `${root.d.city || ""} · feels ${root.d.tempFeelsLike || "--"}`
-                    color: Appearance.colors.colSubtext
+                    color: root.scene ? Qt.rgba(1, 1, 1, 0.85) : Appearance.colors.colSubtext
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }

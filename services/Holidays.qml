@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import qs.modules.common
+import qs.modules.common.functions
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -42,7 +43,8 @@ Singleton {
     // Set of "year" strings already fetched or in-flight, to dedupe.
     property var _fetchedYears: ({})
 
-    readonly property string cachePath: Directories.genericCache + "/anoshell/holidays.json"
+    // A plain path: as a file:// URL its folder was made by `mkdir -p` relative to the working directory.
+    readonly property string cachePath: FileUtils.trimFileProtocol(Directories.genericCache + "/anoshell/holidays.json")
 
     signal changed()
 

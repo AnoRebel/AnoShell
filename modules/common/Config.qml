@@ -948,6 +948,12 @@ Singleton {
                     // Official warnings (anod: NWS, MET Norway, DWD, MeteoAlarm)
                     // and a "rain soon" notice from wttr.in's hourly chance of rain.
                     // Quiet hours: notifications go to the history without a popup.
+                    // The animated weather scene at the top of the weather panel.
+                    property JsonObject scene: JsonObject {
+                        property bool enable: true
+                        property string look: "flat"   // flat | pixel | soft
+                        property real strength: 1.0    // 0.2..1: how strong rain, snow, mist and lightning are
+                    }
                     property JsonObject alerts: JsonObject {
                         property bool enable: true
                         property bool rain: false
