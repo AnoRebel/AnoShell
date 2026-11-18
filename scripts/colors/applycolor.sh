@@ -482,5 +482,7 @@ apply_foot
 apply_cava
 apply_qt
 apply_hyprtoolkit
+# Prompt styles (terminal.prompt) take their colours from the palette too.
+"$(dirname "${BASH_SOURCE[0]}")/../terminal/apply-terminal.sh" --prompt >/dev/null 2>&1 || log "WARN: prompt colours not updated"
 
 log "Done applying colors to external apps"

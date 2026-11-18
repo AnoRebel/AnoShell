@@ -47,7 +47,8 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 `supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
 `outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`,
 `windowGeometry` (windows' x/y are layout coordinates and `reservedOf` is known, so they can be placed on an output's
-usable area; Hyprland, sway), `cursorPos` (`cursorPos(cb)`; Hyprland).
+usable area; Hyprland, sway), `cursorPos` (`cursorPos(cb)`; Hyprland), `windowBlur` (blur behind translucent windows
+through window rules in anod's managed file; Hyprland, niri 26.04+).
 
 ## Functions
 

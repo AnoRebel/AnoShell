@@ -1671,6 +1671,26 @@ Singleton {
                 }
             }
 
+            // Terminal looks and prompt styles (scripts/terminal/apply-terminal.sh, services/TerminalLooks.qml).
+            property JsonObject terminal: JsonObject {
+                // Looks: a marked include in each terminal's config. Off: none (and taken out again).
+                property bool enable: false
+                property JsonObject apps: JsonObject {
+                    property bool kitty: true
+                    property bool foot: true
+                    property bool ghostty: true
+                    property bool alacritty: true
+                }
+                property string background: "translucent" // solid | translucent | clear
+                property real opacity: 0.85
+                property bool blur: true
+                property int padding: 12                   // 0–32 px
+                property string cursor: "beam"             // block | beam | underline
+                // own (your prompt, untouched) | segments | minimal; one marked line in each rc file of `shells`.
+                property string prompt: "own"
+                property var shells: []                    // zsh/bash/fish; empty: your login shell
+            }
+
             // Desktop pet: a duck, a cat or a dog on one screen (modules/pet).
             property JsonObject pet: JsonObject {
                 property bool enable: false

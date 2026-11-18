@@ -85,6 +85,7 @@ ShellRoot {
             StaticThemeLoader.reapplyTheme(); // static/fixed theme, else Material You
             settleTimer.start();
             Wallpapers.load();
+            TerminalLooks.load();
         }
     }
 

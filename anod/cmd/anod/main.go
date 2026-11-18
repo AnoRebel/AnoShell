@@ -694,6 +694,13 @@ func main() {
 				}
 				return &c
 			},
+			Terminal: func() *display.TerminalLook {
+				m, err := config.Effective()
+				if err != nil || !config.Bool(m, "terminal.enable", false) {
+					return nil
+				}
+				return &display.TerminalLook{Translucent: config.String(m, "terminal.background", "translucent") != "solid", Blur: config.Bool(m, "terminal.blur", true)}
+			},
 			Keyboard: func() *display.Keyboard {
 				m, err := config.Effective()
 				if err != nil {
@@ -781,6 +788,8 @@ func main() {
 			pending, err := disp.Apply(req.Outputs)
 			return map[string]any{"pending": pending}, err
 		})
+		// The terminal look changed (scripts/terminal/apply-terminal.sh ran): its window rules.
+		srv.Handle("terminal.refresh", func(json.RawMessage) (any, error) { return true, disp.Refresh() })
 		srv.Handle("display.confirm", func(json.RawMessage) (any, error) { return true, disp.Confirm() })
 		srv.Handle("display.revert", func(json.RawMessage) (any, error) { return true, disp.Revert() })
 		srv.Handle("display.saveProfile", func(p json.RawMessage) (any, error) {

@@ -18,7 +18,7 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true
+        keyboardLayouts: true, windowBlur: true
     })
 
     readonly property string focusedOutput: NiriService.currentOutput ?? ""

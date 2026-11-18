@@ -2887,6 +2887,87 @@
  },
  {
   "page": 7,
+  "card": "Terminal look",
+  "label": "Terminal look",
+  "sublabel": "Background, blur, padding and cursor for kitty, foot, Ghostty and Alacritty, and a prompt in the palette's colours",
+  "keys": [
+   "terminal"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Manage terminal looks",
+  "sublabel": "Adds one marked include to each terminal's config (backed up once); off takes it out again",
+  "keys": [
+   "terminal.enable"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Background",
+  "sublabel": "",
+  "keys": [
+   "terminal.background"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Opacity",
+  "sublabel": "",
+  "keys": [
+   "terminal.opacity"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Blur behind",
+  "sublabel": "This compositor can't blur windows",
+  "keys": [
+   "terminal.blur"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Padding",
+  "sublabel": "",
+  "keys": [
+   "terminal.padding"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Cursor",
+  "sublabel": "",
+  "keys": [
+   "terminal.cursor"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Prompt",
+  "sublabel": "Prompt style in the palette's colours: ",
+  "keys": [
+   "terminal.prompt"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Prompt shells",
+  "sublabel": "None picked: your login shell",
+  "keys": [
+   "terminal.shells"
+  ]
+ },
+ {
+  "page": 7,
   "card": "Wallpaper colours",
   "label": "Wallpaper colours",
   "sublabel": "How the palette is made from the wallpaper; picks can be remembered per wallpaper",

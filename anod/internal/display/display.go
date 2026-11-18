@@ -275,7 +275,9 @@ type Service struct {
 	// Cursor returns the configured cursor (cursor.theme/size), nil if unset.
 	Cursor func() *Cursor
 	// Keyboard returns the configured layouts (keyboard.layouts), nil if unset.
-	Keyboard    func() *Keyboard
+	Keyboard func() *Keyboard
+	// Terminal returns the terminal look (terminal.*), nil when it's off.
+	Terminal    func() *TerminalLook
 	GtkSettings []string                                // gtk-3.0/4.0 settings.ini (only existing keys are updated)
 	Exec        func(name string, args ...string) error // runs hyprctl/gsettings (tests swap it)
 
@@ -476,6 +478,9 @@ func (s *Service) writeManaged(all []Output) error {
 		if k != nil {
 			b.WriteString(hyprKeyboard(*k) + "\n")
 		}
+		if s.Terminal != nil {
+			b.WriteString(hyprTerminal(s.Terminal()))
+		}
 		for _, o := range all {
 			b.WriteString(hyprMonitor(o) + "\n")
 		}
@@ -487,6 +492,9 @@ func (s *Service) writeManaged(all []Output) error {
 		}
 		if k != nil {
 			b.WriteString(niriKeyboard(*k))
+		}
+		if s.Terminal != nil {
+			b.WriteString(niriTerminal(s.Terminal()))
 		}
 		for _, o := range all {
 			b.WriteString(niriOutput(o))

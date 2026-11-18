@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Appearance"
         subtitle: "Look, theme and colours, bezel, animations, wallpaper rotation"
-        configRoots: ["appearance", "background", "animations", "settings.softenWallpaper"]
+        configRoots: ["appearance", "background", "animations", "settings.softenWallpaper", "terminal"]
     }
 
     // Track the originally-selected theme so hover-preview can revert
@@ -592,6 +592,117 @@ ColumnLayout {
             visible: appearanceRoot.previewing
             text: `Previewing "${appearanceRoot.previewingName}". Click a card to apply, or move the cursor away to revert.`
             iconName: "preview"
+        }
+    }
+
+    // ═══ Terminal look ═══
+    SettingsCard {
+        id: termCard
+        icon: "terminal"
+        title: "Terminal look"
+        subtitle: "Background, blur, padding and cursor for kitty, foot, Ghostty and Alacritty, and a prompt in the palette's colours"
+        configKeys: ["terminal"]
+        readonly property var tc: Config.options?.terminal ?? ({})
+        readonly property bool on: tc.enable ?? false
+
+        ConfigSwitch {
+            label: "Manage terminal looks"
+            configKey: "terminal.enable"
+            sublabel: "Adds one marked include to each terminal's config (backed up once); off takes it out again"
+            checked: termCard.on
+            onCheckedChanged: if (checked !== termCard.on) Config.setNestedValue("terminal.enable", checked)
+        }
+        Repeater {
+            model: [{ key: "kitty", label: "kitty", sub: "Running windows change too" },
+                    { key: "ghostty", label: "Ghostty", sub: "Running windows reload their config" },
+                    { key: "alacritty", label: "Alacritty", sub: "Running windows reload it; your own alacritty.toml values win over these" },
+                    { key: "foot", label: "foot", sub: "New windows" }]
+            delegate: ConfigSwitch {
+                required property var modelData
+                visible: termCard.on
+                label: modelData.label
+                configKey: `terminal.apps.${modelData.key}`
+                sublabel: modelData.sub
+                checked: termCard.tc.apps?.[modelData.key] ?? true
+                onCheckedChanged: if (checked !== (termCard.tc.apps?.[modelData.key] ?? true)) Config.setNestedValue(`terminal.apps.${modelData.key}`, checked)
+            }
+        }
+        ConfigRow {
+            label: "Background"
+            configKey: "terminal.background"
+            visible: termCard.on
+            ChoiceRow {
+                model: [{ value: "solid", label: "Solid", icon: "square" }, { value: "translucent", label: "Translucent", icon: "opacity" },
+                        { value: "clear", label: "Clear", icon: "check_box_outline_blank" }]
+                current: termCard.tc.background ?? "translucent"
+                onChose: value => Config.setNestedValue("terminal.background", value)
+            }
+        }
+        ConfigSlider {
+            label: "Opacity"
+            configKey: "terminal.opacity"
+            visible: termCard.on && (termCard.tc.background ?? "translucent") === "translucent"
+            from: 0.3; to: 1; stepSize: 0.05
+            value: termCard.tc.opacity ?? 0.85
+            onValueChanged: Config.setNestedValue("terminal.opacity", Math.round(value * 100) / 100)
+            valueText: `${Math.round(value * 100)}%`
+        }
+        ConfigSwitch {
+            label: "Blur behind"
+            configKey: "terminal.blur"
+            visible: termCard.on && (termCard.tc.background ?? "translucent") !== "solid"
+            enabled: CompositorService.supports.windowBlur ?? false
+            sublabel: !(CompositorService.supports.windowBlur ?? false) ? "This compositor can't blur windows"
+                : CompositorService.compositor === "hyprland" ? "Hyprland blurs translucent windows while its own blur is on; turning this off needs anod's managed file in your config and applies after Hyprland reloads it"
+                : "Through anod's managed file (niri 26.04 or newer; include ano-managed.kdl)"
+            checked: termCard.tc.blur ?? true
+            onCheckedChanged: if (checked !== (termCard.tc.blur ?? true)) Config.setNestedValue("terminal.blur", checked)
+        }
+        ConfigSlider {
+            label: "Padding"
+            configKey: "terminal.padding"
+            visible: termCard.on
+            from: 0; to: 32; stepSize: 1
+            value: termCard.tc.padding ?? 12
+            onValueChanged: Config.setNestedValue("terminal.padding", Math.round(value))
+            valueText: `${Math.round(value)} px`
+        }
+        ConfigRow {
+            label: "Cursor"
+            configKey: "terminal.cursor"
+            visible: termCard.on
+            ChoiceRow {
+                model: [{ value: "block", label: "Block", icon: "rectangle" }, { value: "beam", label: "Beam", icon: "text_select_start" },
+                        { value: "underline", label: "Underline", icon: "format_underlined" }]
+                current: termCard.tc.cursor ?? "beam"
+                onChose: value => Config.setNestedValue("terminal.cursor", value)
+            }
+        }
+        ConfigRow {
+            label: "Prompt"
+            configKey: "terminal.prompt"
+            sublabel: "Prompt style in the palette's colours: " + ((termCard.tc.prompt ?? "own") === "own" ? "your own prompt is left alone"
+                : `one marked line in ${(termCard.tc.shells ?? []).length ? termCard.tc.shells.join(", ") : "your login shell"}'s rc file; new sessions get it (Starship draws it when installed)`)
+            ChoiceRow {
+                model: [{ value: "own", label: "Your own", icon: "person" }, { value: "segments", label: "Segments", icon: "view_week" },
+                        { value: "minimal", label: "Minimal", icon: "chevron_right" }]
+                current: termCard.tc.prompt ?? "own"
+                onChose: value => Config.setNestedValue("terminal.prompt", value)
+            }
+        }
+        ConfigRow {
+            label: "Prompt shells"
+            configKey: "terminal.shells"
+            visible: (termCard.tc.prompt ?? "own") !== "own"
+            sublabel: "None picked: your login shell"
+            ChoiceRow {
+                model: [{ value: "zsh", label: "zsh", icon: "terminal" }, { value: "bash", label: "bash", icon: "terminal" }, { value: "fish", label: "fish", icon: "terminal" }]
+                current: Array.from(termCard.tc.shells ?? [])
+                onChose: value => {
+                    const cur = Array.from(termCard.tc.shells ?? [])
+                    Config.setNestedValue("terminal.shells", cur.includes(value) ? cur.filter(s => s !== value) : cur.concat([value]))
+                }
+            }
         }
     }
 

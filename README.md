@@ -35,6 +35,9 @@ backend is picked from the session at start.
   included, or hand it to hyprlock), fingerprint unlock, intros (waves, padlock,
   portal), a layout editor, and replaceable lock screens (built-in, Simple,
   Minimal, Bioma Gate, your own) ([lock screens](docs/lockscreens.md)).
+- **Terminal looks** for kitty, foot, Ghostty and Alacritty (translucency, blur,
+  padding, cursor) and prompt styles for zsh, bash and fish in the palette's
+  colours, with Starship when installed ([terminal](docs/terminal.md)).
 - **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
@@ -103,6 +106,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Battery` | UPower charge/health/time-remaining + auto-suspend trigger. |
 | `KeyboardLayoutService` | Active XKB layout on both Hyprland and Niri; clicking cycles it where the backend can. |
 | `LockKeys` | Caps Lock / Num Lock state, read on demand (no polling) for the OSD and the lock screen warning. |
+| `TerminalLooks` | Runs `scripts/terminal/apply-terminal.sh` when `terminal.*` changes and asks anod for the terminal window rules ([terminal](docs/terminal.md)). |
 | `EasyEffects` | EasyEffects bypass and output presets through its command line. |
 | `Idle` | Wayland IdleInhibitor toggle (caffeine-style). |
 | `IdleInhibitor` | Per-app inhibit registry. |
@@ -501,6 +505,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `nightLight` | wlsunset-backed warm-shift (Hyprland, niri, sway) | `enable` (on now), `schedule` (off/sun/times), `start`, `end`, `fade` (min), `dayTemp`, `nightTemp`, `latitude`, `longitude`, `gamma`, `outputs` |
 | `lock` | Who locks (`locker`: `shell` everywhere with the session lock protocol, or `external` running `externalCommand`), the lock screen package, the intro and arranged layouts ([lock screens](docs/lockscreens.md)) | `locker`, `externalCommand`, `screen`, `intro` (none/waves/padlock/portal), `layouts.<id>` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
+| `terminal` | Terminal looks (one marked include per terminal) and prompt styles ([terminal](docs/terminal.md)) | `enable`, `apps.<kitty\|foot\|ghostty\|alacritty>`, `background`, `opacity`, `blur`, `padding`, `cursor`, `prompt` (own/segments/minimal), `shells` |
 | `lock.osk` | On-screen keyboard for password entry | — |
 | `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
 | `lock.dim` | Auto-dim the lock background after idle | `idleMs`, `opacity` |
@@ -731,6 +736,8 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Terminal colours (`appearance.theme.terminals`, docs/wallpaper.md) | the terminal (kitty, Ghostty, foot); `jq`; `pkill` (procps-ng) to recolour running kitty/Ghostty windows | that terminal keeps its own colours; without `pkill` only new windows change |
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
+| Terminal looks (`terminal.enable`) | `jq`; kitty, foot, Ghostty or Alacritty; blur: Hyprland, or niri 26.04+, with anod's managed file in its config | nothing applied / no blur |
+| Prompt styles (`terminal.prompt`) | `jq`; `git` for the branch; a Nerd Font for Segments; optional `starship` | no branch / boxes for the separators / the shell's own prompt code |
 | Desktop pet (`pet`) | nothing for the pet itself; window-top floors: Hyprland or sway; walking to the pointer: Hyprland; `sound`: `pipewire` (`pw-play`) | it stays on the bottom edge / doesn't follow the pointer / silent |
 | Corner revolver (`revolver`) | `loginctl` (systemd-logind) for Lock; Shuffle wallpaper: anod's rotation, else `find` in the rotation folder; the other chambers use the shell's own panels and services | Lock does nothing |
 | Gauge piece | CPU, memory, temperature (`/sys/class/thermal`) and disk (`df`) from the shell's resource sampling; battery: `upowerd` | that reading shows `--` |
@@ -868,6 +875,7 @@ ano/
 │
 ├── scripts/
 │   ├── colors/applycolor.sh                # app colours (an anod wallpaper hook)
+│   ├── terminal/                   # apply-terminal.sh (terminal looks), prompt/ (zsh, bash, fish, Starship)
 │   ├── hyprland/get_keybinds.py
 │   ├── anoSpot/                    # LocalSend send/discover scripts
 │   └── focustime/{focus_daemon,get_stats}.py

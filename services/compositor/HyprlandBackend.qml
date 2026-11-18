@@ -23,7 +23,7 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
         outerGaps: true, cursorZoom: true, screenShader: true, dpms: true, outputConfig: true, exit: true,
-        keyboardLayouts: true, windowGeometry: true, cursorPos: true
+        keyboardLayouts: true, windowGeometry: true, cursorPos: true, windowBlur: true
     })
 
     // Raw IPC state

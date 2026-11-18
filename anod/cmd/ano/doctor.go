@@ -67,6 +67,8 @@ var features = []feature{
 	{"location from nearby Wi-Fi (beaconDB, before the IP address)", "location.wifi", []string{"nmcli", "jq", "curl"}},
 	{"corner revolver: Lock (loginctl, systemd-logind)", "revolver.enable", []string{"loginctl"}},
 	{"desktop pet sounds", "pet.sound", []string{"pw-play"}},
+	{"terminal looks (a supported terminal: kitty, foot, Ghostty or Alacritty)", "terminal.enable", []string{"jq", "kitty|foot|ghostty|alacritty"}},
+	{"prompt styles (git branch in Segments; Starship draws them when installed)", "terminal.prompt=segments|terminal.prompt=minimal", []string{"jq", "git"}},
 	{"disk use of / (sidebar system section, Bubble Monitor, system piece; the Bubble Monitor's processes need anod)", "", []string{"df"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},
 	{"palette piece (copy) and world clock piece (zone offsets)", "pieces.enable", []string{"wl-copy", "date"}},
