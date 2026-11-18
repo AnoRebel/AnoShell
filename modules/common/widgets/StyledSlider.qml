@@ -42,7 +42,10 @@ Slider {
     Layout.fillWidth: true
     from: 0; to: 1
 
-    Behavior on value { SmoothedAnimation { velocity: Appearance.animation.elementMoveFast.velocity } }
+    // The drawn position eases to a new value set from outside (a reset, a preset, another control); `value` itself
+    // never animates, so a consumer saving it on every change (onValueChanged) only ever sees the real value.
+    property real shownPosition: root.visualPosition
+    Behavior on shownPosition { enabled: !root.pressed; animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
     Behavior on handleMargins { animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
 
     component TrackDot: Rectangle {
@@ -52,7 +55,7 @@ Slider {
         x: root.handleMargins + (normalizedValue * root.effectiveDraggingWidth) - (root.trackDotSize / 2)
         width: root.trackDotSize; height: root.trackDotSize
         radius: Appearance.rounding.full
-        color: normalizedValue > root.visualPosition ? root.dotColor : root.dotColorHighlighted
+        color: normalizedValue > root.shownPosition ? root.dotColor : root.dotColorHighlighted
         Behavior on color { animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this) }
     }
 
@@ -90,7 +93,7 @@ Slider {
 
         Loader {
             anchors { verticalCenter: parent.verticalCenter; left: parent.left }
-            width: root.handleMargins + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
+            width: root.handleMargins + (root.shownPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
             height: root.trackWidth; active: !root.wavy
             sourceComponent: Rectangle {
                 color: root.highlightColor
@@ -101,12 +104,12 @@ Slider {
 
         Loader {
             anchors { verticalCenter: parent.verticalCenter; left: parent.left }
-            width: root.handleMargins + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
+            width: root.handleMargins + (root.shownPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
             height: root.height; active: root.wavy
             sourceComponent: WavyLine {
                 id: wavyFill; frequency: 6; fullLength: root.width; color: root.highlightColor
                 amplitudeMultiplier: root.wavy ? 0.5 : 0; height: root.trackWidth
-                width: root.handleMargins + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
+                width: root.handleMargins + (root.shownPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
                 Connections {
         target: root
         function onValueChanged() { wavyFill.requestPaint() }
@@ -117,7 +120,7 @@ Slider {
 
         Rectangle {
             anchors { verticalCenter: parent.verticalCenter; right: parent.right }
-            width: root.handleMargins + ((1 - root.visualPosition) * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
+            width: root.handleMargins + ((1 - root.shownPosition) * root.effectiveDraggingWidth) - (root.handleWidth / 2 + root.handleMargins)
             height: trackWidth; color: root.trackColor
             topRightRadius: root.trackRadius; bottomRightRadius: root.trackRadius
             topLeftRadius: root.unsharpenRadius; bottomLeftRadius: root.unsharpenRadius
@@ -131,7 +134,7 @@ Slider {
 
     handle: Rectangle {
         implicitWidth: root.handleWidth; implicitHeight: root.handleHeight
-        x: root.handleMargins + (root.visualPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2)
+        x: root.handleMargins + (root.shownPosition * root.effectiveDraggingWidth) - (root.handleWidth / 2)
         anchors.verticalCenter: parent.verticalCenter
         radius: Appearance.rounding.full; color: root.handleColor
         Behavior on implicitWidth { animation: Appearance?.animation.elementMoveFast.numberAnimation.createObject(this) }
