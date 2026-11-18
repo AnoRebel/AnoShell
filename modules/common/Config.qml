@@ -1285,6 +1285,12 @@ Singleton {
                 property int historyLength: 60
             }
 
+            // Bubble Monitor (full screen) and the sidebar's Bubble style
+            property JsonObject bubbleMonitor: JsonObject {
+                property string mode: "processes" // processes | apps (open windows grouped by app)
+                property bool sound: false        // a soft knock when bubbles collide
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // Animations
             // ═══════════════════════════════════════════════════════════════
@@ -1521,6 +1527,9 @@ Singleton {
                         "systemButtons", "quickSliders", "quickToggles",
                         "networkDetail", "media", "notifications", "calendar", "systemInfo"
                     ]
+                    property JsonObject systemInfo: JsonObject {
+                        property string style: "gauges" // gauges | graphs | rings | bubble
+                    }
                 }
             }
 

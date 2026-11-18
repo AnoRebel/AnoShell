@@ -141,7 +141,7 @@ QtObject {
         }
         const focused = root.clients.reduce((best, c) => (best === null || c.focusHistoryID < best.focusHistoryID) ? c : best, null)
         return root.clients.filter(c => (c.workspace?.id ?? 0) > 0 && c.mapped !== false).map(c => ({
-            key: c.address, id: c.address, title: c.title ?? "", appId: c.class ?? "",
+            key: c.address, id: c.address, title: c.title ?? "", appId: c.class ?? "", pid: c.pid ?? 0,
             workspace: c.workspace?.id ?? 0, output: monName[c.monitor] ?? "",
             x: c.at?.[0] ?? 0, y: c.at?.[1] ?? 0, width: c.size?.[0] ?? 0, height: c.size?.[1] ?? 0,
             focused: c === focused, floating: !!c.floating, fullscreen: (c.fullscreen ?? 0) >= 2,

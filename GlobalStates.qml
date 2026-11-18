@@ -71,6 +71,8 @@ Singleton {
     property bool searchOpen: false
     property bool weatherPanelOpen: false
     property bool notificationHistoryOpen: false
+    property bool bubbleMonitorOpen: false
+    property point bubbleMonitorOrigin: Qt.point(-1, -1) // where its reveal grows from; x < 0 counts from the right edge
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false
     property bool anoSpotStashOpen: false

@@ -5,10 +5,11 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 import "."
+import "../systemMonitor"
 
 /**
- * System info panel — CPU, RAM, swap usage with circular indicators and graphs.
- * Inspired by ilyamiro's battery popup stats and inir's sysmon widget.
+ * System info panel: CPU, memory, battery and more in one of four styles (sidebar.right.systemInfo.style):
+ * gauges (circular indicators and network speed), graphs, rings or bubble (modules/systemMonitor).
  */
 Rectangle {
     id: root
@@ -32,82 +33,105 @@ Rectangle {
             font.weight: Font.DemiBold
         }
 
-        // CPU + RAM + Swap + Battery gauges — each claims an equal share of the
-        // row (fillWidth + equal preferredWidth) and centres its content.
-        RowLayout {
+        // The style (sidebar.right.systemInfo.style): gauges (below), graphs, rings or bubble.
+        Loader {
             Layout.fillWidth: true
-            spacing: 8
-
-            // CPU
-            GaugeItem {
-                label: "CPU"
-                value: ResourceUsage.cpuUsage
-                valueText: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-            }
-
-            // RAM
-            GaugeItem {
-                label: "RAM"
-                value: ResourceUsage.memoryUsedPercentage
-                valueText: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-            }
-
-            // Swap (only when present)
-            GaugeItem {
-                label: "Swap"
-                value: ResourceUsage.swapUsedPercentage
-                valueText: ResourceUsage.kbToGbString(ResourceUsage.swapUsed)
-                visible: ResourceUsage.swapTotal > 0
-                Layout.fillWidth: visible
-                Layout.preferredWidth: visible ? 1 : 0
-            }
-
-            // Battery (if laptop)
-            Loader {
-                id: batteryLoader
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                active: Battery.available
-                visible: active
-                sourceComponent: GaugeItem {
-                    anchors.fill: parent ? parent : undefined
-                    label: Battery.isCharging ? "Charging" : "Battery"
-                    value: Battery.percentage
-                    valueText: `${Math.round(Battery.percentage * 100)}%`
-                    gaugeColor: Battery.isLow && !Battery.isCharging
-                        ? Appearance?.m3colors.m3error ?? "#BA1A1A"
-                        : Battery.isCharging
-                            ? Appearance.colors.colSuccess
-                            : Appearance?.colors.colPrimary ?? "#65558F"
+            sourceComponent: {
+                switch (root.style) {
+                case "graphs": return graphsStyle
+                case "rings": return ringsStyle
+                case "bubble": return bubbleStyle
+                default: return gaugesStyle
                 }
             }
         }
+    }
 
-        // Network speed
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: Appearance.colors.colSuccess }
-            StyledText {
-                text: formatSpeed(ResourceUsage.networkDownloadSpeed)
-                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                font.family: Appearance?.font.family.mono ?? "monospace"
+    readonly property string style: Config.options?.sidebar?.right?.systemInfo?.style ?? "gauges"
+    Component { id: graphsStyle; GraphsStyle {} }
+    Component { id: ringsStyle; RingsStyle {} }
+    Component { id: bubbleStyle; BubbleStyle { live: GlobalStates.sidebarRightOpen } }
+    Component {
+        id: gaugesStyle
+        ColumnLayout {
+            spacing: 10
+            // CPU + RAM + Swap + Battery gauges — each claims an equal share of the
+            // row (fillWidth + equal preferredWidth) and centres its content.
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                // CPU
+                GaugeItem {
+                    label: "CPU"
+                    value: ResourceUsage.cpuUsage
+                    valueText: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                }
+
+                // RAM
+                GaugeItem {
+                    label: "RAM"
+                    value: ResourceUsage.memoryUsedPercentage
+                    valueText: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed)
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                }
+
+                // Swap (only when present)
+                GaugeItem {
+                    label: "Swap"
+                    value: ResourceUsage.swapUsedPercentage
+                    valueText: ResourceUsage.kbToGbString(ResourceUsage.swapUsed)
+                    visible: ResourceUsage.swapTotal > 0
+                    Layout.fillWidth: visible
+                    Layout.preferredWidth: visible ? 1 : 0
+                }
+
+                // Battery (if laptop)
+                Loader {
+                    id: batteryLoader
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    active: Battery.available
+                    visible: active
+                    sourceComponent: GaugeItem {
+                        anchors.fill: parent ? parent : undefined
+                        label: Battery.isCharging ? "Charging" : "Battery"
+                        value: Battery.percentage
+                        valueText: `${Math.round(Battery.percentage * 100)}%`
+                        gaugeColor: Battery.isLow && !Battery.isCharging
+                            ? Appearance?.m3colors.m3error ?? "#BA1A1A"
+                            : Battery.isCharging
+                                ? Appearance.colors.colSuccess
+                                : Appearance?.colors.colPrimary ?? "#65558F"
+                    }
+                }
             }
-            MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: Appearance.colors.colError }
-            StyledText {
-                text: formatSpeed(ResourceUsage.networkUploadSpeed)
-                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                font.family: Appearance?.font.family.mono ?? "monospace"
-            }
-            Item { Layout.fillWidth: true }
-            StyledText {
-                text: `Up ${DateTime.uptime}`
-                font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
-                opacity: 0.5
+
+            // Network speed
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                MaterialSymbol { text: "arrow_downward"; iconSize: 16; color: Appearance.colors.colSuccess }
+                StyledText {
+                    text: root.formatSpeed(ResourceUsage.networkDownloadSpeed)
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                }
+                MaterialSymbol { text: "arrow_upward"; iconSize: 16; color: Appearance.colors.colError }
+                StyledText {
+                    text: root.formatSpeed(ResourceUsage.networkUploadSpeed)
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    font.family: Appearance?.font.family.mono ?? "monospace"
+                }
+                Item { Layout.fillWidth: true }
+                StyledText {
+                    text: `Up ${DateTime.uptime}`
+                    font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+                    opacity: 0.5
+                }
             }
         }
     }

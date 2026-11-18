@@ -1,14 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
 
 // Bundled piece: tiles for CPU, memory and battery (ResourceUsage, Battery),
-// optional CPU temperature (the x86_pkg_temp thermal zone, else the first)
-// and disk use of /. Sampling runs only while ctx.live.
+// optional CPU temperature and disk use of / (also ResourceUsage).
+// Sampling runs only while ctx.live.
 Item {
     id: root
     property var ctx
@@ -28,43 +27,10 @@ Item {
         if (on) ResourceUsage.acquire("desktopPiece"); else ResourceUsage.release("desktopPiece")
     }
 
-    // Temperature: pick the zone once, then read it every 5 s.
-    property string tempPath: ""
-    property real tempC: NaN
-    Process {
-        running: root.wantTemp && !root.tempPath
-        command: ["sh", "-c", "for z in /sys/class/thermal/thermal_zone*; do printf '%s %s\\n' \"$z\" \"$(cat \"$z/type\")\"; done"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const zones = text.trim().split("\n").map(l => l.split(" "))
-                const pkg = zones.find(z => z[1] === "x86_pkg_temp") ?? zones[0]
-                if (pkg?.[0]) root.tempPath = `${pkg[0]}/temp`
-            }
-        }
-    }
-    FileView { id: tempFile; path: root.wantTemp ? root.tempPath : ""; onLoaded: root.tempC = parseInt(text()) / 1000 }
-    // Disk: df every minute.
-    property real diskUsed: NaN
-    property real diskSize: NaN
-    Process {
-        id: df
-        command: ["df", "-B1", "--output=size,used", "/"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const n = text.trim().split("\n").pop().trim().split(/\s+/).map(Number)
-                if (n.length === 2) { root.diskSize = n[0]; root.diskUsed = n[1] }
-            }
-        }
-    }
-    Timer {
-        running: root.live && (root.wantTemp || root.wantDisk)
-        interval: 5000; repeat: true; triggeredOnStart: true
-        property int n: 0
-        onTriggered: {
-            if (root.wantTemp && root.tempPath) tempFile.reload()
-            if (root.wantDisk && n++ % 12 === 0) df.running = true
-        }
-    }
+    // Temperature and disk come from ResourceUsage (sampled while leased).
+    readonly property real tempC: ResourceUsage.temperature
+    readonly property real diskUsed: ResourceUsage.diskUsed
+    readonly property real diskSize: ResourceUsage.diskSize
 
     readonly property var tiles: {
         const t = [

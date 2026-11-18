@@ -1963,6 +1963,25 @@
  },
  {
   "page": 5,
+  "card": "System Info Style",
+  "label": "System Info Style",
+  "sublabel": "How the right sidebar's system section looks, and the full-screen Bubble Monitor",
+  "keys": [
+   "sidebar.right.systemInfo",
+   "bubbleMonitor"
+  ]
+ },
+ {
+  "page": 5,
+  "card": "",
+  "label": "Bubble sounds",
+  "sublabel": "A soft knock when bubbles collide in the Bubble Monitor (at the sound effects volume)",
+  "keys": [
+   "bubbleMonitor.sound"
+  ]
+ },
+ {
+  "page": 5,
   "card": "Quick Sliders",
   "label": "Quick Sliders",
   "sublabel": "",

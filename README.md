@@ -115,7 +115,8 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `BluetoothStatus` | Adapter state + paired/connected device list. |
 | `TrayService` | System tray entries with pinning + DBus menu support. |
 | `Cliphist` | Clipboard history with fuzzy search. |
-| `ResourceUsage` | CPU / RAM / swap / network from `/proc`. |
+| `ResourceUsage` | CPU (total and per core) / RAM / swap / network from `/proc`, CPU temperature (thermal zone) and disk use of `/` (`df`). |
+| `SysMon` | The Bubble Monitor's busiest processes, open apps and sensors (anod's `sysmon.*`). |
 | `Privacy` | Mic-active and cam-active detection. |
 | `GameMode` | Follows gamemoded over D-Bus (no polling) and drives performance mode (pauses animations, blur, visualisers and popups while a game runs, a window is fullscreen, or by hand). |
 | `PowerProfilePersistence` | Restores last `power-profiles-daemon` profile on shell start. |
@@ -334,7 +335,7 @@ Configurable via `sidebar.right.enabledWidgets[]` in any order:
 | `media`         | Compact Mpris player                                               |
 | `notifications` | Recent notifications                                               |
 | `calendar`      | Month grid                                                         |
-| `systemInfo`    | CPU / RAM / Battery gauges                                         |
+| `systemInfo`    | CPU / RAM / battery and more: gauges, graphs, rings or bubbles (`sidebar.right.systemInfo.style`) |
 
 The night-light pill has a chevron — tap the body to toggle, tap the chevron to expand an inline temperature slider (animated reveal).
 
@@ -728,6 +729,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Bioma organisms (pieces `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
 | Location (Settings → Services → Location: weather, night light's sunset schedule, the Bioma pieces' sun and moon) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); after GeoClue: nearby Wi-Fi with `nmcli`, `jq` and `curl` to `api.beacondb.net` (sends nearby access points' hardware addresses, `location.wifi`); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
 | Notification history (`notifications.history`: search, filters, retention, rotation) | anod running (Go, no extra binaries) | nothing is kept past dismissal; notifications still show |
+| System section styles and Bubble Monitor (`sidebar.right.systemInfo.style`, `bubbleMonitor`) | `df` (coreutils) for disk use; the CPU temperature from `/sys/class/thermal`; processes, apps and sensors: anod running (reads `/proc` and `/sys`, no extra binaries); apps grouped by window: pids from Hyprland or niri, else matched by app id | no disk or temperature card; the bubbles show only CPU, memory, temperature, network and disk |
 | Weather warnings and rain soon (`bar.weather.alerts`) | anod running (HTTP in Go, no extra binaries) and a known location; network access to `nominatim.openstreetmap.org` (country lookup, once per place) and the country's feed: `api.weather.gov` (US), `api.met.no` (Norway), `api.brightsky.dev` (Germany), `feeds.meteoalarm.org` (rest of Europe); `libnotify` (`notify-send`); rain soon: `curl` to wttr.in (as the weather) | no warnings (other countries have no feed); no notifications |
 | Music recognition (`musicRecognition.enable`) | `songrec` (uses Shazam's unofficial service), `pipewire` (`pw-record`), `libnotify` (`notify-send` ≥ 0.7.10 for the Copy/Search actions), `wl-clipboard` | "Not recognised: songrec gave no answer" |
 | Device event pills (`deviceEvents`) | BlueZ (Bluetooth), PipeWire (audio output), udev's `udevadm` (USB; systemd-udev or eudev) | that kind of event isn't shown |

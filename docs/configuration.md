@@ -348,6 +348,32 @@ urgency and time, and pages 50 at a time. Deleting one entry is immediate;
 deleting an app's entries, the matches or everything asks first, naming how
 many go, and can't be undone.
 
+## System section and Bubble Monitor
+
+`sidebar.right.systemInfo.style` picks how the right sidebar's system section
+looks (Settings → Sidebars → System Info Style):
+
+- `gauges` (default): rings for CPU, memory, swap and battery, and network speed.
+- `graphs`: a battery card (charge, state, time left, power draw, uptime) and
+  cards for CPU, memory, temperature and disk filled with water to their level;
+  CPU, memory and temperature carry a graph of their history.
+- `rings`: nested rings for battery, CPU and memory with a legend, and pills for
+  temperature, disk, uptime and power draw.
+- `bubble`: a small live bubble view with a button to the Bubble Monitor.
+
+The Bubble Monitor (`qs -c ano ipc call bubbleMonitor toggle`) fills the screen
+with bubbles for CPU, memory, temperature, network and disk and for the twelve
+busiest processes, sized by CPU use. Drag empty space to look around, use the
+wheel to zoom (30–100%), drag a bubble to carry it, click one for its details;
+Esc closes the details, then the monitor. `bubbleMonitor`:
+
+- `mode` (`"processes"`): `"apps"` shows open windows grouped by app instead,
+  each with its processes added up.
+- `sound` (off): a soft knock when bubbles collide, at the sound effects volume.
+
+Processes, apps and sensors come from anod (`sysmon.*`), sampled once a second
+and only while a bubble view is open.
+
 ## Weather warnings
 
 `bar.weather.alerts` (Settings → Bar → Weather):

@@ -96,7 +96,7 @@ QtObject {
             const size = w.layout?.tile_size ?? w.layout?.window_size ?? [0, 0]
             const tl = toplevels.find(t => t.appId === w.app_id && (!w.title || t.title === w.title)) ?? null
             return {
-                key: String(w.id), id: w.id, title: w.title ?? "", appId: w.app_id ?? "",
+                key: String(w.id), id: w.id, title: w.title ?? "", appId: w.app_id ?? "", pid: w.pid ?? 0,
                 workspace: ws?.idx ?? 0, output: ws?.output ?? "",
                 x: pos[0] ?? 0, y: pos[1] ?? 0, width: size[0] ?? 0, height: size[1] ?? 0,
                 focused: !!w.is_focused, floating: !!w.is_floating, fullscreen: !!tl?.fullscreen,

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -102,7 +103,7 @@ ColumnLayout {
                 { key: "media", label: "Media Player", sublabel: "Compact media controls with vinyl art", icon: "music_note" },
                 { key: "notifications", label: "Notifications", sublabel: "Recent notification list", icon: "notifications" },
                 { key: "calendar", label: "Calendar", sublabel: "Month calendar grid", icon: "calendar_month" },
-                { key: "systemInfo", label: "System Info", sublabel: "CPU/RAM/battery gauges + network speed", icon: "monitor_heart" },
+                { key: "systemInfo", label: "System Info", sublabel: "CPU, memory, battery and more, in the style picked below", icon: "monitor_heart" },
             ]
 
             RowLayout {
@@ -138,6 +139,54 @@ ColumnLayout {
                     }
                 }
             }
+        }
+    }
+
+    // ═══ System info style + Bubble Monitor ═══
+    SettingsCard {
+        icon: "bubble_chart"
+        title: "System Info Style"
+        subtitle: "How the right sidebar's system section looks, and the full-screen Bubble Monitor"
+        configKeys: ["sidebar.right.systemInfo", "bubbleMonitor"]
+
+        ChoiceRow {
+            Layout.fillWidth: true
+            model: [
+                { value: "gauges", label: "Gauges", icon: "speed" },
+                { value: "graphs", label: "Graphs", icon: "water" },
+                { value: "rings", label: "Rings", icon: "donut_large" },
+                { value: "bubble", label: "Bubble", icon: "bubble_chart" }
+            ]
+            current: Config.options?.sidebar?.right?.systemInfo?.style ?? "gauges"
+            onChose: v => Config.setNestedValue("sidebar.right.systemInfo.style", v)
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            model: [
+                { value: "processes", label: "Processes", icon: "memory" },
+                { value: "apps", label: "Apps", icon: "apps" }
+            ]
+            current: Config.options?.bubbleMonitor?.mode ?? "processes"
+            onChose: v => Config.setNestedValue("bubbleMonitor.mode", v)
+        }
+        StyledText {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: "Bubbles show the busiest processes, or open apps with their processes added up. They need anod (\"ano start\")."
+            font.pixelSize: Appearance.font.pixelSize.smallest
+            color: Appearance.colors.colSubtext
+        }
+        ConfigSwitch {
+            label: "Bubble sounds"
+            configKey: "bubbleMonitor.sound"
+            sublabel: "A soft knock when bubbles collide in the Bubble Monitor (at the sound effects volume)"
+            checked: Config.options?.bubbleMonitor?.sound ?? false
+            onCheckedChanged: Config.setNestedValue("bubbleMonitor.sound", checked)
+        }
+        RippleButtonWithIcon {
+            iconName: "open_in_full"
+            buttonText: "Open the Bubble Monitor"
+            onClicked: { GlobalStates.bubbleMonitorOrigin = Qt.point(-1, -1); GlobalStates.bubbleMonitorOpen = true }
         }
     }
 

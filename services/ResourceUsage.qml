@@ -7,8 +7,9 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * System resource monitor. Polls /proc for CPU, RAM, swap, and network I/O.
- * Maintains rolling history arrays for chart display.
+ * System resource monitor. Polls /proc for CPU (total and per core), RAM, swap and network I/O, the CPU temperature
+ * (the x86_pkg_temp thermal zone, else the first) and disk use of /. Keeps rolling histories for the charts.
+ * Everything is sampled only while a consumer holds a lease.
  */
 Singleton {
     id: root
@@ -24,6 +25,13 @@ Singleton {
     property var previousCpuStats
 
     // Network speed
+    property var coreUsage: []          // 0..1 per core
+    property real temperature: NaN      // °C
+    property real diskUsed: NaN         // bytes
+    property real diskSize: NaN
+    readonly property real diskUsedPercentage: root.diskSize > 0 ? root.diskUsed / root.diskSize : 0
+    property var previousCoreStats: []
+
     property real networkDownloadSpeed: 0
     property real networkUploadSpeed: 0
     property var previousNetworkStats
@@ -50,10 +58,12 @@ Singleton {
         pollTimer.interval = 1
         previousCpuStats = undefined
         previousNetworkStats = undefined
+        previousCoreStats = []
     }
     property list<real> cpuUsageHistory: []
     property list<real> memoryUsageHistory: []
     property list<real> swapUsageHistory: []
+    property list<real> temperatureHistory: []
 
     function kbToGbString(kb) {
         return (kb / (1024 * 1024)).toFixed(1) + " GB"
@@ -68,6 +78,11 @@ Singleton {
 
         cpuUsageHistory = [...cpuUsageHistory, cpuUsage]
         if (cpuUsageHistory.length > historyLength) cpuUsageHistory.shift()
+
+        if (!isNaN(temperature)) {
+            temperatureHistory = [...temperatureHistory, temperature]
+            if (temperatureHistory.length > historyLength) temperatureHistory.shift()
+        }
     }
 
     Timer {
@@ -101,6 +116,22 @@ Singleton {
                 }
                 previousCpuStats = { total, idle }
             }
+            const cores = []
+            const prevCores = root.previousCoreStats
+            const coreStats = []
+            for (const line of textStat.split("\n")) {
+                if (!/^cpu\d/.test(line)) continue
+                const v = line.trim().split(/\s+/).slice(1, 8).map(Number)
+                const total = v.reduce((a, b) => a + b, 0), idle = v[3] + v[4]
+                const prev = prevCores[coreStats.length]
+                cores.push(prev && total > prev.total ? 1 - (idle - prev.idle) / (total - prev.total) : 0)
+                coreStats.push({ total, idle })
+            }
+            root.previousCoreStats = coreStats
+            root.coreUsage = cores
+
+            if (root.tempPath) { tempFile.reload(); root.temperature = parseInt(tempFile.text()) / 1000 }
+            if (root._diskTick++ % 20 === 0) df.running = true
 
             // Network
             const textNetDev = fileNetDev.text()
@@ -131,6 +162,35 @@ Singleton {
     FileView { id: fileMeminfo; path: "/proc/meminfo" }
     FileView { id: fileStat; path: "/proc/stat" }
     FileView { id: fileNetDev; path: "/proc/net/dev" }
+
+    // The CPU temperature: the zone is picked once (x86_pkg_temp, else the first), then read with each sample.
+    property string tempPath: ""
+    property bool _tempPicked: false
+    Process {
+        running: root.leaseCount > 0 && !root._tempPicked
+        command: ["sh", "-c", "for z in /sys/class/thermal/thermal_zone*; do [ -r \"$z/temp\" ] && printf '%s %s\\n' \"$z\" \"$(cat \"$z/type\")\"; done"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const zones = text.trim().split("\n").filter(l => l).map(l => l.split(" "))
+                const pkg = zones.find(z => z[1] === "x86_pkg_temp") ?? zones[0]
+                if (pkg?.[0]) root.tempPath = `${pkg[0]}/temp`
+                root._tempPicked = true
+            }
+        }
+    }
+    FileView { id: tempFile; path: root.tempPath; blockLoading: true }
+    // Disk use of /: every 20th sample (a minute at the default 3 s).
+    property int _diskTick: 0
+    Process {
+        id: df
+        command: ["df", "-B1", "--output=size,used", "/"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const n = text.trim().split("\n").pop().trim().split(/\s+/).map(Number)
+                if (n.length === 2 && n[0] > 0) { root.diskSize = n[0]; root.diskUsed = n[1] }
+            }
+        }
+    }
 
     Process {
         id: findCpuMaxFreqProc

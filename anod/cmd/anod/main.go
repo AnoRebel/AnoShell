@@ -3,6 +3,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -37,6 +38,7 @@ import (
 	"ano/anod/internal/secrets"
 	"ano/anod/internal/shelllog"
 	"ano/anod/internal/supervisor"
+	"ano/anod/internal/sysmon"
 	"ano/anod/internal/version"
 	"ano/anod/internal/wallpaper"
 	"ano/anod/internal/xkb"
@@ -336,6 +338,42 @@ func main() {
 		})
 		srv.Handle("notifhistory.apps", func(json.RawMessage) (any, error) { return nh.Apps(), nil })
 		srv.Handle("notifhistory.stats", func(json.RawMessage) (any, error) { return nh.Stats(), nil })
+	}
+
+	// Processes and sensors for the Bubble Monitor. Nothing runs between calls; the shell asks only while a bubble
+	// view is open, and calls inside a second share one sample.
+	{
+		sm := &sysmon.Sampler{}
+		srv.Handle("sysmon.top", func(raw json.RawMessage) (any, error) {
+			var p struct {
+				N int `json:"n"`
+			}
+			json.Unmarshal(raw, &p)
+			return sm.Top(cmp.Or(p.N, 12)), nil
+		})
+		srv.Handle("sysmon.proc", func(raw json.RawMessage) (any, error) {
+			var p struct {
+				PID int `json:"pid"`
+			}
+			if err := json.Unmarshal(raw, &p); err != nil || p.PID <= 0 {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {pid}")
+			}
+			d, ok := sm.Details(p.PID)
+			if !ok {
+				return nil, nil
+			}
+			return d, nil
+		})
+		srv.Handle("sysmon.apps", func(raw json.RawMessage) (any, error) {
+			var p struct {
+				Groups []sysmon.Group `json:"groups"`
+			}
+			if err := json.Unmarshal(raw, &p); err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "want {groups: [{app, pids}]}")
+			}
+			return sm.Apps(p.Groups), nil
+		})
+		srv.Handle("sysmon.sensors", func(json.RawMessage) (any, error) { return sm.Sensors(), nil })
 	}
 
 	// Official weather warnings for the place the shell reports (alerts.where).

@@ -233,6 +233,17 @@ and when the files hold 10% more than the cap. `notifhistory.query` (`{"text", "
 "bytes", "files", "oldest", "error"}`. Any change broadcasts `notifhistory_changed`. While anod is down
 the shell keeps new notifications (up to 500) and sends them once it is back.
 
+Processes for the Bubble Monitor (see `anod/internal/sysmon`, read from `/proc` and `/sys`; nothing
+runs between calls, and calls less than a second apart share one sample): `sysmon.top` (`{"n"}`,
+default 12, at most 50) → `{"procs", "count", "cores"}`, the busiest user processes by CPU then memory,
+each `{"pid", "ppid", "name", "cpu", "mem", "memShare", "threads", "user", "start", "state", "paused",
+"cmd"}` (`cpu` is a share of the whole machine since the previous sample, so the first call reports 0;
+`start` in ms since the epoch); `sysmon.proc` (`{"pid"}`) → one process, or `null` once it has gone;
+`sysmon.apps` (`{"groups": [{"app", "pids", "names"}]}`) → per app, its processes and their
+descendants added up (`{"app", "cpu", "mem", "memShare", "procs", "top"}`; without `pids`, processes
+named like one of `names` stand in); `sysmon.sensors` → `[{"chip", "label", "c"}]` from hwmon, else the
+thermal zones.
+
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),
 written atomically; an empty value removes it. The shell reads the file
