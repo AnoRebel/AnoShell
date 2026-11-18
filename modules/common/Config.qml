@@ -1609,6 +1609,15 @@ Singleton {
             }
 
             // Screen corners (hot corners)
+            // Corner revolver: a quarter cylinder of quick actions in a hot corner (replaces that screen corner).
+            property JsonObject revolver: JsonObject {
+                property bool enable: false
+                property string corner: "bottomLeft" // topLeft | topRight | bottomLeft | bottomRight
+                property int dwellMs: 90
+                // Up to 12, three per quarter; ids from Settings, or "macro:<name>".
+                property var actions: ["lock", "wallpaperPicker", "shuffleWallpaper", "nightLight", "settings", "restartShell"]
+            }
+
             property JsonObject screenCorners: JsonObject {
                 property bool enable: false
                 property int dwellMs: 300

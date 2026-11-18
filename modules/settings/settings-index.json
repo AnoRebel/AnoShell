@@ -633,6 +633,33 @@
  },
  {
   "page": 2,
+  "card": "Corner Revolver",
+  "label": "Corner Revolver",
+  "sublabel": "Rest the pointer in a corner: a quarter cylinder of quick actions; the wheel turns it to the next three",
+  "keys": [
+   "revolver"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Enable the revolver",
+  "sublabel": "",
+  "keys": [
+   "revolver.enable"
+  ]
+ },
+ {
+  "page": 2,
+  "card": "",
+  "label": "Dwell time",
+  "sublabel": "How long the pointer rests in the corner before it opens",
+  "keys": [
+   "revolver.dwellMs"
+  ]
+ },
+ {
+  "page": 2,
   "card": "Hot Screen Corners",
   "label": "Hot Screen Corners",
   "sublabel": "Trigger actions by moving cursor to screen corners",

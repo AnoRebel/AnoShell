@@ -72,6 +72,8 @@ Singleton {
     property bool weatherPanelOpen: false
     property bool notificationHistoryOpen: false
     property bool bubbleMonitorOpen: false
+    // The revolver's Lock shot: { corner, at (ms) }, the corner it flew to; the lock intro sweeps in from there.
+    property var lockShotFrom: null
     property point bubbleMonitorOrigin: Qt.point(-1, -1) // where its reveal grows from; x < 0 counts from the right edge
     property bool focusTimeOpen: false
     property bool displayManagerOpen: false

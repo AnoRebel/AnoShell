@@ -53,7 +53,9 @@ Scope {
                     required property var modelData
                     screen: parent.modelData
 
+                    // The corner revolver takes its corner over.
                     visible: root.enabled && (root.actions[modelData.corner] ?? "").length > 0
+                        && !((Config.options?.revolver?.enable ?? false) && (Config.options?.revolver?.corner ?? "bottomLeft") === modelData.corner)
                     color: "transparent"
                     implicitWidth: root.hitSize
                     implicitHeight: root.hitSize

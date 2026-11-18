@@ -263,7 +263,7 @@ The Settings UI has 14 pages, opening on About, each owning a set of top-level c
 |--------------|------------------------------------------------------------------------------------------|------------------------|
 | About        | `user`                                                                                   | Presets, export/import, backup & restore (through anod, same archives as `ano backup`), avatar picker, system info, the shell's QML errors (Errors card; their count shows on About in the page list), credits, global "Reset every setting" card |
 | General      | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.*` (but `theme`), `session` | Volume protection, battery thresholds (with ordering warning), clock/date format with live preview, notification timeout/silent/max popups and per-app rules, logout & shutdown confirmation, scroll speed |
-| Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
+| Modules      | `enabledPanels`, `panelFamily`, `osd`, `screenCorners`, `revolver`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` | Searchable + categorised module enable/disable, OSD indicators, hot corners, app launcher options, compositor fallback, panel-family picker, advanced toggles |
 | Bar          | `bar`, `bars`, `tray`                                                                    | A live preview of the bar, pill and dock you drag things in; edge picker, per-group module chips, click/scroll actions, layout sliders, weather, tray pinning |
 | Dock         | `dock`                                                                                   | Position, style (pill/macOS), sizing, hover-reveal, window previews, pinned apps and their order |
 | Sidebars     | `sidebar`                                                                                | Behavior toggles (instant open, keep loaded), right-sidebar widget picker with empty-state warning, quick-slider sub-toggles |
@@ -568,6 +568,7 @@ qs -c ano ipc call <target> <method>
 | `panelFamily` | `cycle`, `set family` |
 | `shell` | `reload`, `quit` |
 | `screenCorners` | `enable`, `disable`, `toggle` |
+| `revolver` | `toggle` (the corner revolver, on the focused screen) |
 | `focusTime` | `toggle`, `open`, `close` |
 | `displayManager` | `toggle`, `open`, `close` |
 | `antiFlashbang` | `toggle`, `enable`, `disable` |
@@ -726,6 +727,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Terminal colours (`appearance.theme.terminals`, docs/wallpaper.md) | the terminal (kitty, Ghostty, foot); `jq`; `pkill` (procps-ng) to recolour running kitty/Ghostty windows | that terminal keeps its own colours; without `pkill` only new windows change |
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
+| Corner revolver (`revolver`) | `loginctl` (systemd-logind) for Lock; Shuffle wallpaper: anod's rotation, else `find` in the rotation folder; the other chambers use the shell's own panels and services | Lock does nothing |
 | Gauge piece | CPU, memory, temperature (`/sys/class/thermal`) and disk (`df`) from the shell's resource sampling; battery: `upowerd` | that reading shows `--` |
 | Bioma organisms (pieces `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
 | Location (Settings → Services → Location: weather, night light's sunset schedule, the Bioma pieces' sun and moon) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); after GeoClue: nearby Wi-Fi with `nmcli`, `jq` and `curl` to `api.beacondb.net` (sends nearby access points' hardware addresses, `location.wifi`); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
@@ -845,6 +847,7 @@ ano/
 │   ├── lock/                       # Niri lock screen + opt-in notifications/OSK/status row
 │   ├── focusTime/                  # App-usage tracker UI
 │   ├── displayManager/             # Hyprland-only monitor config
+│   ├── revolver/                   # Corner revolver (quick actions on a cylinder)
 │   ├── screenCorners/              # Hot corners
 │   ├── recordingOsd/               # Live screen-recording overlay
 │   ├── calendar/                   # Standalone calendar with event dots

@@ -113,6 +113,15 @@ Singleton {
         }
     }
 
+    // A random wallpaper from the rotation's folder now (the revolver's Shuffle): anod's rotation when it runs, else
+    // the list above.
+    function shuffle() {
+        if (Anod.available) { Anod.call("wallpaper.next", null, () => {}); return }
+        if (root.randomWallpaperList.length > 0)
+            root.apply(root.randomWallpaperList[Math.floor(Math.random() * root.randomWallpaperList.length)])
+        else if (root.rotationDirectory.length > 0) getRandomWallpapersProc.running = true
+    }
+
     onRotationDirectoryChanged: {
         root.randomWallpaperList = []
         if (randomWallpaperTimer.running) getRandomWallpapersProc.running = true

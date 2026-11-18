@@ -47,7 +47,7 @@ bundled Hyprland and niri configs float it.
 |---|---|
 | About | `user` |
 | General | `audio`, `battery`, `time`, `notifications`, `interactions`, `sounds.battery`, `sounds.volume`, `sounds.login`, `sounds.notifications`, `sounds.panels`, `sounds.alerts`, `sounds.alertThreshold`, `sounds.alertGap`, `session` |
-| Modules | `disabledPanels`, `panelFamily`, `familyTransitionAnimation`, `osd`, `screenCorners`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `hacks`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` |
+| Modules | `disabledPanels`, `panelFamily`, `familyTransitionAnimation`, `osd`, `screenCorners`, `revolver`, `altSwitcher`, `apps`, `focusTime`, `taskView`, `media`, `compositor`, `hacks`, `displayManager`, `display.primaryMonitor`, `sounds.theme`, `bar.morphingPanels` |
 | Bar | `bar`, `bars`, `tray` |
 | Dock | `dock` |
 | Sidebars | `sidebar` |
@@ -373,6 +373,23 @@ Esc closes the details, then the monitor. `bubbleMonitor`:
 
 Processes, apps and sensors come from anod (`sysmon.*`), sampled once a second
 and only while a bubble view is open.
+
+## Corner revolver
+
+`revolver` (Settings → Modules → Corner Revolver; off by default): rest the
+pointer in `corner` (`"bottomLeft"`) for `dwellMs` (90) and a quarter of a
+cylinder grows out of the corner with three quick actions; leaving it for a
+moment closes it. The wheel or a touchpad swipe turns it a quarter to the next
+three (up to 12 in `actions`, wrapping round). A chamber runs its action and
+closes the revolver; toggles (night light, do not disturb, keep awake,
+performance mode) stay open and glow while on. Lock fires a bullet to the
+opposite corner, then locks. It replaces that screen corner's action (Settings
+says so). `qs -c ano ipc call revolver toggle` opens it on the focused screen.
+
+Action ids: `lock`, `wallpaperPicker`, `shuffleWallpaper` (a random wallpaper
+from the rotation folder now), `nightLight`, `settings`, `restartShell`, `dnd`,
+`caffeine`, `performance`, `overview`, `clipboard`, `session`, `sidebarLeft`,
+`sidebarRight`, and `macro:<name>` for one of your macros.
 
 ## Weather scene
 

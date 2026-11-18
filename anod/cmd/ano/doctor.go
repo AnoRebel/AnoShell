@@ -65,6 +65,7 @@ var features = []feature{
 	{"night light", "nightLight.enable", []string{"wlsunset"}},
 	{"location by IP address (automatic, when GeoClue gives nothing; GeoClue itself is the geoclue package)", "location.enable", []string{"curl"}},
 	{"location from nearby Wi-Fi (beaconDB, before the IP address)", "location.wifi", []string{"nmcli", "jq", "curl"}},
+	{"corner revolver: Lock (loginctl, systemd-logind)", "revolver.enable", []string{"loginctl"}},
 	{"disk use of / (sidebar system section, Bubble Monitor, system piece; the Bubble Monitor's processes need anod)", "", []string{"df"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},
 	{"palette piece (copy) and world clock piece (zone offsets)", "pieces.enable", []string{"wl-copy", "date"}},

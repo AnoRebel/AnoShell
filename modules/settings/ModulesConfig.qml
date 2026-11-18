@@ -6,6 +6,7 @@ import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.services
 import "."
+import "../revolver/revolver.js" as RevolverCatalog
 
 /**
  * Modules configuration — master enable/disable panel for every shell module.
@@ -250,6 +251,59 @@ ColumnLayout {
         }
     }
 
+    // ═══ Corner revolver ═══
+    SettingsCard {
+        id: revolverCard
+        icon: "radio_button_checked"
+        title: "Corner Revolver"
+        subtitle: "Rest the pointer in a corner: a quarter cylinder of quick actions; the wheel turns it to the next three"
+        configKeys: ["revolver"]
+        readonly property var chosen: Array.from(Config.options?.revolver?.actions ?? [])
+
+        ConfigSwitch {
+            label: "Enable the revolver"
+            configKey: "revolver.enable"
+            checked: Config.options?.revolver?.enable ?? false
+            onCheckedChanged: Config.setNestedValue("revolver.enable", checked)
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            model: [
+                { value: "topLeft", label: "Top left", icon: "north_west" },
+                { value: "topRight", label: "Top right", icon: "north_east" },
+                { value: "bottomLeft", label: "Bottom left", icon: "south_west" },
+                { value: "bottomRight", label: "Bottom right", icon: "south_east" }
+            ]
+            current: Config.options?.revolver?.corner ?? "bottomLeft"
+            onChose: v => Config.setNestedValue("revolver.corner", v)
+        }
+        ConfigSlider {
+            label: "Dwell time"
+            configKey: "revolver.dwellMs"
+            sublabel: "How long the pointer rests in the corner before it opens"
+            from: 0; to: 600; stepSize: 10
+            value: Config.options?.revolver?.dwellMs ?? 90
+            onValueChanged: Config.setNestedValue("revolver.dwellMs", Math.round(value))
+            valueText: `${Math.round(value)} ms`
+        }
+        StyledText {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            text: `Chambers, in order (${revolverCard.chosen.length} of 12; click to add at the end or remove): ` + (revolverCard.chosen.map(id => RevolverCatalog.info(id)?.label ?? (String(id).startsWith("macro:") ? String(id).slice(6) : id)).join(" · ") || "none")
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: Appearance.colors.colSubtext
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            model: RevolverCatalog.CATALOG.map(c => ({ value: c.id, label: c.label, icon: c.icon }))
+                .concat(Actions.macros.map(m => ({ value: `macro:${m.name}`, label: m.name, icon: m.icon || "bolt" })))
+                .map(o => Object.assign(o, { enabled: revolverCard.chosen.includes(o.value) || revolverCard.chosen.length < 12 }))
+            current: revolverCard.chosen
+            onChose: v => Config.setNestedValue("revolver.actions", revolverCard.chosen.includes(v)
+                ? revolverCard.chosen.filter(x => x !== v) : revolverCard.chosen.concat([v]))
+        }
+    }
+
     // ═══ Screen Corners ═══
     SettingsCard {
         icon: "fullscreen"
@@ -282,6 +336,12 @@ ColumnLayout {
             value: Config.options?.screenCorners?.hitSize ?? 2
             onValueChanged: Config.setNestedValue("screenCorners.hitSize", Math.round(value))
             valueText: `${Math.round(value)}px`
+        }
+
+        NoticeBox {
+            visible: (Config.options?.revolver?.enable ?? false) && (Config.options?.screenCorners?.enable ?? false)
+            iconName: "info"
+            text: `The corner revolver replaces the ${({ topLeft: "top-left", topRight: "top-right", bottomLeft: "bottom-left", bottomRight: "bottom-right" })[Config.options?.revolver?.corner ?? "bottomLeft"] ?? "bottom-left"} corner's action below.`
         }
 
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Appearance?.colors.colOutlineVariant ?? "#C4C7C5"; opacity: 0.15 }
