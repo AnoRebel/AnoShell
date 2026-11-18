@@ -277,15 +277,18 @@ type Service struct {
 	// Keyboard returns the configured layouts (keyboard.layouts), nil if unset.
 	Keyboard func() *Keyboard
 	// Terminal returns the terminal look (terminal.*), nil when it's off.
-	Terminal    func() *TerminalLook
+	Terminal func() *TerminalLook
+	// Scrolling returns scrolling.* (cleaned), nil when nothing is set.
+	Scrolling   func() *Scrolling
 	GtkSettings []string                                // gtk-3.0/4.0 settings.ini (only existing keys are updated)
 	Exec        func(name string, args ...string) error // runs hyprctl/gsettings (tests swap it)
 
 	mu       sync.Mutex
-	cursor   *Cursor   // set by SetCursor before the config catches up
-	keyboard *Keyboard // set by SetKeyboard, likewise
-	gen      int       // bumped per pending change, so an old timer can't revert a newer one
-	lastFP   string    // monitor set last seen by OutputsChanged
+	cursor   *Cursor    // set by SetCursor before the config catches up
+	keyboard *Keyboard  // set by SetKeyboard, likewise
+	scrolled *Scrolling // what RefreshScrolling last applied live (Hyprland)
+	gen      int        // bumped per pending change, so an old timer can't revert a newer one
+	lastFP   string     // monitor set last seen by OutputsChanged
 	previous []Output
 	pending  []Output
 	timer    *time.Timer
@@ -481,6 +484,9 @@ func (s *Service) writeManaged(all []Output) error {
 		if s.Terminal != nil {
 			b.WriteString(hyprTerminal(s.Terminal()))
 		}
+		if s.Scrolling != nil {
+			b.WriteString(hyprScrolling(s.Scrolling()))
+		}
 		for _, o := range all {
 			b.WriteString(hyprMonitor(o) + "\n")
 		}
@@ -495,6 +501,9 @@ func (s *Service) writeManaged(all []Output) error {
 		}
 		if s.Terminal != nil {
 			b.WriteString(niriTerminal(s.Terminal()))
+		}
+		if s.Scrolling != nil {
+			b.WriteString(niriScrolling(s.Scrolling()))
 		}
 		for _, o := range all {
 			b.WriteString(niriOutput(o))

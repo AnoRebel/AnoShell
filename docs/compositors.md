@@ -81,6 +81,11 @@ Written against sway 1.12 ([sway-ipc(7)](https://github.com/swaywm/sway/blob/1.1
   ext-workspace handle, so it lands on the right one. Sway has no maximised
   state, so only fullscreen (a window's, a container's, or a global one,
   which covers every output) hides the bar.
+- Infinite desktop ([workspaces](workspaces.md)): `floating enable`,
+  `resize set`, `move absolute position` and `floating disable` per
+  `[con_id=N]`, one command list per batch. A floating window whose centre
+  crosses to another output moves to that output's workspace, so the shell
+  parks such windows past every output. No scrolling layout.
 
 ## Mango
 
@@ -105,6 +110,13 @@ Written against mango 0.18.3 ([IPC](https://mangowm.github.io/docs/ipc/),
   `restore_minimized`) and placed with `resizewin`, `centerwin` and
   `smartmovewin`; it floats through the window rule in
   `external/mango/ano.conf` (without it, it opens tiled).
+- Scrolling ([workspaces](workspaces.md)): anod writes
+  `~/.config/mango/ano-managed.conf` (`tag_rule=id:N,layout_name:scroller`,
+  `scroller_default_proportion`, `window_rule=scroller_proportion:…`), which
+  the bundled config sources, and sends `dispatch reload_config` on the
+  socket. Infinite desktop: `togglefloating`, `resizewin` and `movewin` per
+  client; a leading `-` or `+` makes `movewin` relative (mango 0.18.5
+  `src/dispatch/bind.c`), so moves are sent relative to the last position.
 - The bundled config uses mango 0.18's keyword names (`exec_once`,
   `window_rule`, `layer_rule`, `border_px`); mango's newer docs spell some
   differently. Lines are read up to 255 bytes.

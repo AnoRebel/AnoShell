@@ -18,7 +18,7 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, windowBlur: true
+        keyboardLayouts: true, windowBlur: true, scrollingLayout: true, infiniteDesktop: true
     })
 
     readonly property string focusedOutput: NiriService.currentOutput ?? ""
@@ -107,6 +107,74 @@ QtObject {
     // Runtime output config on niri comes with the Displays page (task 10.2).
     readonly property var outputs: []
     function applyOutputs(configs) { return false }
+
+    // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────────
+    // Floating positions are set relative to the output's working area, which
+    // niri doesn't report: learnt from where a placed window lands (_off).
+    // niri keeps a sliver (10–75 px) of every floating window on screen.
+    signal windowOpened(var id, string workspace)
+    property var _niriOpen: Connections {
+        target: NiriService
+        function onWindowOpened(w) { root.windowOpened(w.id, String(w.workspace_id ?? "")) }
+    }
+    property var _off: ({})     // output → { x, y }
+    property var _asked: ({})   // window id → { x, y, output } last requested (layout coordinates)
+    function _outRect(name) {
+        const l = NiriService.outputs?.[name]?.logical
+        return l ? { x: l.x, y: l.y, width: l.width, height: l.height } : null
+    }
+    function canvasState(cb) {
+        const ws = root._focusedWs, view = ws ? root._outRect(ws.output) : null
+        if (!view) { cb(null); return true }
+        const wins = []
+        for (const w of (NiriService.windows ?? [])) {
+            const pos = w.layout?.tile_pos_in_workspace_view, size = w.layout?.tile_size
+            if (w.workspace_id !== ws.id || !pos || !size) continue
+            const r = { id: w.id, x: view.x + pos[0], y: view.y + pos[1], width: size[0], height: size[1],
+                        floating: !!w.is_floating, focused: !!w.is_focused, appId: w.app_id ?? "",
+                        // borders: the size actions set the window, not the tile
+                        insetW: size[0] - (w.layout.window_size?.[0] ?? size[0]), insetH: size[1] - (w.layout.window_size?.[1] ?? size[1]) }
+            // Where it landed against where it was sent, while fully on screen (not clamped).
+            const a = root._asked[w.id]
+            if (a && r.x >= view.x && r.y >= view.y && r.x + r.width <= view.x + view.width && r.y + r.height <= view.y + view.height) {
+                const o = Object.assign({}, root._off)
+                o[ws.output] = { x: (o[ws.output]?.x ?? 0) + r.x - a.x, y: (o[ws.output]?.y ?? 0) + r.y - a.y }
+                root._off = o
+                delete root._asked[w.id]
+            }
+            wins.push(r)
+        }
+        cb({ workspace: String(ws.id), output: ws.output, view, others: [], windows: wins })
+        return true
+    }
+    function _setPos(id, x, y) {
+        const w = (NiriService.windows ?? []).find(w => w.id === id)
+        const out = (NiriService.allWorkspaces ?? []).find(ws => ws.id === w?.workspace_id)?.output
+        const r = out ? root._outRect(out) : null
+        if (!r) return false
+        const off = root._off[out] ?? { x: 0, y: 0 }
+        root._asked[id] = { x, y }
+        return NiriService.send({ "Action": { "MoveFloatingWindow": { "id": id,
+            "x": { "SetFixed": Math.round(x - r.x - off.x) }, "y": { "SetFixed": Math.round(y - r.y - off.y) } } } })
+    }
+    function floatWindows(rects) {
+        for (const r of rects) {
+            if (!(NiriService.windows ?? []).find(w => w.id === r.id)?.is_floating)
+                NiriService.send({ "Action": { "MoveWindowToFloating": { "id": r.id } } })
+            NiriService.send({ "Action": { "SetWindowWidth": { "id": r.id, "change": { "SetFixed": Math.round(r.width - (r.insetW ?? 0)) } } } })
+            NiriService.send({ "Action": { "SetWindowHeight": { "id": r.id, "change": { "SetFixed": Math.round(r.height - (r.insetH ?? 0)) } } } })
+            root._setPos(r.id, r.x, r.y)
+        }
+        return true
+    }
+    function placeWindows(list) {
+        for (const p of list) root._setPos(p.id, p.x, p.y)
+        return true
+    }
+    function tileWindows(ids) {
+        for (const id of ids) NiriService.send({ "Action": { "MoveWindowToTiling": { "id": id } } })
+        return true
+    }
 
     function focusWindowById(id) { return (id === undefined || id === null) ? false : NiriService.focusWindow(id) }
     function closeWindowById(id) { return (id === undefined || id === null) ? false : NiriService.closeWindow(id) }

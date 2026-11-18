@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -667,6 +668,43 @@ func main() {
 		return res, nil
 	})
 
+	// Scrolling workspaces (scrolling.*): the managed files. Hyprland and niri
+	// through the display service below; mango's own file here.
+	var scrollRefresh func() error
+	if os.Getenv("MANGO_INSTANCE_SIGNATURE") != "" {
+		mangoFile := filepath.Join(filepath.Dir(filepath.Dir(config.UserPath())), "mango", "ano-managed.conf")
+		scrollRefresh = func() error {
+			m, err := config.Effective()
+			if err != nil {
+				return err
+			}
+			text := display.MangoScrolling(scrollingFrom(m))
+			if old, _ := os.ReadFile(mangoFile); string(old) == text {
+				return nil
+			}
+			if err := display.WriteFile(mangoFile, text); err != nil {
+				return err
+			}
+			// mango's IPC socket is $MANGO_INSTANCE_SIGNATURE itself (as the shell's backend uses it).
+			c, err := net.DialTimeout("unix", os.Getenv("MANGO_INSTANCE_SIGNATURE"), 2*time.Second)
+			if err != nil {
+				return err
+			}
+			defer c.Close()
+			_, err = c.Write([]byte("dispatch reload_config\n"))
+			return err
+		}
+		if err := scrollRefresh(); err != nil {
+			log.Printf("scrolling (mango): %v", err)
+		}
+	}
+	srv.Handle("scrolling.refresh", func(json.RawMessage) (any, error) {
+		if scrollRefresh == nil {
+			return false, nil
+		}
+		return true, scrollRefresh()
+	})
+
 	// Displays (Settings → Displays): live apply, 15 s confirm-or-revert run
 	// here (a shell crash can't strand a bad mode), managed include files, profiles.
 	if dispBackend := displayBackend(); dispBackend != nil {
@@ -700,6 +738,13 @@ func main() {
 					return nil
 				}
 				return &display.TerminalLook{Translucent: config.String(m, "terminal.background", "translucent") != "solid", Blur: config.Bool(m, "terminal.blur", true)}
+			},
+			Scrolling: func() *display.Scrolling {
+				m, err := config.Effective()
+				if err != nil {
+					return nil
+				}
+				return scrollingFrom(m)
 			},
 			Keyboard: func() *display.Keyboard {
 				m, err := config.Effective()
@@ -790,6 +835,7 @@ func main() {
 		})
 		// The terminal look changed (scripts/terminal/apply-terminal.sh ran): its window rules.
 		srv.Handle("terminal.refresh", func(json.RawMessage) (any, error) { return true, disp.Refresh() })
+		scrollRefresh = disp.RefreshScrolling
 		srv.Handle("display.confirm", func(json.RawMessage) (any, error) { return true, disp.Confirm() })
 		srv.Handle("display.revert", func(json.RawMessage) (any, error) { return true, disp.Revert() })
 		srv.Handle("display.saveProfile", func(p json.RawMessage) (any, error) {
@@ -967,6 +1013,35 @@ func keyboardFrom(m map[string]any) (*display.Keyboard, error) {
 		return nil, err
 	}
 	return &display.Keyboard{Layouts: ls, Variants: vs}, nil
+}
+
+// scrollingFrom reads scrolling.* (nil when nothing is set).
+func scrollingFrom(m map[string]any) *display.Scrolling {
+	var s display.Scrolling
+	if v, ok := config.Get(m, "scrolling.columnWidth"); ok {
+		s.ColumnWidth, _ = v.(float64)
+	}
+	ws, _ := config.Get(m, "scrolling.workspaces")
+	list, _ := ws.([]any)
+	for _, e := range list {
+		o, _ := e.(map[string]any)
+		id, _ := o["id"].(float64)
+		dir, _ := o["direction"].(string)
+		s.Workspaces = append(s.Workspaces, display.ScrollWorkspace{ID: int(id), Direction: dir})
+	}
+	as, _ := config.Get(m, "scrolling.apps")
+	list, _ = as.([]any)
+	for _, e := range list {
+		o, _ := e.(map[string]any)
+		app, _ := o["app"].(string)
+		w, _ := o["width"].(float64)
+		s.Apps = append(s.Apps, display.ScrollApp{App: app, Width: w})
+	}
+	s = display.CleanScrolling(s)
+	if s.ColumnWidth == 0 && len(s.Workspaces) == 0 && len(s.Apps) == 0 {
+		return nil
+	}
+	return &s
 }
 
 func expandHome(p string) string {

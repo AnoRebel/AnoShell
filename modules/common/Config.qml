@@ -1691,6 +1691,15 @@ Singleton {
                 property var shells: []                    // zsh/bash/fish; empty: your login shell
             }
 
+            // Scrolling workspaces: anod writes these into its managed compositor file.
+            // Hyprland: these workspaces use its scrolling layout; mango: these tags its scroller;
+            // niri scrolls everywhere. apps: per-app column widths (Hyprland, niri, mango).
+            property JsonObject scrolling: JsonObject {
+                property var workspaces: []     // [{ id: 3, direction: "right" }] (right | left | down | up)
+                property real columnWidth: 0    // 0.1–1 of the screen; 0 = the compositor's own default
+                property var apps: []           // [{ app: "firefox", width: 0.8 }]
+            }
+
             // Desktop pet: a duck, a cat or a dog on one screen (modules/pet).
             property JsonObject pet: JsonObject {
                 property bool enable: false

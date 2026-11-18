@@ -214,10 +214,20 @@ Singleton {
     // A screen capture opened or closed (owner "monitor", "window", or a
     // region); Hyprland only.
     signal screencast(bool open, string owner, string name)
+    // Infinite desktop (supports.infiniteDesktop; services/InfiniteDesktop.qml):
+    // cb({ workspace, output, view, others, windows: [{ id, x, y, width, height,
+    // floating, focused, appId }] } | null) for the focused output's workspace;
+    // float at, place at and tile back, all in layout coordinates.
+    function canvasState(cb) { return root.backend?.canvasState ? root.backend.canvasState(cb) : false }
+    function floatWindows(rects) { return root.backend?.floatWindows ? root.backend.floatWindows(rects) : false }
+    function placeWindows(list) { return root.backend?.placeWindows ? root.backend.placeWindows(list) : false }
+    function tileWindows(ids) { return root.backend?.tileWindows ? root.backend.tileWindows(ids) : false }
+    signal windowOpened(var id, string workspace)
     Connections {
         target: root.backend
         ignoreUnknownSignals: true
         function onScreencast(open, owner, name) { root.screencast(open, owner, name) }
+        function onWindowOpened(id, workspace) { root.windowOpened(id, workspace) }
     }
     Timer { id: ipcLeaseTimer; interval: 10000; onTriggered: root.releaseWindows("ipc") }
 

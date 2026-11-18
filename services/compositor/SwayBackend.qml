@@ -22,7 +22,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, windowGeometry: true
+        keyboardLayouts: true, windowGeometry: true, infiniteDesktop: true
     })
     focusedOutput: I3.focusedMonitor?.name ?? (Quickshell.screens[0]?.name ?? "")
 
@@ -87,17 +87,49 @@ GenericBackend {
                 if (l) root._setLayouts(l)
                 else if (data?.change === "added" || data?.change === "removed") root._inputsProc.running = true
             } else {
+                let ev = null
+                if (event.type === "window") try { ev = JSON.parse(event.data) } catch (e) {}
+                if (ev?.change === "new" && Number.isInteger(ev.container?.id)) root.windowOpened(ev.container.id, "")
                 // Titles only matter to the window list.
-                if (event.type === "window" && root.windowLeases === 0) {
-                    let change = ""
-                    try { change = JSON.parse(event.data).change } catch (e) {}
-                    if (change === "title") return
-                }
+                if (event.type === "window" && root.windowLeases === 0 && ev?.change === "title") return
                 if (!root._treeTimer.running) root._treeTimer.start()
             }
         }
     }
     Component.onCompleted: { root._treeProc.running = true; root._inputsProc.running = true }
+
+    // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────
+    signal windowOpened(var id, string workspace)
+    property var _canvasCbs: []
+    property var _canvasProc: Process {
+        command: ["swaymsg", "-r", "-t", "get_tree"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const cbs = root._canvasCbs
+                root._canvasCbs = []
+                let tree = null
+                try { tree = JSON.parse(text) } catch (e) {}
+                for (const cb of cbs) cb(tree ? SwayModel.canvas(tree) : null)
+            }
+        }
+    }
+    function canvasState(cb) {
+        root._canvasCbs = root._canvasCbs.concat([cb])
+        if (!root._canvasProc.running) root._canvasProc.running = true
+        return true
+    }
+    function floatWindows(rects) {
+        const cmds = rects.filter(r => Number.isInteger(r.id)).map(r => `[con_id=${r.id}] floating enable, resize set width ${Math.round(r.width)} px height ${Math.round(r.height)} px, move absolute position ${Math.round(r.x)} px ${Math.round(r.y)} px`)
+        return cmds.length ? root._run(cmds.join("; ")) : false
+    }
+    function placeWindows(list) {
+        const cmds = list.filter(p => Number.isInteger(p.id)).map(p => `[con_id=${p.id}] move absolute position ${Math.round(p.x)} px ${Math.round(p.y)} px`)
+        return cmds.length ? root._run(cmds.join("; ")) : false
+    }
+    function tileWindows(ids) {
+        const cmds = ids.filter(Number.isInteger).map(id => `[con_id=${id}] floating disable`)
+        return cmds.length ? root._run(cmds.join("; ")) : false
+    }
 
     // ── Actions ──────────────────────────────────────────────────────────
     function _run(cmd) { I3.dispatch(cmd); return true }

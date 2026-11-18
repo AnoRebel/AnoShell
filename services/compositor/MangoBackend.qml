@@ -23,7 +23,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true
+        keyboardLayouts: true, scrollingLayout: true, infiniteDesktop: true
     })
 
     readonly property string _socketPath: Quickshell.env("MANGO_INSTANCE_SIGNATURE") ?? ""
@@ -64,7 +64,15 @@ GenericBackend {
     }
     property var _clientWatch: Watch {
         topic: "all-clients"
-        onReceived: line => { const o = MangoModel.parse(line); if (Array.isArray(o?.clients)) { root._clients = o.clients; root.revision++ } }
+        onReceived: line => {
+            const o = MangoModel.parse(line)
+            if (!Array.isArray(o?.clients)) return
+            if (root._clientsSeen) {
+                const had = new Set(root._clients.map(c => c.id))
+                for (const c of o.clients) if (!had.has(c.id)) root.windowOpened(c.id, "")
+            }
+            root._clients = o.clients; root._clientsSeen = true; root.revision++
+        }
     }
 
     // ── Dispatch: one command per connection, queued ─────────────────────
@@ -146,6 +154,42 @@ GenericBackend {
         const dir = ({ top: "up", bottom: "down", left: "left", right: "right" })[side]
         if (dir) for (let i = 0; i < 3; i++) root._dispatch("smartmovewin", [dir], c.id)
         return root._dispatch("focusid", [], c.id)
+    }
+    // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────
+    signal windowOpened(var id, string workspace)
+    property bool _clientsSeen: false
+    property var _sentPos: ({})   // id → { x, y } last placed (moves go relative, see MangoModel.relArg)
+    // The client list is the truth again (windows may have been dragged since).
+    function canvasState(cb) { root._sentPos = {}; cb(MangoModel.canvas(root._clients, root._monitors)); return true }
+    function _posOf(id) { const c = root._clients.find(c => c.id === id); return root._sentPos[id] ?? (c ? { x: c.x, y: c.y } : null) }
+    function _moveTo(id, x, y) {
+        const cur = root._posOf(id)
+        if (!cur) return false
+        root._sentPos[id] = { x: Math.round(x), y: Math.round(y) }
+        return root._dispatch("movewin", [MangoModel.relArg(x - cur.x), MangoModel.relArg(y - cur.y)], id)
+    }
+    function floatWindows(rects) {
+        for (const r of rects) {
+            const c = root._clients.find(c => c.id === r.id)
+            if (!c) continue
+            delete root._sentPos[r.id]
+            if (!c.is_floating) root._dispatch("togglefloating", [], r.id)
+            root._dispatch("resizewin", [Math.round(r.width), Math.round(r.height)], r.id)
+            root._dispatch("movewin", [Math.max(0, Math.round(r.x)), Math.max(0, Math.round(r.y))], r.id)
+            root._sentPos[r.id] = { x: Math.max(0, Math.round(r.x)), y: Math.max(0, Math.round(r.y)) }
+        }
+        return true
+    }
+    function placeWindows(list) {
+        for (const p of list) root._moveTo(p.id, p.x, p.y)
+        return true
+    }
+    function tileWindows(ids) {
+        for (const id of ids) {
+            delete root._sentPos[id]
+            if (root._clients.find(c => c.id === id)?.is_floating) root._dispatch("togglefloating", [], id)
+        }
+        return true
     }
     function hideWindow(id, side, appId) {
         const c = root._dropClient(id, appId)

@@ -16,8 +16,8 @@ ColumnLayout {
 
     SettingsPageHeader {
         title: "Overview"
-        subtitle: "AnoView layout algorithm"
-        configRoots: ["overview"]
+        subtitle: "AnoView layout algorithm, scrolling workspaces and the infinite desktop"
+        configRoots: ["overview", "scrolling"]
     }
 
     readonly property string thumbMode: Config.options?.overview?.liveThumbnails ?? "off"
@@ -151,6 +151,139 @@ ColumnLayout {
                     GroupButton { label: "Hovered"; toggled: root.thumbMode === "hovered"; onClicked: Config.setNestedValue("overview.liveThumbnails", "hovered") },
                     GroupButton { label: "All (up to 12)"; toggled: root.thumbMode === "all"; onClicked: Config.setNestedValue("overview.liveThumbnails", "all") }
                 ]
+            }
+        }
+    }
+
+    // ═══ Workspace layouts ═══
+    SettingsCard {
+        id: wsCard
+        icon: "view_column"
+        title: "Scrolling workspaces"
+        subtitle: "Windows in columns on a strip wider than the screen"
+        configKeys: ["scrolling.workspaces", "scrolling.columnWidth", "scrolling.apps"]
+        readonly property string backend: CompositorService.backendName
+        readonly property bool can: CompositorService.supports.scrollingLayout ?? false
+        readonly property var sc: Config.options?.scrolling ?? ({})
+        readonly property var wsList: Array.from(wsCard.sc.workspaces ?? [])
+        readonly property var wsIds: wsCard.wsList.map(w => w.id)
+        readonly property string dir: wsCard.wsList[0]?.direction ?? "right"
+        function setWorkspaces(ids, dir) {
+            Config.setNestedValue("scrolling.workspaces", ids.slice().sort((a, b) => a - b).map(id => ({ id, direction: dir })))
+        }
+
+        StyledText {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+            text: !wsCard.can ? `${wsCard.backend} has no scrolling layout`
+                : wsCard.backend === "niri" ? "Every niri workspace scrolls. The widths below go into anod's managed file (include ano-managed.kdl in your config)."
+                : wsCard.backend === "hyprland" ? "Uses Hyprland's own scrolling layout, applied straight away and kept in anod's managed file (ano-managed.lua, dofile'd from your hyprland.lua)."
+                : "Uses mango's scroller layout through ~/.config/mango/ano-managed.conf (the bundled config sources it); mango reloads its config."
+        }
+        ConfigRow {
+            label: wsCard.backend === "mango" ? "Scrolling tags" : "Scrolling workspaces"
+            sublabel: "The others keep their usual layout"
+            configKey: "scrolling.workspaces"
+            visible: wsCard.can && wsCard.backend !== "niri"
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            visible: wsCard.can && wsCard.backend !== "niri"
+            model: Array.from({ length: 10 }, (_, i) => ({ value: i + 1, label: String(i + 1), icon: "" }))
+            current: wsCard.wsIds
+            onChose: value => {
+                const ids = wsCard.wsIds.includes(value) ? wsCard.wsIds.filter(i => i !== value) : wsCard.wsIds.concat([value])
+                wsCard.setWorkspaces(ids, wsCard.dir)
+            }
+        }
+        ConfigRow {
+            label: "Direction"
+            sublabel: "Where new columns open and the strip scrolls"
+            configKey: "scrolling.workspaces"
+            visible: wsCard.can && wsCard.backend !== "niri" && wsCard.wsIds.length > 0
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            visible: wsCard.can && wsCard.backend !== "niri" && wsCard.wsIds.length > 0
+            model: wsCard.backend === "mango"
+                ? [{ value: "right", label: "Sideways", icon: "arrow_forward" }, { value: "down", label: "Down", icon: "arrow_downward" }]
+                : [{ value: "right", label: "Right", icon: "arrow_forward" }, { value: "left", label: "Left", icon: "arrow_back" },
+                   { value: "down", label: "Down", icon: "arrow_downward" }, { value: "up", label: "Up", icon: "arrow_upward" }]
+            current: wsCard.dir
+            onChose: value => wsCard.setWorkspaces(wsCard.wsIds, value)
+        }
+        ConfigSlider {
+            label: "Column width"
+            sublabel: "New columns, as a share of the screen; leftmost = the compositor's own default"
+            configKey: "scrolling.columnWidth"
+            visible: wsCard.can
+            from: 0; to: 1; stepSize: 0.05
+            value: wsCard.sc.columnWidth ?? 0
+            valueText: value < 0.1 ? "Default" : `${Math.round(value * 100)}%`
+            onValueChanged: {
+                const v = value < 0.1 ? 0 : Math.round(value * 100) / 100
+                if (v !== (wsCard.sc.columnWidth ?? 0)) Config.setNestedValue("scrolling.columnWidth", v)
+            }
+        }
+        ConfigRow {
+            label: "Per-app widths"
+            sublabel: "App id and share of the screen, e.g. firefox 0.8, kitty 0.5"
+            configKey: "scrolling.apps"
+            visible: wsCard.can
+            StyledTextInput {
+                boxed: true
+                Layout.preferredWidth: 200
+                text: Array.from(wsCard.sc.apps ?? []).map(a => `${a.app} ${a.width}`).join(", ")
+                onEditingFinished: {
+                    const apps = []
+                    for (const part of text.split(",")) {
+                        const m = part.trim().match(/^([A-Za-z0-9._-]+)\s+(0?\.\d+|1(\.0+)?)$/)
+                        if (m && !apps.some(a => a.app === m[1])) apps.push({ app: m[1], width: Math.max(0.1, Math.min(1, Number(m[2]))) })
+                    }
+                    Config.setNestedValue("scrolling.apps", apps)
+                }
+            }
+        }
+    }
+
+    SettingsCard {
+        id: infCard
+        icon: "pan_tool"
+        title: "Infinite desktop"
+        subtitle: "A workspace of floating windows on a canvas you pan around (idea from Anserin)"
+        configKeys: []
+        readonly property string backend: CompositorService.backendName
+
+        StyledText {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: Appearance?.colors.colSubtext ?? "#CAC4D0"
+            font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
+            text: !InfiniteDesktop.available ? `Unavailable: ${InfiniteDesktop.unavailableReason}`
+                : (infCard.backend === "hyprland"
+                    ? "Tap Super+Ctrl (or Super+Ctrl+I) to turn the focused workspace into one and back. Pan: drag the empty desktop, or hold Super+Alt and drag anywhere; drag a window against a screen edge."
+                    : "Super+Ctrl+I turns the focused workspace into one and back. Pan: drag the empty desktop, or Super+Alt+G and move the pointer (click or Esc ends).")
+                  + " Super+arrows focus the nearest window and bring it into view; new windows open in the middle."
+                  + (infCard.backend === "niri" ? " niri keeps a sliver of each window that's off screen at the edge." : "")
+        }
+        RowLayout {
+            spacing: 8
+            visible: InfiniteDesktop.available
+            StyledText {
+                Layout.fillWidth: true
+                text: InfiniteDesktop.active ? "This workspace is an infinite desktop" : "This workspace tiles"
+                color: Appearance?.colors.colOnLayer1 ?? "#E6E0E9"
+            }
+            RippleButton {
+                buttonText: InfiniteDesktop.active ? "Tile again" : "Make it infinite"
+                onClicked: InfiniteDesktop.toggle()
+            }
+            RippleButton {
+                buttonText: "Arrange"
+                visible: InfiniteDesktop.active
+                onClicked: InfiniteDesktop.arrange()
             }
         }
     }

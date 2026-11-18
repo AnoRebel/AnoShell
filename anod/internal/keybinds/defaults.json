@@ -565,6 +565,55 @@
       ]
     },
     {
+      "chord": "Super+Control_L",
+      "action": "hyprland",
+      "args": [
+        "function() hl.dispatch(hl.dsp.global(\"quickshell:searchToggleReleaseInterrupt\")) hl.dispatch(hl.dsp.exec_cmd(\"qs -c ano ipc call infiniteDesktop toggle\")) end"
+      ],
+      "hyprland": {
+        "description": "Infinite desktop on/off (Super+Ctrl tapped)",
+        "release": true
+      }
+    },
+    {
+      "chord": "Super+Ctrl+I",
+      "action": "shell",
+      "args": [
+        "infiniteDesktop",
+        "toggle"
+      ]
+    },
+    {
+      "chord": "Super+Alt+mouse:272",
+      "action": "shell",
+      "args": [
+        "infiniteDesktop",
+        "panKeys"
+      ],
+      "only": "hyprland"
+    },
+    {
+      "chord": "Super+Alt+mouse:272",
+      "action": "shell",
+      "args": [
+        "infiniteDesktop",
+        "panKeysEnd"
+      ],
+      "only": "hyprland",
+      "hyprland": {
+        "release": true
+      }
+    },
+    {
+      "chord": "Super+Alt+G",
+      "action": "shell",
+      "args": [
+        "infiniteDesktop",
+        "panKeysToggle"
+      ],
+      "only": "niri"
+    },
+    {
       "chord": "Super+Q",
       "action": "window.close"
     },

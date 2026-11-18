@@ -71,6 +71,24 @@ function windows(clients, monitors) {
     }))
 }
 
+// Infinite desktop: the selected monitor's shown windows (its first shown
+// tag is the workspace) and the other monitors; null without a monitor.
+function canvas(clients, monitors) {
+    const mon = (monitors || []).find(m => m.active) || null
+    if (!mon) return null
+    const rect = m => ({ x: m.x || 0, y: m.y || 0, width: (m.width || 0) / (m.scale || 1), height: (m.height || 0) / (m.scale || 1) })
+    const tag = ((mon.tags || []).find(t => t.is_active) || {}).index || 0
+    const wins = windows((clients || []).filter(c => c.is_visible && c.monitor === mon.name && !c.is_fullscreen && !c.is_minimized
+        && !c.is_scratchpad && !c.is_global && !c.is_overlay), monitors)
+        .map(w => ({ id: w.id, x: w.x, y: w.y, width: w.width, height: w.height, floating: w.floating, focused: w.focused, appId: w.appId }))
+    return { workspace: mon.name + ":" + tag, output: mon.name, view: rect(mon),
+             others: (monitors || []).filter(m => m !== mon).map(rect), windows: wins }
+}
+
+// mango's movewin/resizewin: a leading - or + is relative, anything else
+// absolute, so a move left of 0 has to go as a relative one.
+function relArg(delta) { return (delta < 0 ? "-" : "+") + Math.abs(Math.round(delta)) }
+
 // A dispatch line (`dispatch <func>,<args…> [client,<id>]`). Arguments are
 // numbers or monitor names here; anything with a newline, comma or space
 // would split the command, so it is refused (null).

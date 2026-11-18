@@ -2,7 +2,7 @@
 // shaped as mango 0.18.3's IPC sends them). Run: node scripts/dev/test-mango-model.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/compositor/MangoModel.js'), 'utf8').replace('.pragma library', '')
-const M = new Function(src + ';return {parse, workspaces, focusedOutput, keyboardLayout, fullscreen, covered, windows, dispatchLine};')()
+const M = new Function(src + ';return {parse, workspaces, focusedOutput, keyboardLayout, fullscreen, covered, windows, dispatchLine, canvas, relArg};')()
 const line = n => fs.readFileSync(path.join(__dirname, 'fixtures/mango', n + '.jsonl'), 'utf8').split('\n')[0]
 const a = (c, m) => { if (!c) throw new Error(m) }
 
@@ -32,4 +32,10 @@ a(M.parse('{"monitors":[') === null, 'partial line → null')
 // the monitor's first shown tag, so per-output lists keep it.
 const cl5 = cl.concat([{ id: 12, title: 'x', appid: 'x', monitor: 'HDMI-A-1', tags: [5], is_visible: true }])
 a(M.windows(cl5, mons).find(x => x.id === 12).workspace === 2, 'window on a second shown tag')
+// Infinite desktop: the selected monitor's shown windows; moves left of 0 go relative.
+const cv = M.canvas(cl, mons)
+a(cv && cv.output === 'eDP-1' && cv.workspace === 'eDP-1:1' && cv.windows.length > 0 && cv.windows.every(w => Number.isInteger(w.id)), `mango canvas ${JSON.stringify(cv && cv.workspace)}`)
+a(cv.others.length === 1 && cv.view.width === 1920, 'the other monitor, the view')
+a(M.relArg(-40) === '-40' && M.relArg(25.4) === '+25' && M.relArg(0) === '+0', 'relative movewin arguments')
+a(M.dispatchLine('movewin', [M.relArg(-40), M.relArg(10)], 4) === 'dispatch movewin,-40,+10 client,4\n', 'movewin line')
 console.log('mango model ok')

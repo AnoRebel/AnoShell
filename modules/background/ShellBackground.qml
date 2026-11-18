@@ -72,6 +72,9 @@ Scope {
             WlrLayershell.layer: WlrLayer.Background
             WlrLayershell.namespace: "quickshell:background"
             anchors { top: true; bottom: true; left: true; right: true }
+            // Click-through: the infinite desktop's drag surface (also on this
+            // layer) must get the desktop's clicks whichever was mapped last.
+            mask: Region {}
 
             readonly property string path: root.imageFor(modelData.name)
             readonly property bool covered: CompositorService.isCovered(modelData.name)

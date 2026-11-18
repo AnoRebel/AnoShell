@@ -53,7 +53,7 @@ Singleton {
         { name: "Sidebars",   icon: "view_sidebar",    configRoots: ["sidebar", "notepad", "todo", "pomodoro", "stickyNotes", "clock"] },
         { name: "AnoSpot",    icon: "view_compact_alt",configRoots: ["anoSpot"] },
         { name: "Appearance", icon: "palette",         configRoots: ["appearance", "background", "animations", "settings.softenWallpaper", "terminal"] },
-        { name: "Overview",   icon: "overview",        configRoots: ["overview"] },
+        { name: "Overview",   icon: "overview",        configRoots: ["overview", "scrolling"] },
         { name: "Services",   icon: "cloud",           configRoots: ["ai", "gameMode", "performance", "updates", "musicRecognition", "powerProfiles", "network", "vpn", "kdeConnect", "nightLight", "location", "lyrics", "calendar", "resources", "light", "shell", "weather", "recording", "screenFilter", "drives"] },
         { name: "Displays",   icon: "desktop_windows", configRoots: ["cursor", "icons"] },
         { name: "Keybinds",   icon: "keyboard",        configRoots: ["keyboard"] },

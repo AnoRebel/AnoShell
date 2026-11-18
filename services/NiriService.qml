@@ -458,6 +458,7 @@ Singleton {
         }
     }
 
+    signal windowOpened(var window)
     function handleWindowOpenedOrChanged(data) {
         if (!data.window)
             return
@@ -472,6 +473,7 @@ Singleton {
             updatedWindows[existingIndex] = window
         } else {
             updatedWindows = [...currentList, window]
+            root.windowOpened(window)
         }
 
         // niri sends no separate unfocus for the previously focused window.

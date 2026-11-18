@@ -38,6 +38,10 @@ backend is picked from the session at start.
 - **Terminal looks** for kitty, foot, Ghostty and Alacritty (translucency, blur,
   padding, cursor) and prompt styles for zsh, bash and fish in the palette's
   colours, with Starship when installed ([terminal](docs/terminal.md)).
+- **Scrolling workspaces and an infinite desktop:** pick which workspaces scroll
+  (Hyprland's own layout, niri, mango's scroller) and per-app column widths, or
+  turn a workspace into a canvas of floating windows you pan around
+  ([workspaces](docs/workspaces.md)).
 - **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
@@ -95,6 +99,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `MinimizedWindows` | Niri-only minimize emulation registry (Niri has no native minimize concept). |
 | `WindowMru` | Most-recently-used window order for every switcher style, from focus changes (no polling). |
 | `PanelRegistry` | The connected frame's geometry registry: surfaces publish their bodies, the frame fuses them. |
+| `InfiniteDesktop` | Scrolling rules (asks anod to rewrite them) and the infinite desktop: floating canvas, panning, focus follow, parking, state ([workspaces](docs/workspaces.md)). |
 | `DefaultApps` | Launches your default apps (`apps.*`); binds call it, so changing an app never regenerates binds. |
 
 ### Audio, brightness, input
@@ -275,7 +280,7 @@ The Settings UI has 14 pages, opening on About, each owning a set of top-level c
 | Sidebars     | `sidebar`                                                                                | Behavior toggles (instant open, keep loaded), right-sidebar widget picker with empty-state warning, quick-slider sub-toggles |
 | AnoSpot      | `anoSpot`                                                                                | Position, per-widget visibility, click bindings, event border animation, drag/drop config + custom drop actions |
 | Appearance   | `appearance`, `background`, `animations`                                                 | Theme source (Material You / static) with hover-preview, font picker, bezel preview, animation speed, wallpaper rotation |
-| Overview     | `overview`                                                                               | AnoView layout selector (11 cards) |
+| Overview     | `overview`, `scrolling`                                                                  | AnoView layout selector (11 cards); scrolling workspaces; infinite desktop |
 | Services     | `ai`, `autostart`, `gameMode`, `performance`, `powerProfiles`, `network`, `vpn`, `nightLight`, `lyrics`, `calendar`, `resources`, `light`, `shell`, `weather` | Toggle and configure every optional service (see Optional services below) |
 | Displays     | `cursor`, `icons`                                                                        | Monitor arrangement, mode, scale, rotation, VRR and profiles (through anod), cursor and icon themes |
 | Keybinds     | `keyboard`                                                                               | Search, record, add, change or remove binds; keyboard layouts |
@@ -506,6 +511,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `lock` | Who locks (`locker`: `shell` everywhere with the session lock protocol, or `external` running `externalCommand`), the lock screen package, the intro and arranged layouts ([lock screens](docs/lockscreens.md)) | `locker`, `externalCommand`, `screen`, `intro` (none/waves/padlock/portal), `layouts.<id>` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
 | `terminal` | Terminal looks (one marked include per terminal) and prompt styles ([terminal](docs/terminal.md)) | `enable`, `apps.<kitty\|foot\|ghostty\|alacritty>`, `background`, `opacity`, `blur`, `padding`, `cursor`, `prompt` (own/segments/minimal), `shells` |
+| `scrolling` | Scrolling workspaces through anod's managed compositor file ([workspaces](docs/workspaces.md)) | `workspaces` (`[{id, direction}]`), `columnWidth` (0 = default), `apps` (`[{app, width}]`) |
 | `lock.osk` | On-screen keyboard for password entry | — |
 | `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
 | `lock.dim` | Auto-dim the lock background after idle | `idleMs`, `opacity` |
@@ -646,6 +652,8 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 | `Super+C` | Center window |
 | `Super+G` | Toggle group |
 | `Super+Alt+A` | Toggle special workspace |
+| `Super+Ctrl` (tap) / `Super+Ctrl+I` | Infinite desktop on/off for this workspace |
+| `Super+Alt` + drag | Pan the infinite desktop |
 | `Super+Shift+A` | Move to special workspace |
 | `Super+1-0` | Switch workspace 1-10 |
 | `Super+Shift+1-0` | Move to workspace 1-10 |
@@ -738,6 +746,8 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
 | Terminal looks (`terminal.enable`) | `jq`; kitty, foot, Ghostty or Alacritty; blur: Hyprland, or niri 26.04+, with anod's managed file in its config | nothing applied / no blur |
 | Prompt styles (`terminal.prompt`) | `jq`; `git` for the branch; a Nerd Font for Segments; optional `starship` | no branch / boxes for the separators / the shell's own prompt code |
+| Scrolling workspaces (`scrolling`) | Hyprland (built-in scrolling layout), niri or mango; anod running; anod's managed file in your compositor config (mango: the bundled config sources it) | unavailable on sway, labwc, Umbriel / nothing applied |
+| Infinite desktop (Super+Ctrl tap on Hyprland, Super+Ctrl+I) | Hyprland, niri, sway or mango (their own IPC; sway: `swaymsg`); edge push: Hyprland | unavailable on labwc, Umbriel |
 | Desktop pet (`pet`) | nothing for the pet itself; window-top floors: Hyprland or sway; walking to the pointer: Hyprland; `sound`: `pipewire` (`pw-play`) | it stays on the bottom edge / doesn't follow the pointer / silent |
 | Corner revolver (`revolver`) | `loginctl` (systemd-logind) for Lock; Shuffle wallpaper: anod's rotation, else `find` in the rotation folder; the other chambers use the shell's own panels and services | Lock does nothing |
 | Gauge piece | CPU, memory, temperature (`/sys/class/thermal`) and disk (`df`) from the shell's resource sampling; battery: `upowerd` | that reading shows `--` |
@@ -863,6 +873,7 @@ ano/
 │   ├── displayManager/             # Hyprland-only monitor config
 │   ├── revolver/                   # Corner revolver (quick actions on a cylinder)
 │   ├── pet/                        # Desktop pet (duck, cat, dog)
+│   ├── infiniteDesktop/            # Infinite desktop drag surface, pan overlay, canvas map
 │   ├── screenCorners/              # Hot corners
 │   ├── recordingOsd/               # Live screen-recording overlay
 │   ├── calendar/                   # Standalone calendar with event dots

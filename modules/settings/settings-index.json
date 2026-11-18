@@ -3512,6 +3512,42 @@
   ]
  },
  {
+  "page": 8,
+  "card": "Scrolling workspaces",
+  "label": "Scrolling workspaces",
+  "sublabel": "Windows in columns on a strip wider than the screen",
+  "keys": [
+   "scrolling.workspaces",
+   "scrolling.columnWidth",
+   "scrolling.apps"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Column width",
+  "sublabel": "New columns, as a share of the screen; leftmost = the compositor's own default",
+  "keys": [
+   "scrolling.columnWidth"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "",
+  "label": "Per-app widths",
+  "sublabel": "App id and share of the screen, e.g. firefox 0.8, kitty 0.5",
+  "keys": [
+   "scrolling.apps"
+  ]
+ },
+ {
+  "page": 8,
+  "card": "Infinite desktop",
+  "label": "Infinite desktop",
+  "sublabel": "A workspace of floating windows on a canvas you pan around (idea from Anserin)",
+  "keys": []
+ },
+ {
   "page": 9,
   "card": "Removable drives",
   "label": "Removable drives",

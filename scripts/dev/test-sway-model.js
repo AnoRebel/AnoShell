@@ -3,7 +3,7 @@
 // commas, one `","` for `:`). Run: node scripts/dev/test-sway-model.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/compositor/SwayModel.js'), 'utf8').replace('.pragma library', '')
-const M = new Function(src + ';return {occupied, fullscreen, windows, layouts, layoutsFromEvent, reserved};')()
+const M = new Function(src + ';return {occupied, fullscreen, windows, layouts, layoutsFromEvent, reserved, canvas};')()
 const fx = n => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/sway', n + '.json'), 'utf8'))
 const a = (c, m) => { if (!c) throw new Error(m) }
 
@@ -22,6 +22,11 @@ t2.nodes[1].nodes[0].nodes[1].fullscreen_mode = 1
 a(JSON.stringify(M.fullscreen(t2)) === '{"eDP-1":true}', 'fullscreen window → its output')
 t2.nodes[1].current_workspace = '2'
 a(Object.keys(M.fullscreen(t2)).length === 0, 'not when its workspace is not the one shown')
+
+// Infinite desktop: the focused workspace (termite holds focus) with its windows and usable area.
+const cv = M.canvas(tree)
+a(cv && cv.workspace === '1' && cv.output === 'eDP-1' && cv.windows.length === 2 && cv.windows.some(x => x.focused), `canvas ${JSON.stringify(cv && cv.workspace)}`)
+a(cv.view.width > 0 && cv.others.length === 0, 'canvas view = the workspace rect, no other outputs')
 
 const lay = M.layouts(fx('get_inputs'))
 a(lay.current === 'English (US)' && lay.names.length === 0, 'GET_INPUTS example: active layout, no list')

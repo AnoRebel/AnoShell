@@ -91,6 +91,25 @@ function windows(tree) {
     return out
 }
 
+// Infinite desktop: the focused workspace's windows, its usable area (view)
+// and the other outputs; null when there is no focused workspace.
+function canvas(tree) {
+    const all = _workspaces(tree)
+    const e = all.find(e => _focusedIn(e.workspace))
+        || all.find(e => e.output.focused && (e.output.current_workspace === undefined || e.output.current_workspace === e.workspace.name))
+    if (!e || !e.workspace.rect) return null
+    const ws = e.workspace.name
+    const wins = windows(tree).filter(w => w.workspaceName === ws && !w.fullscreen)
+        .map(w => ({ id: w.id, x: w.x, y: w.y, width: w.width, height: w.height, floating: w.floating, focused: w.focused, appId: w.appId }))
+    const outs = []
+    for (const o of (tree.nodes || [])) if (o.type === "output" && o.name !== e.output.name && o.rect && o.name !== "__i3") outs.push(o.rect)
+    return { workspace: ws, output: e.output.name, view: e.workspace.rect, others: outs, windows: wins }
+}
+function _focusedIn(node) {
+    if (node.focused) return true
+    return (node.nodes || []).concat(node.floating_nodes || []).some(_focusedIn)
+}
+
 // { current, names } from GET_INPUTS: the first keyboard that lists its
 // layouts, else the first keyboard's active layout alone.
 function layouts(inputs) {

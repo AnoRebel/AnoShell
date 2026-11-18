@@ -48,7 +48,8 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 `outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`,
 `windowGeometry` (windows' x/y are layout coordinates and `reservedOf` is known, so they can be placed on an output's
 usable area; Hyprland, sway), `cursorPos` (`cursorPos(cb)`; Hyprland), `windowBlur` (blur behind translucent windows
-through window rules in anod's managed file; Hyprland, niri 26.04+).
+through window rules in anod's managed file; Hyprland, niri 26.04+), `scrollingLayout` (scrolling.* has an effect:
+Hyprland, niri, mango), `infiniteDesktop` (the canvas functions below: Hyprland, niri, sway, mango).
 
 ## Functions
 
@@ -68,6 +69,9 @@ through window rules in anod's managed file; Hyprland, niri 26.04+).
 | `cursorPos(cb)` | optional: `cb({x, y} \| null)`, the pointer in layout coordinates; Hyprland |
 | `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland, sway |
 | `signal screencast(open, owner, name)` | optional: capture opened/closed (owner `monitor`, `window`, region); Hyprland |
+| `canvasState(cb)` | infinite desktop (`supports.infiniteDesktop`): `cb({ workspace, output, view, others, windows: [{ id, x, y, width, height, floating, focused, appId }] } \| null)` for the focused output's workspace; `view` its usable area, `others` the other outputs; layout coordinates. Hyprland, niri, sway, mango |
+| `floatWindows(rects)` / `placeWindows(list)` / `tileWindows(ids)` | float at `{id, x, y, width, height}`, move to `{id, x, y}` (absolute), tile again. Hyprland: one `eval` each, moves coalesced (newest wins while one is in flight); niri: floating positions relative to the working area, learnt from where a window lands; mango: moves go relative (`movewin` reads a leading `-` as relative) |
+| `signal windowOpened(id, workspace)` | a new window (workspace may be `""`); Hyprland, niri, sway, mango |
 
 Unsupported operations return `false` and log once; they never throw.
 

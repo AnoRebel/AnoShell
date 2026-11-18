@@ -23,7 +23,8 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
         outerGaps: true, cursorZoom: true, screenShader: true, dpms: true, outputConfig: true, exit: true,
-        keyboardLayouts: true, windowGeometry: true, cursorPos: true, windowBlur: true
+        keyboardLayouts: true, windowGeometry: true, cursorPos: true, windowBlur: true, scrollingLayout: true,
+        infiniteDesktop: true
     })
 
     // Raw IPC state
@@ -72,7 +73,8 @@ QtObject {
             const job = root._current, text = root._buf
             root._current = null; root._buf = ""
             root._watchdog.stop()
-            if (job) { try { job.cb(JSON.parse(text)) } catch (e) { console.warn(`[compositor:hyprland] bad reply to ${job.cmd}: ${e}`) } }
+            if (job?.raw) job.cb(text)
+            else if (job) { try { job.cb(JSON.parse(text)) } catch (e) { console.warn(`[compositor:hyprland] bad reply to ${job.cmd}: ${e}`) } }
             root._next()
         }
     }
@@ -91,10 +93,10 @@ QtObject {
         return true
     }
 
-    function _request(cmd, cb) {
+    function _request(cmd, cb, raw) {
         const pending = root._queue.find(j => j.cmd === cmd)
         if (pending) pending.cb = cb
-        else root._queue.push({ cmd, cb })
+        else root._queue.push({ cmd, cb, raw: !!raw })
         if (!root._current) root._next()
     }
     function _next() {
@@ -234,6 +236,11 @@ QtObject {
     property var _events: Connections {
         target: Hyprland
         function onRawEvent(event) {
+            // openwindow>>ADDRESS,WORKSPACE,CLASS,TITLE (the address without 0x).
+            if (event.name === "openwindow") {
+                const p = event.data.split(",")
+                root.windowOpened("0x" + p[0], p[1] ?? "")
+            }
             if (event.name === "fullscreen") {
                 // `fullscreen>>0`: the focused window left fullscreen (or
                 // maximise). Clear its monitor now: the debounced refresh
@@ -276,6 +283,78 @@ QtObject {
             root.keyboardLayout = kb.active_keymap ?? ""
             root.keyboardLayouts = (kb.layout ?? "").split(",").filter(x => x.length > 0)
         })
+    }
+
+    // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────────
+    signal windowOpened(string id, string workspace)
+    function _monRect(m) {
+        const swap = (m.transform ?? 0) % 2 === 1, s = m.scale || 1
+        return { x: m.x, y: m.y, width: (swap ? m.height : m.width) / s, height: (swap ? m.width : m.height) / s }
+    }
+    // cb({ workspace, output, view, others, windows }) for the focused output's
+    // workspace: view = its usable area, others = the other outputs, windows =
+    // [{ id, x, y, width, height, floating, focused }] in layout coordinates.
+    function canvasState(cb) {
+        const mon = root._focusedMon
+        if (!mon) { cb(null); return true }
+        root._request("j/clients", clients => {
+            const ws = mon.activeWorkspace?.id, r = root._monRect(mon), res = mon.reserved ?? [0, 0, 0, 0]
+            cb({
+                workspace: String(ws), output: mon.name,
+                view: { x: r.x + res[0], y: r.y + res[1], width: r.width - res[0] - res[2], height: r.height - res[1] - res[3] },
+                others: root.monitors.filter(m => m.name !== mon.name).map(root._monRect),
+                windows: clients.filter(c => c.workspace?.id === ws && c.mapped !== false && !c.hidden && !c.pinned && !(c.fullscreen > 0))
+                    .map(c => ({ id: c.address, x: c.at[0], y: c.at[1], width: c.size[0], height: c.size[1],
+                                 floating: !!c.floating, focused: c.focusHistoryID === 0, appId: c.class ?? "" }))
+            })
+        })
+        return true
+    }
+    function _addr(id) { return /^0x[0-9a-f]+$/i.test(String(id)) ? `"address:${id}"` : "" }
+    // One `eval` request for all of them; moves wait for the one in flight and
+    // only the newest set is sent (panning sends one per frame).
+    property string _evalNext: ""
+    property bool _evalBusy: false
+    function _evalBatch(lua, coalesce) {
+        if (!lua) return false
+        if (!coalesce) { root._request("/eval " + lua, () => {}, true); return true }
+        root._evalNext = lua
+        if (!root._evalBusy) root._evalFlush()
+        return true
+    }
+    function _evalFlush() {
+        const lua = root._evalNext
+        root._evalNext = ""
+        if (!lua) { root._evalBusy = false; return }
+        root._evalBusy = true
+        root._request("/eval " + lua, () => root._evalFlush(), true)
+    }
+    function floatWindows(rects) {
+        let lua = ""
+        for (const r of rects) {
+            const a = root._addr(r.id)
+            if (!a) continue
+            lua += `hl.dispatch(hl.dsp.window.float({ window = ${a}, action = "enable" })) `
+                + `hl.dispatch(hl.dsp.window.resize({ window = ${a}, x = ${Math.round(r.width)}, y = ${Math.round(r.height)} })) `
+                + `hl.dispatch(hl.dsp.window.move({ window = ${a}, x = ${Math.round(r.x)}, y = ${Math.round(r.y)} })) `
+        }
+        return root._evalBatch(lua, false)
+    }
+    function placeWindows(list) {
+        let lua = ""
+        for (const p of list) {
+            const a = root._addr(p.id)
+            if (a) lua += `hl.dispatch(hl.dsp.window.move({ window = ${a}, x = ${Math.round(p.x)}, y = ${Math.round(p.y)} })) `
+        }
+        return root._evalBatch(lua, true)
+    }
+    function tileWindows(ids) {
+        let lua = ""
+        for (const id of ids) {
+            const a = root._addr(id)
+            if (a) lua += `hl.dispatch(hl.dsp.window.float({ window = ${a}, action = "disable" })) `
+        }
+        return root._evalBatch(lua, false)
     }
 
     // ── Actions ──────────────────────────────────────────────────────────────

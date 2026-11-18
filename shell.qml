@@ -86,6 +86,7 @@ ShellRoot {
             settleTimer.start();
             Wallpapers.load();
             TerminalLooks.load();
+            InfiniteDesktop.load();
         }
     }
 

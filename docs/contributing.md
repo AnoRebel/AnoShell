@@ -22,6 +22,7 @@ node scripts/dev/test-sway-model.js
 node scripts/dev/test-mango-model.js
 node scripts/dev/test-umbriel-model.js
 node scripts/dev/test-pieces-logic.js     # world clock zones, palette layout
+node scripts/dev/test-infinite-model.js   # infinite desktop: pan, parking, follow, arrange
 cd anod && go vet ./... && go test ./...
 ```
 

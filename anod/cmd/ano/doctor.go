@@ -69,6 +69,9 @@ var features = []feature{
 	{"desktop pet sounds", "pet.sound", []string{"pw-play"}},
 	{"terminal looks (a supported terminal: kitty, foot, Ghostty or Alacritty)", "terminal.enable", []string{"jq", "kitty|foot|ghostty|alacritty"}},
 	{"prompt styles (git branch in Segments; Starship draws them when installed)", "terminal.prompt=segments|terminal.prompt=minimal", []string{"jq", "git"}},
+	// Scrolling rules go through anod's managed file (+ hyprctl eval / niri's reload / mango's socket); the infinite
+	// desktop moves windows over the same IPC (sway: swaymsg). labwc and Umbriel can't: Settings says so.
+	{"scrolling workspaces and the infinite desktop (the compositor's own IPC)", "", []string{"hyprctl|niri|swaymsg|mango"}},
 	{"disk use of / (sidebar system section, Bubble Monitor, system piece; the Bubble Monitor's processes need anod)", "", []string{"df"}},
 	{"Bioma organism pieces (weather: curl; media band: cava; disks: df)", "pieces.enable", []string{"curl", "cava", "df"}},
 	{"palette piece (copy) and world clock piece (zone offsets)", "pieces.enable", []string{"wl-copy", "date"}},
