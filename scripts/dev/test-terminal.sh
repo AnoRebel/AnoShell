@@ -52,9 +52,24 @@ grep -q '^ANO_P1_BG=#aabbcc$' "$G/prompt.env" || fail "prompt colours"
 cp "$C/kitty/kitty.conf" "$T/k1"; cp "$C/alacritty/alacritty.toml" "$T/a1"; run
 cmp -s "$T/k1" "$C/kitty/kitty.conf" && cmp -s "$T/a1" "$C/alacritty/alacritty.toml" || fail "second run changed the configs"
 
-# The prompt renders: in a real pty (zsh), and expanded (bash).
-out=$(printf 'exit\n' | script -qec "env HOME=$HOME ZDOTDIR=$HOME zsh -i" /dev/null 2>/dev/null || true)
+# With Starship installed it draws the prompt from the generated config (zsh in a real pty, fish).
+pty_zsh() { printf 'exit\n' | script -qec "env HOME=$HOME ZDOTDIR=$HOME zsh -i" /dev/null 2>/dev/null || true; }
+if command -v starship >/dev/null; then
+    [[ -s "$G/starship.toml" ]] || fail "starship.toml not generated"
+    out=$(pty_zsh); [[ "$out" == *'48;2;170;187;204'* ]] || fail "zsh via starship: $(printf '%q' "${out:0:200}")"
+    if command -v fish >/dev/null; then
+        out=$(fish --no-config -c "source '$G/prompt.fish'; fish_prompt")
+        [[ "$out" == *'48;2;170;187;204'* ]] || fail "fish via starship: $(printf '%q' "${out:0:200}")"
+    fi
+    rm "$G/starship.toml"   # the native prompts below
+fi
+# The native prompt renders: in a real pty (zsh), expanded (bash), and fish.
+out=$(pty_zsh)
 [[ "$out" == *$'\e[48;2;170;187;204m'* ]] || fail "zsh segments prompt in a pty: $(printf '%q' "${out:0:200}")"
+if command -v fish >/dev/null; then
+    out=$(fish --no-config -c "source '$G/prompt.fish'; fish_prompt")
+    [[ "$out" == *'aabbcc'* || "$out" == *'48;2;170;187;204'* ]] || fail "fish segments: $(printf '%q' "${out:0:200}")"
+fi
 out=$(bash --norc -c ". '$G/prompt.bash'; _ano_prompt_cmd; echo \"\${PS1@P}\"")
 [[ "$out" == *$'\e[48;2;170;187;204m'*"$USER"* ]] || fail "bash segments prompt"
 sed -i 's/^ANO_PROMPT_STYLE=.*/ANO_PROMPT_STYLE=minimal/' "$G/prompt.env"
@@ -62,6 +77,10 @@ out=$(bash --norc -c ". '$G/prompt.bash'; false; _ano_prompt_cmd; echo \"\${PS1@
 [[ "$out" == *$'\e[38;2;255;0;0m'* ]] || fail "bash minimal: the arrow takes the error colour after a failure"
 out=$(zsh -fc "source '$G/prompt.zsh'; _ano_prompt_precmd; print -P \"\$PROMPT\"")
 [[ "$out" == *'❯'* ]] || fail "zsh minimal"
+if command -v fish >/dev/null; then
+    out=$(fish --no-config -c "source '$G/prompt.fish'; false; fish_prompt")
+    [[ "$out" == *'❯'* && ( "$out" == *'38;2;255;0;0'* || "$out" == *'ff0000'* ) ]] || fail "fish minimal error arrow: $(printf '%q' "$out")"
+fi
 
 # Palette change: --prompt rewrites the colours only.
 sed -i 's/#aabbcc/#010203/' "$XDG_STATE_HOME/anoshell/generated/colors.json"
