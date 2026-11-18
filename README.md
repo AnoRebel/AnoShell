@@ -22,7 +22,7 @@ backend is picked from the session at start.
   and catalogs, with previews, checksums, a code check and undo
   ([atelier](docs/atelier.md)).
 - **Pieces** (desktop widgets) in pages on a grid: clocks and clock faces, a
-  world clock, day progress, system, weather, media, lyrics, calendar, to-do,
+  world clock, day progress, system, gauges, weather, media, lyrics, calendar, to-do,
   news, screen time, the wallpaper's palette, the Bioma organisms, plus your
   own ([pieces](docs/pieces.md)).
 - **Scratchpad & Pins:** notes, to-do, clipboard and calendar in one panel
@@ -726,6 +726,7 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Terminal colours (`appearance.theme.terminals`, docs/wallpaper.md) | the terminal (kitty, Ghostty, foot); `jq`; `pkill` (procps-ng) to recolour running kitty/Ghostty windows | that terminal keeps its own colours; without `pkill` only new windows change |
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
+| Gauge piece | CPU, memory, temperature (`/sys/class/thermal`) and disk (`df`) from the shell's resource sampling; battery: `upowerd` | that reading shows `--` |
 | Bioma organisms (pieces `bioma-*`) | `qt6-5compat` (Qt5Compat.GraphicalEffects); weather and photoperiod: `curl` and Open-Meteo (`geocoding-api.open-meteo.com`, `api.open-meteo.com`, no key); media band: `cava` and an MPRIS player; disks: `df`; system organisms: `/proc`, `/sys`, `upowerd` for the battery, `pgrep`/`awk`/`sed`/`xargs` for cytoplasm; recent files: `~/.local/share/recently-used.xbel`; rings: `stat`, ext-idle-notify | the organism shows why it's empty |
 | Location (Settings → Services → Location: weather, night light's sunset schedule, the Bioma pieces' sun and moon) | automatic: `geoclue` (the GeoClue 2 service, Wi-Fi/GPS) and `qt6-positioning` (its geoclue2 plugin); after GeoClue: nearby Wi-Fi with `nmcli`, `jq` and `curl` to `api.beacondb.net` (sends nearby access points' hardware addresses, `location.wifi`); fallback and city name: `curl` to `ip-api.com` (sends your IP address, city-level); manual: nothing | weather falls back to its city setting or wttr.in's guess; the sunset schedule waits |
 | Notification history (`notifications.history`: search, filters, retention, rotation) | anod running (Go, no extra binaries) | nothing is kept past dismissal; notifications still show |

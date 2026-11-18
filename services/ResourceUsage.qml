@@ -163,18 +163,17 @@ Singleton {
     FileView { id: fileStat; path: "/proc/stat" }
     FileView { id: fileNetDev; path: "/proc/net/dev" }
 
-    // The CPU temperature: the zone is picked once (x86_pkg_temp, else the first), then read with each sample.
+    // The CPU temperature: the zone is picked once at start (x86_pkg_temp, else the first; a one-off listing, not tied
+    // to the lease: a lease dropped mid-pick used to kill it and leave no zone), then read with each sample.
     property string tempPath: ""
-    property bool _tempPicked: false
     Process {
-        running: root.leaseCount > 0 && !root._tempPicked
+        running: true
         command: ["sh", "-c", "for z in /sys/class/thermal/thermal_zone*; do [ -r \"$z/temp\" ] && printf '%s %s\\n' \"$z\" \"$(cat \"$z/type\")\"; done"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const zones = text.trim().split("\n").filter(l => l).map(l => l.split(" "))
                 const pkg = zones.find(z => z[1] === "x86_pkg_temp") ?? zones[0]
                 if (pkg?.[0]) root.tempPath = `${pkg[0]}/temp`
-                root._tempPicked = true
             }
         }
     }

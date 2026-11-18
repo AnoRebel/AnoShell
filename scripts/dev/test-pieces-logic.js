@@ -32,3 +32,16 @@ a(P.label('m3onPrimaryContainer') === 'On primary container' && P.label('m3prima
 a(P.hex(1, 0.5, 0) === '#ff8000' && P.hex(-1, 2, 0.2) === '#00ff33', 'hex, clamped');
 a(P.onDark(0.1, 0.1, 0.2) && !P.onDark(0.95, 0.9, 0.8), 'text colour by luminance');
 console.log('pieces logic ok');
+
+// Gauge piece helpers (Qt.point stubbed).
+const G = new Function('Qt', fs.readFileSync(path.join(__dirname, '../../pieces/gauge/gauge.js'), 'utf8').replace('.pragma library', '') + ';return {parts,batteryState,wavePoints};')({ point: (x, y) => ({ x, y }) });
+const one = G.parts(80, 80), mid = G.parts(120, 300), large = G.parts(200, 160);
+a(one.value && !one.label && !one.icon, 'gauge: one cell shows the value only');
+a(mid.value && mid.label && !mid.icon, 'gauge: label from 110');
+a(large.value && large.label && large.icon, 'gauge: icon from 150');
+a(!G.parts(40, 200).value, 'gauge: too small for the value');
+a(G.batteryState(0.1, true, true) === 'charging' && G.batteryState(0.2, false, false) === 'low' && G.batteryState(0.2, false, true) === '' && G.batteryState(0.5, false, false) === '', 'gauge: battery colours');
+const wp = G.wavePoints(50, 50, 40, 3, 12, 0.5, 100);
+a(wp.length === 51 && Math.abs(wp[0].x - 50) < 1e-9 && Math.abs(wp[0].y - 10) < 1e-9, 'gauge: starts at the top');
+a(Math.abs(wp[50].x - 50) < 1e-9 && Math.abs(wp[50].y - 90) < 1e-6, 'gauge: half a turn ends at the bottom');
+a(G.wavePoints(50, 50, 40, 3, 12, 0, 100).length === 0, 'gauge: empty at 0');

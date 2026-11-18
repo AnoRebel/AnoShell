@@ -44,7 +44,8 @@ tiled windows are); the window hides them, but their timers keep running.
 | Timer | focus (Pomodoro), stopwatch or countdown: the same timers as the sidebar's | mode |
 | To-do | your tasks: the sidebar's to-do and `todo.txt`, both ways | |
 | Calendar | the month with your events and holidays | |
-| Clock faces | Zen, Plain, Terminal or Cosmos: clocks from dhrruvsharma's dotfiles (GPL-3.0) in your colours and time format, scaled to the piece | face |
+| Clock faces | Zen, Plain, Terminal or Cosmos: clocks from dhrruvsharma's dotfiles (GPL-3.0) in your colours and time format, scaled to the piece; or Wavy (AnoShell's, inspired by Anserin): a scalloped dial with rounded hands and a stretching seconds arc. With seconds off it changes once a minute | face, seconds (Wavy) |
+| Gauge | one reading (CPU, memory, CPU temperature, disk use of `/` or battery) as a ring with a wavy or plain edge; the value, a label and an icon inside as far as they fit (one cell: the value only). Battery turns green while charging and red at 20% or less unplugged. Inspired by Anserin's stat pieces | shows, ring (wave/plain), line thickness |
 | Day progress | how far through the day, week, month and year, as bars | week start |
 | News | headlines from Google News RSS (no key; personal use under Google's terms), opened in the browser on click; refreshed every 30 minutes. The local feed sends the place you type to Google | top / topic / local, place, country, language |
 | Lyrics | synced lyrics of the playing track, the current line in the middle and emphasised; click a line to seek. Needs Settings → Services → Lyrics; says so when it's off, nothing plays, or the track has none | title and artist |
