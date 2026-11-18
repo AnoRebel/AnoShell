@@ -487,10 +487,17 @@ Singleton {
 
     // options = bundled defaults + your delta, rebuilt from the defaults
     // snapshot so a key you removed from the file goes back to its default.
+    // Defaults with your changes on top, applied in one pass: each setting goes straight to its final value. (Restoring
+    // every default first and then your changes flipped every changed setting through its default, so an outside edit
+    // of the file unloaded and reloaded each module switched on in it.)
     function _applyUserDelta() {
-        root._restoreDefaults();
-        if (Object.keys(root._userDelta).length === 0) return;
-        root._deepMergeInto(root.options, root._userDelta);
+        if (!root._bundleSnapped) {
+            root._deepMergeInto(root.options, root._userDelta);
+            return;
+        }
+        const merged = root._deepClone(root._bundleDefaults);
+        root._deepMergeInto(merged, root._userDelta);
+        root._deepMergeInto(root.options, merged);
     }
     function _restoreDefaults() {
         if (root._bundleSnapped) root._deepMergeInto(root.options, root._deepClone(root._bundleDefaults));
@@ -1606,6 +1613,21 @@ Singleton {
                     property bool enable: false
                     property int maxTries: 3
                 }
+            }
+
+            // Desktop pet: a duck, a cat or a dog on one screen (modules/pet).
+            property JsonObject pet: JsonObject {
+                property bool enable: false
+                property string kind: "duck" // duck | cat | dog
+                property string screen: ""   // output name; "" = the focused one when it appears
+                property int size: 128       // 64–256 px
+                property JsonObject colors: JsonObject {
+                    property string duck: "white"   // white | mallard | apricot
+                    property string cat: "tabby"    // tabby | black | calico
+                    property string dog: "golden"   // golden | tuxedo | brown
+                }
+                property bool sound: false   // its call, at the effects volume; silent with Do not disturb
+                property bool chase: true    // now and then walk to the pointer (where the compositor reports it)
             }
 
             // Screen corners (hot corners)
