@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.modules.common.functions
 import "ConfigDelta.js" as ConfigDelta
+import "../lock/lockLayout.js" as LockLayout
 
 Singleton {
     id: root
@@ -667,6 +668,28 @@ Singleton {
                 delete themeBlock["static"];
                 migrated = true;
             }
+        }
+
+        // lock.enable -> lock.locker; the built-in lock's lock.layout -> lock.layouts.default.
+        const lockBlock = root._userDelta?.lock;
+        if (lockBlock && lockBlock.enable !== undefined) {
+            // Off meant "another locker handles it" and the shell's lock bind did nothing: keep it that way.
+            if (lockBlock.enable === false && lockBlock.locker === undefined) {
+                lockBlock.locker = "external";
+                opts.lock.locker = "external";
+                if (lockBlock.externalCommand === undefined) { lockBlock.externalCommand = ""; opts.lock.externalCommand = ""; }
+            }
+            delete lockBlock.enable;
+            migrated = true;
+        }
+        if (lockBlock && lockBlock.layout !== undefined) {
+            const els = LockLayout.migrate(lockBlock.layout);
+            if (els && !lockBlock.layouts?.default) {
+                lockBlock.layouts = Object.assign({}, lockBlock.layouts ?? {}, { default: els });
+                opts.lock.layouts = root._deepClone(lockBlock.layouts);
+            }
+            delete lockBlock.layout;
+            migrated = true;
         }
 
         if (migrated) userDeltaWriteTimer.restart();
@@ -1611,12 +1634,17 @@ Singleton {
 
             // Lock screen
             property JsonObject lock: JsonObject {
-                property bool enable: true
+                // Who locks the session: "shell" (AnoShell, through the session lock protocol, on
+                // every compositor that has it) or "external" (hyprlock, swaylock… run externalCommand).
+                property string locker: "shell"
+                property string externalCommand: "hyprlock"
                 // The lock screen package (LockScreens); "default" is the built-in one.
                 property string screen: "default"
-                // The built-in lock's blocks moved in Settings: { clock|user|status|field:
-                // { x, y, scale } } (centre as fractions of the screen); none = the column.
-                property var layout: ({})
+                // Played as the session locks: none | waves | padlock | portal (skipped with reduced motion).
+                property string intro: "none"
+                // Arranged lock screens: { <lock screen id>: [elements] } (modules/lock/lockLayout.js);
+                // a lock screen with no entry uses its own arrangement.
+                property var layouts: ({})
                 property JsonObject notifications: JsonObject {
                     property bool enable: false
                     property int maxItems: 5

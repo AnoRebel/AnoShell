@@ -84,9 +84,10 @@ bundled Hyprland and niri configs float it.
     every look in its own shape, material and type, as a small desktop; the
     Look card can show them in a dark or a light palette.
   - **General → Lock screen**: the chosen lock screen in miniature. In the
-    built-in one, drag the clock, your name, the status row or the password
-    field anywhere, and resize one by its round handle (`lock.layout`);
-    **Reset layout** puts them back in the centred column.
+    built-in one and Simple, drag an element anywhere and resize one by its
+    round handle (`lock.layouts.<id>`); **Edit layout** opens the full-screen
+    editor and **Reset layout** goes back to the lock screen's own arrangement
+    ([lock screens](lockscreens.md#arranging)).
   - **General → Notifications** and **Modules → OSD**: drag the notifications
     to a corner or an edge, their side handle for their width
     (`notifications.popupWidth`), or the volume OSD up or down.

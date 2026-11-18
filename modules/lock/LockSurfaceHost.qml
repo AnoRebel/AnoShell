@@ -39,6 +39,12 @@ FocusScope {
             ? (host.packageId !== "default" && LockScreens.registry.usable(host.packageId) ? LockScreens.registry.entries[host.packageId] : null)
             : LockScreens.current
     }
+    // The arrangement this screen's lock screen draws (ctx.layout), for those that support layouts.
+    Binding {
+        target: host.ctx
+        property: "layout"
+        value: host.ctx.layoutOverride ?? LockScreens.layoutOf(host.usePackage ? host.entry.id : "default")
+    }
     Loader {
         id: pkg
         anchors.fill: parent

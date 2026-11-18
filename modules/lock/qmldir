@@ -6,3 +6,8 @@ LockOSK 1.0 LockOSK.qml
 LockScreen 1.0 LockScreen.qml
 LockStatusRow 1.0 LockStatusRow.qml
 LockSurfaceHost 1.0 LockSurfaceHost.qml
+LockIntro 1.0 LockIntro.qml
+LockElements 1.0 LockElements.qml
+LockField 1.0 LockField.qml
+LockLayoutStage 1.0 LockLayoutStage.qml
+LockLayoutEditor 1.0 LockLayoutEditor.qml

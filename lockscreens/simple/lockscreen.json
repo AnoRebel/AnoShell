@@ -1,0 +1,15 @@
+{
+  "id": "simple",
+  "name": "Simple",
+  "description": "The clock, your picture, your name and a field ready for typing, over the blurred wallpaper that sharpens as you type.",
+  "author": "AnoShell",
+  "version": "1.0.0",
+  "entry": "main.qml",
+  "preview": "preview.png",
+  "layout": [
+    { "uid": "clock", "type": "clock", "x": 0.5, "y": 0.27, "scale": 1.25 },
+    { "uid": "avatar", "type": "avatar", "x": 0.5, "y": 0.49 },
+    { "uid": "name", "type": "name", "x": 0.5, "y": 0.575 },
+    { "uid": "field", "type": "field", "x": 0.5, "y": 0.675 }
+  ]
+}

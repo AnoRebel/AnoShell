@@ -20,49 +20,17 @@ Item {
     // focus or input, nothing dims.
     property bool miniature: false
 
-    // lock.layout: blocks you moved in Settings (settings-wiring "Interactive
-    // previews in Settings"), each { x, y, scale } — its centre as fractions of
-    // the screen. A block without an entry stays in the centred column, so no
-    // layout looks as it always did.
-    readonly property var layout: Config.options?.lock?.layout ?? ({})
-    // Where each block is drawn, in this item's coordinates (LockPreview).
-    function blockRects() {
-        const out = {}
-        for (const b of [clockBlock, userBlock, statusBlock, fieldBlock]) {
-            const h = b.holder
-            if (!h.visible || h.width <= 0) continue
-            const o = h.mapToItem(root, 0, 0)
-            out[b.key] = { x: o.x, y: o.y, w: h.width * h.scale, h: h.height * h.scale, scale: h.scale }
-        }
-        return out
-    }
+    // Arranged (lock.layouts.default, from the layout editor or Settings' preview): the elements where
+    // they were put (LockElements). Not arranged: the centred column below.
+    property bool forceArranged: false   // Settings' preview
+    readonly property bool arranged: root.forceArranged || (Array.isArray(Config.options?.lock?.layouts?.default)
+        && Config.options.lock.layouts.default.length > 0)
 
-    // One movable part of the lock: in the column, or placed on its own.
-    component Block: Item {
-        id: blk
-        required property string key
-        required property Item freeLayer
-        property var layout: ({})
-        property real spacing: 4 // between this block's own lines (the column's was 24)
-        default property alias inner: content.data
-        property alias holder: content
-        readonly property var at: blk.layout?.[blk.key] ?? null
-        readonly property bool free: blk.at !== null && Number.isFinite(blk.at.x) && Number.isFinite(blk.at.y)
-        readonly property real _scale: Number.isFinite(blk.at?.scale) ? Math.max(0.4, Math.min(3, blk.at.scale)) : 1
-        // The centre, kept so the whole block is on this screen (a layout
-        // made on another monitor can be bigger than this one allows).
-        function _centre(f, size, span) { return Math.max(size / 2, Math.min(span - size / 2, f * span)) }
+    // One part of the column.
+    component Block: ColumnLayout {
+        property string key
+        spacing: 4
         Layout.alignment: Qt.AlignHCenter
-        implicitWidth: blk.free ? 0 : content.implicitWidth
-        implicitHeight: blk.free ? 0 : content.implicitHeight
-        ColumnLayout {
-            id: content
-            parent: blk.free ? blk.freeLayer : blk
-            spacing: blk.spacing
-            scale: blk.free ? blk._scale : 1
-            x: blk.free ? blk._centre(blk.at.x, width * scale, blk.freeLayer.width) - width / 2 : (blk.width - width) / 2
-            y: blk.free ? blk._centre(blk.at.y, height * scale, blk.freeLayer.height) - height / 2 : 0
-        }
     }
 
     // Auto-dim after Config.options.lock.dim.idleMs of no input.
@@ -127,10 +95,21 @@ Item {
         function onActiveFocusChanged() { root._wake() }
     }
 
+    LockElements {
+        anchors.fill: parent
+        z: 3
+        visible: root.arranged
+        focus: root.arranged
+        ctx: root.ctx
+        elements: root.arranged ? (root.ctx?.layout ?? []) : []
+        miniature: root.miniature
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: 24; width: 320
         z: 3
+        visible: !root.arranged
 
         // Notifications while locked (lock.notifications.enable); hides when empty.
         LockNotifications {
@@ -140,7 +119,7 @@ Item {
         // Clock
         Block {
             id: clockBlock
-            key: "clock"; freeLayer: freeLayer; layout: root.layout
+            key: "clock"
             StyledText {
                 text: DateTime.time
                 font.pixelSize: 72; font.weight: Font.Bold
@@ -165,7 +144,7 @@ Item {
         // Avatar and name
         Block {
             id: userBlock
-            key: "user"; freeLayer: freeLayer; layout: root.layout; spacing: 24
+            key: "user"; spacing: 24
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
             width: 80; height: 80; radius: 40
@@ -198,7 +177,7 @@ Item {
         // Status row (lock.statusRow.enable)
         Block {
             id: statusBlock
-            key: "status"; freeLayer: freeLayer; layout: root.layout
+            key: "status"
             LockStatusRow {
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -208,7 +187,7 @@ Item {
         // (lock.passwordInput.expandOnFocus).
         Block {
             id: fieldBlock
-            key: "field"; freeLayer: freeLayer; layout: root.layout; spacing: 24
+            key: "field"; spacing: 24
         Rectangle {
             id: field
             Layout.alignment: Qt.AlignHCenter
@@ -251,9 +230,9 @@ Item {
                     // that field's length instead of its own text.
                     readonly property bool mirroring: !activeFocus && (root.ctx?.typedLength ?? 0) > 0
                     color: mirroring ? "transparent" : "white"
-                    focus: !root.miniature
+                    focus: !root.miniature && !root.arranged
                     verticalAlignment: TextInput.AlignVCenter
-                    enabled: !root.miniature && !(root.ctx?.busy ?? false)
+                    enabled: !root.miniature && !root.arranged && !(root.ctx?.busy ?? false)
                     onAccepted: root.ctx?.submit(text)
                     // Only the length is shared, never the text. A cleared field
                     // reports too (every screen clears on a wrong password).
@@ -338,10 +317,4 @@ Item {
         }
     }
 
-    // Blocks placed on their own (lock.layout) live here, over the column.
-    Item {
-        id: freeLayer
-        anchors.fill: parent
-        z: 3
-    }
 }

@@ -9,7 +9,10 @@
     "primaryMonitor": ""
   },
   "appearance": {
-    "border": { "enable": true, "width": 1 },
+    "border": {
+      "enable": true,
+      "width": 1
+    },
     "bezel": 0,
     "extraBackgroundTint": false,
     "fonts": {
@@ -505,7 +508,10 @@
     }
   },
   "lock": {
-    "enable": true,
+    "locker": "shell",
+    "externalCommand": "hyprlock",
+    "intro": "none",
+    "layouts": {},
     "notifications": {
       "enable": false,
       "maxItems": 5

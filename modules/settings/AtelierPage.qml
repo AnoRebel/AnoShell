@@ -465,7 +465,7 @@ ColumnLayout {
                     onClicked: root.install(it)
                 }
                 RippleButton {
-                    visible: isLocal && it.type === "lockscreens" && (Config.options?.lock?.enable ?? true)
+                    visible: isLocal && it.type === "lockscreens"
                     buttonText: "Preview"
                     enabled: Atelier.problems(it).length === 0
                     onClicked: LockScreens.preview(it.id)

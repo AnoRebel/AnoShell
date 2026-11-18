@@ -21,7 +21,7 @@ import (
 // feature: binaries the shell spawns for it, checked when When is true.
 type feature struct {
 	Name string
-	When string // config bool path that enables it (a|b: any of them); "" = always on
+	When string // config bool path that enables it, or path=value for a string (a|b: any of them); "" = always on
 	Bins []string
 }
 
@@ -80,7 +80,7 @@ var features = []feature{
 	{"apps in their own session (else systemd-run)", "", []string{"setsid"}},
 	{"password prompt (polkit) details", "polkit.enable", []string{"pkaction", "pgrep", "ps"}},
 	{"removable drives (bar module drives)", "", []string{"udisksctl", "lsblk", "udevadm"}},
-	{"lock screen on niri: locking on loginctl lock-session", "lock.enable", []string{"gdbus"}},
+	{"lock screen: locking on loginctl lock-session", "lock.locker=shell", []string{"gdbus"}},
 	{"launcher plugin clipboard history (bundled)", "", []string{"cliphist"}},
 	{"launcher plugin files (bundled)", "", []string{"fd"}},
 	{"launcher plugins kaomoji, unicode, keybinds (bundled; copy)", "", []string{"wl-copy"}},
@@ -122,7 +122,11 @@ func doctor(args []string) int {
 // anyBool: one of the |-separated bool paths is true.
 func anyBool(m map[string]any, paths string) bool {
 	for _, p := range strings.Split(paths, "|") {
-		if config.Bool(m, p, false) {
+		if k, v, ok := strings.Cut(p, "="); ok {
+			if config.String(m, k, "") == v {
+				return true
+			}
+		} else if config.Bool(m, p, false) {
 			return true
 		}
 	}

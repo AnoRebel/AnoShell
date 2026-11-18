@@ -463,7 +463,7 @@
   "page": 1,
   "card": "Lock screen",
   "label": "Lock screen",
-  "sublabel": "niri",
+  "sublabel": "shell",
   "keys": [
    "lock"
   ]
@@ -471,10 +471,28 @@
  {
   "page": 1,
   "card": "",
-  "label": "Lock with AnoShell (niri)",
-  "sublabel": "Off: another locker (swaylock, hyprlock…) handles it",
+  "label": "Locker",
+  "sublabel": "Who locks the session. ",
   "keys": [
-   "lock.enable"
+   "lock.locker"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "External locker",
+  "sublabel": "",
+  "keys": [
+   "lock.externalCommand"
+  ]
+ },
+ {
+  "page": 1,
+  "card": "",
+  "label": "Lock intro",
+  "sublabel": "Skipped while reduced motion is on",
+  "keys": [
+   "lock.intro"
   ]
  },
  {

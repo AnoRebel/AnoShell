@@ -114,6 +114,9 @@ hl.on("hyprland.start", function()
 
 	-- Core components
 	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
+	-- hypridle: with the shell locking, its hypridle.conf wants
+	--   general { lock_cmd = qs -c ano ipc call lock lock; before_sleep_cmd = loginctl lock-session }
+	-- (loginctl lock-session reaches the shell too).
 	-- hl.exec_cmd("hypridle")
 	hl.exec_cmd("/usr/lib/iio-sensor-proxy &")
 	hl.exec_cmd("iio-hyprland")
@@ -600,7 +603,7 @@ hl.layer_rule({ match = { namespace = "^quickshell:anospot$" }, ignore_alpha = 0
 -- (3 passes). Measured on an iGPU: control panel open/close went from p90
 -- 33 ms per frame (half rate) to 17 ms with its layer unblurred. Translucent
 -- surfaces (bar, sidebars, dock, pill) keep their blur.
-hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|networkOrbit|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|recordingOsd|familyTransition|frameExclusion|freeze|anospot:(edgePicker|peek|wspreview|stash))$" }, blur = false })
+hl.layer_rule({ match = { namespace = "^quickshell:(controlPanel|networkOrbit|media|hud|weather|calendar|cheatsheet|wallpaper|clipboard|search|settings|osd|altSwitcher|taskview|anoview|session|lock|lockShot|lockEditor|recordingOsd|familyTransition|frameExclusion|freeze|anospot:(edgePicker|peek|wspreview|stash))$" }, blur = false })
 -- Notification cards request their own rounded blur (BackgroundEffect.blurRegion);
 -- the rectangular rule blur would show as a square halo around them.
 hl.layer_rule({ match = { namespace = "^quickshell:notifPopup$" }, blur = false })
@@ -610,7 +613,7 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, xray = false })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, animation = "popin 93%" })
 -- Shell surfaces that animate themselves (slides, springs, fades): no compositor
 -- map/unmap animation on top, or two animations fight on every open and close.
-hl.layer_rule({ match = { namespace = "^quickshell:(sidebarLeft|sidebarRight|anospot|anospot:.*|osd|notifPopup|search|clipboard|controlPanel|media|session|settings|weather|anoview|wallpaper|bar:.*|dock|anoScreen|altSwitcher|taskview|networkOrbit|customize|displayConfirm|polkit|polkitPlain|screenshot|familyTransition|background|wallpaperDim|corner:.*|frameExclusion|topLayer|lock)$" }, no_anim = true })
+hl.layer_rule({ match = { namespace = "^quickshell:(sidebarLeft|sidebarRight|anospot|anospot:.*|osd|notifPopup|search|clipboard|controlPanel|media|session|settings|weather|anoview|wallpaper|bar:.*|dock|anoScreen|altSwitcher|taskview|networkOrbit|customize|displayConfirm|polkit|polkitPlain|screenshot|familyTransition|background|wallpaperDim|corner:.*|frameExclusion|topLayer|lock|lockShot|lockEditor)$" }, no_anim = true })
 -- rofi: its rounded corners are alpha 0, and one launcher theme is deliberately
 -- black/10% (alpha 0.1). 0.05 blurs that theme and still skips the corners.
 hl.layer_rule({ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.05 })
@@ -831,7 +834,9 @@ hl.bind(
 hl.bind(MAIN_MOD .. " + RETURN", hl.dsp.exec_cmd("ano run terminal"))
 hl.bind("CTRL + ALT + T", hl.dsp.exec_cmd("ghostty"))
 hl.bind(MAIN_MOD .. " + SHIFT + Q", hl.dsp.window.close())
-hl.bind("CTRL + ALT + K", hl.dsp.exec_cmd("hyprlock"))
+-- Lock: the shell's lock (lock.locker "shell"), or lock.externalCommand when it's "external";
+-- hyprlock when the shell isn't running.
+hl.bind("CTRL + ALT + K", hl.dsp.exec_cmd(qs_or("lock", "lock", "hyprlock")))
 -- hyprshutdown for ordered shutdown; the bare `exit` dispatcher is discouraged by the wiki.
 hl.bind(MAIN_MOD .. " + CTRL + Q", hl.dsp.exec_cmd("hyprshutdown"))
 hl.bind(MAIN_MOD .. " + E", hl.dsp.exec_cmd("ano run files ~/Downloads"))
@@ -958,7 +963,7 @@ hl.bind(
 
 -- ─── Session ────────────────────────────────────────────────────────────────
 
-hl.bind(MAIN_MOD .. " + L", hl.dsp.exec_cmd("loginctl lock-session"))
+hl.bind(MAIN_MOD .. " + L", hl.dsp.exec_cmd(qs_or("lock", "lock", "loginctl lock-session")))
 hl.bind(MAIN_MOD .. " + SHIFT + L", hl.dsp.exec_cmd("systemctl suspend || loginctl suspend"))
 hl.bind("CTRL + SHIFT + ALT + " .. MAIN_MOD .. " + Delete", hl.dsp.exec_cmd("systemctl poweroff || loginctl poweroff"))
 

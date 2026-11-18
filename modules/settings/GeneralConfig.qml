@@ -738,17 +738,33 @@ ColumnLayout {
     SettingsCard {
         icon: "lock"
         title: "Lock screen"
-        subtitle: CompositorService.compositor === "niri"
-            ? "AnoShell locks the session (Super+L, loginctl lock-session, the session menu)"
-            : "On Hyprland, hyprlock locks the session; here you can pick and preview AnoShell's lock screens for niri"
+        subtitle: (Config.options?.lock?.locker ?? "shell") === "shell"
+            ? "AnoShell locks the session (its lock bind, loginctl lock-session, the session menu, idle tools)"
+            : "Another locker locks the session; AnoShell's lock screens can still be previewed"
         configKeys: ["lock"]
 
-        ConfigSwitch {
-            label: "Lock with AnoShell (niri)"
-            configKey: "lock.enable"
-            sublabel: "Off: another locker (swaylock, hyprlock…) handles it"
-            checked: Config.options?.lock?.enable ?? true
-            onCheckedChanged: Config.setNestedValue("lock.enable", checked)
+        ConfigRow {
+            label: "Locker"
+            configKey: "lock.locker"
+            sublabel: "Who locks the session. " + ((Config.options?.lock?.locker ?? "shell") === "external"
+                ? "`qs -c ano ipc call lock lock` runs the command below"
+                : CompositorService.compositor === "hyprland" ? "Your own Hyprland config may still bind hyprlock: point the bind and hypridle's lock_cmd at `qs -c ano ipc call lock lock` (docs/lockscreens.md)"
+                : "AnoShell, through the session lock protocol; if the compositor refuses, you're told and nothing stays locked")
+            ChoiceRow {
+                model: [{ value: "shell", label: "AnoShell", icon: "lock" }, { value: "external", label: "External", icon: "open_in_new" }]
+                current: Config.options?.lock?.locker ?? "shell"
+                onChose: value => Config.setNestedValue("lock.locker", value)
+            }
+        }
+        ConfigRow {
+            label: "External locker"
+            configKey: "lock.externalCommand"
+            visible: (Config.options?.lock?.locker ?? "shell") === "external"
+            ConfigTextInput {
+                Layout.preferredWidth: 220
+                text: Config.options?.lock?.externalCommand ?? "hyprlock"
+                onEditingFinished: Config.setNestedValue("lock.externalCommand", text.trim())
+            }
         }
         ConfigRow {
             label: "Lock screen"
@@ -762,28 +778,46 @@ ColumnLayout {
                 onChose: value => LockScreens.select(value)
             }
         }
-        // The chosen lock screen in miniature; the built-in one is arranged
-        // here by dragging its parts (lock.layout).
+        ConfigRow {
+            label: "Lock intro"
+            configKey: "lock.intro"
+            sublabel: AnimationConfig.reducedMotion ? "Skipped while reduced motion is on" : "Played as the screen locks (under a second)"
+            ChoiceRow {
+                model: [{ value: "none", label: "None", icon: "block" }, { value: "waves", label: "Waves", icon: "waves" },
+                        { value: "padlock", label: "Padlock", icon: "lock" }, { value: "portal", label: "Portal", icon: "radio_button_unchecked" }]
+                current: Config.options?.lock?.intro ?? "none"
+                onChose: value => Config.setNestedValue("lock.intro", value)
+            }
+        }
+        // The chosen lock screen in miniature; one that supports layouts is arranged here by dragging
+        // its elements (lock.layouts).
         LockPreview { Layout.fillWidth: true }
         StyledText {
             Layout.fillWidth: true
-            text: LockScreens.selected === "default" || !LockScreens.current
-                ? "Drag the clock, your name, the status row or the password field anywhere; click one and drag its round handle to resize it."
-                : "A lock screen package keeps its own layout."
+            readonly property string lid: LockScreens.selected !== "default" && LockScreens.current ? LockScreens.selected : "default"
+            text: LockScreens.supportsLayout(lid)
+                ? "Drag an element anywhere; click one and drag its round handle to resize it. Edit layout opens the full-screen editor (turn, opacity, add and remove, grid, undo)."
+                : "This lock screen keeps its own layout."
             wrapMode: Text.Wrap
             color: Appearance?.colors.colSubtext ?? "#CAC4D0"
             font.pixelSize: Appearance?.font.pixelSize.smaller ?? 12
         }
         RowLayout {
             spacing: 8
+            readonly property string lid: LockScreens.selected !== "default" && LockScreens.current ? LockScreens.selected : "default"
             RippleButton {
                 buttonText: "Preview full screen"
                 onClicked: LockScreens.preview(LockScreens.selected)
             }
             RippleButton {
+                buttonText: "Edit layout"
+                visible: LockScreens.supportsLayout(parent.lid)
+                onClicked: LockScreens.editLayout(parent.lid)
+            }
+            RippleButton {
                 buttonText: "Reset layout"
-                visible: Object.keys(Config.options?.lock?.layout ?? {}).length > 0
-                onClicked: Config.setNestedValue("lock.layout", ({}))
+                visible: LockScreens.arranged(parent.lid)
+                onClicked: LockScreens.saveLayout(parent.lid, [])
             }
         }
         ConfigSwitch {

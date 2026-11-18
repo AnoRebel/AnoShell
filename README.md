@@ -31,8 +31,10 @@ backend is picked from the session at start.
   ([scratchpad](docs/scratchpad.md)).
 - **Launcher plugins:** web search, files, kaomoji, unicode symbols, keybinds,
   windows and clipboard history, plus your own ([plugins](docs/plugins.md)).
-- **Lock screen** on niri with fingerprint unlock and replaceable lock screens
-  (built-in, Minimal, Bioma Gate, your own) ([lock screens](docs/lockscreens.md)).
+- **Lock screen** on every compositor with the session lock protocol (Hyprland
+  included, or hand it to hyprlock), fingerprint unlock, intros (waves, padlock,
+  portal), a layout editor, and replaceable lock screens (built-in, Simple,
+  Minimal, Bioma Gate, your own) ([lock screens](docs/lockscreens.md)).
 - **Reader:** novels, manga and anime (resume, intro skip, Airing), fused into
   the frame ([reader](docs/reader.md)).
 - **System:** network and NetBird VPN panel, Bluetooth, audio and EasyEffects,
@@ -497,6 +499,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `calendar` | KHal/CalDAV pull into the calendar panel | `upcomingDays`, `externalSync.{enable, refreshMinutes, sources[]}` |
 | `lyrics` | Synced lyric overlay in MediaControls + AnoSpot | `enable`, `backend`, `dir` |
 | `nightLight` | wlsunset-backed warm-shift (Hyprland, niri, sway) | `enable` (on now), `schedule` (off/sun/times), `start`, `end`, `fade` (min), `dayTemp`, `nightTemp`, `latitude`, `longitude`, `gamma`, `outputs` |
+| `lock` | Who locks (`locker`: `shell` everywhere with the session lock protocol, or `external` running `externalCommand`), the lock screen package, the intro and arranged layouts ([lock screens](docs/lockscreens.md)) | `locker`, `externalCommand`, `screen`, `intro` (none/waves/padlock/portal), `layouts.<id>` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
 | `lock.osk` | On-screen keyboard for password entry | — |
 | `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
@@ -562,7 +565,7 @@ qs -c ano ipc call <target> <method>
 | `calendar` | `toggle`, `open`, `close` |
 | `recordingOsd` | `toggle`, `open`, `close` |
 | `cheatsheet` | `toggle`, `open`, `close` |
-| `lock` | `lock` |
+| `lock` | `lock` (or `lock.externalCommand`), `status`, `preview id`, `endPreview`, `editLayout id`, `endEditLayout`, `layout id` |
 | `wallpapers` / `wallpaperSelector` | `apply path` / `toggle` |
 | `ai` | `run "text or /command"` |
 | `panelFamily` | `cycle`, `set family` |
@@ -752,7 +755,9 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Performance mode's Hyprland levers (`performance.hypr*`) | Hyprland with the Lua config (`hyprctl getoption`, `hyprctl eval`) | not applied (nothing happens on niri) |
 | Game mode indicator, performance mode during games | `gamemode` (gamemoded; games run with `gamemoderun` or libgamemode), `dbus` (`dbus-monitor`), `systemd` (`busctl`) | performance mode only by hand or for fullscreen windows |
 | Palette cursors and icons | `librsvg` (`rsvg-convert`), `imagemagick` (`magick`) | the palette themes can't be built |
-| Lock screen (niri; `lock.enable`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1; `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't |
+| Lock screen (`lock.locker` `shell`, `lock.screen`) | `pam` with `/etc/pam.d/login` (the password check, faillock included); a compositor with ext-session-lock-v1 (Hyprland, niri, sway, labwc, mango); `glib2` (`gdbus`) to lock on `loginctl lock-session` | Super+L and `qs ipc call lock lock` still lock; `loginctl lock-session` (session menu, idle tools) doesn't; no protocol: a notice and nothing locks |
+| Lock intros (`lock.intro`) | screen capture in the compositor (`wlr-screencopy` or `ext-image-copy-capture`) for the still of the desktop | the wallpaper stands in for it |
+| External locker (`lock.locker` `external`) | whatever `lock.externalCommand` runs (`hyprlock` by default) | `qs ipc call lock lock` does nothing useful |
 | KDE Connect (`kdeConnect.enable`, off by default; bar module "Phone") | `kdeconnect` with `kdeconnectd` running (the shell doesn't start it; the bundled Hyprland/niri configs do), `systemd` (`busctl`), `glib2` (`gdbus`), `util-linux` (`setpriv`); sending a file: `zenity` | no pill and no phone actions; a hung kdeconnectd shows as not answering |
 | Fingerprint unlock (niri lock; `lock.fingerprint.enable`, off by default) | `fprintd` (`fprintd-list`, `pam_fprintd.so`) and at least one enrolled print (`fprintd-enroll`); the shell's own `modules/lock/pam/fprint` service, no faillock | password only |
 | Launcher plugins (`search.userPlugins`; bundled `clipboard`, `websearch`, `files`, `kaomoji`, `unicode`, `keybinds`, `windows`) | nothing for the loader; `clipboard` needs `cliphist`; `files` needs `fd`; `kaomoji`, `unicode` and `keybinds` copy with `wl-copy` (`wl-clipboard`); `keybinds` needs anod | that plugin shows nothing (keybinds says anod isn't running) |
@@ -846,7 +851,7 @@ ano/
 │   ├── notificationPopup/          # Floating popup notifications
 │   ├── cheatsheet/                 # Searchable keybinds viewer
 │   ├── wallpaperSelector/          # Wallpaper card deck (local / favourites / Wallhaven)
-│   ├── lock/                       # Niri lock screen + opt-in notifications/OSK/status row
+│   ├── lock/                       # Session lock, intros, arranged elements + layout editor, opt-in notifications/OSK/status row
 │   ├── focusTime/                  # App-usage tracker UI
 │   ├── displayManager/             # Hyprland-only monitor config
 │   ├── revolver/                   # Corner revolver (quick actions on a cylinder)

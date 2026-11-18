@@ -284,7 +284,7 @@ binds {
     // Display manager (Hyprland-only, no-op on Niri)
     // Ctrl+Mod+D { spawn-sh "qs -c ano ipc call displayManager toggle"; }
 
-    // Lock screen (QS built-in PAM lock for Niri)
+    // Lock screen (the shell's lock, or lock.externalCommand with lock.locker "external")
     Mod+L { spawn-sh "qs -c ano ipc call lock lock"; }
 
     // Cycle panel family

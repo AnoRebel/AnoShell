@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.modules.common
+import "../modules/lock/lockLayout.js" as LockLayout
 
 /**
  * LockScreens: lock screen packages (docs/lockscreens.md), bundled in the
@@ -33,4 +34,26 @@ Singleton {
         else root.previewId = id || root.selected
     }
     function endPreview(): void { root.previewId = "" }
+
+    // ── Layouts (lock.layouts; modules/lock/lockLayout.js) ──
+    // A package supports them by bringing its own arrangement as `layout` in lockscreen.json.
+    function ownLayout(id: string): var { return id === "default" ? null : (root.registry.entries[id]?.manifest?.layout ?? null) }
+    function supportsLayout(id: string): bool { return id === "default" || (Array.isArray(root.ownLayout(id)) && root.registry.usable(id)) }
+    function layoutOf(id: string): var { return LockLayout.resolve(Config.options?.lock?.layouts ?? {}, id, root.ownLayout(id)) }
+    function defaultLayoutOf(id: string): var { return LockLayout.defaultsFor(id, root.ownLayout(id)) }
+    function arranged(id: string): bool { return Array.isArray(Config.options?.lock?.layouts?.[id]) && Config.options.lock.layouts[id].length > 0 }
+    function saveLayout(id: string, list: var): void {
+        const all = Object.assign({}, Config.options?.lock?.layouts ?? {})
+        if (list && list.length) all[id] = LockLayout.normalize(list, id, root.ownLayout(id))
+        else delete all[id]
+        Config.setNestedValue("lock.layouts", all)
+    }
+    // The full-screen layout editor (modules/lock/LockLayoutEditor.qml): the lock screen being arranged, "" none.
+    property string editingId: ""
+    function editLayout(id: string): void {
+        const target = id || root.selected
+        if (root.remote) Quickshell.execDetached(["qs", "-c", "ano", "ipc", "call", "lock", "editLayout", target])
+        else if (root.supportsLayout(target)) root.editingId = target
+    }
+    function endEdit(): void { root.editingId = "" }
 }
