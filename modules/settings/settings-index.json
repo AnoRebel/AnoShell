@@ -660,6 +660,15 @@
  },
  {
   "page": 2,
+  "card": "Desktop Pet",
+  "label": "Desktop Pet",
+  "sublabel": "A duck, a cat or a dog living along the bottom of the screen; right-click it to edit",
+  "keys": [
+   "pet"
+  ]
+ },
+ {
+  "page": 2,
   "card": "Hot Screen Corners",
   "label": "Hot Screen Corners",
   "sublabel": "Trigger actions by moving cursor to screen corners",

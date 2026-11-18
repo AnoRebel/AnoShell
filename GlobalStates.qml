@@ -151,6 +151,8 @@ Singleton {
     // Signals
     // ═══════════════════════════════════════════════════════════════════════
     signal requestRipple(real x, real y, string screenName)
+    // The pet editor's "Try": the desktop pet does that behaviour.
+    signal petAction(string name)
 
     // ═══════════════════════════════════════════════════════════════════════
     // Primary Screen (user-configured or fallback to first screen)

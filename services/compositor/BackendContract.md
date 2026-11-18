@@ -45,7 +45,9 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 | `keyboardLayouts` | array | the configured layouts (xkb codes on Hyprland, full names on niri); use for counting/cycling, not display |
 
 `supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
-`outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`.
+`outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`,
+`windowGeometry` (windows' x/y are layout coordinates and `reservedOf` is known, so they can be placed on an output's
+usable area; Hyprland, sway), `cursorPos` (`cursorPos(cb)`; Hyprland).
 
 ## Functions
 
@@ -62,7 +64,8 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 | `applyOutputs(configs)` | `[{ name, width, height, rate, scale, x, y }]`, x/y `null` = auto; reads `outputs` (backend-native monitor objects) |
 | `switchKeyboardLayout(delta)` | |
 | `focusedWindowGeometry(cb)` | optional: `cb({x, y, width, height} \| null)` in layout coordinates; Hyprland, sway, mango, umbriel |
-| `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland |
+| `cursorPos(cb)` | optional: `cb({x, y} \| null)`, the pointer in layout coordinates; Hyprland |
+| `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland, sway |
 | `signal screencast(open, owner, name)` | optional: capture opened/closed (owner `monitor`, `window`, region); Hyprland |
 
 Unsupported operations return `false` and log once; they never throw.

@@ -23,7 +23,7 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
         outerGaps: true, cursorZoom: true, screenShader: true, dpms: true, outputConfig: true, exit: true,
-        keyboardLayouts: true
+        keyboardLayouts: true, windowGeometry: true, cursorPos: true
     })
 
     // Raw IPC state
@@ -210,6 +210,11 @@ QtObject {
     signal screencast(bool open, string owner, string name)
     // Space other layer clients reserve on an output: [left, top, right, bottom].
     function reservedOf(outputName) { return root.monitors.find(m => m.name === outputName)?.reserved ?? null }
+    // The pointer in layout coordinates ({x, y}), or null.
+    function cursorPos(cb) {
+        root._request("j/cursorpos", c => cb(Number.isFinite(c?.x) && Number.isFinite(c?.y) ? { x: c.x, y: c.y } : null))
+        return true
+    }
     // The focused window in layout coordinates ({x, y, width, height}), or null.
     function focusedWindowGeometry(cb) {
         root._request("j/activewindow", w => cb(w?.at && w?.size ? { x: w.at[0], y: w.at[1], width: w.size[0], height: w.size[1] } : null))

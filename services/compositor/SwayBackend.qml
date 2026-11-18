@@ -22,7 +22,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true
+        keyboardLayouts: true, windowGeometry: true
     })
     focusedOutput: I3.focusedMonitor?.name ?? (Quickshell.screens[0]?.name ?? "")
 

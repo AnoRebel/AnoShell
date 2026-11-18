@@ -203,8 +203,11 @@ Singleton {
     function setCursorZoom(factor) { return root.backend?.setCursorZoom(factor) ?? false }
     function switchKeyboardLayout(delta) { return root.backend?.switchKeyboardLayout(delta) ?? false }
     // Space other clients reserve on an output's edges ([left, top, right,
-    // bottom]), or null where the backend can't tell (all but Hyprland).
+    // bottom]), or null where the backend can't tell (all but Hyprland and sway).
     function reservedOf(outputName) { return root.backend && root.backend.reservedOf ? root.backend.reservedOf(outputName) : null }
+    // The pointer in layout coordinates: cb({x, y} | null). False where the
+    // backend can't tell (supports.cursorPos; cb is not called).
+    function cursorPos(cb) { return root.backend && root.backend.cursorPos ? root.backend.cursorPos(cb) : false }
     // The focused window in layout coordinates: cb({x, y, width, height} | null).
     // False where the backend can't tell (cb is not called).
     function focusedWindowGeometry(cb) { return root.backend && root.backend.focusedWindowGeometry ? root.backend.focusedWindowGeometry(cb) : false }

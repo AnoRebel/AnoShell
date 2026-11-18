@@ -391,6 +391,35 @@ from the rotation folder now), `nightLight`, `settings`, `restartShell`, `dnd`,
 `caffeine`, `performance`, `overview`, `clipboard`, `session`, `sidebarLeft`,
 `sidebarRight`, and `macro:<name>` for one of your macros.
 
+## Desktop pet
+
+`pet` (Settings → Modules → Desktop Pet, or right-click the pet; off by
+default): a duck, a cat or a dog (`kind`) on one screen (`screen`, empty: the
+one focused when it appears), standing on the bottom of the area the bars
+leave free. It idles, walks, sits, grooms, stretches, looks around, calls
+(Quack!, Meow, Woof!) and, after three quiet minutes, may fall asleep; the duck
+also preens and pecks, the cat kneads and flicks its tail, the dog sniffs and
+wags. Click its head to pet it; drag its body to carry it and let go to drop
+or throw it. On Hyprland and sway the tops of windows on the current workspace
+are floors too (it falls when the window under it closes or moves away);
+elsewhere only the bottom is. It hides while a window is fullscreen on its
+screen.
+
+- `size` (128): 64–256 px; drawn as vectors, sharp at any size.
+- `colors.duck` / `colors.cat` / `colors.dog`: `white`, `mallard`, `apricot`;
+  `tabby`, `black`, `calico`; `golden`, `tuxedo`, `brown`.
+- `sound` (off): its call at the sound effects volume (`sounds.volume`),
+  silent while Do not disturb is on.
+- `chase` (on): every few minutes at most it walks to the pointer when the
+  pointer is near its floor; Hyprland only (the others don't report the
+  pointer).
+
+`qs -c ano ipc call pet act <behaviour>` makes it do one (`idle`, `walk`,
+`sit`, `groom`, `stretch`, `look`, `call`, `sleep`, `happy`, and its kind's
+own), `pet editor` opens the editor beside it, `pet state` prints where it is.
+At rest it redraws at most 15 times a second; hidden, not at all. Its sounds:
+`assets/sounds/SOURCES.md`.
+
 ## Weather scene
 
 `bar.weather.scene` (Settings → Bar → Weather) draws the current weather at

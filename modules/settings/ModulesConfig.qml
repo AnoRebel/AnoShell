@@ -7,6 +7,7 @@ import qs.modules.common.functions
 import qs.services
 import "."
 import "../revolver/revolver.js" as RevolverCatalog
+import "../pet" as PetModule
 
 /**
  * Modules configuration — master enable/disable panel for every shell module.
@@ -302,6 +303,15 @@ ColumnLayout {
             onChose: v => Config.setNestedValue("revolver.actions", revolverCard.chosen.includes(v)
                 ? revolverCard.chosen.filter(x => x !== v) : revolverCard.chosen.concat([v]))
         }
+    }
+
+    // ═══ Desktop pet ═══
+    SettingsCard {
+        icon: "pets"
+        title: "Desktop Pet"
+        subtitle: "A duck, a cat or a dog living along the bottom of the screen; right-click it to edit"
+        configKeys: ["pet"]
+        PetModule.PetEditor { Layout.fillWidth: true }
     }
 
     // ═══ Screen Corners ═══

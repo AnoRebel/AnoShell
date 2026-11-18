@@ -40,6 +40,7 @@ Singleton {
         { id: "anoNetworkOrbit", name: "Network Orbit", icon: "hub", desc: "Animated Wi-Fi / Bluetooth / VPN panel (network.panelStyle \"orbit\")", category: "Overlays", source: "modules/networkOrbit/NetworkOrbit.qml" },
         { id: "anoMediaControls", name: "Media Controls", icon: "music_note", desc: "Full media player panel", category: "Overlays", source: "modules/mediaControls/MediaControls.qml" },
         { id: "anoRevolver", name: "Corner Revolver", icon: "radio_button_checked", desc: "Quick actions on a turning cylinder in a hot corner (revolver.enable)", category: "Overlays", source: "modules/revolver/Revolver.qml", key: "revolver.enable", listed: false },
+        { id: "anoPet", name: "Desktop Pet", icon: "pets", desc: "A duck, a cat or a dog living on the desktop (pet.enable)", category: "Overlays", source: "modules/pet/PetLayer.qml", key: "pet.enable", listed: false },
         { id: "anoBubbleMonitor", name: "Bubble Monitor", icon: "bubble_chart", desc: "Full-screen system monitor: usage and the busiest processes as bubbles", category: "Overlays", source: "modules/systemMonitor/BubbleMonitor.qml" },
         { id: "anoNotificationHistory", name: "Notification History", icon: "history", desc: "Search and prune every notification received (notifications.history)", category: "Overlays", source: "modules/notificationHistory/NotificationHistoryPanel.qml" },
         { id: "anoWeatherPanel", name: "Weather Panel", icon: "thermostat", desc: "Detailed weather information", category: "Overlays", source: "modules/weather/WeatherPanel.qml" },
@@ -83,7 +84,7 @@ Singleton {
     // that family (Settings shows it disabled with the reason).
     readonly property var _core: ["anoBar", "anoScreen", "anoOverview", "anoNotificationPopup", "anoOnScreenDisplay",
         "anoSessionScreen", "anoSettings", "anoSearch", "anoAltSwitcher", "anoLockScreen", "anoPolkit",
-        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions", "anoSharePicker"]
+        "anoSpot", "anoSpotStash", "anoBackground", "anoDisplayConfirm", "anoWelcome", "anoCustomize", "anoPieces", "anoScratchpad", "anoActions", "anoSharePicker", "anoPet"]
     readonly property var _sidebars: ["anoSidebarLeft", "anoSidebarRight", "anoNotificationHistory", "anoBubbleMonitor", "anoRevolver", "anoClipboard", "anoScreenshot", "anoCheatsheet", "anoCalendar", "anoClock"]
     readonly property var _rich: ["anoDock", "anoHUD", "anoTaskView", "anoControlPanel", "anoNetworkOrbit", "anoMediaControls",
         "anoWeatherPanel", "anoWallpaperSelector", "anoScreenCorners", "anoMorphLayer", "anoReader", "anoStickyNote", "anoLivePins"]
