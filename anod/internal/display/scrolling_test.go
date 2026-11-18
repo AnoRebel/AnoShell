@@ -80,7 +80,8 @@ func TestMangoScrolling(t *testing.T) {
 }
 
 // The managed file carries the scrolling block, and RefreshScrolling evals the
-// change on Hyprland: undo of what was dropped, then the current rules.
+// change on Hyprland: undo of what was dropped, then the current rules. What
+// the compositor had when anod started counts (SeedScrolling).
 func TestRefreshScrollingHyprland(t *testing.T) {
 	f := &fake{outs: []Output{edp}}
 	s, dir := newSvc(t, f)
@@ -93,18 +94,25 @@ func TestRefreshScrollingHyprland(t *testing.T) {
 		}
 		return nil
 	}
-	if err := s.RefreshScrolling(); err != nil {
-		t.Fatal(err)
-	}
-	b, _ := os.ReadFile(dir + "/hypr/ano-managed.lua")
-	if !strings.Contains(string(b), `layout = "scrolling"`) {
-		t.Errorf("managed file:\n%s", b)
-	}
+	s.SeedScrolling()
 	cur = &Scrolling{Workspaces: []ScrollWorkspace{{3, "right"}}}
 	if err := s.RefreshScrolling(); err != nil {
 		t.Fatal(err)
 	}
-	if len(evals) != 2 || !strings.Contains(evals[1], `workspace = "5", layout = "dwindle"`) || !strings.Contains(evals[1], "set_enabled(false)") {
-		t.Errorf("evals: %q", evals)
+	if len(evals) != 1 || !strings.Contains(evals[0], `workspace = "5", layout = "dwindle"`) || !strings.Contains(evals[0], "set_enabled(false)") ||
+		!strings.Contains(evals[0], `workspace = "3", layout = "scrolling"`) {
+		t.Errorf("evals after dropping workspace 5 and the app: %q", evals)
+	}
+	b, _ := os.ReadFile(dir + "/hypr/ano-managed.lua")
+	if !strings.Contains(string(b), `workspace = "3", layout = "scrolling"`) || strings.Contains(string(b), `workspace = "5"`) {
+		t.Errorf("managed file:\n%s", b)
+	}
+	// Nothing set any more: undo only.
+	cur = nil
+	if err := s.RefreshScrolling(); err != nil {
+		t.Fatal(err)
+	}
+	if len(evals) != 2 || !strings.Contains(evals[1], `workspace = "3", layout = "dwindle"`) || strings.Contains(evals[1], "scrolling") {
+		t.Errorf("evals after clearing: %q", evals)
 	}
 }

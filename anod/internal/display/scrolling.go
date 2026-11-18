@@ -163,6 +163,16 @@ func MangoScrolling(s *Scrolling) string {
 	return b.String()
 }
 
+// SeedScrolling records the rules the compositor already has (it read the
+// managed file at its start), so a later change can undo what was dropped.
+func (s *Service) SeedScrolling() {
+	if s.Scrolling != nil {
+		s.mu.Lock()
+		s.scrolled = s.Scrolling()
+		s.mu.Unlock()
+	}
+}
+
 // RefreshScrolling rewrites the managed file (niri reloads it itself) and, on
 // Hyprland, applies the change live with `hyprctl eval`: what a config reload
 // would do, without one.

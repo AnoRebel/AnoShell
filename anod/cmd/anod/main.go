@@ -835,6 +835,7 @@ func main() {
 		})
 		// The terminal look changed (scripts/terminal/apply-terminal.sh ran): its window rules.
 		srv.Handle("terminal.refresh", func(json.RawMessage) (any, error) { return true, disp.Refresh() })
+		disp.SeedScrolling()
 		scrollRefresh = disp.RefreshScrolling
 		srv.Handle("display.confirm", func(json.RawMessage) (any, error) { return true, disp.Confirm() })
 		srv.Handle("display.revert", func(json.RawMessage) (any, error) { return true, disp.Revert() })

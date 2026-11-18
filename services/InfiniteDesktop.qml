@@ -33,7 +33,8 @@ Singleton {
     function load() {}
 
     // ── Scrolling: tell anod ─────────────────────────────────────────────
-    readonly property string _scrollKey: JSON.stringify(Config.options?.scrolling ?? null)
+    readonly property var _sc: Config.options?.scrolling ?? null
+    readonly property string _scrollKey: !root._sc ? "" : JSON.stringify([root._sc.workspaces, root._sc.columnWidth, root._sc.apps])
     property string _scrollApplied: ""
     Component.onCompleted: if (Config.ready) root._scrollApplied = root._scrollKey
     Connections {
