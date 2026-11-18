@@ -26,7 +26,7 @@ Item {
     property real facing: 1
     property string mode: "act"       // act | carry | fall
     property string behaviour: "idle"
-    property real duration: 3
+    property real lasts: 3            // s the behaviour lasts
     property real bt: 0               // s into the behaviour
     property real clock: 0            // s, for blinks, z's and hearts
     property string floorId: "ground"
@@ -56,7 +56,7 @@ Item {
         root._from = root.p
         root._blend = 0
         root.behaviour = name
-        root.duration = duration
+        root.lasts = duration
         root.bt = 0
         root.hearts = name === "happy"
         if (Pet.walks(name)) {
@@ -175,8 +175,8 @@ Item {
             const step = Pet.speed(root.kind, root.behaviour, root.size) * dt, d = root.targetX - root.x0
             if (Math.abs(d) <= step) { root.x0 = root.targetX; root._next() }
             else root.x0 += Math.sign(d) * step
-            if (root.behaviour === "sniff" && root.bt > root.duration) root._next()
-        } else if (root.bt > root.duration) root._next()
+            if (root.behaviour === "sniff" && root.bt > root.lasts) root._next()
+        } else if (root.bt > root.lasts) root._next()
 
         // Pose: eased from the last behaviour's, blinking, swinging when carried, squashed on landing.
         root._blend = Math.min(1, root._blend + dt / 0.3)
