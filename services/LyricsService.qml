@@ -260,22 +260,7 @@ Singleton {
     // LRCLIB asks clients to identify themselves.
     readonly property string _userAgent: "AnoShell (https://github.com/anorebel/anoshell)"
 
-    // Lower-case, without brackets ("(Remastered)", "[Live]") and punctuation.
-    function _norm(v) {
-        return String(v || "").toLowerCase().replace(/[(\[][^)\]]*[)\]]/g, " ")
-            .replace(/[^0-9a-z\u00c0-\uffff]+/g, " ").trim();
-    }
-    function _overlaps(wanted, got) {
-        wanted = _norm(wanted); got = _norm(got);
-        if (!wanted || !got) return false;
-        if (wanted.includes(got) || got.includes(wanted)) return true;
-        const words = got.split(" ");
-        return wanted.split(" ").some(w => w.length > 3 && words.includes(w));
-    }
-    // Search results are only taken when title and artist plausibly match.
-    function _lrclibMatch(c, title, artist) {
-        return !!c && !!c.syncedLyrics && _overlaps(title, c.trackName) && _overlaps(artist, c.artistName);
-    }
+    // Search results: Lrc.lrclibPick (title and artist match, closest length).
 
     // Exact lookup with album + duration first (the most precise), then a
     // field search, then a free-text search (ported from Ryoku's lyrics.py).
@@ -286,15 +271,15 @@ Singleton {
         const secs = Math.round((player?.length ?? 0) || (md["mpris:length"] ?? 0) / 1e6);
         const api = "https://lrclib.net/api";
         const urls = [];
-        if (album && secs > 0)
-            urls.push(`${api}/get?track_name=${q(title)}&artist_name=${q(artist)}&album_name=${q(album)}&duration=${secs}`);
-        else
-            urls.push(`${api}/get?track_name=${q(title)}&artist_name=${q(artist)}`);
+        const dur = secs > 0 ? `&duration=${secs}` : "";
+        urls.push(album ? `${api}/get?track_name=${q(title)}&artist_name=${q(artist)}&album_name=${q(album)}${dur}`
+                        : `${api}/get?track_name=${q(title)}&artist_name=${q(artist)}${dur}`);
         urls.push(`${api}/search?track_name=${q(title)}&artist_name=${q(artist)}`);
         urls.push(`${api}/search?q=${q(title + " " + artist)}`);
         lrclibProc._urls = urls;
         lrclibProc._title = title;
         lrclibProc._artist = artist;
+        lrclibProc._secs = secs;
         _lrclibStep(0, reqId);
     }
     function _lrclibStep(i, reqId) {
@@ -311,6 +296,7 @@ Singleton {
         property int _step: 0
         property string _title: ""
         property string _artist: ""
+        property int _secs: 0
         running: false
         stdout: SplitParser {
             splitMarker: ""
@@ -323,9 +309,16 @@ Singleton {
             if (code === 0 && _buf) {
                 try {
                     const res = JSON.parse(_buf);
+                    // An exact hit marked instrumental: no lyrics, and searching on
+                    // could only turn up another song's.
+                    if (!Array.isArray(res) && res?.instrumental) {
+                        updateModel([]);
+                        root.loading = false;
+                        return;
+                    }
                     // /get returns one record (trusted: exact fields); /search a list.
                     found = Array.isArray(res)
-                        ? res.find(c => root._lrclibMatch(c, _title, _artist))
+                        ? Lrc.lrclibPick(res, _title, _artist, _secs)
                         : (res?.syncedLyrics ? res : null);
                 } catch (e) {
                     // fall through

@@ -325,7 +325,8 @@ Singleton {
                     "appIcon": notif.appIcon,
                     "appName": notif.appName,
                     "body": notif.body,
-                    "image": notif.image,
+                    // Pixel images (image-data hint) came from Quickshell's image provider, gone after a restart.
+                    "image": String(notif.image ?? "").startsWith("image://") ? "" : notif.image,
                     "summary": notif.summary,
                     "time": notif.time,
                     "urgency": notif.urgency,

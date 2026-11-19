@@ -60,3 +60,29 @@ function getCurrentLine(lyrics, position) {
     }
     return -1;
 }
+
+// ─── LRCLIB search matching (LyricsService) ─────────────────────────────
+// Lower-case, without brackets ("(Remastered)", "[Live]") and punctuation.
+function norm(v) {
+    return String(v || "").toLowerCase().replace(/[(\[][^)\]]*[)\]]/g, " ")
+        .replace(/[^0-9a-z\u00c0-\uffff]+/g, " ").trim();
+}
+function overlaps(wanted, got) {
+    wanted = norm(wanted); got = norm(got);
+    if (!wanted || !got) return false;
+    if (wanted.includes(got) || got.includes(wanted)) return true;
+    const words = got.split(" ");
+    return wanted.split(" ").some(w => w.length > 3 && words.includes(w));
+}
+// A search result is only taken when title and artist plausibly match.
+function lrclibMatch(c, title, artist) {
+    return !!c && !!c.syncedLyrics && overlaps(title, c.trackName) && overlaps(artist, c.artistName);
+}
+// The matching result closest in length to the track (secs, 0 when unknown);
+// one more than 3 s off is another cut and would run out of sync.
+function lrclibPick(list, title, artist, secs) {
+    const ok = (list || []).filter(c => lrclibMatch(c, title, artist));
+    if (!(secs > 0)) return ok[0] ?? null;
+    const off = c => c.duration > 0 ? Math.abs(c.duration - secs) : 0;
+    return ok.filter(c => off(c) <= 3).sort((a, b) => off(a) - off(b))[0] ?? null;
+}
