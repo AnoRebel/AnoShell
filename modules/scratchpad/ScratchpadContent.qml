@@ -168,6 +168,7 @@ ColumnLayout {
                             icon: pinned ? "push_pin" : ({ image: "image", files: "folder_open", color: "palette" })[info.kind] ?? "text_snippet"
                             title: info.kind === "image" ? `Image · ${info.width}×${info.height}` : String(info.text ?? "").replace(/\s+/g, " ").trim()
                             subtitle: pinned ? "Pinned · click copies" : "Click copies"
+                            dragEntry: clipRow.modelData
                             onActivated: { Cliphist.copyItem(clipRow.modelData); root.say("Copied") }
                         }
                         EmptyState {
@@ -376,6 +377,7 @@ ColumnLayout {
         property string subtitle: ""
         property bool mono: false
         default property alias trailing: trail.data
+        property var dragEntry // a clipboard entry: the row drags it out (ClipDrag)
         signal activated(int mods)
         implicitHeight: 46
         radius: Appearance.rounding.small
@@ -386,6 +388,7 @@ ColumnLayout {
             cursorShape: Qt.PointingHandCursor
             onClicked: mouse => itemRow.activated(mouse.modifiers)
         }
+        ClipDrag { entry: itemRow.dragEntry; enabled: itemRow.dragEntry !== undefined }
         RowLayout {
             anchors { fill: parent; leftMargin: 8; rightMargin: 4 }
             spacing: 10

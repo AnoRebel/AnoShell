@@ -108,8 +108,8 @@ Singleton {
     property bool _ready: false
     Process {
         running: true
-        command: ["bash", "-c", 'rm -rf -- "$DIR" && mkdir -p -- "$DIR"']
-        environment: ({ DIR: Directories.cliphistDecode })
+        command: ["bash", "-c", 'rm -rf -- "$DIR" "$DRAG" && mkdir -p -- "$DIR"']
+        environment: ({ DIR: Directories.cliphistDecode, DRAG: root.dragDir })
         onExited: { root._ready = true; root._pump() }
     }
     function _pump() {
@@ -422,6 +422,70 @@ Singleton {
     function pasteItem(item) { if (root.isPin(item)) root.copyPin(item, true); else root.paste(item) }
     function deleteItem(item) { if (root.isPin(item)) root.unpin(item); else root.deleteEntry(item) }
     function togglePin(item) { if (root.isPin(item)) root.unpin(item); else root.pin(item) }
+
+    // ── Drag out (modules/common/widgets/ClipDrag.qml) ──
+    // What a dragged entry or pin offers, as Drag.mimeData, given to cb (null
+    // on failure). Entries are decoded on demand (the list cuts text short);
+    // pictures go to a 0600 file in the runtime dir, cleared at start and swept
+    // after an hour (the runtime dir itself goes at logout).
+    property bool dragging: false // an entry is being dragged out (set by ClipDrag)
+    readonly property string dragDir: `${Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"}/anoshell/clipdrag`
+    function dragPayload(item, cb) {
+        if (root.isPin(item)) {
+            if (item.kind === "image") cb(root._imageMime(item.file, item.ext))
+            else cb(root._textMime(item.text ?? ""))
+            return
+        }
+        const info = root.entryInfo(item)
+        if (!info.id) { cb(null); return }
+        dragProc.running = false
+        dragProc.cb = cb
+        if (info.kind === "image") {
+            const ext = info.ext || "png"
+            dragProc.out = `${root.dragDir}/${info.id}.${ext}`
+            dragProc.ext = ext
+            dragProc.command = ["bash", "-c", 'umask 077; mkdir -p -- "$DIR" && find "$DIR" -type f -mmin +60 -delete; printf "%s" "$ID" | "$BIN" decode > "$OUT.part" && mv -f -- "$OUT.part" "$OUT"']
+        } else {
+            dragProc.out = ""
+            dragProc.command = ["bash", "-c", 'printf "%s" "$ID" | "$BIN" decode | head -c 1048576']
+        }
+        dragProc.environment = ({ ID: info.id, BIN: root.cliphistBinary, DIR: root.dragDir, OUT: dragProc.out })
+        dragProc.running = true
+    }
+    function _textMime(text) {
+        // A file list (copied in a file manager) goes as its files.
+        const info = root.entryInfo("0\t" + text)
+        if (info.kind === "files")
+            return { "text/uri-list": info.files.map(f => f.uri).join("\r\n") + "\r\n", "text/plain": info.files.map(f => f.path).join("\n") }
+        const m = { "text/plain": text }
+        const t = text.trim()
+        if (/^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(t)) m["text/uri-list"] = t + "\r\n"
+        return m
+    }
+    function _imageMime(path, ext) {
+        if (!path) return null
+        const e = String(ext || "png").toLowerCase()
+        const type = e === "jpg" ? "jpeg" : e === "svg" ? "svg+xml" : e === "tif" ? "tiff" : e
+        dragFile.path = path
+        const m = { "text/uri-list": "file://" + path.split("/").map(encodeURIComponent).join("/") + "\r\n" }
+        m["image/" + type] = dragFile.data()
+        dragFile.path = ""
+        return m
+    }
+    FileView { id: dragFile; blockAllReads: true; printErrors: false }
+    Process {
+        id: dragProc
+        property var cb: null
+        property string out: ""
+        property string ext: ""
+        stdout: StdioCollector { id: dragOut }
+        onExited: code => {
+            const cb = dragProc.cb; dragProc.cb = null
+            if (!cb) return
+            if (code !== 0) cb(null)
+            else cb(dragProc.out ? root._imageMime(dragProc.out, dragProc.ext) : root._textMime(dragOut.text))
+        }
+    }
 
     IpcHandler {
         target: "cliphistService"

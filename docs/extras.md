@@ -248,6 +248,15 @@ for 6 seconds; cliphist deletes the entry (and an unpinned image's copy goes)
 only once the toast is gone, so Undo puts it back in its place. Clearing the
 whole history has no undo.
 
+**Drag an entry out** (here or in the Scratchpad's Clipboard tab) onto any
+window that takes drops: press and move it 8 px (a still click works as
+before). Text goes in full (up to 1 MB, not the cut-off preview), a lone URL
+also as a link, copied files as those files, and a picture as an image file
+plus its image data. The picture is decoded to a file only you can read in
+`$XDG_RUNTIME_DIR/anoshell/clipdrag` (cleared when the shell starts, swept after
+an hour, gone at logout). While you drag, the panel lets the drop through to
+the window behind it.
+
 Keys: ↑↓ select, Enter pastes, Space previews (search empty), Ctrl+P pins
 or unpins, Delete removes the selected entry or unpins a pin (search empty);
 Esc closes the preview, then the panel. Right-click copies without pasting.

@@ -74,8 +74,10 @@ Scope {
         color: "transparent"
         anchors { top: true; bottom: true; left: true; right: true }
         // Fading out: no input (a click would paste again).
-        mask: GlobalStates.clipboardOpen ? null : noInput
+        // Dragging an entry out: only the card takes input, so the drop reaches the window behind.
+        mask: !GlobalStates.clipboardOpen ? noInput : Cliphist.dragging ? cardOnly : null
         Region { id: noInput; item: null }
+        Region { id: cardOnly; item: clipCard }
 
         // Keys can't attach to a window (only to Items); a Shortcut works there.
 
@@ -394,6 +396,8 @@ Scope {
                                 }
                             }
                         }
+
+                        ClipDrag { entry: row.modelData }
 
                         MouseArea {
                             id: entryMA
