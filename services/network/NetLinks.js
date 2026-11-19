@@ -96,14 +96,27 @@ function monitorScope(line, wifiIfaces) {
     if (/: connection profile (created|changed|removed)$/.test(l)) return { links: false, vpn: true }
     if (/ is now the primary connection$|^There's no primary connection/.test(l)) return { links: true, vpn: false }
     const m = l.match(/^(\S+): /)
-    if (m) {
-        const dev = m[1]
-        if ((wifiIfaces || []).includes(dev) || dev.startsWith("p2p-dev-")) return { links: false, vpn: false }
-        if (/^(tun|tap|wg|wt\d)/.test(dev)) return { links: false, vpn: true }
-        if (isVirtual(dev)) return { links: false, vpn: false }
-        return { links: true, vpn: false }
-    }
+    if (m) return deviceScope(m[1], wifiIfaces)
     return { links: true, vpn: true }
+}
+
+// What a change on device `dev` touches (Wi-Fi has its own service).
+function deviceScope(dev, wifiIfaces) {
+    if ((wifiIfaces || []).includes(dev) || dev.startsWith("p2p-dev-")) return { links: false, vpn: false }
+    if (/^(tun|tap|wg|wt\d)/.test(dev)) return { links: false, vpn: true }
+    if (isVirtual(dev)) return { links: false, vpn: false }
+    return { links: true, vpn: false }
+}
+
+// The same for anod's NetworkManager events ({ kind: "device", iface } |
+// "profile" | "primary" | "active").
+function eventScope(e, wifiIfaces) {
+    switch (e?.kind) {
+    case "device": return e.iface ? deviceScope(e.iface, wifiIfaces) : { links: true, vpn: true }
+    case "profile": return { links: false, vpn: true }
+    case "primary": return { links: true, vpn: false }
+    default: return { links: true, vpn: true }
+    }
 }
 
 // `nmcli -t -f NAME,UUID,TYPE,STATE connection show` → the VPN and WireGuard

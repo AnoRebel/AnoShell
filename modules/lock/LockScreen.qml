@@ -395,9 +395,17 @@ Scope {
         return `/org/freedesktop/login1/session/${s}`
     }
     property int _watchFails: 0
+    // logind asks this session to lock (loginctl lock-session, idle managers):
+    // anod's events, or gdbus monitor without them.
+    EventWatch {
+        id: logindEvents
+        source: "logind"
+        active: root.lockEnabled
+        onEvent: data => { if (data?.what === "lock") root._lock() }
+    }
     Process {
         id: logindWatch
-        running: root.lockEnabled && root.sessionPath !== ""
+        running: root._watchWanted
         command: ["gdbus", "monitor", "--system", "--dest", "org.freedesktop.login1", "--object-path", root.sessionPath]
         stdout: SplitParser {
             onRead: line => {
@@ -409,7 +417,9 @@ Scope {
         // few quick failures (no gdbus: ano doctor says so).
         onExited: if (root.lockEnabled && ++root._watchFails <= 5) rewatch.restart()
     }
-    Timer { id: rewatch; interval: 5000; onTriggered: logindWatch.running = root.lockEnabled && root.sessionPath !== "" }
+    // Re-bound, not assigned: an assignment would end the hand-over to anod's events.
+    readonly property bool _watchWanted: root.lockEnabled && root.sessionPath !== "" && !logindEvents.live && !logindEvents.pending
+    Timer { id: rewatch; interval: 5000; onTriggered: logindWatch.running = Qt.binding(() => root._watchWanted) }
 
     // ── Preview ─────────────────────────────────────────────────────────
     PanelWindow {

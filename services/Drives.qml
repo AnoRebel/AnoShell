@@ -11,7 +11,7 @@ import qs.modules.common
  * hot-pluggable disks with their partitions, mount/unmount, eject (unmount
  * everything, then power off) and whether data is still being written.
  *
- * Listed with `lsblk -J`, refreshed on udev block events (`udevadm monitor`),
+ * Listed with `lsblk -J`, refreshed on udev block events (anod's, else `udevadm monitor`),
  * so nothing polls; actions go through udisks (`udisksctl`), device paths as
  * arguments. The write rate comes from /sys/block/<disk>/stat and inflight,
  * read every second only while a drive is busy or a panel watches.
@@ -58,9 +58,16 @@ Singleton {
         }
         onExited: if (again) { again = false; running = true }
     }
-    // udev reports disks and partitions coming, going and changing.
+    // udev reports disks and partitions coming, going and changing: anod's
+    // events, or udevadm without them.
+    EventWatch {
+        id: blockWatch
+        source: "udev"
+        active: true
+        onEvent: data => { if (data?.SUBSYSTEM === "block" && /^(add|remove|change)$/.test(data.ACTION ?? "")) settle.restart() }
+    }
     Process {
-        running: true
+        running: !blockWatch.live && !blockWatch.pending
         command: ["setpriv", "--pdeathsig", "TERM", "--", "udevadm", "monitor", "--udev", "--subsystem-match=block"]
         stdout: SplitParser { onRead: line => { if (/\b(add|remove|change)\b/.test(line)) settle.restart() } }
     }

@@ -129,8 +129,20 @@ Singleton {
         usbQuiet.restart()
     }
     Timer { id: usbQuiet; interval: 150; onTriggered: root._usbFlush() }
+    // anod's udev events (the same properties); udevadm only without them.
+    EventWatch {
+        id: usbWatch
+        source: "udev"
+        active: root._on("usb")
+        onEvent: data => {
+            if (data?.SUBSYSTEM !== "usb") return
+            root._usbFlush()
+            root._usb = Object.assign({}, data)
+            root._usbFlush()
+        }
+    }
     Process {
-        running: root._on("usb")
+        running: root._on("usb") && !usbWatch.live && !usbWatch.pending
         command: ["setpriv", "--pdeathsig", "TERM", "--", "udevadm", "monitor", "--udev", "--property", "--subsystem-match=usb/usb_device"]
         stdout: SplitParser { onRead: line => root._usbLine(line) }
     }

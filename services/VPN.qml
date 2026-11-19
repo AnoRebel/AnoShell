@@ -24,7 +24,7 @@ import qs.services
  *
  * Status detection uses each provider's CLI (`tailscale status --json`,
  * `netbird status --json`, `warp-cli status`, `ip link show <iface>`)
- * and is automatically refreshed on `nmcli monitor` events.
+ * and is automatically refreshed on NetworkManager events (anod's, else `nmcli monitor`).
  *
  * Adapted from caelestia/services/VPN.qml. Changes:
  *   - GlobalConfig.utilities.vpn.provider → Config.options.vpn.providers
@@ -307,9 +307,15 @@ Singleton {
         root.refreshNetBirdNetworks()
     }
 
+    EventWatch {
+        id: nmWatch
+        source: "nm"
+        active: root.enabled
+        onEvent: statusCheckTimer.restart()
+    }
     Process {
         id: nmMonitor
-        running: root.enabled
+        running: root.enabled && !nmWatch.live && !nmWatch.pending
         command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         stdout: SplitParser {
             onRead: statusCheckTimer.restart()

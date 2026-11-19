@@ -212,9 +212,16 @@ Singleton {
             else for (const id of Object.keys(d)) root._refreshDevice(id)
         }
     }
+    // kdeconnectd's signals: anod's events (match rules, not --dest), or gdbus monitor without them.
+    EventWatch {
+        id: kdcWatch
+        source: "kdeconnect"
+        active: root.enabled
+        onEvent: data => root._onLine(`${data?.path ?? ""}: ${data?.member ?? ""}`)
+    }
     Process {
         id: monitor
-        running: root.enabled
+        running: root._monitorWanted
         command: ["setpriv", "--pdeathsig", "TERM", "--", "gdbus", "monitor", "--session", "--dest", root._dest]
         stdout: SplitParser { onRead: line => { root._monFails = 0; root._onLine(line) } }
         // gdbus exits if the bus restarts: watch again, giving up after a few
@@ -222,13 +229,15 @@ Singleton {
         onRunningChanged: if (!running && root.enabled && ++root._monFails <= 5) remonitor.start()
     }
     property int _monFails: 0
-    Timer { id: remonitor; interval: 5000; onTriggered: monitor.running = root.enabled }
+    // Re-bound, not assigned: an assignment would end the hand-over to anod's events.
+    readonly property bool _monitorWanted: root.enabled && !kdcWatch.live && !kdcWatch.pending
+    Timer { id: remonitor; interval: 5000; onTriggered: monitor.running = Qt.binding(() => root._monitorWanted) }
     // A hung daemon: look again now and then (only while it's hung).
     Timer { id: retry; interval: 60000; onTriggered: if (root.enabled && root.daemon === "hung") root.refresh() }
 
     onEnabledChanged: {
         remonitor.stop(); retry.stop(); root._monFails = 0
-        monitor.running = root.enabled
+        monitor.running = Qt.binding(() => root._monitorWanted)
         if (root.enabled) root.refresh()
         else { root.daemon = "off"; root.devices = []; root._queue = [] }
     }

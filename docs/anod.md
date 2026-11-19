@@ -245,6 +245,17 @@ named like one of `names` stand in); `sysmon.sensors` → `[{"chip", "label", "c
 thermal zones; `sysmon.procs` → every user process (as `sysmon.top`, without `cmd`), for views that
 group them themselves.
 
+System events (`anod/internal/events`): `events.want` (`{"source", "on"}`) starts (`on: true`) or drops one want
+of a source for this connection; a source runs while any connection wants it and its wants end with the
+connection. The reply comes once the source is watching (an error when it can't, e.g. no system bus or no
+login session: the shell then keeps its own watcher). Events: `udev` (USB devices and block devices from udevd's
+netlink group: `ACTION`, `SUBSYSTEM`, `DEVTYPE`, `DEVNAME`, `ID_VENDOR[_FROM_DATABASE]`, `ID_MODEL[_FROM_DATABASE]`,
+…), `nm` (`{"kind": "device", "iface"}`, `"profile"`, `"primary"`, `"active"`), `logind` (`{"what": "lock" |
+"unlock" | "sleep" | "wake"}` for anod's session), `gamemode` (`{"count"}`, at start and on every change; read only
+while gamemoded has an owner), `kdeconnect` (`{"path", "member"}`, and `member: "owner"` when kdeconnectd comes or
+goes). D-Bus sources use match rules only, so watching never starts a service. `events_lost` (`{"source"}`) says a
+source ended on its own (its bus went away).
+
 System statistics (`anod/internal/stats`), sampled only while leased: `stats.watch` (`{"interval"}` in ms,
 clamped to 500–10000, default 2000) → `{"id"}`; `stats.unwatch` (`{"id"}`). Leases belong to the connection
 that took them and end with it. While any lease is held, anod samples at the shortest leased interval and

@@ -370,19 +370,24 @@ Singleton {
         }
     }
 
+    function _changed(s) {
+        if (!s.links && !s.vpn) return
+        if (s.links) root._linksDirty = true
+        if (s.vpn) root._vpnDirty = true
+        updateDebounce.restart()
+    }
+    // NetworkManager's changes: anod's D-Bus events, or `nmcli monitor` without them.
+    EventWatch {
+        id: nmWatch
+        source: "nm"
+        active: true
+        onEvent: data => root._changed(NetLinks.eventScope(data, root.wifiIfaces))
+    }
     Process {
         id: subscriber
-        running: true
+        running: !nmWatch.live && !nmWatch.pending
         command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         environment: ({ LANG: "C", LC_ALL: "C" })
-        stdout: SplitParser {
-            onRead: line => {
-                const s = NetLinks.monitorScope(line, root.wifiIfaces)
-                if (!s.links && !s.vpn) return
-                if (s.links) root._linksDirty = true
-                if (s.vpn) root._vpnDirty = true
-                updateDebounce.restart()
-            }
-        }
+        stdout: SplitParser { onRead: line => root._changed(NetLinks.monitorScope(line, root.wifiIfaces)) }
     }
 }

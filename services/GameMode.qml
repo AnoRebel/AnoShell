@@ -189,9 +189,18 @@ Singleton {
         root.active = n > 0
     }
 
+    // anod watches gamemoded (match rules; ClientCount only while it has an
+    // owner) and sends the count; dbus-monitor + busctl without it.
+    EventWatch {
+        id: gmWatch
+        source: "gamemode"
+        active: root._wanted
+        onEvent: data => root._setCount(data?.count ?? 0)
+        onLiveChanged: if (!live && !root._wanted) root._setCount(0)
+    }
     Process {
         id: monitor
-        running: root._wanted
+        running: root._monitorWanted
         command: ["setpriv", "--pdeathsig", "TERM", "--",
             // Match rules, not --dest: `gdbus monitor --dest` D-Bus-activates
             // gamemoded, starting the daemon just by watching for it.
@@ -201,13 +210,17 @@ Singleton {
         stdout: SplitParser { onRead: line => root._onLine(line) }
         onRunningChanged: {
             if (running) { countProc.running = true; return }
+            if (gmWatch.live || gmWatch.pending) return // anod took over: its count stands
             root._setCount(0)
             if (root._wanted) restart.start()
         }
     }
-    Timer { id: restart; interval: 5000; onTriggered: if (root._wanted) monitor.running = true }
+    // Our own watcher only without anod's events. Restarts re-bind (a plain
+    // assignment would end the binding, and with it the hand-over to anod).
+    readonly property bool _monitorWanted: root._wanted && !gmWatch.live && !gmWatch.pending
+    Timer { id: restart; interval: 5000; onTriggered: monitor.running = Qt.binding(() => root._monitorWanted) }
     // The restart above replaces the binding, so follow _wanted by hand too.
-    on_WantedChanged: { restart.stop(); monitor.running = root._wanted }
+    on_WantedChanged: { restart.stop(); monitor.running = Qt.binding(() => root._monitorWanted) }
 
     Process {
         id: countProc

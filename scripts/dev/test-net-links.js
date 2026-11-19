@@ -2,7 +2,7 @@
 // network panels list). Run: node scripts/dev/test-net-links.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/network/NetLinks.js'), 'utf8').replace('.pragma library', '')
-const N = new Function(src + ';return {parse, isVirtual, primaryIface, vpns, monitorScope};')()
+const N = new Function(src + ';return {parse, isVirtual, primaryIface, vpns, monitorScope, eventScope};')()
 const a = (c, m) => { if (!c) throw new Error(m) }
 
 const dev = (d, type, state, conn, iface, driver, product, ip) =>
@@ -84,4 +84,11 @@ for (const [line, want] of [
     ['NetworkManager is running', 'LV'],
     ['', ''],
 ]) a(sc(line) === want, `monitorScope(${JSON.stringify(line)}) = ${sc(line)}, want ${want}`)
+// anod's NetworkManager events classify like the monitor lines.
+const ev = (e) => { const s = N.eventScope(e, ['wlp0s20f3']); return (s.links ? 'L' : '') + (s.vpn ? 'V' : '') }
+for (const [e, want] of [
+    [{ kind: 'device', iface: 'enp3s0' }, 'L'], [{ kind: 'device', iface: 'wlp0s20f3' }, ''], [{ kind: 'device', iface: 'tun0' }, 'V'],
+    [{ kind: 'device', iface: 'veth12ab' }, ''], [{ kind: 'device', iface: '' }, 'LV'], [{ kind: 'profile' }, 'V'],
+    [{ kind: 'primary' }, 'L'], [{ kind: 'active' }, 'LV'],
+]) a(ev(e) === want, `eventScope(${JSON.stringify(e)}) = ${ev(e)}, want ${want}`)
 console.log('net links ok')

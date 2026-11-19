@@ -29,6 +29,7 @@ import (
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/downloads"
+	"ano/anod/internal/events"
 	"ano/anod/internal/gpu"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
@@ -1020,8 +1021,27 @@ func main() {
 		shaderMu.Unlock()
 		return true, nil
 	})
+	// System events (internal/events): each source runs while a connection wants it.
+	evs := &events.Manager{Push: srv.Broadcast, Sources: map[string]events.Source{
+		"udev": events.Udev, "nm": events.NetworkManager, "logind": events.Logind,
+		"gamemode": events.GameMode, "kdeconnect": events.KdeConnect,
+	}}
+	srv.HandleConn("events.want", func(conn uint64, raw json.RawMessage) (any, error) {
+		var p struct {
+			Source string `json:"source"`
+			On     bool   `json:"on"`
+		}
+		if err := json.Unmarshal(raw, &p); err != nil || p.Source == "" {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {source, on}")
+		}
+		if err := evs.Want(conn, p.Source, p.On); err != nil {
+			return nil, ipc.Errorf(ipc.CodeFailed, "%v", err)
+		}
+		return true, nil
+	})
 	srv.OnDisconnect = func(conn uint64) {
 		statsHub.Drop(conn)
+		evs.Drop(conn)
 		shaderMu.Lock()
 		defer shaderMu.Unlock()
 		if conn != shaderConn || shellShader == "" || os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") == "" {
