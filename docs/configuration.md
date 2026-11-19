@@ -185,6 +185,18 @@ Pinned apps (`dock.pinnedApps`) keep the order you give them: press a pinned
 icon and drag it along the dock (a short wobble still counts as a click), or
 use the up/down arrows in Settings → Dock → Pinned Apps.
 
+Right-click an icon, or press and hold it for half a second without moving, for
+its menu: New window, the app's own actions (such as "New private window"),
+its open windows, Move to workspace… (where the compositor can: Hyprland, niri,
+sway, mango, Umbriel), Pin/Unpin, and Close or Close all. Esc or a click
+elsewhere closes it; the dock stays up meanwhile.
+
+Drop files or links on an icon to open them in that app. It takes them the way
+its desktop entry says (`%F`/`%U`: all at once, `%f`/`%u`: one launch each;
+`%f`/`%F` local files only); an app whose entry takes no files refuses the drop
+(its icon dims), so a dropped script is never handed to a terminal. A hidden
+dock comes up when a drag reaches its edge. (Ideas from Bioma.)
+
 ## Network panel
 
 `network.panelStyle` picks what the network and Bluetooth entry points open:

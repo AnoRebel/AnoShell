@@ -22,7 +22,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, windowGeometry: true, infiniteDesktop: true
+        keyboardLayouts: true, windowGeometry: true, infiniteDesktop: true, moveToWorkspace: true
     })
     focusedOutput: I3.focusedMonitor?.name ?? (Quickshell.screens[0]?.name ?? "")
 
@@ -170,4 +170,7 @@ GenericBackend {
     }
     function hideWindow(id, side, appId) { const c = root._dropCriteria(id, appId); return c ? root._run(`${c} move scratchpad`) : false }
     function closeWindowById(id) { return Number.isInteger(id) ? root._run(`[con_id=${id}] kill`) : false }
+    function moveWindowToWorkspaceById(id, number) {
+        return Number.isInteger(id) && Number.isInteger(number) ? root._run(`[con_id=${id}] move container to workspace number ${number}`) : false
+    }
 }

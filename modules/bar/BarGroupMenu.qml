@@ -15,7 +15,7 @@ PopupWindow {
     id: root
     property Item anchorItem
     property string barEdge: "top"
-    // [{ icon, text, run: function }]
+    // [{ icon, text, run: function }], or { header: "text" }, or { separator: true }
     property var entries: []
 
     function openAt(item) {
@@ -41,23 +41,53 @@ PopupWindow {
         border.width: Appearance.borders.width
         border.color: Appearance.borders.color
 
+        // grabFocus gives it the keyboard: Esc closes it (window-wide, whatever has focus).
+        Shortcut { sequence: "Escape"; enabled: root.visible; onActivated: root.visible = false }
         ColumnLayout {
             id: col
             anchors { fill: parent; margins: 6 }
             spacing: 2
             Repeater {
-                model: root.entries
-                RippleButton {
+                model: root.entries.filter(e => e.header !== undefined)
+                StyledText {
                     required property var modelData
                     Layout.fillWidth: true
-                    implicitHeight: 32
-                    buttonRadius: Appearance?.rounding.small ?? 8
-                    colBackground: "transparent"
-                    onClicked: { root.visible = false; modelData.run() }
-                    contentItem: RowLayout {
-                        spacing: 8
-                        MaterialSymbol { text: modelData.icon; iconSize: 18; Layout.leftMargin: 8 }
-                        StyledText { text: modelData.text; Layout.rightMargin: 10 }
+                    Layout.margins: 8
+                    Layout.bottomMargin: 2
+                    text: modelData.header
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                    Layout.maximumWidth: 260
+                }
+            }
+            Repeater {
+                model: root.entries.filter(e => e.header === undefined)
+                Item {
+                    id: row
+                    required property var modelData
+                    readonly property bool separator: !!modelData.separator
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 280
+                    implicitWidth: row.separator ? 0 : btn.implicitWidth
+                    implicitHeight: row.separator ? 9 : 32
+                    Rectangle {
+                        visible: row.separator
+                        anchors.centerIn: parent
+                        width: parent.width - 16; height: 1
+                        color: Appearance?.colors.colOutlineVariant ?? "#49454F"
+                    }
+                    RippleButton {
+                        id: btn
+                        visible: !row.separator
+                        anchors.fill: parent
+                        buttonRadius: Appearance?.rounding.small ?? 8
+                        colBackground: "transparent"
+                        onClicked: { root.visible = false; row.modelData.run() }
+                        contentItem: RowLayout {
+                            spacing: 8
+                            MaterialSymbol { text: row.modelData.icon ?? ""; iconSize: 18; Layout.leftMargin: 8 }
+                            StyledText { text: row.modelData.text ?? ""; Layout.rightMargin: 10; elide: Text.ElideRight; Layout.maximumWidth: 230; Layout.fillWidth: true; horizontalAlignment: Text.AlignLeft }
+                        }
                     }
                 }
             }

@@ -45,7 +45,7 @@ Their reply parsing lives in `SwayModel.js` / `MangoModel.js` /
 | `keyboardLayouts` | array | the configured layouts (xkb codes on Hyprland, full names on niri); use for counting/cycling, not display |
 
 `supports` flags: `workspaces`, `perOutputWorkspaces` (numbers restart per output, as on niri), `windowCapture`, `blurProtocol`, `layerBlurRules`,
-`outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`,
+`outerGaps`, `cursorZoom`, `screenShader`, `dpms`, `outputConfig`, `exit`, `keyboardLayouts`, `moveToWorkspace`,
 `windowGeometry` (windows' x/y are layout coordinates and `reservedOf` is known, so they can be placed on an output's
 usable area; Hyprland, sway), `cursorPos` (`cursorPos(cb)`; Hyprland), `windowBlur` (blur behind translucent windows
 through window rules in anod's managed file; Hyprland, niri 26.04+), `scrollingLayout` (scrolling.* has an effect:
@@ -69,6 +69,7 @@ Hyprland, niri, mango), `infiniteDesktop` (the canvas functions below: Hyprland,
 | `cursorPos(cb)` | optional: `cb({x, y} \| null)`, the pointer in layout coordinates; Hyprland |
 | `reservedOf(outputName)` | optional: `[left, top, right, bottom]` other clients reserve; Hyprland, sway |
 | `signal screencast(open, owner, name)` | optional: capture opened/closed (owner `monitor`, `window`, region); Hyprland |
+| `moveWindowToWorkspaceById(id, number)` | move a window to workspace `number` on its output without following it (`supports.moveToWorkspace`): Hyprland `hl.dsp.window.move{follow=false}`, niri `MoveWindowToWorkspace` by index, sway `move container to workspace number`, mango `tagsilent`, Umbriel focus then `window-move-to-workspace-silent` |
 | `canvasState(cb)` | infinite desktop (`supports.infiniteDesktop`): `cb({ workspace, output, view, others, windows: [{ id, x, y, width, height, floating, focused, appId }] } \| null)` for the focused output's workspace; `view` its usable area, `others` the other outputs; layout coordinates. Hyprland, niri, sway, mango |
 | `floatWindows(rects)` / `placeWindows(list)` / `tileWindows(ids)` | float at `{id, x, y, width, height}`, move to `{id, x, y}` (absolute), tile again. Hyprland: one `eval` each, moves coalesced (newest wins while one is in flight); niri: floating positions relative to the working area, learnt from where a window lands; mango: moves go relative (`movewin` reads a leading `-` as relative) |
 | `signal windowOpened(id, workspace)` | a new window (workspace may be `""`); Hyprland, niri, sway, mango |

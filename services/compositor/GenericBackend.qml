@@ -42,6 +42,8 @@ QtObject {
 
     function focusWindowById(id) { return false }
     function closeWindowById(id) { return false }
+    // Move a window to a workspace (by number, on its own output) without following it.
+    function moveWindowToWorkspaceById(id, number) { return false }
     // One entry per (screen, windowset); `set` keeps the handle for activate().
     readonly property var _sets: {
         void root.revision

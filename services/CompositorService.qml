@@ -270,6 +270,10 @@ Singleton {
     }
     // The backend's id first, as for focus: a toplevel matched by app and
     // title can be a twin of the window meant (two terminals titled "~").
+    // A window to workspace `number` (on its own output), staying where you are.
+    function moveWindowToWorkspace(win, number) {
+        return win?.id !== undefined && (root.supports.moveToWorkspace ?? false) ? (root.backend?.moveWindowToWorkspaceById(win.id, number) ?? false) : false
+    }
     function closeWindow(win) {
         if (win?.id !== undefined && root.backend?.closeWindowById(win.id)) return true
         const tl = win?.toplevel ?? (win?.close ? win : null)

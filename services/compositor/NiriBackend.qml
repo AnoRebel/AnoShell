@@ -18,7 +18,7 @@ QtObject {
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, windowBlur: true, scrollingLayout: true, infiniteDesktop: true
+        keyboardLayouts: true, windowBlur: true, scrollingLayout: true, infiniteDesktop: true, moveToWorkspace: true
     })
 
     readonly property string focusedOutput: NiriService.currentOutput ?? ""
@@ -213,6 +213,9 @@ QtObject {
 
     function focusWindowById(id) { return (id === undefined || id === null) ? false : NiriService.focusWindow(id) }
     function closeWindowById(id) { return (id === undefined || id === null) ? false : NiriService.closeWindow(id) }
+    function moveWindowToWorkspaceById(id, number) {
+        return (id === undefined || id === null || !Number.isInteger(number)) ? false : NiriService.moveWindowToWorkspace(id, number, false)
+    }
     // Dropdown terminal (services/DropTerminal.qml). niri has no scratchpad:
     // hidden, it waits on the empty workspace at the end of its output; shown,
     // it floats at r (niri places floats in its working area: the output

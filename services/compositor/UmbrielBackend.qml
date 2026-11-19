@@ -24,7 +24,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true
+        keyboardLayouts: true, moveToWorkspace: true
     })
 
     property var _workspaces: []
@@ -99,6 +99,14 @@ GenericBackend {
     }
     function focusWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-focus", [id]) : false }
     function closeWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-close", [id]) : false }
+    // umbriel moves only the focused window: focus it, then move it (in order,
+    // one shell; the id and number are arguments, not script text).
+    function moveWindowToWorkspaceById(id, number) {
+        const n = Math.round(number)
+        if (!UmbrielModel.validId(id) || n < 1) return false
+        Quickshell.execDetached(["sh", "-c", 'umbriel msg window-focus "$1" && umbriel msg window-move-to-workspace-silent "$2"', "sh", id, String(n)])
+        return true
+    }
     // Dropdown terminal (services/DropTerminal.qml): the "anodrop" scratchpad
     // (external/umbriel/ano.toml gives ano.dropterm to it). Shown: revealed
     // and focused, resized by the difference to r (umbriel resizes the focused

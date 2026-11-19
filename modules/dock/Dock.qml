@@ -11,6 +11,8 @@ import qs.modules.common.functions
 import qs.modules.common.widgets
 import qs.services
 import "reorder.js" as Reorder
+import "dropargs.js" as DropArgs
+import "../bar"
 
 /**
  * Multi-style dock — supports "pill" and "macos" styles.
@@ -73,6 +75,47 @@ Scope {
         }
     }
 
+    // ── Icon menu (right-click or press-and-hold; idea from Bioma) ──
+    function _entry(appId) { return DesktopEntries.heuristicLookup(appId) }
+    function _launchNew(appId) {
+        const e = root._entry(appId)
+        if (e) DefaultApps.launchEntry(e); else DefaultApps.launch([appId], "", appId)
+    }
+    function _setPinned(appId, on) {
+        const list = root.pinnedApps.filter(a => a !== appId)
+        Config.setNestedValue("dock.pinnedApps", on ? list.concat([appId]) : list)
+    }
+    function menuEntries(item, menu) {
+        const appId = item.appId
+        const e = root._entry(appId)
+        const wins = CompositorService.windows.filter(w => w.appId === appId)
+        const out = [{ header: e?.name || appId }, { icon: "add", text: "New window", run: () => root._launchNew(appId) }]
+        for (const act of Array.from(e?.actions ?? []))
+            out.push({ icon: "bolt", text: act.name, run: () => DefaultApps.launch(Array.from(act.command), e.workingDirectory, e.id) })
+        if (wins.length) out.push({ separator: true })
+        for (const w of wins.slice(0, 8))
+            out.push({ icon: "select_window", text: w.title || appId, run: () => CompositorService.focusWindow(w) })
+        out.push({ separator: true })
+        const target = wins.find(w => w.focused) ?? wins[0]
+        if (target && (CompositorService.supports.moveToWorkspace ?? false))
+            out.push({ icon: "move_group", text: "Move to workspace…", run: () => menu.show(root.workspaceEntries(target, menu)) })
+        out.push(item.pinned ? { icon: "keep_off", text: "Unpin from dock", run: () => root._setPinned(appId, false) }
+                             : { icon: "keep", text: "Pin to dock", run: () => root._setPinned(appId, true) })
+        if (target) out.push({ icon: "close", text: wins.length > 1 ? "Close window" : "Close", run: () => CompositorService.closeWindow(target) })
+        if (wins.length > 1) out.push({ icon: "cancel", text: `Close all ${wins.length}`, run: () => wins.forEach(w => CompositorService.closeWindow(w)) })
+        return out
+    }
+    // The window's output's workspaces (not its own), and the next free number.
+    function workspaceEntries(win, menu) {
+        const list = CompositorService.workspacesFor(win.output).map(w => w.number).filter(n => n > 0)
+        const nums = Array.from(new Set(list)).sort((a, b) => a - b)
+        const out = [{ header: `Move “${win.title || win.appId}” to` }]
+        for (const n of nums) if (n !== win.workspace) out.push({ icon: "workspaces", text: `Workspace ${n}`, run: () => CompositorService.moveWindowToWorkspace(win, n) })
+        const next = (nums.length ? Math.max(...nums) : 0) + 1
+        out.push({ icon: "add", text: `New workspace (${next})`, run: () => CompositorService.moveWindowToWorkspace(win, next) })
+        return out
+    }
+
     Variants {
         model: {
             const screens = Quickshell.screens
@@ -110,13 +153,27 @@ Scope {
             // Never over a fullscreen window (pinned included: the dock is on
             // the overlay layer and would sit on top of a game).
             property bool reveal: !screenFullscreen && (root.pinned
-                || (hoverToReveal && _rested) || _previewsOpen > 0
+                || (hoverToReveal && _rested) || _previewsOpen > 0 || dockMenu.visible || _dropHold
                 || (Config.options?.dock?.showOnDesktop !== false && !ToplevelManager.activeToplevel?.activated))
 
             // Window previews open from this dock: they hold it up while the
             // pointer is on them (they are their own popup surface, so the
             // dock's hover area loses the pointer).
             property int _previewsOpen: 0
+
+            // A drag (files, links) reaching the dock: it shows and stays up while the drag is
+            // over it (moving from icon to icon exits one drop area before entering the next).
+            property bool _dropHold: false
+            function _dropIn() { dropRelease.stop(); dockWindow._dropHold = true }
+            function _dropOut() { dropRelease.restart() }
+            Timer { id: dropRelease; interval: 400; onTriggered: dockWindow._dropHold = false }
+
+            BarGroupMenu {
+                id: dockMenu
+                barEdge: root.position
+                function show(entries) { dockMenu.entries = entries; dockMenu.visible = true }
+                function openFor(item, anchorItem) { dockMenu.entries = root.menuEntries(item, dockMenu); dockMenu.openAt(anchorItem) }
+            }
 
             // Dragging a pinned icon along the dock reorders the pins: the
             // dragged one follows the pointer, the ones it passes slide over,
@@ -185,6 +242,14 @@ Scope {
                 y: root.isVertical ? dockBg.y : (root.isTop ? 0 : dockWindow.height - thick)
                 width: root.isVertical ? thick : dockBg.width
                 height: root.isVertical ? dockBg.height : thick
+            }
+
+            DropArea {
+                anchors.fill: parent
+                onEntered: dockWindow._dropIn()
+                onExited: dockWindow._dropOut()
+                // Only icons take drops: here (between icons, or an icon that refused) it's ignored.
+                onDropped: drop => { dockWindow._dropOut(); drop.accepted = false }
             }
 
             MouseArea {
@@ -335,6 +400,8 @@ Scope {
                                         hoverEnabled: true
                                         cursorShape: dockItem.dragged ? Qt.ClosedHandCursor : Qt.PointingHandCursor
                                         preventStealing: true
+                                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                        pressAndHoldInterval: 500
                                         // Press position, in the layout (it doesn't move
                                         // with the icon, which follows the pointer).
                                         property point _press
@@ -344,7 +411,7 @@ Scope {
                                         }
                                         onPressed: mouse => { _press = mapToItem(dockLayout, mouse.x, mouse.y); _wasDrag = false }
                                         onPositionChanged: mouse => {
-                                            if (!pressed || !dockItem.modelData.pinned) return
+                                            if (!pressed || !(pressedButtons & Qt.LeftButton) || !dockItem.modelData.pinned) return
                                             const p = mapToItem(dockLayout, mouse.x, mouse.y)
                                             const d = root.isVertical ? p.y - _press.y : p.x - _press.x
                                             if (!dockItem.dragged) {
@@ -364,7 +431,12 @@ Scope {
                                             if (to !== from) Qt.callLater(() => Config.setNestedValue("dock.pinnedApps", Reorder.move(root.pinnedApps, from, to)))
                                         }
                                         onCanceled: if (dockItem.dragged) _endDrag()
-                                        onClicked: if (!_wasDrag) root.activateApp(modelData.appId)
+                                        // Held still (Qt cancels it once the pointer moves past the drag threshold): the menu.
+                                        onPressAndHold: mouse => { if (!dockItem.dragged && mouse.button === Qt.LeftButton) { _wasDrag = true; dockMenu.openFor(dockItem.modelData, iconBg) } }
+                                        onClicked: mouse => {
+                                            if (mouse.button === Qt.RightButton) dockMenu.openFor(dockItem.modelData, iconBg)
+                                            else if (!_wasDrag) root.activateApp(modelData.appId)
+                                        }
                                     }
 
                                     StyledToolTip {
@@ -373,6 +445,51 @@ Scope {
                                         visible: iconMA.containsMouse && !dockItem.hasPreview
                                     }
                                 }
+
+                                // Files and links dropped on the icon open in this app, by its
+                                // Exec field codes (dropargs.js); one that takes none refuses.
+                                DropArea {
+                                    id: iconDrop
+                                    anchors.fill: parent
+                                    property var _items: []
+                                    // The uri-list as sent: drag.urls can hold a portal file-transfer token
+                                    // instead (Qt resolves it through the document portal, or gives up).
+                                    function _urls(drag) {
+                                        const raw = String(drag.getDataAsString?.("text/uri-list") ?? "")
+                                        // Without a portal the token comes back in both: keep real URIs only.
+                                        const isUri = x => /^[a-z][a-z0-9+.-]*:/i.test(x)
+                                        let u = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("#") && isUri(l))
+                                        if (!u.length) u = Array.from(drag.urls ?? []).map(String).filter(isUri)
+                                        if (!u.length && /^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(String(drag.text ?? "").trim())) u.push(String(drag.text).trim())
+                                        return u
+                                    }
+                                    onEntered: drag => {
+                                        dockWindow._dropIn()
+                                        const e = root._entry(dockItem.modelData.appId)
+                                        iconDrop._items = e ? DropArgs.accepted(e.execString, iconDrop._urls(drag)) : []
+                                        drag.accepted = iconDrop._items.length > 0
+                                    }
+                                    onExited: { dockWindow._dropOut(); iconDrop._items = [] }
+                                    onDropped: drop => {
+                                        dockWindow._dropOut()
+                                        const e = root._entry(dockItem.modelData.appId)
+                                        const runs = e ? DropArgs.launches(e.execString, Array.from(e.command), iconDrop._urls(drop)) : []
+                                        iconDrop._items = []
+                                        if (!runs.length) { drop.accepted = false; return }
+                                        for (const argv of runs) DefaultApps.launch(argv, e.workingDirectory, e.id)
+                                        drop.acceptProposedAction()
+                                    }
+                                }
+                                // Accepting: a ring; refusing: the icon dims.
+                                Rectangle {
+                                    anchors.fill: iconBg
+                                    radius: iconBg.radius
+                                    color: "transparent"
+                                    border.width: 2
+                                    border.color: Appearance?.colors.colPrimary ?? "#65558F"
+                                    visible: iconDrop.containsDrag && iconDrop._items.length > 0
+                                }
+                                opacity: iconDrop.containsDrag && iconDrop._items.length === 0 ? 0.4 : 1
 
                                 // Running indicator dot
                                 Rectangle {

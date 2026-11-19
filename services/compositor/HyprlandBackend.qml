@@ -24,7 +24,7 @@ QtObject {
         workspaces: true, perOutputWorkspaces: false, windowCapture: true, blurProtocol: true, layerBlurRules: true,
         outerGaps: true, cursorZoom: true, screenShader: true, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true, windowGeometry: true, cursorPos: true, windowBlur: true, scrollingLayout: true,
-        infiniteDesktop: true
+        infiniteDesktop: true, moveToWorkspace: true
     })
 
     // Raw IPC state
@@ -161,6 +161,9 @@ QtObject {
 
     function focusWindowById(id) { return id ? root._lua(`hl.dsp.focus({ window = "address:${id}" })`) : false }
     function closeWindowById(id) { return id ? root._lua(`hl.dsp.window.close({ window = "address:${id}" })`) : false }
+    function moveWindowToWorkspaceById(id, number) {
+        return id && Number.isInteger(number) ? root._lua(`hl.dsp.window.move({ window = "address:${id}", workspace = ${number}, follow = false })`) : false
+    }
     // Dropdown terminal (services/DropTerminal.qml): kept on a special
     // workspace while hidden; shown floating at r (global logical px).
     function showWindowAt(id, r, side) {

@@ -23,7 +23,7 @@ GenericBackend {
     supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
         outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, scrollingLayout: true, infiniteDesktop: true
+        keyboardLayouts: true, scrollingLayout: true, infiniteDesktop: true, moveToWorkspace: true
     })
 
     readonly property string _socketPath: Quickshell.env("MANGO_INSTANCE_SIGNATURE") ?? ""
@@ -149,6 +149,8 @@ GenericBackend {
     }
     function focusWindowById(id) { return root._dispatch("focusid", [], id) }
     function closeWindowById(id) { return root._dispatch("killclient", [], id) }
+    // tagsilent: to tag n without following (mango tags 1–9).
+    function moveWindowToWorkspaceById(id, number) { return number >= 1 && number <= 9 ? root._dispatch("tagsilent", [number], id) : false }
     // Dropdown terminal (services/DropTerminal.qml): minimized while hidden.
     // Shown: restored, resized by the difference to r, centred, then pushed
     // to the edge (smartmovewin steps past other windows and the centre, so
