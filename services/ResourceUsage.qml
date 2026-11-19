@@ -7,9 +7,9 @@ import Quickshell
 import Quickshell.Io
 
 /**
- * System resource monitor. Polls /proc for CPU (total and per core), RAM, swap and network I/O, the CPU temperature
- * (the x86_pkg_temp thermal zone, else the first) and disk use of /. Keeps rolling histories for the charts.
- * Everything is sampled only while a consumer holds a lease.
+ * System resource monitor: CPU (total and per core), RAM, swap, network I/O (the machine's own links), the CPU
+ * temperature and disk use of /, with rolling histories for the charts. anod samples them (stats.watch, pushed
+ * "stats" events) while a consumer holds a lease; the /proc reading below only runs while anod is unavailable.
  */
 Singleton {
     id: root
@@ -60,6 +60,35 @@ Singleton {
         previousNetworkStats = undefined
         previousCoreStats = []
     }
+    // anod feeds the figures while it runs; the timer below is the fallback.
+    readonly property int pollMs: GameMode.slowPolling ? GameMode.pollInterval : (Config.options?.resources?.updateInterval ?? 3000)
+    readonly property bool _fallback: root.leaseCount > 0 && !watch.live && !watch.pending
+    on_FallbackChanged: if (root._fallback && !root.tempPath) tempProbe.running = true
+    property real _lastHist: 0
+    StatsWatch {
+        id: watch
+        active: root.leaseCount > 0
+        interval: root.pollMs
+        onSample: data => root._apply(data)
+    }
+    function _apply(d) {
+        const m = d.mem ?? {}
+        root.memoryTotal = m.totalKB || 1
+        root.memoryFree = m.availKB ?? 0
+        root.swapTotal = m.swapTotalKB ?? 0
+        root.swapFree = m.swapFreeKB ?? 0
+        const c = d.cpu ?? {}
+        if (c.total !== null && c.total !== undefined) root.cpuUsage = c.total // null: the first sample
+        if (c.cores) root.coreUsage = Array.from(c.cores)
+        if (c.maxMHz > 0) root.maxAvailableCpuString = (c.maxMHz / 1000).toFixed(0) + " GHz"
+        root.temperature = d.temp?.c ?? NaN
+        const disk = d.disks?.[0]
+        if (disk) { root.diskSize = disk.size; root.diskUsed = disk.used }
+        if (d.net?.rx !== null && d.net?.rx !== undefined) { root.networkDownloadSpeed = d.net.rx; root.networkUploadSpeed = d.net.tx }
+        // Another consumer may ask anod for faster samples: the histories keep this one's pace.
+        if (d.t - root._lastHist >= root.pollMs * 0.9) { root._lastHist = d.t; root.updateHistories() }
+    }
+
     property list<real> cpuUsageHistory: []
     property list<real> memoryUsageHistory: []
     property list<real> swapUsageHistory: []
@@ -88,7 +117,7 @@ Singleton {
     Timer {
         id: pollTimer
         interval: 1 // first sample immediately, then the configured interval
-        running: root.leaseCount > 0
+        running: root._fallback
         repeat: true
         onTriggered: {
             fileMeminfo.reload()
@@ -155,7 +184,7 @@ Singleton {
             previousNetworkStats = { received: totalReceived, transmitted: totalTransmitted }
 
             root.updateHistories()
-            interval = GameMode.slowPolling ? GameMode.pollInterval : (Config.options?.resources?.updateInterval ?? 3000)
+            interval = root.pollMs
         }
     }
 
@@ -163,11 +192,11 @@ Singleton {
     FileView { id: fileStat; path: "/proc/stat" }
     FileView { id: fileNetDev; path: "/proc/net/dev" }
 
-    // The CPU temperature: the zone is picked once at start (x86_pkg_temp, else the first; a one-off listing, not tied
-    // to the lease: a lease dropped mid-pick used to kill it and leave no zone), then read with each sample.
+    // Fallback only (anod picks the sensor itself): the zone is picked once (x86_pkg_temp, else the first; a one-off
+    // listing, not tied to the lease: a lease dropped mid-pick used to kill it and leave no zone).
     property string tempPath: ""
     Process {
-        running: true
+        id: tempProbe
         command: ["sh", "-c", "for z in /sys/class/thermal/thermal_zone*; do [ -r \"$z/temp\" ] && printf '%s %s\\n' \"$z\" \"$(cat \"$z/type\")\"; done"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -191,16 +220,10 @@ Singleton {
         }
     }
 
-    Process {
-        id: findCpuMaxFreqProc
-        environment: ({ LANG: "C", LC_ALL: "C" })
-        command: ["bash", "-c", "lscpu | grep 'CPU max MHz' | awk '{print $4}'"]
-        running: true
-        stdout: StdioCollector {
-            id: outputCollector
-            onStreamFinished: {
-                root.maxAvailableCpuString = (parseFloat(outputCollector.text) / 1000).toFixed(0) + " GHz"
-            }
-        }
+    // The CPU's top clock (kHz), read once: anod's samples carry it too.
+    FileView {
+        path: "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"
+        printErrors: false
+        onLoaded: { const khz = parseInt(text()); if (khz > 0) root.maxAvailableCpuString = (khz / 1e6).toFixed(0) + " GHz" }
     }
 }

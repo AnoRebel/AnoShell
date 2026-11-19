@@ -114,6 +114,17 @@ func TestDetailsAndApps(t *testing.T) {
 	if apps[0].Mem != 6*uint64(os.Getpagesize()) || apps[1].App != "kitty" || apps[1].CPU != 0.1 || apps[2].Procs != 0 {
 		t.Fatalf("apps totals: %+v", apps)
 	}
+	all := s.All()
+	ppid := map[int]int{}
+	for _, p := range all.Procs {
+		ppid[p.PID] = p.PPID
+		if p.Cmd != "" {
+			t.Fatalf("All carries no command lines: %+v", p)
+		}
+	}
+	if all.Count != 4 || ppid[102] != 101 || ppid[200] != 1 {
+		t.Fatalf("all: %+v", all)
+	}
 }
 
 func TestSensors(t *testing.T) {

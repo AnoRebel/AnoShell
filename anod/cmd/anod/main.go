@@ -38,6 +38,7 @@ import (
 	"ano/anod/internal/screentime"
 	"ano/anod/internal/secrets"
 	"ano/anod/internal/shelllog"
+	"ano/anod/internal/stats"
 	"ano/anod/internal/supervisor"
 	"ano/anod/internal/sysmon"
 	"ano/anod/internal/version"
@@ -375,7 +376,37 @@ func main() {
 			return sm.Apps(p.Groups), nil
 		})
 		srv.Handle("sysmon.sensors", func(json.RawMessage) (any, error) { return sm.Sensors(), nil })
+		srv.Handle("sysmon.procs", func(json.RawMessage) (any, error) { return sm.All(), nil })
 	}
+
+	// System statistics for the shell (bar, sidebar, pieces): sampled only while
+	// a shell view holds a lease, at the shortest leased interval, pushed as
+	// "stats" events. A closed connection drops its leases (OnDisconnect below).
+	statsHub := stats.NewHub(&stats.Reader{Sensor: func() string {
+		m, err := config.Effective()
+		if err != nil {
+			return ""
+		}
+		return config.String(m, "vitals.temperature_sensor", "")
+	}}, func(s stats.Sample) { srv.Broadcast("stats", s) })
+	go statsHub.Run(ctx)
+	srv.HandleConn("stats.watch", func(conn uint64, raw json.RawMessage) (any, error) {
+		var p struct {
+			Interval int `json:"interval"`
+		}
+		json.Unmarshal(raw, &p)
+		return map[string]any{"id": statsHub.Watch(conn, cmp.Or(p.Interval, 2000))}, nil
+	})
+	srv.Handle("stats.unwatch", func(raw json.RawMessage) (any, error) {
+		var p struct {
+			ID uint64 `json:"id"`
+		}
+		if err := json.Unmarshal(raw, &p); err != nil || p.ID == 0 {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {id}")
+		}
+		statsHub.Unwatch(p.ID)
+		return true, nil
+	})
 
 	// Official weather warnings for the place the shell reports (alerts.where).
 	{
@@ -929,6 +960,7 @@ func main() {
 		return true, nil
 	})
 	srv.OnDisconnect = func(conn uint64) {
+		statsHub.Drop(conn)
 		shaderMu.Lock()
 		defer shaderMu.Unlock()
 		if conn != shaderConn || shellShader == "" || os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") == "" {

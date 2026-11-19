@@ -7,8 +7,8 @@ import Quickshell.Io
 import qs.modules.common
 
 /**
- * Aggregate network throughput across all non-loopback interfaces by
- * polling /proc/net/dev. Exposes:
+ * Aggregate network throughput: anod's samples (the machine's own links) while
+ * it runs, else polling /proc/net/dev (all non-loopback interfaces). Exposes:
  *   downloadSpeed / uploadSpeed   bytes per second (instantaneous)
  *   downloadTotal / uploadTotal   bytes since service start
  *   downloadHistory / uploadHistory   plain JS arrays of recent speeds
@@ -105,57 +105,60 @@ Singleton {
         path: "/proc/net/dev"
     }
 
+    // anod's samples (the machine's own links) while it runs; /proc/net/dev here otherwise.
+    StatsWatch {
+        id: watch
+        active: root.serviceEnabled && Config.ready
+        interval: root.intervalMs
+        onSample: d => { if (d.net) root._take(d.net.rxBytes, d.net.txBytes, d.t) }
+    }
+
     Timer {
         interval: root.intervalMs
-        running: root.serviceEnabled && Config.ready
+        running: root.serviceEnabled && Config.ready && !watch.live && !watch.pending
         repeat: true
         triggeredOnStart: true
-
         onTriggered: {
             netDevFile.reload();
             const content = netDevFile.text();
             if (!content) return;
-
             const data = root.parseNetDev(content);
-            const now = Date.now();
+            root._take(data.rx, data.tx, Date.now());
+        }
+    }
+    onServiceEnabledChanged: if (!root.serviceEnabled) { root._initialized = false; root.downloadTotal = 0; root.uploadTotal = 0 }
+    // anod and the fallback count different links: start a new baseline, keep the totals.
+    Connections { target: watch; function onLiveChanged() { root._initialized = false } }
 
-            if (!root._initialized) {
-                root._initialRxBytes = data.rx;
-                root._initialTxBytes = data.tx;
-                root._prevRxBytes = data.rx;
-                root._prevTxBytes = data.tx;
-                root._prevTimestamp = now;
-                root._initialized = true;
-                return;
-            }
-
+    // One reading of the cumulative counters.
+    function _take(rx, tx, now) {
+        if (!root._initialized) {
+            root._initialRxBytes = rx - root.downloadTotal;
+            root._initialTxBytes = tx - root.uploadTotal;
+            root._prevRxBytes = rx;
+            root._prevTxBytes = tx;
+            root._prevTimestamp = now;
+            root._initialized = true;
+            return;
+        }
+        // Counters that went down: a link left (or the source switched): no
+        // rate this time, and the totals continue from the new baseline.
+        if (rx < root._prevRxBytes || tx < root._prevTxBytes) {
+            root._initialRxBytes = rx - root.downloadTotal;
+            root._initialTxBytes = tx - root.uploadTotal;
+        } else {
             const timeDelta = (now - root._prevTimestamp) / 1000;
             if (timeDelta > 0) {
-                let rxDelta = data.rx - root._prevRxBytes;
-                let txDelta = data.tx - root._prevTxBytes;
-                // Counter wrap (assume 64-bit)
-                if (rxDelta < 0) rxDelta += Math.pow(2, 64);
-                if (txDelta < 0) txDelta += Math.pow(2, 64);
-
-                root.downloadSpeed = rxDelta / timeDelta;
-                root.uploadSpeed = txDelta / timeDelta;
-
-                if (root.downloadSpeed >= 0 && isFinite(root.downloadSpeed))
-                    root.downloadHistory = root._push(root.downloadHistory, root.downloadSpeed);
-                if (root.uploadSpeed >= 0 && isFinite(root.uploadSpeed))
-                    root.uploadHistory = root._push(root.uploadHistory, root.uploadSpeed);
+                root.downloadSpeed = (rx - root._prevRxBytes) / timeDelta;
+                root.uploadSpeed = (tx - root._prevTxBytes) / timeDelta;
+                root.downloadHistory = root._push(root.downloadHistory, root.downloadSpeed);
+                root.uploadHistory = root._push(root.uploadHistory, root.uploadSpeed);
             }
-
-            let downTotal = data.rx - root._initialRxBytes;
-            let upTotal = data.tx - root._initialTxBytes;
-            if (downTotal < 0) downTotal += Math.pow(2, 64);
-            if (upTotal < 0)   upTotal += Math.pow(2, 64);
-            root.downloadTotal = downTotal;
-            root.uploadTotal = upTotal;
-
-            root._prevRxBytes = data.rx;
-            root._prevTxBytes = data.tx;
-            root._prevTimestamp = now;
+            root.downloadTotal = rx - root._initialRxBytes;
+            root.uploadTotal = tx - root._initialTxBytes;
         }
+        root._prevRxBytes = rx;
+        root._prevTxBytes = tx;
+        root._prevTimestamp = now;
     }
 }

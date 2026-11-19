@@ -235,14 +235,26 @@ the shell keeps new notifications (up to 500) and sends them once it is back.
 
 Processes for the Bubble Monitor (see `anod/internal/sysmon`, read from `/proc` and `/sys`; nothing
 runs between calls, and calls less than a second apart share one sample): `sysmon.top` (`{"n"}`,
-default 12, at most 50) → `{"procs", "count", "cores"}`, the busiest user processes by CPU then memory,
+default 12, at most 100) → `{"procs", "count", "cores"}`, the busiest user processes by CPU then memory,
 each `{"pid", "ppid", "name", "cpu", "mem", "memShare", "threads", "user", "start", "state", "paused",
 "cmd"}` (`cpu` is a share of the whole machine since the previous sample, so the first call reports 0;
 `start` in ms since the epoch); `sysmon.proc` (`{"pid"}`) → one process, or `null` once it has gone;
 `sysmon.apps` (`{"groups": [{"app", "pids", "names"}]}`) → per app, its processes and their
 descendants added up (`{"app", "cpu", "mem", "memShare", "procs", "top"}`; without `pids`, processes
 named like one of `names` stand in); `sysmon.sensors` → `[{"chip", "label", "c"}]` from hwmon, else the
-thermal zones.
+thermal zones; `sysmon.procs` → every user process (as `sysmon.top`, without `cmd`), for views that
+group them themselves.
+
+System statistics (`anod/internal/stats`), sampled only while leased: `stats.watch` (`{"interval"}` in ms,
+clamped to 500–10000, default 2000) → `{"id"}`; `stats.unwatch` (`{"id"}`). Leases belong to the connection
+that took them and end with it. While any lease is held, anod samples at the shortest leased interval and
+pushes a `stats` event: `{"t", "interval", "cpu": {"total", "cores", "count", "mhz", "minMHz", "maxMHz"},
+"mem": {"totalKB", "availKB", "swapTotalKB", "swapFreeKB"}, "net": {"rx", "tx", "rxBytes", "txBytes",
+"links"}, "temp": {"c", "sensor"}, "disks": [{"mount", "size", "used"}], "gpus"}`. `cpu.total`/`cores` are
+0..1 and `net.rx`/`tx` bytes per second, `null` in the first sample (rates need two readings) and when a
+link left. Network counts the machine's own links (not `lo`, VPN tunnels, bridges or container links).
+`temp` is `vitals.temperature_sensor` (a substring of the sensor's path) when set, else the vendor's
+package sensor, else the CPU thermal zone. The log notes when sampling starts, changes rate or stops.
 
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in
 `$XDG_DATA_HOME/anoshell/secrets/<name>` with mode 0600 (directory 0700),

@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
 import Quickshell.Wayland
+import qs.services as Ano
 
 // The machine's vital signs: load, memory, clock, GPU, battery, processes,
 // and the traffic on its network links.
@@ -57,7 +58,6 @@ Singleton {
         if (root.active && !root.probed) {
             root.probed = true;
             gpuProbe.running = true;
-            temperatureProbe.running = true;
         }
         // A rate across a pause would be an average over it, not a rate.
         if (!root.active) {
@@ -77,6 +77,17 @@ Singleton {
     // A floor: a hand-written 0 would be a timer firing on every frame.
     readonly property int interval: Math.max(250, Config.get("vitals.interval", 2000))
 
+    // anod samples CPU, clock, memory, temperature and network (stats.watch);
+    // the files below are read only while it can't (`_fallback`).
+    Ano.StatsWatch {
+        id: statsWatch
+        active: root.active
+        interval: root.interval
+        onSample: data => root.applyStats(data)
+    }
+    readonly property bool _fallback: root.active && !statsWatch.live && !statsWatch.pending
+    on_FallbackChanged: if (root._fallback && !root.temperaturePath) temperatureProbe.running = true
+
     Timer {
         interval: root.interval
         running: root.active
@@ -86,17 +97,56 @@ Singleton {
     }
 
     function sample() {
-        statFile.reload();
-        memoryFile.reload();
-        clockFile.reload();
+        if (root._fallback) {
+            statFile.reload();
+            memoryFile.reload();
+            clockFile.reload();
+            if (root.temperaturePath.length > 0)
+                temperatureFile.reload();
+            networkFile.reload();
+        }
         if (root.gpuPath.length > 0) {
             gpuBusyFile.reload();
             gpuClockFile.reload();
             gpuVramFile.reload();
         }
-        if (root.temperaturePath.length > 0)
-            temperatureFile.reload();
-        networkFile.reload();
+    }
+
+    // One of anod's samples. Another consumer may ask for faster ones: this
+    // keeps its own cadence, as the clock average counts samples.
+    property real _lastApply: 0
+    property bool _anodTemperature: false
+    function applyStats(d) {
+        if (d.t - root._lastApply < root.interval * 0.9)
+            return;
+        root._lastApply = d.t;
+        const c = d.cpu ?? {};
+        if (c.total !== null && c.total !== undefined)
+            root.cpuPercent = Math.max(0, Math.min(100, c.total * 100));
+        if (c.count > 0)
+            root.cores = c.count;
+        if (c.mhz > 0)
+            root.pushClock(c.mhz);
+        if (c.minMHz > 0)
+            root.cpuClockMin = c.minMHz;
+        if (c.maxMHz > 0)
+            root.cpuClockMax = c.maxMHz;
+        const m = d.mem ?? {};
+        if (m.totalKB > 0) {
+            root.ramTotal = m.totalKB / 1024;
+            root.ramUsed = Math.max(0, (m.totalKB - m.availKB) / 1024);
+            root.swapTotal = (m.swapTotalKB ?? 0) / 1024;
+            root.swapUsed = m.swapTotalKB > 0 ? Math.max(0, (m.swapTotalKB - m.swapFreeKB) / 1024) : 0;
+        }
+        root._anodTemperature = d.temp?.c !== null && d.temp?.c !== undefined;
+        if (root._anodTemperature)
+            root.cpuTemperature = d.temp.c;
+        const n = d.net ?? {};
+        root.netKnown = (n.links ?? 0) > 0;
+        if (n.rx !== null && n.rx !== undefined) {
+            root.netIn = n.rx;
+            root.netOut = n.tx;
+        }
     }
 
     // `reload()` is asynchronous, and this is the trap in it: the text is
@@ -119,7 +169,7 @@ Singleton {
 
     FileView {
         id: statFile
-        path: "/proc/stat"
+        path: root._fallback ? "/proc/stat" : ""
         blockLoading: true
         onLoaded: root.readLoad(statFile.text())
     }
@@ -164,7 +214,7 @@ Singleton {
 
     FileView {
         id: clockFile
-        path: "/proc/cpuinfo"
+        path: root._fallback ? "/proc/cpuinfo" : ""
         blockLoading: true
         onLoaded: root.readClock(clockFile.text())
     }
@@ -186,8 +236,11 @@ Singleton {
             return;
 
         root.cores = count;
-        root.cpuClockRaw = sum / count;
+        root.pushClock(sum / count);
+    }
 
+    function pushClock(mhz) {
+        root.cpuClockRaw = mhz;
         const samples = root.clockSamples.slice();
         samples.push(root.cpuClockRaw);
         while (samples.length > Math.max(1, root.averageWindow))
@@ -245,7 +298,7 @@ Singleton {
 
     FileView {
         id: memoryFile
-        path: "/proc/meminfo"
+        path: root._fallback ? "/proc/meminfo" : ""
         blockLoading: true
         onLoaded: root.readMemory(memoryFile.text())
     }
@@ -449,7 +502,7 @@ Singleton {
 
     property string temperaturePath: ""
     property real cpuTemperature: 0   // °C
-    readonly property bool cpuTemperatureKnown: temperaturePath.length > 0
+    readonly property bool cpuTemperatureKnown: statsWatch.live ? root._anodTemperature : temperaturePath.length > 0
 
     readonly property string configuredSensor: Config.get("vitals.temperature_sensor", "")
 
@@ -511,7 +564,7 @@ Singleton {
 
     FileView {
         id: temperatureFile
-        path: root.temperaturePath
+        path: root._fallback ? root.temperaturePath : ""
         blockLoading: true
         printErrors: false
         // Millidegrees, for hwmon and the zones alike.
@@ -544,7 +597,7 @@ Singleton {
 
     FileView {
         id: networkFile
-        path: "/proc/net/dev"
+        path: root._fallback ? "/proc/net/dev" : ""
         blockLoading: true
         printErrors: false
         onLoaded: root.readNetwork(networkFile.text())
@@ -677,7 +730,24 @@ Singleton {
 
     onListProcessesChanged: if (!root.listProcesses) root.processes = [];
 
+    // anod's process sampler while it runs (CPU measured between its samples,
+    // not ps's lifetime average); `ps` otherwise.
     function refreshProcesses() {
+        if (Ano.Anod.available) {
+            Ano.Anod.call("sysmon.top", { n: root.processCount }, res => {
+                if (!root.listProcesses || !res)
+                    return;
+                const cores = Math.max(1, res.cores ?? 1);
+                root.processes = (res.procs ?? []).map(p => ({
+                    pid: p.pid,
+                    name: p.name,
+                    cpu: p.cpu * cores * 100,
+                    memPercent: p.memShare * 100,
+                    memMb: Math.round(p.mem / 1048576)
+                }));
+            });
+            return;
+        }
         processProbe.running = false;
         processProbe.running = true;
     }
@@ -749,8 +819,8 @@ Singleton {
     // counts as the terminal's. Add it back when CompositorService.windows
     // reports pids.
     //
-    // The sample is one `pgrep` and one `awk` over `/proc/<pid>/stat` for this
-    // user's processes. It runs only while held (`holdApps`).
+    // The sample is anod's process list (sysmon.procs); without anod, one
+    // `pgrep` and one `awk` over `/proc/<pid>/stat`. Only while held (`holdApps`).
 
     property var appHolders: []
     readonly property bool appsActive: root.appHolders.length > 0
@@ -779,6 +849,18 @@ Singleton {
         repeat: true
         triggeredOnStart: true
         onTriggered: {
+            if (Ano.Anod.available) {
+                // One call: every user process with its parent, CPU share and memory.
+                Ano.Anod.call("sysmon.procs", {}, res => {
+                    if (!root.appsActive || !res)
+                        return;
+                    const cores = Math.max(1, res.cores ?? 1);
+                    root.digest((res.procs ?? []).map(p => ({
+                        pid: p.pid, ppid: p.ppid, comm: p.name, bytes: p.mem, ticks: 0, cpu: p.cpu * cores * 100
+                    })), Quickshell.processId);
+                });
+                return;
+            }
             appSampler.running = false;
             appSampler.running = true;
         }
@@ -893,7 +975,9 @@ Singleton {
                 continue;
 
             const before = root.previousTicks[row.pid];
-            const cpu = elapsed > 0 && before !== undefined
+            // anod's rows carry their CPU (% of one core) already.
+            const cpu = row.cpu !== undefined ? row.cpu
+                : elapsed > 0 && before !== undefined
                 ? Math.max(0, (row.ticks - before) / root.hertz / elapsed * 100) : 0;
 
             if (!groups[key])

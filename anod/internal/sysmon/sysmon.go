@@ -252,13 +252,26 @@ func (s *Sampler) Top(n int) Top {
 		all = append(all, p)
 	}
 	slices.SortFunc(all, byUse)
-	n = min(max(n, 1), 50, len(all))
+	n = min(max(n, 1), 100, len(all))
 	out := make([]Proc, n)
 	for i, p := range all[:n] {
 		out[i] = *p
 		out[i].Cmd = s.cmdline(p.PID)
 	}
 	return Top{Procs: out, Count: len(s.procs), Cores: s.cores}
+}
+
+// All returns every user process (no command lines), for views that group
+// them themselves (the Bioma cytoplasm).
+func (s *Sampler) All() Top {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.sample()
+	out := make([]Proc, 0, len(s.procs))
+	for _, p := range s.procs {
+		out = append(out, *p)
+	}
+	return Top{Procs: out, Count: len(out), Cores: s.cores}
 }
 
 // Details returns one process (false when it has gone).
