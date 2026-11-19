@@ -10,6 +10,7 @@ import (
 type lease struct {
 	conn     uint64
 	interval time.Duration
+	gpu      bool // wants the GPUs (reading them can cost a process walk)
 }
 
 // Hub samples while at least one lease is held, at the shortest leased
@@ -26,6 +27,8 @@ type Hub struct {
 	wake   chan struct{}
 	// Extra, if set, adds to each sample before it is pushed (the GPUs).
 	Extra func(*Sample)
+	// Stopped, if set, runs when sampling stops (the last lease went).
+	Stopped func()
 }
 
 func NewHub(r *Reader, push func(Sample)) *Hub {
@@ -38,11 +41,11 @@ func clampInterval(ms int) time.Duration {
 }
 
 // Watch adds a lease and returns its id.
-func (h *Hub) Watch(conn uint64, ms int) uint64 {
+func (h *Hub) Watch(conn uint64, ms int, gpu bool) uint64 {
 	h.mu.Lock()
 	h.next++
 	id := h.next
-	h.leases[id] = lease{conn, clampInterval(ms)}
+	h.leases[id] = lease{conn, clampInterval(ms), gpu}
 	h.mu.Unlock()
 	h.poke()
 	return id
@@ -73,6 +76,18 @@ func (h *Hub) poke() {
 	case h.wake <- struct{}{}:
 	default:
 	}
+}
+
+// WantsGPU: some lease wants the GPUs.
+func (h *Hub) WantsGPU() bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for _, l := range h.leases {
+		if l.gpu {
+			return true
+		}
+	}
+	return false
 }
 
 // interval is the shortest leased one, 0 when nothing is leased.
@@ -123,6 +138,9 @@ func (h *Hub) Run(ctx context.Context) {
 			if running {
 				h.Reader.Reset() // rates after a pause must not average over it
 				running = false
+				if h.Stopped != nil {
+					h.Stopped()
+				}
 			}
 			stop()
 		case !running:

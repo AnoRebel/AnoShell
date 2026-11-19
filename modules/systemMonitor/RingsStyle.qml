@@ -7,7 +7,7 @@ import qs.services
 
 /**
  * The system section's Rings style: nested rings for battery (outermost, left out without one), CPU and memory, a
- * legend beside them, a light running round the battery ring while charging, and pills for temperature, disk, uptime
+ * legend beside them, a light running round the battery ring while charging, and pills for the GPU (when anod reads one), temperature, disk, uptime
  * and power draw.
  */
 ColumnLayout {
@@ -116,6 +116,7 @@ ColumnLayout {
         spacing: 6
         Repeater {
             model: [
+                { icon: "developer_board", text: !ResourceUsage.gpuPresent || isNaN(ResourceUsage.gpuUsage) ? "" : `GPU ${Math.round(ResourceUsage.gpuUsage * 100)}%` },
                 { icon: "device_thermostat", text: isNaN(ResourceUsage.temperature) ? "" : `${Math.round(ResourceUsage.temperature)}°C` },
                 { icon: "hard_drive", text: isNaN(ResourceUsage.diskSize) ? "" : `${Math.round(ResourceUsage.diskUsedPercentage * 100)}% disk` },
                 { icon: "schedule", text: `up ${DateTime.uptime}` },

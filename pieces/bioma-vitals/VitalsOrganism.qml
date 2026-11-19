@@ -21,6 +21,8 @@ Item {
 
     // AnoShell: SystemMonitor samples only while an organism that is seen holds it.
     readonly property bool sampling: root.organism?.here ?? false
+    // The GPU dial: SystemMonitor asks anod for GPUs only while a holder says so.
+    readonly property bool wantsGpu: true
     onSamplingChanged: SystemMonitor.hold(root, root.sampling)
     Component.onDestruction: SystemMonitor.hold(root, false)
 

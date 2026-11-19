@@ -12,6 +12,7 @@ Scope {
     id: root
     property bool active: false
     property int interval: 2000
+    property bool gpu: false // the samples should carry the GPUs (costlier on Intel)
     readonly property bool live: root._id > 0
     // Asking anod right now: a consumer waits rather than reading /proc meanwhile.
     readonly property bool pending: root._asking
@@ -20,28 +21,31 @@ Scope {
     property int _id: 0
     property bool _asking: false
     property int _leasedInterval: 0
+    property bool _leasedGpu: false
 
     function _sync() {
         const want = root.active && Anod.available
-        if (root._id > 0 && (!want || root._leasedInterval !== root.interval)) {
+        if (root._id > 0 && (!want || root._leasedInterval !== root.interval || root._leasedGpu !== root.gpu)) {
             Anod.call("stats.unwatch", { id: root._id }, () => {})
             root._id = 0
         }
         if (!want || root._id > 0 || root._asking) return
         root._asking = true
-        const iv = root.interval
-        Anod.call("stats.watch", { interval: iv }, (res, err) => {
+        const iv = root.interval, gpu = root.gpu
+        Anod.call("stats.watch", { interval: iv, gpu: gpu }, (res, err) => {
             root._asking = false
             const id = res?.id ?? 0
             if (!id) return
             if (!root.active || !Anod.available) { Anod.call("stats.unwatch", { id }, () => {}); return }
             root._id = id
             root._leasedInterval = iv
+            root._leasedGpu = gpu
             root._sync() // the interval may have changed meanwhile
         })
     }
     onActiveChanged: root._sync()
     onIntervalChanged: root._sync()
+    onGpuChanged: root._sync()
     Component.onCompleted: root._sync()
     Component.onDestruction: if (root._id > 0) Anod.call("stats.unwatch", { id: root._id }, () => {})
 

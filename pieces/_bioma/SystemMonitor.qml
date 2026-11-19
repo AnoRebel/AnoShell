@@ -57,7 +57,6 @@ Singleton {
     onActiveChanged: {
         if (root.active && !root.probed) {
             root.probed = true;
-            gpuProbe.running = true;
         }
         // A rate across a pause would be an average over it, not a rate.
         if (!root.active) {
@@ -83,10 +82,16 @@ Singleton {
         id: statsWatch
         active: root.active
         interval: root.interval
+        gpu: root.holders.some(h => h?.wantsGpu === true)
         onSample: data => root.applyStats(data)
     }
     readonly property bool _fallback: root.active && !statsWatch.live && !statsWatch.pending
-    on_FallbackChanged: if (root._fallback && !root.temperaturePath) temperatureProbe.running = true
+    on_FallbackChanged: {
+        if (root._fallback && !root.temperaturePath)
+            temperatureProbe.running = true;
+        if (root._fallback && !root.gpuPath)
+            gpuProbe.running = true;  // AMD sysfs only; anod reads every vendor
+    }
 
     Timer {
         interval: root.interval
@@ -104,11 +109,11 @@ Singleton {
             if (root.temperaturePath.length > 0)
                 temperatureFile.reload();
             networkFile.reload();
-        }
-        if (root.gpuPath.length > 0) {
-            gpuBusyFile.reload();
-            gpuClockFile.reload();
-            gpuVramFile.reload();
+            if (root.gpuPath.length > 0) {
+                gpuBusyFile.reload();
+                gpuClockFile.reload();
+                gpuVramFile.reload();
+            }
         }
     }
 
@@ -141,6 +146,17 @@ Singleton {
         root._anodTemperature = d.temp?.c !== null && d.temp?.c !== undefined;
         if (root._anodTemperature)
             root.cpuTemperature = d.temp.c;
+        // The GPU anod shows (vitals.gpu_card, else the discrete one, else the first).
+        const g = Array.from(d.gpus ?? []).find(x => x.shown) ?? null;
+        root._anodGpu = !!g && !g.note;
+        root.gpuName = g?.name ?? "";
+        root.gpuPercent = g?.load ?? 0;
+        root.gpuClock = g?.mhz ?? 0;
+        if (g?.minMHz) root.gpuClockMin = g.minMHz;
+        if (g?.maxMHz) root.gpuClockMax = g.maxMHz;
+        root.gpuAsleep = !!g && (g.mhz === 0);
+        root.vramUsed = (g?.memUsed ?? 0) / 1048576;
+        root.vramTotal = (g?.memTotal ?? 0) / 1048576;
         const n = d.net ?? {};
         root.netKnown = (n.links ?? 0) > 0;
         if (n.rx !== null && n.rx !== undefined) {
@@ -335,7 +351,8 @@ Singleton {
 
     property string gpuPath: ""
     property string gpuName: ""
-    readonly property bool gpuPresent: gpuPath.length > 0
+    readonly property bool gpuPresent: statsWatch.live ? root._anodGpu : gpuPath.length > 0
+    property bool _anodGpu: false
 
     // Picking by index is wrong: card0 on this machine is a 512 MB integrated
     // Raphael and card1 the 17 GB discrete card, and the interesting one is the

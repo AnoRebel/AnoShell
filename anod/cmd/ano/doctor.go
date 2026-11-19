@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"ano/anod/internal/config"
+	"ano/anod/internal/gpu"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/shelllog"
 	"ano/anod/internal/supervisor"
@@ -303,6 +304,16 @@ func runChecks() []check {
 		}
 		if len(missing) > 0 {
 			add("warn", "optional: "+f.Name, "missing %s", strings.Join(missing, ", "))
+		}
+	}
+
+	// GPU figures: AMD and Intel come from sysfs and /proc; NVIDIA needs nvidia-smi.
+	for _, c := range (&gpu.Sampler{}).Cards(time.Now()) {
+		switch {
+		case c.Vendor == "NVIDIA" && !have("nvidia-smi"):
+			add("warn", "GPU figures", "%s: no figures (install nvidia-utils for nvidia-smi)", c.Name)
+		case c.Shown:
+			add("ok", "GPU figures", "%s (%s)", c.Name, c.Driver)
 		}
 	}
 

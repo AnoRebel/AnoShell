@@ -65,7 +65,7 @@ type Sample struct {
 	Net      Net    `json:"net"`
 	Temp     Temp   `json:"temp"`
 	Disks    []Disk `json:"disks"`
-	GPUs     []any  `json:"gpus"`
+	GPUs     any    `json:"gpus"` // []gpu.GPU, set by the hub's Extra
 }
 
 // VirtualLinks are left out of the network figures (as the Bioma monitor did).

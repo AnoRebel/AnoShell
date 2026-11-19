@@ -26,6 +26,8 @@ Singleton {
         case "fonts.technical": return Ano.Appearance.font.family.numbers || fallback
         case "fonts.expressive": return Ano.Appearance.font.family.expressive || Ano.Appearance.font.family.title || fallback
         case "animations.enable": return Ano.Config.options?.animations?.enable ?? fallback
+        case "vitals.gpu_card": return Ano.Config.options?.resources?.gpuCard || fallback
+        case "vitals.temperature_sensor": return Ano.Config.options?.resources?.temperatureSensor || fallback
         }
         return fallback
     }

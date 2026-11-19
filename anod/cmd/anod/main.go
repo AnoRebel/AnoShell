@@ -29,6 +29,7 @@ import (
 	"ano/anod/internal/config"
 	"ano/anod/internal/display"
 	"ano/anod/internal/downloads"
+	"ano/anod/internal/gpu"
 	"ano/anod/internal/hooks"
 	"ano/anod/internal/ipc"
 	"ano/anod/internal/keybinds"
@@ -387,15 +388,43 @@ func main() {
 		if err != nil {
 			return ""
 		}
-		return config.String(m, "vitals.temperature_sensor", "")
+		return config.String(m, "resources.temperatureSensor", "")
 	}}, func(s stats.Sample) { srv.Broadcast("stats", s) })
+	// GPUs ride along in each sample (internal/gpu); gpu.cards lists them for Settings.
+	var gpuMu sync.Mutex
+	gpus := &gpu.Sampler{Want: func() string {
+		m, err := config.Effective()
+		if err != nil {
+			return ""
+		}
+		return config.String(m, "resources.gpuCard", "")
+	}}
+	statsHub.Extra = func(s *stats.Sample) {
+		if !statsHub.WantsGPU() {
+			return // nothing on screen shows a GPU: no fd walk
+		}
+		gpuMu.Lock()
+		defer gpuMu.Unlock()
+		s.GPUs = gpus.Read(time.UnixMilli(s.T), time.Duration(s.Interval)*time.Millisecond)
+	}
+	statsHub.Stopped = func() {
+		gpuMu.Lock()
+		defer gpuMu.Unlock()
+		gpus.Stop()
+	}
+	srv.Handle("gpu.cards", func(json.RawMessage) (any, error) {
+		gpuMu.Lock()
+		defer gpuMu.Unlock()
+		return gpus.Cards(time.Now()), nil
+	})
 	go statsHub.Run(ctx)
 	srv.HandleConn("stats.watch", func(conn uint64, raw json.RawMessage) (any, error) {
 		var p struct {
-			Interval int `json:"interval"`
+			Interval int  `json:"interval"`
+			GPU      bool `json:"gpu"`
 		}
 		json.Unmarshal(raw, &p)
-		return map[string]any{"id": statsHub.Watch(conn, cmp.Or(p.Interval, 2000))}, nil
+		return map[string]any{"id": statsHub.Watch(conn, cmp.Or(p.Interval, 2000), p.GPU)}, nil
 	})
 	srv.Handle("stats.unwatch", func(raw json.RawMessage) (any, error) {
 		var p struct {

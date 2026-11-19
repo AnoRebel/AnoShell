@@ -32,6 +32,17 @@ Singleton {
     readonly property real diskUsedPercentage: root.diskSize > 0 ? root.diskUsed / root.diskSize : 0
     property var previousCoreStats: []
 
+    // The GPU anod shows (vitals.gpu_card, else the discrete one, else the first); anod only.
+    property bool gpuPresent: false
+    property string gpuName: ""
+    property real gpuUsage: NaN         // 0..1, NaN while unknown (first sample, no driver figure)
+    property real gpuMHz: NaN
+    property real gpuMemUsed: NaN       // bytes, dedicated memory only
+    property real gpuMemTotal: NaN
+    property real gpuTemperature: NaN   // °C
+    property string gpuNote: ""
+    property list<real> gpuUsageHistory: []
+
     property real networkDownloadSpeed: 0
     property real networkUploadSpeed: 0
     property var previousNetworkStats
@@ -65,10 +76,14 @@ Singleton {
     readonly property bool _fallback: root.leaseCount > 0 && !watch.live && !watch.pending
     on_FallbackChanged: if (root._fallback && !root.tempPath) tempProbe.running = true
     property real _lastHist: 0
+    // Leases whose views show no GPU: anod skips reading it while only these hold.
+    readonly property var noGpuLeases: ["barResources", "gaugePiece"]
+    readonly property bool _gpuWanted: { root.leaseCount; return Object.keys(root._leases).some(n => !root.noGpuLeases.includes(n)) }
     StatsWatch {
         id: watch
         active: root.leaseCount > 0
         interval: root.pollMs
+        gpu: root._gpuWanted
         onSample: data => root._apply(data)
     }
     function _apply(d) {
@@ -85,6 +100,17 @@ Singleton {
         const disk = d.disks?.[0]
         if (disk) { root.diskSize = disk.size; root.diskUsed = disk.used }
         if (d.net?.rx !== null && d.net?.rx !== undefined) { root.networkDownloadSpeed = d.net.rx; root.networkUploadSpeed = d.net.tx }
+        const gpus = Array.from(d.gpus ?? [])
+        const g = gpus.find(x => x.shown) ?? null
+        const n = v => (v === null || v === undefined) ? NaN : v
+        root.gpuPresent = !!g
+        root.gpuName = g?.name ?? ""
+        root.gpuUsage = g ? n(g.load) / 100 : NaN
+        root.gpuMHz = n(g?.mhz)
+        root.gpuMemUsed = n(g?.memUsed)
+        root.gpuMemTotal = n(g?.memTotal)
+        root.gpuTemperature = n(g?.temp)
+        root.gpuNote = g?.note ?? ""
         // Another consumer may ask anod for faster samples: the histories keep this one's pace.
         if (d.t - root._lastHist >= root.pollMs * 0.9) { root._lastHist = d.t; root.updateHistories() }
     }
@@ -108,6 +134,10 @@ Singleton {
         cpuUsageHistory = [...cpuUsageHistory, cpuUsage]
         if (cpuUsageHistory.length > historyLength) cpuUsageHistory.shift()
 
+        if (!isNaN(gpuUsage)) {
+            gpuUsageHistory = [...gpuUsageHistory, gpuUsage]
+            if (gpuUsageHistory.length > historyLength) gpuUsageHistory.shift()
+        }
         if (!isNaN(temperature)) {
             temperatureHistory = [...temperatureHistory, temperature]
             if (temperatureHistory.length > historyLength) temperatureHistory.shift()

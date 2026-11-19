@@ -116,11 +116,14 @@ func TestHubLeases(t *testing.T) {
 		t.Fatal("no lease: no sample")
 	case <-time.After(300 * time.Millisecond):
 	}
-	a := h.Watch(1, 2000)
+	a := h.Watch(1, 2000, false)
 	if s := <-got; s.Interval != 2000 {
 		t.Fatalf("first sample at once, interval 2000, got %d", s.Interval)
 	}
-	h.Watch(2, 100) // clamped to 500
+	h.Watch(2, 100, true) // clamped to 500
+	if !h.WantsGPU() {
+		t.Fatal("a lease wants the GPU")
+	}
 	select {
 	case s := <-got:
 		if s.Interval != 500 {

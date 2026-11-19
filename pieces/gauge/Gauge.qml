@@ -12,12 +12,15 @@ Item {
     property var ctx
     property var settings: ({})
     readonly property bool live: root.ctx?.live ?? false
-    readonly property string metric: ["CPU", "Memory", "Temperature", "Disk", "Battery"].includes(root.settings?.metric) ? root.settings.metric : "CPU"
+    readonly property string metric: ["CPU", "GPU", "Memory", "Temperature", "Disk", "Battery"].includes(root.settings?.metric) ? root.settings.metric : "CPU"
     readonly property bool wave: root.settings?.style !== "Plain"
     readonly property real thickness: Math.max(2, Math.min(24, Number(root.settings?.thickness ?? 8)))
 
     // ResourceUsage polls only while leased; the battery needs no lease.
     property bool _leased: false
+    property string _leaseName: ""
+    readonly property string _wantName: root.metric === "GPU" ? "gaugePieceGpu" : "gaugePiece"
+    on_WantNameChanged: if (root._leased) { root._lease(false); root._lease(root._want) }
     readonly property bool _want: root.live && root.metric !== "Battery"
     on_WantChanged: root._lease(root._want)
     Component.onCompleted: root._lease(root._want)
@@ -25,11 +28,16 @@ Item {
     function _lease(on) {
         if (on === root._leased) return
         root._leased = on
-        if (on) ResourceUsage.acquire("gaugePiece"); else ResourceUsage.release("gaugePiece")
+        if (on) root._leaseName = root._wantName
+        if (on) ResourceUsage.acquire(root._leaseName); else ResourceUsage.release(root._leaseName)
     }
 
     readonly property var reading: {
         switch (root.metric) {
+        case "GPU": {
+            const g = ResourceUsage.gpuUsage
+            return { icon: "developer_board", label: "GPU", value: isNaN(g) ? 0 : g, text: isNaN(g) ? "--" : `${Math.round(g * 100)}%` }
+        }
         case "Memory": return { icon: "memory_alt", label: "Memory", value: ResourceUsage.memoryUsedPercentage, text: `${Math.round(ResourceUsage.memoryUsedPercentage * 100)}%` }
         case "Temperature": {
             const t = ResourceUsage.temperature

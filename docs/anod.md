@@ -253,7 +253,7 @@ pushes a `stats` event: `{"t", "interval", "cpu": {"total", "cores", "count", "m
 "links"}, "temp": {"c", "sensor"}, "disks": [{"mount", "size", "used"}], "gpus"}`. `cpu.total`/`cores` are
 0..1 and `net.rx`/`tx` bytes per second, `null` in the first sample (rates need two readings) and when a
 link left. Network counts the machine's own links (not `lo`, VPN tunnels, bridges or container links).
-`temp` is `vitals.temperature_sensor` (a substring of the sensor's path) when set, else the vendor's
+`temp` is `resources.temperatureSensor` (a substring of the sensor's path) when set, else the vendor's
 package sensor, else the CPU thermal zone. The log notes when sampling starts, changes rate or stops.
 
 `secret.set` (`{"name", "value"}`, name `[a-z0-9_-]+`) stores an API key in

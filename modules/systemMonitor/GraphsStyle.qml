@@ -6,7 +6,8 @@ import qs.services
 
 /**
  * The system section's Graphs style: a battery card (or uptime alone without a battery) over water-filled cards for
- * CPU, memory, temperature and disk; CPU, memory and temperature carry a sliding graph of their history.
+ * CPU, memory, temperature, disk and the GPU (when anod reads one); CPU, memory, temperature and GPU carry a sliding
+ * graph of their history.
  */
 ColumnLayout {
     id: root
@@ -135,6 +136,19 @@ ColumnLayout {
             level: ResourceUsage.diskUsedPercentage
             valueText: isNaN(ResourceUsage.diskSize) ? "--" : `${Math.round(ResourceUsage.diskUsedPercentage * 100)}%`
             detail: isNaN(ResourceUsage.diskSize) ? "" : `${(ResourceUsage.diskUsed / 1e9).toFixed(0)} of ${(ResourceUsage.diskSize / 1e9).toFixed(0)} GB`
+        }
+        WaterCard {
+            visible: ResourceUsage.gpuPresent && !ResourceUsage.gpuNote
+            Layout.fillWidth: true; Layout.columnSpan: 2
+            icon: "developer_board"; label: "GPU"
+            tone: Appearance.colors.colSecondary
+            level: isNaN(ResourceUsage.gpuUsage) ? 0 : ResourceUsage.gpuUsage
+            valueText: isNaN(ResourceUsage.gpuUsage) ? "--" : `${Math.round(ResourceUsage.gpuUsage * 100)}%`
+            detail: [ResourceUsage.gpuName,
+                     !(ResourceUsage.gpuMHz > 0) ? "" : `${Math.round(ResourceUsage.gpuMHz)} MHz`,
+                     isNaN(ResourceUsage.gpuMemTotal) ? "" : `${(ResourceUsage.gpuMemUsed / 1073741824).toFixed(1)} of ${(ResourceUsage.gpuMemTotal / 1073741824).toFixed(0)} GB`,
+                     isNaN(ResourceUsage.gpuTemperature) ? "" : `${Math.round(ResourceUsage.gpuTemperature)}°C`].filter(t => t).join(" · ")
+            history: ResourceUsage.gpuUsageHistory
         }
     }
 }

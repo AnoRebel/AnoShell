@@ -70,6 +70,16 @@ Rectangle {
                     Layout.preferredWidth: 1
                 }
 
+                // GPU (when anod reads one)
+                GaugeItem {
+                    label: "GPU"
+                    value: isNaN(ResourceUsage.gpuUsage) ? 0 : ResourceUsage.gpuUsage
+                    valueText: isNaN(ResourceUsage.gpuUsage) ? "–" : `${Math.round(ResourceUsage.gpuUsage * 100)}%`
+                    visible: ResourceUsage.gpuPresent && !ResourceUsage.gpuNote
+                    Layout.fillWidth: visible
+                    Layout.preferredWidth: visible ? 1 : 0
+                }
+
                 // RAM
                 GaugeItem {
                     label: "RAM"

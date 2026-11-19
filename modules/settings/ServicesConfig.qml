@@ -365,11 +365,16 @@ ColumnLayout {
 
     // ═══ Resources Monitor ═══
     SettingsCard {
+        id: resCard
         icon: "monitor_heart"
         title: "Resources Monitor"
         advanced: true // hidden unless Settings shows advanced options (search still finds it)
-        subtitle: "CPU, RAM, network polling frequency and history"
+        subtitle: "CPU, RAM, GPU, network: sampling rate, history and which GPU"
         configKeys: ["resources"]
+        // The GPUs anod finds (gpu.cards); asked again after a choice so it applies at once.
+        property var gpuCards: []
+        function loadCards() { Anod.call("gpu.cards", {}, res => { if (Array.isArray(res)) gpuCards = res }) }
+        Component.onCompleted: loadCards()
 
         // Live mini-dashboard
         RowLayout {
@@ -378,7 +383,8 @@ ColumnLayout {
                 model: [
                     { label: "CPU", value: ResourceUsage.cpuUsage, text: `${Math.round(ResourceUsage.cpuUsage * 100)}%` },
                     { label: "RAM", value: ResourceUsage.memoryUsedPercentage, text: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed) },
-                ]
+                ].concat(ResourceUsage.gpuPresent && !isNaN(ResourceUsage.gpuUsage)
+                    ? [{ label: "GPU", value: ResourceUsage.gpuUsage, text: `${Math.round(ResourceUsage.gpuUsage * 100)}%` }] : [])
                 ColumnLayout {
                     required property var modelData
                     spacing: 4; Layout.fillWidth: true
@@ -394,7 +400,7 @@ ColumnLayout {
         ConfigSlider {
             label: "Update interval"
             configKey: "resources.updateInterval"
-            sublabel: "How often /proc is polled for CPU/RAM/network data"
+            sublabel: "How often CPU, RAM, GPU and network figures are sampled (by anod; while something shows them)"
             from: 500; to: 10000; stepSize: 500
             value: Config.options?.resources?.updateInterval ?? 3000
             onValueChanged: Config.setNestedValue("resources.updateInterval", Math.round(value))
@@ -409,6 +415,30 @@ ColumnLayout {
             value: Config.options?.resources?.historyLength ?? 60
             onValueChanged: Config.setNestedValue("resources.historyLength", Math.round(value))
             valueText: `${Math.round(value)} pts`
+        }
+
+        // Which GPU the figures show, when there are several.
+        ConfigRow {
+            label: "GPU shown"
+            configKey: "resources.gpuCard"
+            sublabel: "Automatic picks the discrete GPU"
+            visible: resCard.gpuCards.length > 1
+        }
+        ChoiceRow {
+            Layout.fillWidth: true
+            visible: resCard.gpuCards.length > 1
+            model: [{ value: "", label: "Automatic", icon: "auto_awesome" }].concat(
+                resCard.gpuCards.map(c => ({ value: c.card, label: `${c.vendor} · ${c.card}`, icon: c.integrated ? "memory" : "developer_board" })))
+            current: Config.options?.resources?.gpuCard ?? ""
+            onChose: value => { Config.setNestedValue("resources.gpuCard", value); Qt.callLater(resCard.loadCards) }
+        }
+        StyledText {
+            Layout.fillWidth: true
+            visible: resCard.gpuCards.length > 0
+            text: resCard.gpuCards.map(c => `${c.shown ? "Shown: " : ""}${c.name}${c.note ? " (" + c.note + ")" : ""}`).join("\n")
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            color: Appearance.colors.colSubtext
+            wrapMode: Text.Wrap
         }
     }
 

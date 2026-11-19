@@ -3659,7 +3659,7 @@
   "page": 9,
   "card": "Resources Monitor",
   "label": "Resources Monitor",
-  "sublabel": "CPU, RAM, network polling frequency and history",
+  "sublabel": "CPU, RAM, GPU, network: sampling rate, history and which GPU",
   "keys": [
    "resources"
   ],
@@ -3669,7 +3669,7 @@
   "page": 9,
   "card": "",
   "label": "Update interval",
-  "sublabel": "How often /proc is polled for CPU/RAM/network data",
+  "sublabel": "How often CPU, RAM, GPU and network figures are sampled (by anod; while something shows them)",
   "keys": [
    "resources.updateInterval"
   ],

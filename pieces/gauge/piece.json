@@ -1,7 +1,7 @@
 {
   "id": "gauge",
   "name": "Gauge",
-  "description": "One reading (CPU, memory, temperature, disk or battery) as a wavy or plain ring. Inspired by Anserin's stat pieces.",
+  "description": "One reading (CPU, GPU, memory, temperature, disk or battery) as a wavy or plain ring. Inspired by Anserin's stat pieces.",
   "author": "AnoShell",
   "version": "1.0.0",
   "entry": "Gauge.qml",
@@ -9,7 +9,7 @@
   "size": { "w": 2, "h": 2 },
   "minSize": { "w": 1, "h": 1 },
   "settings": [
-    { "key": "metric", "type": "choice", "label": "Shows", "default": "CPU", "options": ["CPU", "Memory", "Temperature", "Disk", "Battery"] },
+    { "key": "metric", "type": "choice", "label": "Shows", "default": "CPU", "options": ["CPU", "GPU", "Memory", "Temperature", "Disk", "Battery"] },
     { "key": "style", "type": "choice", "label": "Ring", "default": "Wave", "options": ["Wave", "Plain"] },
     { "key": "thickness", "type": "int", "label": "Line thickness", "default": 8 }
   ]

@@ -1347,6 +1347,8 @@ Singleton {
             property JsonObject resources: JsonObject {
                 property int updateInterval: 3000
                 property int historyLength: 60
+                property string gpuCard: ""            // "card1" or a PCI address; "": the discrete GPU, else the first
+                property string temperatureSensor: ""  // a part of the sensor's path; "": the CPU package sensor
             }
 
             // Bubble Monitor (full screen) and the sidebar's Bubble style
