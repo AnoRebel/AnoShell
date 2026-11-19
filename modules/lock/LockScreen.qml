@@ -418,7 +418,7 @@ Scope {
         onExited: if (root.lockEnabled && ++root._watchFails <= 5) rewatch.restart()
     }
     // Re-bound, not assigned: an assignment would end the hand-over to anod's events.
-    readonly property bool _watchWanted: root.lockEnabled && root.sessionPath !== "" && !logindEvents.live && !logindEvents.pending
+    readonly property bool _watchWanted: root.lockEnabled && root.sessionPath !== "" && logindEvents.fallback
     Timer { id: rewatch; interval: 5000; onTriggered: logindWatch.running = Qt.binding(() => root._watchWanted) }
 
     // ── Preview ─────────────────────────────────────────────────────────

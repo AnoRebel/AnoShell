@@ -91,6 +91,7 @@ Item {
                     StyledText { text: Chrono.nextAlarmText; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4 }
                 }
                 Item { Layout.fillWidth: true }
+                ServiceLease { service: Weather; name: "clockWeather"; active: Config.options?.bar?.weather?.enable ?? false }
                 Loader {
                     active: (Config.options?.bar?.weather?.enable ?? false) && (Weather.data.temp ?? "").length > 0
                     visible: active

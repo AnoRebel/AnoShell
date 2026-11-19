@@ -125,7 +125,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `VPN` | Connect/disconnect/status for tailscale, netbird, warp, wireguard, or custom providers. |
 | `BluetoothStatus` | Adapter state + paired/connected device list. |
 | `TrayService` | System tray entries with pinning + DBus menu support. |
-| `Cliphist` | Clipboard history with fuzzy search. |
+| `Cliphist` | Clipboard history with fuzzy search; re-listed on a copy only while something showing it is open (and when one opens). |
 | `ResourceUsage` | CPU (total and per core) / RAM / swap / network from `/proc`, CPU temperature (thermal zone) and disk use of `/` (`df`). |
 | `SysMon` | The Bubble Monitor's busiest processes, open apps and sensors (anod's `sysmon.*`). |
 | `Privacy` | Mic-active and cam-active detection. |
@@ -181,7 +181,7 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | Service | What it provides |
 |---------|------------------|
 | `DateTime` | Formatted clock + uptime. |
-| `Weather` | wttr.in API client with optional GPS; official warnings from anod and a rain-soon notice (`bar.weather.alerts`). |
+| `Weather` | wttr.in API client with optional GPS, fetched only while something showing the weather is up; official warnings from anod and a rain-soon notice (`bar.weather.alerts`). |
 | `Notifications` | DBus notification server with persistent storage and popup management: inline replies, per-app rules (normal / silent / blocked), Do Not Disturb that still lets critical ones pop up. |
 | `CalendarSync` | iCal/CalDAV pull from configured URLs. Opt-in. |
 | `Ai` | AI chat across OpenAI, Gemini, Anthropic, Mistral, OpenRouter, Ollama. Streaming + Anthropic thinking blocks. |

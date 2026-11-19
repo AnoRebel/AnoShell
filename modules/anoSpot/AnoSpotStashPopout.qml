@@ -29,6 +29,7 @@ Scope {
     id: root
 
     readonly property bool open: GlobalStates.anoSpotStashOpen
+    ServiceLease { service: Cliphist; name: "anoSpotStash"; active: root.open }
     readonly property string spotPosition: Config.options?.anoSpot?.position ?? "top"
     readonly property bool spotIsVertical: spotPosition === "left" || spotPosition === "right"
 

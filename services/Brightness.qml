@@ -137,7 +137,9 @@ Singleton {
         onBrightnessChanged: {
             if (!monitor.ready) return
             root.brightnessChanged()
-            if (!monitor._fromFile) setTimer.restart()
+            // Backlight: a 16 ms throttle (one brightnessctl per frame at most, the latest value);
+            // DDC: a debounce (each call is slow on the bus).
+            if (!monitor._fromFile) { if (monitor.isDdc) setTimer.restart(); else if (!setTimer.running) setTimer.start() }
         }
 
         // The kernel notifies actual_brightness on every change, whoever
@@ -205,7 +207,7 @@ Singleton {
         }
 
         property var setTimer: Timer {
-            interval: monitor.isDdc ? 300 : 0
+            interval: monitor.isDdc ? 300 : 16
             onTriggered: syncBrightness()
         }
 

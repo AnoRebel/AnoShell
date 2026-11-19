@@ -142,7 +142,7 @@ Singleton {
         }
     }
     Process {
-        running: root._on("usb") && !usbWatch.live && !usbWatch.pending
+        running: root._on("usb") && usbWatch.fallback
         command: ["setpriv", "--pdeathsig", "TERM", "--", "udevadm", "monitor", "--udev", "--property", "--subsystem-match=usb/usb_device"]
         stdout: SplitParser { onRead: line => root._usbLine(line) }
     }

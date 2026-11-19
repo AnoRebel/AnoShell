@@ -27,8 +27,12 @@ Item {
     property real arcRadius: root.implicitSize / 2 - root.lineWidth
     property real startAngle: -90
 
+    // Animate only while it can be seen: rings in hidden popouts, the HUD or
+    // the control panel otherwise ran their animation (a binding per frame)
+    // on every resource sample.
+    readonly property bool _shown: root.visible && (root.Window.window?.visible ?? false)
     Behavior on degree {
-        enabled: root.enableAnimation
+        enabled: root.enableAnimation && root._shown
         NumberAnimation { duration: AnimationConfig.scaledDuration(root.animationDuration); easing.type: Easing.BezierSpline; easing.bezierCurve: root.bezierCurve }
     }
 

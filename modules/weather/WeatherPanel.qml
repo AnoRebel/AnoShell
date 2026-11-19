@@ -18,6 +18,7 @@ import "." as Here
  */
 Scope {
     id: root
+    ServiceLease { service: Weather; name: "weatherPanel"; active: GlobalStates.weatherPanelOpen }
 
     IpcHandler {
         target: "weatherPanel"

@@ -67,7 +67,7 @@ Singleton {
         onEvent: data => { if (data?.SUBSYSTEM === "block" && /^(add|remove|change)$/.test(data.ACTION ?? "")) settle.restart() }
     }
     Process {
-        running: !blockWatch.live && !blockWatch.pending
+        running: blockWatch.fallback
         command: ["setpriv", "--pdeathsig", "TERM", "--", "udevadm", "monitor", "--udev", "--subsystem-match=block"]
         stdout: SplitParser { onRead: line => { if (/\b(add|remove|change)\b/.test(line)) settle.restart() } }
     }

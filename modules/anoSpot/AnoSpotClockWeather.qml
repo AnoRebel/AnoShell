@@ -7,6 +7,7 @@ import "."
 
 RowLayout {
     spacing: 6
+    ServiceLease { service: Weather; name: "anoSpotWeather"; active: parent?.visible ?? true }
 
     StyledText {
         text: AnoSpotState.clockWeather.time

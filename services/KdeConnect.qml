@@ -230,7 +230,7 @@ Singleton {
     }
     property int _monFails: 0
     // Re-bound, not assigned: an assignment would end the hand-over to anod's events.
-    readonly property bool _monitorWanted: root.enabled && !kdcWatch.live && !kdcWatch.pending
+    readonly property bool _monitorWanted: root.enabled && kdcWatch.fallback
     Timer { id: remonitor; interval: 5000; onTriggered: monitor.running = Qt.binding(() => root._monitorWanted) }
     // A hung daemon: look again now and then (only while it's hung).
     Timer { id: retry; interval: 60000; onTriggered: if (root.enabled && root.daemon === "hung") root.refresh() }

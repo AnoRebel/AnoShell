@@ -12,6 +12,7 @@ Item {
     id: root
     property var ctx
     property var settings: ({})
+    ServiceLease { service: Weather; name: "weatherPiece"; active: root.ctx?.live ?? true }
     readonly property bool roomy: root.height > 200
     readonly property var d: Weather.data
     readonly property bool scene: root.settings?.scene ?? false

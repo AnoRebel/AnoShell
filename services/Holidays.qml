@@ -72,8 +72,19 @@ Singleton {
             root._setCountry(root.configuredCountry.toUpperCase())
             return
         }
+        // Location's IP lookup names the country too (automatic location): one lookup, not two.
+        if (Location.enabled && !Location.manual) {
+            if (Location.ipCountry.length === 2) { root._setCountry(Location.ipCountry); return }
+            _ownLookup.restart() // its answer, or ours if none comes
+            return
+        }
         _geoProc.running = true   // IP detect; falls back on failure
     }
+    Connections {
+        target: Location
+        function onIpCountryChanged() { if (root.enabled && root.configuredCountry.length !== 2) { _ownLookup.stop(); root._resolveCountry() } }
+    }
+    Timer { id: _ownLookup; interval: 15000; onTriggered: if (root.country === "") _geoProc.running = true }
 
     function _setCountry(cc) {
         if (cc === root.country) return

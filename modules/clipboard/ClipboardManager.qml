@@ -17,6 +17,7 @@ import qs.services
  */
 Scope {
     id: root
+    ServiceLease { service: Cliphist; name: "clipboardPanel"; active: GlobalStates.clipboardOpen }
     property string searchQuery: ""
 
     // Pins first (objects), then cliphist entries (lines).

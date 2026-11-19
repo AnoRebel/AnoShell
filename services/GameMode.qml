@@ -217,7 +217,7 @@ Singleton {
     }
     // Our own watcher only without anod's events. Restarts re-bind (a plain
     // assignment would end the binding, and with it the hand-over to anod).
-    readonly property bool _monitorWanted: root._wanted && !gmWatch.live && !gmWatch.pending
+    readonly property bool _monitorWanted: root._wanted && gmWatch.fallback
     Timer { id: restart; interval: 5000; onTriggered: monitor.running = Qt.binding(() => root._monitorWanted) }
     // The restart above replaces the binding, so follow _wanted by hand too.
     on_WantedChanged: { restart.stop(); monitor.running = Qt.binding(() => root._monitorWanted) }

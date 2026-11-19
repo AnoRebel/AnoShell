@@ -9,6 +9,7 @@ import QtQuick.Layouts
  */
 Item {
     id: root
+    ServiceLease { service: Weather; name: "barWeather"; active: true }
     visible: Config.options?.bar?.weather?.enable ?? false
     implicitWidth: visible ? row.implicitWidth + 12 : 0
     implicitHeight: Appearance.sizes.barHeight

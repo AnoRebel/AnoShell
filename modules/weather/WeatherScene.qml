@@ -20,6 +20,7 @@ import "scene.js" as S
 Item {
     id: root
     property bool live: visible
+    ServiceLease { service: Weather; name: "weatherScene"; active: root.live }
     property real radius: 0
     property var code: Weather.data.wCode
     property real sunrise: Weather.data.sunriseMin ?? NaN
@@ -41,9 +42,10 @@ Item {
     readonly property real wind: Math.max(0, Math.min(80, root.windKmph))
     readonly property bool moving: root.live && root.visible && AnimationConfig.continuous
 
-    // Still frames jump straight to the weather.
-    onTargetChanged: if (!root.moving) root.cur = root.target
-    onMovingChanged: if (!root.moving) root.cur = root.target
+    // Still frames jump straight to the weather. _settled: cur has reached target (no per-frame comparison after).
+    property bool _settled: true
+    onTargetChanged: { if (!root.moving) root.cur = root.target; else root._settled = S.same(root.cur, root.target) }
+    onMovingChanged: if (!root.moving) { root.cur = root.target; root._settled = true }
 
     property real t: 0
     property real flashAt: -10
@@ -52,7 +54,7 @@ Item {
         running: root.moving
         onTriggered: {
             root.t += frameTime
-            if (JSON.stringify(root.cur) !== JSON.stringify(root.target)) root.cur = S.step(root.cur, root.target, frameTime)
+            if (!root._settled) { root.cur = S.step(root.cur, root.target, frameTime); root._settled = S.same(root.cur, root.target) }
             if (root.cur.storm > 0.5 && root.t >= root.nextFlash) {
                 root.flashAt = root.t
                 root.nextFlash = root.t + 3 + Math.random() * 4

@@ -20,6 +20,7 @@ ColumnLayout {
     signal closeRequested()
 
     property int tab: 0
+    ServiceLease { service: Cliphist; name: "scratchpadClipboard"; active: root.tab === 2 && root.visible }
     readonly property var tabs: [
         { label: "Notes", icon: "edit_note" },
         { label: "To-do", icon: "checklist" },

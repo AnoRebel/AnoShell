@@ -34,8 +34,10 @@ Item {
     property real centerX: implicitSize / 2
     property real centerY: implicitSize / 2
 
-    Behavior on outerDegree { enabled: root.enableAnimation; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
-    Behavior on innerDegree { enabled: root.enableAnimation; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+    // Only while it can be seen (see CircularProgress).
+    readonly property bool _shown: root.visible && (root.Window.window?.visible ?? false)
+    Behavior on outerDegree { enabled: root.enableAnimation && root._shown; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
+    Behavior on innerDegree { enabled: root.enableAnimation && root._shown; NumberAnimation { duration: AnimationConfig.scaledDuration(600); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.emphasizedDecel } }
 
     Shape {
         anchors.fill: parent

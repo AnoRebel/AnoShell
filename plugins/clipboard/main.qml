@@ -6,7 +6,9 @@ import qs.services
 QtObject {
     property bool active: false
     property string query: ""
-    onActiveChanged: if (active) Cliphist.refresh()
+    // Holds Cliphist's lease while shown, so a copy meanwhile updates the list.
+    onActiveChanged: { if (active) { Cliphist.acquire("launcherClipboard"); Cliphist.refresh() } else Cliphist.release("launcherClipboard") }
+    Component.onDestruction: if (active) Cliphist.release("launcherClipboard")
 
     readonly property var results: {
         if (!active) return []

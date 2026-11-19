@@ -385,7 +385,7 @@ Singleton {
     }
     Process {
         id: subscriber
-        running: !nmWatch.live && !nmWatch.pending
+        running: nmWatch.fallback
         command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         environment: ({ LANG: "C", LC_ALL: "C" })
         stdout: SplitParser { onRead: line => root._changed(NetLinks.monitorScope(line, root.wifiIfaces)) }

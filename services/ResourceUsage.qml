@@ -73,7 +73,7 @@ Singleton {
     }
     // anod feeds the figures while it runs; the timer below is the fallback.
     readonly property int pollMs: GameMode.slowPolling ? GameMode.pollInterval : (Config.options?.resources?.updateInterval ?? 3000)
-    readonly property bool _fallback: root.leaseCount > 0 && !watch.live && !watch.pending
+    readonly property bool _fallback: root.leaseCount > 0 && watch.fallback
     on_FallbackChanged: if (root._fallback && !root.tempPath) tempProbe.running = true
     property real _lastHist: 0
     // Leases whose views show no GPU: anod skips reading it while only these hold.

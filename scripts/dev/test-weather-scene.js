@@ -1,7 +1,7 @@
 // Check for modules/weather/scene.js (the weather scene's logic). Run: node scripts/dev/test-weather-scene.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../modules/weather/scene.js'), 'utf8').replace('.pragma library', '')
-const W = new Function(src + ';return {condition, look, minutesOf, sun, sky, moonPhase, step};')()
+const W = new Function(src + ';return {condition, look, minutesOf, sun, sky, moonPhase, step, same};')()
 const a = (c, m) => { if (!c) throw new Error(m) }
 
 a(W.condition(113) === 'clear' && W.condition('116') === 'cloudy' && W.condition(122) === 'overcast', 'clear/cloudy/overcast')
@@ -41,4 +41,11 @@ while (t < 4) {
 }
 a(rainEnd > 0 && clearStart >= rainEnd - 1e-9, 'clouds clear after the rain stops')
 a(JSON.stringify(cur) === JSON.stringify(target) && t < 4.1, 'reached clear')
+{
+    const goal = { clouds: 0.5, dark: 0.2, rain: 0, snow: 0, storm: 0, mist: 0 }
+    a(W.same(goal, Object.assign({}, goal)) && !W.same(goal, Object.assign({}, goal, { rain: 0.1 })), 'same compares every channel')
+    let c = Object.assign({}, goal, { rain: 1 }), n = 0
+    while (!W.same(c, goal) && n < 1000) { c = W.step(c, goal, 1 / 60); n++ }
+    a(W.same(c, goal) && n < 1000, `step reaches the target exactly (settles), ${n} frames`)
+}
 console.log('weather scene ok')

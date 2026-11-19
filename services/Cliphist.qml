@@ -221,10 +221,21 @@ Singleton {
 
     function wipe() { wipeProc.running = true }
 
+    // A copy re-lists the history only while something showing it is open (a
+    // lease); the clipboard panel, AnoSpot's stash, the Scratchpad tab and the
+    // launcher's clipboard plugin re-list when they open anyway.
+    property var _leases: ({})
+    property int leaseCount: 0
+    function acquire(name) { root._leases[name] = (root._leases[name] ?? 0) + 1; root.leaseCount++ }
+    function release(name) {
+        if (!root._leases[name]) return
+        if (--root._leases[name] <= 0) delete root._leases[name]
+        root.leaseCount--
+    }
     Connections {
         target: Quickshell
         function onClipboardTextChanged() {
-            if (root.suppressRefresh) return
+            if (root.suppressRefresh || root.leaseCount === 0) return
             delayedUpdateTimer.restart()
         }
     }

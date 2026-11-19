@@ -115,7 +115,7 @@ Singleton {
 
     Timer {
         interval: root.intervalMs
-        running: root.serviceEnabled && Config.ready && !watch.live && !watch.pending
+        running: root.serviceEnabled && Config.ready && watch.fallback
         repeat: true
         triggeredOnStart: true
         onTriggered: {

@@ -14,9 +14,21 @@ Scope {
     required property string source
     property bool active: false
     readonly property bool live: root._on
-    readonly property bool pending: root._asking
+    readonly property bool pending: root._asking || (root._startup && !Anod.available)
     signal event(var data)
+    // Use your own reader now: neither live nor pending for 100 ms (bindings
+    // and handlers react in no fixed order, so the raw state can blink true
+    // for an instant while a lease starts); off again at once.
+    readonly property bool _rawFallback: root.active && !root.live && !root.pending
+    property bool fallback: false
+    on_RawFallbackChanged: { if (!root._rawFallback) { fallbackDelay.stop(); root.fallback = false } else fallbackDelay.restart() }
+    Timer { id: fallbackDelay; interval: 100; onTriggered: root.fallback = root._rawFallback }
 
+
+    // The first 3 s: anod is usually still connecting, not missing; a consumer
+    // waits rather than starting its own reader for that moment.
+    property bool _startup: true
+    Timer { running: true; interval: 3000; onTriggered: root._startup = false }
     property bool _on: false
     property bool _asking: false
     property bool _failed: false   // anod said no: don't ask again until it reconnects
@@ -31,10 +43,10 @@ Scope {
         if (!want || root._on || root._asking) return
         root._asking = true
         Anod.call("events.want", { source: root.source, on: true }, (res, err) => {
+            if (!err && res && (!root.active || !Anod.available)) { Anod.call("events.want", { source: root.source, on: false }, () => {}); root._asking = false; return }
+            if (err || !res) root._failed = true
+            else root._on = true // live before not pending (bindings react at once)
             root._asking = false
-            if (err || !res) { root._failed = true; return }
-            if (!root.active || !Anod.available) { Anod.call("events.want", { source: root.source, on: false }, () => {}); return }
-            root._on = true
         })
     }
     onActiveChanged: root._sync()

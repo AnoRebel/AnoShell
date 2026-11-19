@@ -85,7 +85,7 @@ Singleton {
         gpu: root.holders.some(h => h?.wantsGpu === true)
         onSample: data => root.applyStats(data)
     }
-    readonly property bool _fallback: root.active && !statsWatch.live && !statsWatch.pending
+    readonly property bool _fallback: root.active && statsWatch.fallback
     on_FallbackChanged: {
         if (root._fallback && !root.temperaturePath)
             temperatureProbe.running = true;

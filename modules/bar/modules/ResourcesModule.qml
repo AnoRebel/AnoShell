@@ -34,16 +34,18 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true; spacing: 8
+                // Fixed keys, values bound in the delegate: a model built from the values was a
+                // new array each sample, and the Repeater rebuilt its delegates (hidden or not).
                 Repeater {
-                    model: [
-                        { label: "CPU", value: ResourceUsage.cpuUsage, text: `${Math.round(ResourceUsage.cpuUsage * 100)}%`, color: Appearance?.colors.colPrimary ?? "#65558F" },
-                        { label: "RAM", value: ResourceUsage.memoryUsedPercentage, text: ResourceUsage.kbToGbString(ResourceUsage.memoryUsed), color: Appearance.colors.colInfo },
-                    ]
+                    model: ["CPU", "RAM"]
                     ColumnLayout {
-                        required property var modelData; Layout.fillWidth: true; spacing: 4
-                        CircularProgress { implicitSize: 48; lineWidth: 3; value: modelData.value; colPrimary: modelData.color; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: modelData.text; font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
-                        StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
+                        id: gauge
+                        required property string modelData
+                        readonly property bool cpu: modelData === "CPU"
+                        Layout.fillWidth: true; spacing: 4
+                        CircularProgress { implicitSize: 48; lineWidth: 3; value: gauge.cpu ? ResourceUsage.cpuUsage : ResourceUsage.memoryUsedPercentage; colPrimary: gauge.cpu ? (Appearance?.colors.colPrimary ?? "#65558F") : Appearance.colors.colInfo; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: gauge.cpu ? `${Math.round(ResourceUsage.cpuUsage * 100)}%` : ResourceUsage.kbToGbString(ResourceUsage.memoryUsed); font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
+                        StyledText { text: gauge.modelData; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     }
                 }
                 Loader {
@@ -70,12 +72,13 @@ Item {
             }
 
             Repeater {
-                model: [{ label: "CPU max", value: ResourceUsage.maxAvailableCpuString }, { label: "RAM total", value: ResourceUsage.maxAvailableMemoryString }, { label: "Uptime", value: DateTime.uptime }]
+                model: ["CPU max", "RAM total", "Uptime"]
                 RowLayout {
-                    required property var modelData
+                    id: detail
+                    required property string modelData
                     Layout.fillWidth: true; spacing: 8
-                    StyledText { text: modelData.label; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.fillWidth: true }
-                    StyledText { text: modelData.value; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
+                    StyledText { text: detail.modelData; font.pixelSize: Appearance.font.pixelSize.smaller; opacity: 0.4; Layout.fillWidth: true }
+                    StyledText { text: detail.modelData === "CPU max" ? ResourceUsage.maxAvailableCpuString : detail.modelData === "RAM total" ? ResourceUsage.maxAvailableMemoryString : DateTime.uptime; font.pixelSize: Appearance.font.pixelSize.smaller; font.family: Appearance?.font.family.mono ?? "monospace" }
                 }
             }
 

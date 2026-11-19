@@ -315,7 +315,7 @@ Singleton {
     }
     Process {
         id: nmMonitor
-        running: root.enabled && !nmWatch.live && !nmWatch.pending
+        running: root.enabled && nmWatch.fallback
         command: ["setpriv", "--pdeathsig", "TERM", "--", "nmcli", "monitor"]
         stdout: SplitParser {
             onRead: statusCheckTimer.restart()

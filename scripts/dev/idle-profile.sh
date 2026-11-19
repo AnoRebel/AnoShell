@@ -22,7 +22,7 @@ profpid=$!
 
 # Count processes spawned by qs during the measured window (after warm-up).
 sleep "$warm"
-declare -A seen
+declare -A seen=() # =(): empty but set (set -u)
 end=$((SECONDS + secs))
 while [ $SECONDS -lt $end ]; do
     for c in $(pgrep -P "$qspid" 2>/dev/null); do

@@ -226,11 +226,28 @@ Singleton {
         }
     }
 
+    // Fetched only while something that shows the weather holds a lease
+    // (ServiceLease): the bar module, the clock's weather line, AnoSpot's
+    // clock face, the panel, the scene, the weather piece. A forecast younger
+    // than the interval isn't fetched again when a view comes back.
+    property var _leases: ({})
+    property int leaseCount: 0
+    function acquire(name) { root._leases[name] = (root._leases[name] ?? 0) + 1; root.leaseCount++ }
+    function release(name) {
+        if (!root._leases[name]) return
+        if (--root._leases[name] <= 0) delete root._leases[name]
+        root.leaseCount--
+    }
+    property real _fetchedAt: 0
     Timer {
-        running: true
+        running: root.leaseCount > 0
         repeat: true
         interval: root.fetchInterval
         triggeredOnStart: true
-        onTriggered: root.getData()
+        onTriggered: {
+            if (Date.now() - root._fetchedAt < root.fetchInterval * 0.9 && !root.problem) return
+            root._fetchedAt = Date.now()
+            root.getData()
+        }
     }
 }

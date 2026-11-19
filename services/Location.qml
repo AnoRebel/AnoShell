@@ -44,6 +44,8 @@ Singleton {
     property bool autoValid: false
 
     readonly property bool valid: root.enabled && (root.manual ? root.manualValid : root.autoValid)
+    // The country the IP lookup names (automatic mode): Holidays uses it instead of its own lookup.
+    property string ipCountry: ""
     readonly property real latitude: !root.valid ? 0 : root.manual ? root.manualLat : root.autoLat
     readonly property real longitude: !root.valid ? 0 : root.manual ? root.manualLon : root.autoLon
     readonly property string city: !root.enabled ? "" : root.manual ? (root.cfg?.city ?? "").trim() : root.autoCity
@@ -115,13 +117,14 @@ Singleton {
     // ── IP address (fallback, and the city name) ──
     Process {
         id: ipLookup
-        command: ["curl", "-sf", "--max-time", "10", "http://ip-api.com/json/?fields=status,lat,lon,city"]
+        command: ["curl", "-sf", "--max-time", "10", "http://ip-api.com/json/?fields=status,lat,lon,city,countryCode"]
         stdout: StdioCollector {
             onStreamFinished: {
                 let j = null
                 try { j = JSON.parse(text) } catch (e) {}
                 if (j?.status !== "success") return
                 if (j.city) root.autoCity = j.city
+                if (/^[A-Za-z]{2}$/.test(j.countryCode ?? "")) root.ipCountry = j.countryCode.toUpperCase()
                 // A Wi-Fi fix from this round stays; an older one gives way (it may be from somewhere else).
                 if (root.autoSource !== "geoclue" && !(root.autoSource === "wifi" && root.wifi && wifiLookup.found)) {
                     root.autoLat = j.lat

@@ -77,6 +77,13 @@ function moonPhase(date) {
 // One step of the eased, staged change from `cur` to `target` (both look() shapes) over dt seconds; ~2.5 s in all.
 // Getting worse, clouds and darkness come first and precipitation follows; getting better, precipitation stops
 // before the clouds clear.
+// cur has reached target (the scene's numeric channels).
+function same(cur, target) {
+    for (const p of ["clouds", "dark", "rain", "snow", "storm", "mist"])
+        if (cur[p] !== target[p]) return false
+    return true
+}
+
 function step(cur, target, dt) {
     const k = dt / 1.25 // each stage takes about half the change
     const toward = (a, b) => Math.abs(b - a) <= k ? b : a + Math.sign(b - a) * k
