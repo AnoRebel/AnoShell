@@ -31,18 +31,69 @@ type AppHour struct {
 	Titles  map[string]int `json:"titles,omitempty"`
 }
 
-// Day is one day's file: hour ("0"…"23") → app → time.
+// Day is one day's file: hour ("0"…"23") → app → time, and per app the
+// seconds of each minute of the day ("0"…"1439"), for the finer views
+// (half hours, the busiest hour). Names keeps a display name an import
+// brought for an app id (FocusTime's resolved names).
 type Day struct {
-	Hours map[string]map[string]*AppHour `json:"hours"`
+	Hours   map[string]map[string]*AppHour `json:"hours"`
+	Minutes map[string]map[string]int      `json:"minutes,omitempty"`
+	Names   map[string]string              `json:"names,omitempty"`
 }
 
 // Store is the day files in Dir ($XDG_STATE_HOME/anoshell/screentime).
+// The day being written stays in memory and is saved at most once a minute
+// (and by Flush, on a new day and at shutdown).
 type Store struct {
 	Dir string
 	mu  sync.Mutex
 	// the day being written, kept in memory
 	cur     *Day
 	curDate string
+	dirty   bool
+	saved   time.Time
+	// past days read for summaries (they don't change; dropped when written)
+	past map[string]*Day
+}
+
+// Flush writes the current day if it has unsaved time.
+func (s *Store) Flush() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.flushLocked()
+}
+
+func (s *Store) flushLocked() error {
+	if !s.dirty || s.cur == nil {
+		return nil
+	}
+	if err := s.save(s.curDate, s.cur); err != nil {
+		return err
+	}
+	s.dirty, s.saved = false, time.Now()
+	return nil
+}
+
+// day returns a day for reading (the current one, or a cached past one).
+// Call with mu held.
+func (s *Store) day(date string) (*Day, error) {
+	if s.cur != nil && s.curDate == date {
+		return s.cur, nil
+	}
+	if d, ok := s.past[date]; ok {
+		return d, nil
+	}
+	d, err := s.load(date)
+	if err != nil {
+		return nil, err
+	}
+	if date < time.Now().Format(dateLayout) { // a finished day: keep it
+		if s.past == nil || len(s.past) > 400 {
+			s.past = map[string]*Day{}
+		}
+		s.past[date] = d
+	}
+	return d, nil
 }
 
 func (s *Store) path(date string) string { return filepath.Join(s.Dir, date+".json") }
@@ -91,7 +142,8 @@ func clean(s string, n int) string {
 	return s
 }
 
-// Add credits seconds of focused time to app (and its window title) at `at`.
+// Add credits seconds of focused time ending at `at` to app (and its window
+// title), spread over the minutes (and hours) they fell in.
 func (s *Store) Add(at time.Time, app, title string, seconds int) error {
 	if seconds <= 0 {
 		return nil
@@ -104,28 +156,30 @@ func (s *Store) Add(at time.Time, app, title string, seconds int) error {
 		app = "unknown"
 	}
 	title = clean(title, maxTitleLen)
-	date := at.Format(dateLayout)
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.cur == nil || s.curDate != date {
-		d, err := s.load(date)
-		if err != nil {
+	var a *AppHour
+	for start := at.Add(-time.Duration(seconds) * time.Second); start.Before(at); {
+		// one piece: up to the end of start's minute, or to at
+		next := start.Truncate(time.Minute).Add(time.Minute)
+		if next.After(at) {
+			next = at
+		}
+		secs := int(next.Sub(start).Round(time.Second) / time.Second)
+		if err := s.useDay(start.Format(dateLayout)); err != nil {
 			return err
 		}
-		s.cur, s.curDate = d, date
+		if secs > 0 {
+			a = s.cur.hour(start.Hour(), app)
+			a.Seconds += secs
+			s.cur.minute(start.Hour()*60+start.Minute(), app, secs)
+			s.dirty = true
+		}
+		start = next
 	}
-	hour := strconv.Itoa(at.Hour())
-	apps := s.cur.Hours[hour]
-	if apps == nil {
-		apps = map[string]*AppHour{}
-		s.cur.Hours[hour] = apps
-	}
-	a := apps[app]
 	if a == nil {
-		a = &AppHour{Titles: map[string]int{}}
-		apps[app] = a
+		return nil
 	}
-	a.Seconds += seconds
 	if title != "" {
 		if a.Titles == nil {
 			a.Titles = map[string]int{}
@@ -141,7 +195,54 @@ func (s *Store) Add(at time.Time, app, title string, seconds int) error {
 			delete(a.Titles, minT)
 		}
 	}
-	return s.save(date, s.cur)
+	s.dirty = true
+	if time.Since(s.saved) >= time.Minute {
+		return s.flushLocked()
+	}
+	return nil
+}
+
+// useDay makes date the day being written (saving the previous one).
+// Call with mu held.
+func (s *Store) useDay(date string) error {
+	if s.cur != nil && s.curDate == date {
+		return nil
+	}
+	if err := s.flushLocked(); err != nil {
+		return err
+	}
+	d, err := s.load(date)
+	if err != nil {
+		return err
+	}
+	delete(s.past, date)
+	s.cur, s.curDate, s.dirty = d, date, false
+	return nil
+}
+
+func (d *Day) hour(h int, app string) *AppHour {
+	key := strconv.Itoa(h)
+	apps := d.Hours[key]
+	if apps == nil {
+		apps = map[string]*AppHour{}
+		d.Hours[key] = apps
+	}
+	a := apps[app]
+	if a == nil {
+		a = &AppHour{}
+		apps[app] = a
+	}
+	return a
+}
+
+func (d *Day) minute(m int, app string, secs int) {
+	if d.Minutes == nil {
+		d.Minutes = map[string]map[string]int{}
+	}
+	if d.Minutes[app] == nil {
+		d.Minutes[app] = map[string]int{}
+	}
+	d.Minutes[app][strconv.Itoa(m)] += secs
 }
 
 // Named is a name with seconds (an app or a title).
@@ -181,13 +282,7 @@ func top(m map[string]int, n int) []Named {
 // DaySummary totals one day: hours, the top apps and each app's top titles.
 func (s *Store) DaySummary(date string) (Summary, error) {
 	s.mu.Lock()
-	var d *Day
-	var err error
-	if s.cur != nil && s.curDate == date {
-		d = s.cur
-	} else {
-		d, err = s.load(date)
-	}
+	d, err := s.day(date)
 	sum := Summary{Date: date}
 	if err != nil {
 		s.mu.Unlock()

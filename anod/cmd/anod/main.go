@@ -973,6 +973,38 @@ func main() {
 	})
 	srv.Handle("screentime.week", func(json.RawMessage) (any, error) { return st.Week(time.Now()) })
 
+	// FocusTime (focusTime.*): the same store kind in its own folder, kept for
+	// good (no screenTime.keepDays), fed by the shell; replaces focus_daemon.py.
+	ft := &screentime.Store{Dir: filepath.Join(xdgState(), "anoshell", "focustime")}
+	go importFocusTime(ft)
+	srv.Handle("focustime.add", func(p json.RawMessage) (any, error) {
+		var req struct {
+			App     string `json:"app"`
+			Title   string `json:"title"`
+			Seconds int    `json:"seconds"`
+		}
+		if err := json.Unmarshal(p, &req); err != nil {
+			return nil, ipc.Errorf(ipc.CodeBadInput, "want {app, title, seconds}")
+		}
+		return true, ft.Add(time.Now(), req.App, req.Title, req.Seconds)
+	})
+	srv.Handle("focustime.stats", func(p json.RawMessage) (any, error) {
+		var req struct {
+			Date string `json:"date"`
+			App  string `json:"app"`
+		}
+		json.Unmarshal(p, &req)
+		day := time.Now()
+		if req.Date != "" {
+			t, err := time.ParseInLocation("2006-01-02", req.Date, time.Local)
+			if err != nil {
+				return nil, ipc.Errorf(ipc.CodeBadInput, "date is YYYY-MM-DD")
+			}
+			day = t
+		}
+		return ft.Focus(day, req.App)
+	})
+
 	// A screen shader the shell set (eye-care filter, anti-flashbang) must not
 	// outlive it: when its connection is gone, clear it (Hyprland).
 	var shaderMu sync.Mutex
@@ -1016,7 +1048,53 @@ func main() {
 	if err := srv.Serve(ctx); err != nil {
 		log.Fatalf("anod: %v", err)
 	}
+	// Time recorded since the last save (saves are batched to once a minute).
+	for _, store := range []*screentime.Store{st, ft} {
+		if err := store.Flush(); err != nil {
+			log.Printf("screen time: %v", err)
+		}
+	}
 	log.Print("anod stopped")
+}
+
+// importFocusTime brings FocusTime's old database ($XDG_DATA_HOME/focustime/
+// focustime.db, left untouched) into anod's store once, through
+// scripts/focustime/export.py (FocusTime already needed Python; anod has no
+// SQLite). A marker in the store records that it ran.
+func importFocusTime(ft *screentime.Store) {
+	marker := filepath.Join(ft.Dir, ".imported")
+	db := filepath.Join(xdgData(), "focustime", "focustime.db")
+	if _, err := os.Stat(marker); err == nil {
+		return
+	}
+	if _, err := os.Stat(db); err != nil {
+		return // nothing to bring
+	}
+	py, err := exec.LookPath("python3")
+	if err != nil {
+		log.Printf("focustime import: python3 not found; %s kept, not imported", db)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, py, "-I", filepath.Join(config.ShellDir(), "scripts", "focustime", "export.py"), db).Output()
+	if err != nil {
+		log.Printf("focustime import: export: %v", err)
+		return
+	}
+	rep, err := ft.Import(out)
+	if err != nil {
+		log.Printf("focustime import: %v", err)
+		return
+	}
+	for _, m := range rep.Mismatches {
+		log.Printf("focustime import: total differs on %s", m)
+	}
+	log.Printf("focustime import: %d days, %d s from %s (the database is kept as it was)", rep.Days, rep.Seconds, db)
+	b, _ := json.Marshal(map[string]any{"at": time.Now().Format(time.RFC3339), "from": db, "report": rep})
+	if err := os.WriteFile(marker, b, 0o600); err != nil {
+		log.Printf("focustime import: marker: %v", err)
+	}
 }
 
 // hookConfig reads hooks.* from the effective config on every event, so edits apply live.

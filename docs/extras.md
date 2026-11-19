@@ -354,6 +354,24 @@ Limits: `screenTime.dailyLimitMinutes` (all apps) and `screenTime.appLimits`
 a single critical notification that day (remembered across restarts);
 nothing is blocked or closed.
 
+## Focus Time
+
+`focusTime.enable` (on by default; `Super+Shift+F` or
+`qs -c ano ipc call focusTime toggle`) is the app-usage panel: today's total,
+the apps by time, a half-hourly chart, the week and month, a week heatmap and
+the busiest hour, for any day, and per app when you click one. It counts the
+same way as screen time (15 s ticks, not while idle or locked) on every
+compositor, but on its own: it needs no `screenTime.enable`, leaves out
+`focusTime.excludeApps`, and keeps its days for good in
+`~/.local/state/anoshell/focustime/` (one file per day, 0600). Unsaved time
+is written once a minute and when anod stops.
+
+The first time anod starts with this, it imports the history of the old
+FocusTime tracker (`~/.local/share/focustime/focustime.db`, through
+`python3 scripts/focustime/export.py`; the database itself is left as it was)
+and notes it in `focustime/.imported`. Its log lists any day whose total came
+out different.
+
 ## Performance mode
 
 While a game holds GameMode (started with `gamemoderun` or a libgamemode

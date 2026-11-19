@@ -79,7 +79,6 @@ var features = []feature{
 	{"opening files and folders (downloads, drives)", "", []string{"xdg-open"}},
 	{"actions: open-file/URL and shell-command steps", "", []string{"xdg-open", "sh"}},
 	{"Qt apps in the palette (the qt6ct platform theme; kvantum for appearance.theme.qt \"kvantum\")", "", []string{"qt6ct"}},
-	{"focus time", "focusTime.enable", []string{"python3"}},
 	{"power profile restore", "powerProfiles.restoreOnStart", []string{"powerprofilesctl"}},
 	{"anime reader playback", "reader.enable", []string{"mpv"}},
 	{"keybinds: cheatsheet and migration (reads Lua configs)", "", []string{"lua"}},

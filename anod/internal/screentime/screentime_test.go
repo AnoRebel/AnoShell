@@ -41,7 +41,8 @@ func TestAddSummaryWeekPrune(t *testing.T) {
 	if sum.TopApps[0].Titles[0].Name != "nvim main.go" || sum.TopApps[0].Titles[0].Seconds != 360 {
 		t.Errorf("titles %+v", sum.TopApps[0].Titles)
 	}
-	// A fresh store reads the same from disk.
+	// A fresh store reads the same from disk (after the flush: saves are batched).
+	s.Flush()
 	s2 := &Store{Dir: dir}
 	if sum2, _ := s2.DaySummary("2026-10-21"); sum2.Total != sum.Total {
 		t.Errorf("reloaded total %d", sum2.Total)
@@ -71,7 +72,7 @@ func TestAddSummaryWeekPrune(t *testing.T) {
 
 func TestTitlesCappedAndCleaned(t *testing.T) {
 	s := &Store{Dir: t.TempDir()}
-	at := time.Date(2026, 10, 21, 9, 0, 0, 0, time.Local)
+	at := time.Date(2026, 10, 21, 9, 30, 0, 0, time.Local)
 	for i := 0; i < maxTitlesKept+10; i++ {
 		s.Add(at, "app", "t"+strings.Repeat("x", i), 1+i)
 	}
@@ -102,5 +103,38 @@ func TestCorruptDaySetAside(t *testing.T) {
 	}
 	if sum, _ := s.DaySummary("2026-10-21"); sum.Total != 30 {
 		t.Errorf("total %d", sum.Total)
+	}
+}
+
+func TestMinutesSplitAndBatchedSaves(t *testing.T) {
+	dir := t.TempDir()
+	s := &Store{Dir: dir}
+	// 90 s ending at 10:00:30: 60 s in 9:59 (hour 9), 30 s in 10:00 (hour 10).
+	at := time.Date(2026, 10, 21, 10, 0, 30, 0, time.Local)
+	if err := s.Add(at, "kitty", "x", 90); err != nil {
+		t.Fatal(err)
+	}
+	m := s.cur.Minutes["kitty"]
+	if m["599"] != 60 || m["600"] != 30 || s.cur.Hours["9"]["kitty"].Seconds != 60 || s.cur.Hours["10"]["kitty"].Seconds != 30 {
+		t.Fatalf("split: minutes %v hours %+v %+v", m, s.cur.Hours["9"]["kitty"], s.cur.Hours["10"]["kitty"])
+	}
+	// The first add wrote the file; the next within a minute only marks it dirty.
+	s.Add(at.Add(15*time.Second), "kitty", "x", 15)
+	fresh := &Store{Dir: dir}
+	if sum, _ := fresh.DaySummary("2026-10-21"); sum.Total != 90 {
+		t.Fatalf("batched: on disk %d, want 90 until the next save", sum.Total)
+	}
+	s.Flush()
+	if sum, _ := (&Store{Dir: dir}).DaySummary("2026-10-21"); sum.Total != 105 {
+		t.Fatalf("after flush: %d", sum.Total)
+	}
+	// A report crossing midnight saves the old day and starts the new one.
+	mid := time.Date(2026, 10, 22, 0, 0, 20, 0, time.Local)
+	s.Add(mid, "kitty", "x", 40)
+	if sum, _ := (&Store{Dir: dir}).DaySummary("2026-10-21"); sum.Total != 125 {
+		t.Fatalf("old day on the new day: %d, want 125", sum.Total)
+	}
+	if s.curDate != "2026-10-22" || s.cur.Minutes["kitty"]["0"] != 20 {
+		t.Fatalf("new day: %s %v", s.curDate, s.cur.Minutes)
 	}
 }

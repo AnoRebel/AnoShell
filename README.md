@@ -185,12 +185,11 @@ Service singletons sit under `services/` and are auto-loaded by `import "service
 | `Notifications` | DBus notification server with persistent storage and popup management: inline replies, per-app rules (normal / silent / blocked), Do Not Disturb that still lets critical ones pop up. |
 | `CalendarSync` | iCal/CalDAV pull from configured URLs. Opt-in. |
 | `Ai` | AI chat across OpenAI, Gemini, Anthropic, Mistral, OpenRouter, Ollama. Streaming + Anthropic thinking blocks. |
-| `FocusTime` | Daemon lifecycle for the per-app usage tracker (SQLite-backed Python daemon; Hyprland and niri IPC sockets). |
 | `Notepad` / `Todo` | Notepad tabs (JSON) and the to-do list (a `todo.txt` synced both ways). Opt-in. |
 | `CalendarEvents` / `Holidays` | Your own events with recurrence and reminders; public holidays per country. |
 | `Pomodoro` | Pomodoro, stopwatch and countdown. Opt-in. |
 | `Chrono` | Alarms (minute-aligned check, snooze/dismiss notification, sound) and world clocks for the Clock panel; the timer and stopwatch are `Pomodoro`'s. |
-| `ScreenTime` | Screen time per app and title, idle-aware, with daily and per-app limits. Opt-in. |
+| `ScreenTime` | Focused time per app and title on every compositor, not counted while idle or locked: screen time (opt-in, with daily and per-app limits) and FocusTime (on by default, kept for good, minus `focusTime.excludeApps`), both stored by anod. |
 | `Scratchpad` | Pinned commands (terminal or background), the prompt bar's parser, and the tabs over notes, to-do, clipboard and calendar ([docs/scratchpad.md](docs/scratchpad.md)). Opt-in. |
 
 ### AnoSpot
@@ -892,7 +891,7 @@ ano/
 │   ├── terminal/                   # apply-terminal.sh (terminal looks), prompt/ (zsh, bash, fish, Starship)
 │   ├── hyprland/get_keybinds.py
 │   ├── anoSpot/                    # LocalSend send/discover scripts
-│   └── focustime/{focus_daemon,get_stats}.py
+│   └── focustime/export.py          # one-time import of the old FocusTime database into anod
 │
 ├── plugins/                        # C++ extension point placeholder
 ├── external/                       # Bundled compositor configs (Hyprland, niri, sway, mango, labwc, Umbriel)

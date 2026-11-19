@@ -18,6 +18,10 @@ import qs.services
  * "keep awake" toggle doesn't count the whole night. Credits go to anod once a minute
  * (screentime.add), which keeps them in local day files.
  *
+ * FocusTime (focusTime.enable, default on) takes the same ticks, minus the
+ * apps in focusTime.excludeApps, into anod's own FocusTime store
+ * (focustime.add, kept for good); the FocusTime panel reads it back.
+ *
  * Daily limits (idea from ilyamiro-new's wellbeing): screenTime.dailyLimitMinutes
  * for everything and screenTime.appLimits { appId: minutes } per app. After
  * each report the day's totals are checked; reaching a limit gives one
@@ -39,13 +43,19 @@ Singleton {
     readonly property bool counting: root.enabled && !root.idle && !GlobalStates.screenLocked && !!ToplevelManager.activeToplevel
 
     property var _pending: ({})        // "app\u0000title" → seconds not sent yet
+    property var _focusPending: ({})   // the same, for FocusTime
+    readonly property bool focusEnabled: Config.ready && (Config.options?.focusTime?.enable ?? true)
+    readonly property var _focusExclude: (Config.options?.focusTime?.excludeApps ?? []).map(a => String(a).toLowerCase())
+    readonly property bool _anyEnabled: root.enabled || root.focusEnabled
+    // Focused, not idle, not locked: the tick counts (for whichever is on).
+    readonly property bool _active: !root.idle && !GlobalStates.screenLocked && !!ToplevelManager.activeToplevel
 
     // Created once the config is known, with its final values: an IdleMonitor
     // made before (disabled, then enabled by a binding) never reported idle.
     readonly property int _idleTimeout: Math.max(30, Config.options?.screenTime?.idleSeconds ?? 120)
     Loader {
         id: idleLoader
-        active: root.enabled && Config.ready
+        active: root._anyEnabled && Config.ready
         // a new monitor when the timeout changes
         sourceComponent: IdleMonitor {
             enabled: true
@@ -53,46 +63,56 @@ Singleton {
             respectInhibitors: false
         }
     }
-    on_IdleTimeoutChanged: if (idleLoader.active) { idleLoader.active = false; Qt.callLater(() => idleLoader.active = Qt.binding(() => root.enabled && Config.ready)) }
+    on_IdleTimeoutChanged: if (idleLoader.active) { idleLoader.active = false; Qt.callLater(() => idleLoader.active = Qt.binding(() => root._anyEnabled && Config.ready)) }
     readonly property bool _noInput: idleLoader.item?.isIdle ?? false
 
     Timer {
         interval: 15000
         repeat: true
-        running: root.enabled
+        running: root._anyEnabled
         onTriggered: {
-            if (!root.counting) return
+            if (!root._active) return
             const t = ToplevelManager.activeToplevel
             const key = `${t?.appId || "unknown"}\u0000${t?.title ?? ""}`
-            const p = Object.assign({}, root._pending)
-            p[key] = (p[key] ?? 0) + 15
-            root._pending = p
+            if (root.enabled) {
+                const p = Object.assign({}, root._pending)
+                p[key] = (p[key] ?? 0) + 15
+                root._pending = p
+            }
+            if (root.focusEnabled && !root._focusExclude.includes(String(t?.appId ?? "").toLowerCase())) {
+                const f = Object.assign({}, root._focusPending)
+                f[key] = (f[key] ?? 0) + 15
+                root._focusPending = f
+            }
         }
     }
     Timer {
         interval: 60000
         repeat: true
-        running: root.enabled
+        running: root._anyEnabled
         onTriggered: root.flush()
     }
     function flush() {
         if (!Anod.available) return // kept until anod is back
-        const p = root._pending
-        root._pending = {}
-        let left = 0
+        let left = 1
         const done = () => { if (--left === 0) root.updated() } // refresh once they've landed
-        for (const key in p) {
-            const [app, title] = key.split("\u0000")
-            // anod takes at most 120 s per report (time saved up while it was away goes in parts)
-            for (let rest = p[key]; rest > 0; rest -= 120) {
-                const secs = Math.min(120, rest)
-                left++
-                Anod.call("screentime.add", { app: app, title: title, seconds: secs }, (r, e) => {
-                    if (e) { const q = Object.assign({}, root._pending); q[key] = (q[key] ?? 0) + secs; root._pending = q } // try again next minute
-                    done()
-                })
+        for (const [prop, method] of [["_pending", "screentime.add"], ["_focusPending", "focustime.add"]]) {
+            const p = root[prop]
+            root[prop] = {}
+            for (const key in p) {
+                const [app, title] = key.split("\u0000")
+                // anod takes at most 120 s per report (time saved up while it was away goes in parts)
+                for (let rest = p[key]; rest > 0; rest -= 120) {
+                    const secs = Math.min(120, rest)
+                    left++
+                    Anod.call(method, { app: app, title: title, seconds: secs }, (r, e) => {
+                        if (e) { const q = Object.assign({}, root[prop]); q[key] = (q[key] ?? 0) + secs; root[prop] = q } // try again next minute
+                        done()
+                    })
+                }
             }
         }
+        if (left > 1) done() // nothing sent: no refresh
     }
     signal updated()
 

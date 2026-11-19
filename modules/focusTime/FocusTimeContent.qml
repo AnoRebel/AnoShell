@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -12,7 +13,7 @@ import "."
 /**
  * FocusTime content — the actual UI for the time tracker.
  * Uses Appearance singleton for theming.
- * Data comes from focus_daemon.py (live state file) and get_stats.py (historical queries).
+ * Data comes from anod (focustime.stats: a day's figures, or one app's), recorded by ScreenTime.
  */
 Item {
     id: root
@@ -57,8 +58,6 @@ Item {
     property bool isFirstLoad: true
     readonly property bool isTodaySelected: root.selectedDateStr === getIsoDate(new Date())
 
-    readonly property string scriptsDir: FocusTime.scriptsDir
-    readonly property string stateFilePath: FocusTime.stateFile
 
     property real introState: 0.0
     Component.onCompleted: {
@@ -74,13 +73,13 @@ Item {
         root.averageSeconds = data.average || 0;
         root.yesterdaySeconds = data.yesterday || 0;
         root.weekRangeStr = data.week_range || "";
-        root.liveActiveApp = data.current || "Unknown";
+        root.liveActiveApp = ToplevelManager.activeToplevel?.appId || "Desktop";
 
         if (root.isFirstLoad) firstLoadTimer.start();
 
-        root.topApps = data.apps || [];
+        root.topApps = root.resolve(data.apps);
         syncAppsModel();
-        root.weekAppsData = data.week_apps || [];
+        root.weekAppsData = root.resolve(data.week_apps);
         syncWeekAppsModel();
 
         root.weekHeatmapData = data.week_heatmap || [[], [], [], [], [], [], []];
@@ -120,54 +119,43 @@ Item {
     }
 
     // ─── Data Fetching ──────────────────────────────────────────────────────
+    // anod answers from its store; a reply for a date or app no longer shown is dropped.
+    property int _ask: 0
     function requestDataUpdate() {
-        if (root.selectedAppClass === "" && getIsoDate(root.activeDate) === getIsoDate(new Date())) {
-            liveFileReader.running = true;
-        } else {
-            let cmd = ["python3", root.scriptsDir + "/get_stats.py", getIsoDate(root.activeDate)];
-            if (root.selectedAppClass !== "") {
-                cmd.push("--app");
-                cmd.push(root.selectedAppClass);
-            }
-            statsPoller.command = cmd;
-            statsPoller.running = true;
-        }
+        const ask = ++root._ask;
+        Anod.call("focustime.stats", { date: getIsoDate(root.activeDate), app: root.selectedAppClass }, (res, err) => {
+            if (ask !== root._ask || !res) return;
+            root.updateFromData(res);
+        });
     }
-
-    Process {
-        id: liveFileReader
-        command: ["cat", root.stateFilePath]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let raw = this.text.trim();
-                if (raw === "") return;
-                try {
-                    let data = JSON.parse(raw);
-                    root.updateFromData(data);
-                } catch (e) {}
-            }
-        }
+    // Names and icons from the desktop entries (cached); an imported name when there is no entry.
+    property var _entries: ({})
+    function resolve(list) {
+        return (list ?? []).map(a => {
+            const cls = a["class"];
+            if (!(cls in root._entries)) root._entries[cls] = DesktopEntries.heuristicLookup(cls) ?? null;
+            const e = root._entries[cls];
+            return { "class": cls, name: e?.name || a.name || cls, icon: e?.icon || "", seconds: a.seconds, percent: a.percent };
+        });
     }
-
+    // New time lands about once a minute (ScreenTime's flush): refresh then, and every 30 s besides.
+    // Also when the panel opens and when anod (re)connects: the first ask, made when the panel
+    // loads at shell start, can come before anod is there.
+    readonly property bool _showsToday: root.visible && (root.isTodaySelected || root.selectedDateStr === "")
+    onVisibleChanged: if (root.visible) root.requestDataUpdate()
+    Connections {
+        target: ScreenTime
+        function onUpdated() { if (root._showsToday) root.requestDataUpdate() }
+    }
+    Connections {
+        target: Anod
+        function onAvailableChanged() { if (Anod.available && root.visible) root.requestDataUpdate() }
+    }
     Timer {
-        interval: 1000
-        running: root.isTodaySelected && root.visible
+        interval: 30000
+        running: root._showsToday
         repeat: true
         onTriggered: root.requestDataUpdate()
-    }
-
-    Process {
-        id: statsPoller
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let raw = this.text.trim();
-                if (raw === "") return;
-                try {
-                    let data = JSON.parse(raw);
-                    root.updateFromData(data);
-                } catch (e) {}
-            }
-        }
     }
 
     // ─── Date Helpers ───────────────────────────────────────────────────────
