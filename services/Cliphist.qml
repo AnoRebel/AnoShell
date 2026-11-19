@@ -437,8 +437,8 @@ Singleton {
             return
         }
         const info = root.entryInfo(item)
-        if (!info.id) { cb(null); return }
-        dragProc.running = false
+        // One decode at a time (one pointer, one drag): a second can't take the first's result.
+        if (!info.id || dragProc.running) { cb(null); return }
         dragProc.cb = cb
         if (info.kind === "image") {
             const ext = info.ext || "png"
