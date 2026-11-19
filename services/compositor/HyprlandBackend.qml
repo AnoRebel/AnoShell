@@ -219,7 +219,7 @@ QtObject {
     }
     // The focused window in layout coordinates ({x, y, width, height}), or null.
     function focusedWindowGeometry(cb) {
-        root._request("j/activewindow", w => cb(w?.at && w?.size ? { x: w.at[0], y: w.at[1], width: w.size[0], height: w.size[1] } : null))
+        root._request("j/activewindow", w => cb(w?.at && w?.size ? { x: w.at[0], y: w.at[1], width: w.size[0], height: w.size[1], id: w.address ?? "" } : null))
         return true
     }
     property var _refreshTimer: Timer {

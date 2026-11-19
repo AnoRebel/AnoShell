@@ -271,7 +271,11 @@ Singleton {
     // ── Edge push (Hyprland: the pointer is known) ────────────────────────
     // While a window is dragged against an edge of the screen, the canvas pans
     // the other way under it (the dragged window stays under the pointer).
+    // The shell can't see the mouse button: a drag is "on" while the focused
+    // window has moved in the last 1.5 s, so holding it still at the edge keeps
+    // pushing for that long (nudge it to go on; a release there drifts ≤ 1.5 s).
     property var _lastFocus: null
+    property real _lastMoveAt: 0
     Timer {
         id: edgeWatch
         interval: 100
@@ -280,10 +284,12 @@ Singleton {
         onTriggered: CompositorService.cursorPos(c => {
             if (!c) return
             CompositorService.focusedWindowGeometry(g => {
-                const moved = g && root._lastFocus && (g.x !== root._lastFocus.x || g.y !== root._lastFocus.y)
+                const same = g && root._lastFocus && g.id === root._lastFocus.id
+                if (same && (g.x !== root._lastFocus.x || g.y !== root._lastFocus.y)) root._lastMoveAt = Date.now()
+                else if (!same) root._lastMoveAt = 0
                 root._lastFocus = g
                 const mon = Quickshell.screens.find(s => c.x >= s.x && c.x < s.x + s.width && c.y >= s.y && c.y < s.y + s.height)
-                if (!mon || !moved) return
+                if (!mon || Date.now() - root._lastMoveAt > 1500) return
                 const e = 3, step = 40
                 const dx = c.x <= mon.x + e ? step : c.x >= mon.x + mon.width - 1 - e ? -step : 0
                 const dy = c.y <= mon.y + e ? step : c.y >= mon.y + mon.height - 1 - e ? -step : 0

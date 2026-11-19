@@ -40,7 +40,7 @@ from Anserin.
 |---|---|---|
 | On / off for the focused workspace | tap Super+Ctrl (press Super first), or Super+Ctrl+I | Super+Ctrl+I |
 | Pan | drag the empty desktop; or hold Super+Alt and drag anywhere | drag the empty desktop; or Super+Alt+G, then move the pointer (a click or Esc ends it) |
-| Edge push | drag a window against a screen edge | — (the shell can't read the pointer there) |
+| Edge push | drag a window against a screen edge (it keeps pushing for 1.5 s after the window last moved; nudge it to go on) | — (the shell can't read the pointer there) |
 
 How it behaves:
 - **Turning it on** floats every window where it is. Turning it off tiles them all again; windows that were off screen come back to the middle first.
