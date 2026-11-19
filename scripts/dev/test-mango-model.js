@@ -2,7 +2,7 @@
 // shaped as mango 0.18.3's IPC sends them). Run: node scripts/dev/test-mango-model.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/compositor/MangoModel.js'), 'utf8').replace('.pragma library', '')
-const M = new Function(src + ';return {parse, workspaces, focusedOutput, keyboardLayout, fullscreen, covered, windows, dispatchLine, canvas, relArg};')()
+const M = new Function(src + ';return {parse, workspaces, focusedOutput, keyboardLayout, fullscreen, covered, windows, dispatchLine, canvas, relArg, keepVisible, enqueue};')()
 const line = n => fs.readFileSync(path.join(__dirname, 'fixtures/mango', n + '.jsonl'), 'utf8').split('\n')[0]
 const a = (c, m) => { if (!c) throw new Error(m) }
 
@@ -38,4 +38,14 @@ a(cv && cv.output === 'eDP-1' && cv.workspace === 'eDP-1:1' && cv.windows.length
 a(cv.others.length === 1 && cv.view.width === 1920, 'the other monitor, the view')
 a(M.relArg(-40) === '-40' && M.relArg(25.4) === '+25' && M.relArg(0) === '+0', 'relative movewin arguments')
 a(M.dispatchLine('movewin', [M.relArg(-40), M.relArg(10)], 4) === 'dispatch movewin,-40,+10 client,4\n', 'movewin line')
+let q = M.enqueue([], 'dispatch togglefloating client,4\n')
+q = M.enqueue(q, M.dispatchLine('movewin', ['-40', '+0'], 4))
+q = M.enqueue(q, M.dispatchLine('movewin', ['-10', '+5'], 7))
+q = M.enqueue(q, M.dispatchLine('movewin', ['+15', '-2'], 4))
+a(q.length === 3 && q[1] === 'dispatch movewin,-25,-2 client,4\n' && q[2] === 'dispatch movewin,-10,+5 client,7\n', `queued moves merge ${JSON.stringify(q)}`)
+a(M.enqueue(['dispatch movewin,10,10 client,4\n'], 'dispatch movewin,+5,+0 client,4\n').length === 2, 'absolute moves are not merged')
+const kv = { x: 0, y: 0, width: 1280, height: 720 }
+a(JSON.stringify(M.keepVisible({ x: -900, y: 10, width: 694, height: 600 }, kv)) === '{"x":-654,"y":10}', 'off left: a sliver stays')
+a(JSON.stringify(M.keepVisible({ x: 1500, y: 800, width: 500, height: 300 }, kv)) === '{"x":1240,"y":680}', 'off right and down')
+a(JSON.stringify(M.keepVisible({ x: 100, y: 50, width: 500, height: 300 }, kv)) === '{"x":100,"y":50}', 'on screen: unchanged')
 console.log('mango model ok')

@@ -47,7 +47,8 @@ How it behaves:
 - **A new window** opens floating in the middle of the screen, at no more than 60 × 70 % of it.
 - **Arrange** (Settings, or `qs -c ano ipc call infiniteDesktop arrange`) spreads the windows out without overlap, centred on the screen.
 - **Several screens:** Hyprland and sway would draw a window on the next screen once it slides there, and sway would even move it to that screen's workspace. So the shell parks such a window past every screen and brings it back when the canvas returns.
-- **niri** always keeps a sliver (10–75 px) of every floating window on screen, so windows off the canvas wait at the edges.
+- **niri and mango** never let a floating window leave the screen: niri keeps a sliver (10–75 px) of it on screen, and mango puts it back at the left edge, so the shell keeps 40 px of each on screen there. Windows off the canvas wait at the edges and return to their places when you pan back.
+- **niri** tells the shell only the column and row of a tiled window, not where it is, so turning the desktop on lays the columns out side by side as niri shows them (16 px gaps) with the focused one in view.
 - **State:** which workspaces are infinite desktops, and where parked windows wait, is kept in `$XDG_STATE_HOME/anoshell/infinite-desktop.json`. It survives a shell restart in the same compositor session; a new session starts fresh.
 - labwc and Umbriel can't float and move other windows over IPC, so the card shows the feature as unavailable there.
 

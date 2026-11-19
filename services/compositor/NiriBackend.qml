@@ -118,29 +118,63 @@ QtObject {
         function onWindowOpened(w) { root.windowOpened(w.id, String(w.workspace_id ?? "")) }
     }
     property var _off: ({})     // output → { x, y }
-    property var _asked: ({})   // window id → { x, y, output } last requested (layout coordinates)
+    property var _asked: ({})   // window id → { x, y, from } last requested (layout coordinates), where it was then
+    property var _req: ({})     // window id → { x, y } last requested, kept: niri clamps off-screen ones
     function _outRect(name) {
         const l = NiriService.outputs?.[name]?.logical
         return l ? { x: l.x, y: l.y, width: l.width, height: l.height } : null
     }
+    // niri 26.04 reports tile_pos_in_workspace_view only for floating windows;
+    // tiled ones give just [column, tile] (1-based). Rebuild the strip from the
+    // sizes, then slide it so the focused tile is in view, the way niri scrolls.
+    // ponytail: assumes 16 px gaps and ignores the real scroll offset; parse
+    // layout.gaps from config.kdl if the jump on enable bothers anyone.
+    function _stripPos(wins, view) {
+        const g = 16, cols = {}, out = {}
+        for (const w of wins) {
+            const c = w.layout?.pos_in_scrolling_layout
+            if (!c || w.layout?.tile_pos_in_workspace_view) continue
+            ;(cols[c[0]] = cols[c[0]] ?? []).push(w)
+        }
+        let x = view.x + g, focus = null
+        for (const k of Object.keys(cols).map(Number).sort((a, b) => a - b)) {
+            const col = cols[k].sort((a, b) => a.layout.pos_in_scrolling_layout[1] - b.layout.pos_in_scrolling_layout[1])
+            let y = view.y + g, width = 0
+            for (const w of col) {
+                out[w.id] = [x - view.x, y - view.y]
+                if (w.is_focused) focus = { x, width: w.layout.tile_size[0] }
+                y += w.layout.tile_size[1] + g; width = Math.max(width, w.layout.tile_size[0])
+            }
+            x += width + g
+        }
+        const dx = !focus ? 0 : focus.x + focus.width > view.x + view.width - g ? view.x + view.width - g - focus.x - focus.width : 0
+        for (const id in out) out[id][0] += dx
+        return out
+    }
     function canvasState(cb) {
         const ws = root._focusedWs, view = ws ? root._outRect(ws.output) : null
         if (!view) { cb(null); return true }
-        const wins = []
-        for (const w of (NiriService.windows ?? [])) {
-            const pos = w.layout?.tile_pos_in_workspace_view, size = w.layout?.tile_size
-            if (w.workspace_id !== ws.id || !pos || !size) continue
+        const wins = [], mine = (NiriService.windows ?? []).filter(w => w.workspace_id === ws.id)
+        const strip = root._stripPos(mine, view)
+        for (const w of mine) {
+            const pos = w.layout?.tile_pos_in_workspace_view ?? strip[w.id], size = w.layout?.tile_size
+            if (!pos || !size) continue
             const r = { id: w.id, x: view.x + pos[0], y: view.y + pos[1], width: size[0], height: size[1],
                         floating: !!w.is_floating, focused: !!w.is_focused, appId: w.app_id ?? "",
                         // borders: the size actions set the window, not the tile
                         insetW: size[0] - (w.layout.window_size?.[0] ?? size[0]), insetH: size[1] - (w.layout.window_size?.[1] ?? size[1]) }
-            // Where it landed against where it was sent, while fully on screen (not clamped).
-            const a = root._asked[w.id]
-            if (a && r.x >= view.x && r.y >= view.y && r.x + r.width <= view.x + view.width && r.y + r.height <= view.y + view.height) {
+            // Where it landed against where it was sent, while fully on screen (not clamped):
+            // learnt once per output, from a window niri has reported since (reads can be stale).
+            const a = root._off[ws.output] ? null : root._asked[w.id]
+            if (a && w.is_floating && JSON.stringify(w.layout.tile_pos_in_workspace_view) !== a.from && r.x >= view.x && r.y >= view.y && r.x + r.width <= view.x + view.width && r.y + r.height <= view.y + view.height) {
                 const o = Object.assign({}, root._off)
-                o[ws.output] = { x: (o[ws.output]?.x ?? 0) + r.x - a.x, y: (o[ws.output]?.y ?? 0) + r.y - a.y }
+                o[ws.output] = { x: r.x - a.x, y: r.y - a.y }
                 root._off = o
-                delete root._asked[w.id]
+            }
+            // Partly off screen, niri shows it clamped: the canvas place is the one sent.
+            const q = root._req[w.id]
+            if (q && w.is_floating && !(q.x >= view.x && q.y >= view.y && q.x + r.width <= view.x + view.width && q.y + r.height <= view.y + view.height)) {
+                r.x = q.x; r.y = q.y
             }
             wins.push(r)
         }
@@ -153,7 +187,8 @@ QtObject {
         const r = out ? root._outRect(out) : null
         if (!r) return false
         const off = root._off[out] ?? { x: 0, y: 0 }
-        root._asked[id] = { x, y }
+        root._asked[id] = { x, y, from: JSON.stringify(w.layout?.tile_pos_in_workspace_view ?? null) }
+        root._req[id] = { x, y }
         return NiriService.send({ "Action": { "MoveFloatingWindow": { "id": id,
             "x": { "SetFixed": Math.round(x - r.x - off.x) }, "y": { "SetFixed": Math.round(y - r.y - off.y) } } } })
     }
@@ -172,7 +207,7 @@ QtObject {
         return true
     }
     function tileWindows(ids) {
-        for (const id of ids) NiriService.send({ "Action": { "MoveWindowToTiling": { "id": id } } })
+        for (const id of ids) { delete root._req[id]; NiriService.send({ "Action": { "MoveWindowToTiling": { "id": id } } }) }
         return true
     }
 

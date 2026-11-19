@@ -85,9 +85,35 @@ function canvas(clients, monitors) {
              others: (monitors || []).filter(m => m !== mon).map(rect), windows: wins }
 }
 
+// mango puts a floating window that leaves every output back on one (x 0),
+// so the infinite desktop keeps `sliver` px of each inside the view instead.
+// ponytail: clamps to the view only; with a second output beside it the sliver
+// can show there. Park toward a free side if that matters.
+function keepVisible(r, view, sliver) {
+    const s = sliver || 40
+    return { x: Math.round(Math.min(Math.max(r.x, view.x - r.width + s), view.x + view.width - s)),
+             y: Math.round(Math.min(Math.max(r.y, view.y - r.height + s), view.y + view.height - s)) }
+}
+
 // mango's movewin/resizewin: a leading - or + is relative, anything else
 // absolute, so a move left of 0 has to go as a relative one.
 function relArg(delta) { return (delta < 0 ? "-" : "+") + Math.abs(Math.round(delta)) }
+
+// Queue `line`, merged into a queued relative movewin for the same client
+// (both deltas summed); anything else is appended.
+function enqueue(queue, line) {
+    const re = /^dispatch movewin,([+-]\d+),([+-]\d+) client,(\d+)\n$/
+    const m = re.exec(line)
+    if (m) {
+        for (let i = queue.length - 1; i >= 0; i--) {
+            const q = re.exec(queue[i])
+            if (!q || q[3] !== m[3]) continue
+            const dx = Number(q[1]) + Number(m[1]), dy = Number(q[2]) + Number(m[2])
+            return queue.slice(0, i).concat([dispatchLine("movewin", [relArg(dx), relArg(dy)], Number(m[3]))], queue.slice(i + 1))
+        }
+    }
+    return queue.concat([line])
+}
 
 // A dispatch line (`dispatch <func>,<args…> [client,<id>]`). Arguments are
 // numbers or monitor names here; anything with a newline, comma or space

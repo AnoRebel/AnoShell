@@ -1019,24 +1019,33 @@ func keyboardFrom(m map[string]any) (*display.Keyboard, error) {
 // scrollingFrom reads scrolling.* (nil when nothing is set).
 func scrollingFrom(m map[string]any) *display.Scrolling {
 	var s display.Scrolling
+	// config.Load decodes numbers as json.Number (UseNumber).
+	num := func(v any) float64 {
+		switch n := v.(type) {
+		case json.Number:
+			f, _ := n.Float64()
+			return f
+		case float64:
+			return n
+		}
+		return 0
+	}
 	if v, ok := config.Get(m, "scrolling.columnWidth"); ok {
-		s.ColumnWidth, _ = v.(float64)
+		s.ColumnWidth = num(v)
 	}
 	ws, _ := config.Get(m, "scrolling.workspaces")
 	list, _ := ws.([]any)
 	for _, e := range list {
 		o, _ := e.(map[string]any)
-		id, _ := o["id"].(float64)
 		dir, _ := o["direction"].(string)
-		s.Workspaces = append(s.Workspaces, display.ScrollWorkspace{ID: int(id), Direction: dir})
+		s.Workspaces = append(s.Workspaces, display.ScrollWorkspace{ID: int(num(o["id"])), Direction: dir})
 	}
 	as, _ := config.Get(m, "scrolling.apps")
 	list, _ = as.([]any)
 	for _, e := range list {
 		o, _ := e.(map[string]any)
 		app, _ := o["app"].(string)
-		w, _ := o["width"].(float64)
-		s.Apps = append(s.Apps, display.ScrollApp{App: app, Width: w})
+		s.Apps = append(s.Apps, display.ScrollApp{App: app, Width: num(o["width"])})
 	}
 	s = display.CleanScrolling(s)
 	if s.ColumnWidth == 0 && len(s.Workspaces) == 0 && len(s.Apps) == 0 {

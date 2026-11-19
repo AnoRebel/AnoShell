@@ -223,7 +223,8 @@ Singleton {
             if (!st || root.desktops[st.workspace] === undefined || root.panning) return
             const f = root._virtual(st).find(w => w.focused)
             // Only a focus change follows (moving windows can re-announce the same one).
-            if (!f || String(f.id) === root._followed) return
+            // A new window is still tiled here: the open timer centres it.
+            if (!f || !f.floating || String(f.id) === root._followed) return
             root._followed = String(f.id)
             const d = Model.follow(f, st.view, 24)
             root.glide(d.dx, d.dy)

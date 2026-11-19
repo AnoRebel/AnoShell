@@ -83,6 +83,7 @@ GenericBackend {
         parser: SplitParser {
             onRead: line => {
                 const o = MangoModel.parse(line)
+                if (root._currentCb) { const cb = root._currentCb; root._currentCb = null; cb(o); return }
                 if (o?.error) console.warn(`[compositor:mango] ${root._current.trim()}: ${o.error}`)
             }
         }
@@ -90,23 +91,34 @@ GenericBackend {
             if (connected) { write(root._current); flush(); return }
             root._current = ""
             root._watchdog.stop()
-            root._next()
+            if (root._currentCb) { const cb = root._currentCb; root._currentCb = null; cb(null) }
+            Qt.callLater(root._next) // reconnecting in the same tick as the close can be a no-op
         }
     }
+    // Queue items: a dispatch line, or { line, cb } for a `get` whose reply goes to cb.
+    property var _currentCb: null
     function _next() {
         if (root._current || root._queue.length === 0) return
-        root._current = root._queue.shift()
+        const item = root._queue.shift()
+        root._current = typeof item === "string" ? item : item.line
+        root._currentCb = typeof item === "string" ? null : item.cb
         root._watchdog.restart()
         root._socket.connected = true
     }
     property var _watchdog: Timer {
         interval: 2000
-        onTriggered: { if (!root._current) return; root._current = ""; root._socket.connected = false; root._next() }
+        onTriggered: {
+            if (!root._current) return
+            root._current = ""; root._socket.connected = false
+            if (root._currentCb) { const cb = root._currentCb; root._currentCb = null; cb(null) }
+            Qt.callLater(root._next)
+        }
     }
     function _dispatch(func, args, clientId) {
         const line = MangoModel.dispatchLine(func, args, clientId)
         if (!line || !root._socketPath) return false
-        root._queue.push(line)
+        // A pan sends a relative move per window per frame: fold it into one still queued.
+        root._queue = MangoModel.enqueue(root._queue, line)
         root._next()
         return true
     }
@@ -160,19 +172,44 @@ GenericBackend {
     property bool _clientsSeen: false
     property var _sentPos: ({})   // id → { x, y } last placed (moves go relative, see MangoModel.relArg)
     // The client list is the truth again (windows may have been dragged since).
-    function canvasState(cb) { root._sentPos = {}; cb(MangoModel.canvas(root._clients, root._monitors)); return true }
-    function _posOf(id) { const c = root._clients.find(c => c.id === id); return root._sentPos[id] ?? (c ? { x: c.x, y: c.y } : null) }
+    // Canvas places sent (id → { x, y }): mango shows clamped ones at the edge.
+    property var _req: ({})
+    property var _view: null
+    // mango's all-clients watch doesn't fire for moves: canvas reads ask afresh.
+    property var _live: []
+    function canvasState(cb) {
+        root._queue = root._queue.concat([{ line: "get all-clients\n", cb: o => root._canvasFrom(o, cb) }])
+        root._next()
+        return true
+    }
+    function _canvasFrom(o, cb) {
+        root._live = Array.isArray(o?.clients) ? o.clients : root._clients
+        root._sentPos = {}
+        const st = MangoModel.canvas(root._live, root._monitors)
+        root._view = st?.view ?? null
+        for (const w of (st?.windows ?? [])) {
+            const q = root._req[w.id], v = st.view
+            if (q && w.floating && !(q.x >= v.x && q.y >= v.y && q.x + w.width <= v.x + v.width && q.y + w.height <= v.y + v.height)) { w.x = q.x; w.y = q.y }
+        }
+        cb(st)
+    }
+    function _client(id) { return root._live.find(c => c.id === id) ?? root._clients.find(c => c.id === id) }
+    function _posOf(id) { const c = root._client(id); return root._sentPos[id] ?? (c ? { x: c.x, y: c.y } : null) }
     function _moveTo(id, x, y) {
-        const cur = root._posOf(id)
-        if (!cur) return false
-        root._sentPos[id] = { x: Math.round(x), y: Math.round(y) }
-        return root._dispatch("movewin", [MangoModel.relArg(x - cur.x), MangoModel.relArg(y - cur.y)], id)
+        const cur = root._posOf(id), c = root._client(id)
+        if (!cur || !c) return false
+        root._req[id] = { x: Math.round(x), y: Math.round(y) }
+        const t = root._view ? MangoModel.keepVisible({ x, y, width: c.width, height: c.height }, root._view) : root._req[id]
+        if (t.x === cur.x && t.y === cur.y) return true
+        root._sentPos[id] = t
+        return root._dispatch("movewin", [MangoModel.relArg(t.x - cur.x), MangoModel.relArg(t.y - cur.y)], id)
     }
     function floatWindows(rects) {
         for (const r of rects) {
-            const c = root._clients.find(c => c.id === r.id)
+            const c = root._client(r.id)
             if (!c) continue
             delete root._sentPos[r.id]
+            root._req[r.id] = { x: Math.round(r.x), y: Math.round(r.y) }
             if (!c.is_floating) root._dispatch("togglefloating", [], r.id)
             root._dispatch("resizewin", [Math.round(r.width), Math.round(r.height)], r.id)
             root._dispatch("movewin", [Math.max(0, Math.round(r.x)), Math.max(0, Math.round(r.y))], r.id)
@@ -187,7 +224,8 @@ GenericBackend {
     function tileWindows(ids) {
         for (const id of ids) {
             delete root._sentPos[id]
-            if (root._clients.find(c => c.id === id)?.is_floating) root._dispatch("togglefloating", [], id)
+            delete root._req[id]
+            if (root._client(id)?.is_floating) root._dispatch("togglefloating", [], id)
         }
         return true
     }
