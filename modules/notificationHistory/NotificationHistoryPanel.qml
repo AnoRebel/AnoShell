@@ -32,6 +32,8 @@ Scope {
         function search(text: string): void { NotificationHistory.text = text; GlobalStates.notificationHistoryOpen = true }
     }
 
+    // ~ for the home folder (shorter, and keeps the user name out of screenshots).
+    function _tilde(p) { const h = FileUtils.trimFileProtocol(Directories.home); return h && (p === h || p.startsWith(h + "/")) ? "~" + p.slice(h.length) : p }
     function ask(kind, app) {
         const count = kind === "app" ? NotificationHistory.countFor(app) : kind === "matching" ? NotificationHistory.total : (NotificationHistory.stats.count ?? NotificationHistory.total)
         if (count > 0) root.pending = { kind: kind, app: app ?? "", count: count }
@@ -95,7 +97,7 @@ Scope {
                             readonly property var st: NotificationHistory.stats
                             readonly property int days: Config.options?.notifications?.history?.keepDays ?? 30
                             text: !NotificationHistory.enabled ? "The history is off (Settings → General → Notifications)"
-                                : `${st.count ?? 0} kept · ${days > 0 ? `${days} days` : "forever"} · ${FileUtils.trimFileProtocol(st.dir ?? "")}`
+                                : `${st.count ?? 0} kept · ${days > 0 ? `${days} days` : "forever"} · ${root._tilde(FileUtils.trimFileProtocol(st.dir ?? ""))}`
                         }
                     }
                     ToolbarButton {

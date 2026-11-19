@@ -812,7 +812,8 @@ Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanva
 
 ## Credits
 Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
-**Bioma** (GPL-3.0: palette cursors and icon themes, the Bioma Gate lock screen, the sound effects in `assets/sounds` and their player, the files launcher plugin, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list), **iNiR** theme presets (GPL-3.0: 37 colour themes).
+**Bioma** (GPL-3.0: palette cursors and icon themes, the Bioma Gate lock screen, the sound effects in `assets/sounds` and their player, the files launcher plugin, the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list; the idea of choosing LRCLIB lyrics by track length), **iNiR** theme presets (GPL-3.0: 37 colour themes).
+**[Anserin](https://github.com/lukpednoi/Anserin)** (AGPL-3.0; ideas only, everything reimplemented and no code copied): Wi-Fi location, the desktop pets, the corner revolver, the system monitor views and Bubble Monitor, the wavy clock and gauge pieces, the animated weather scene, the Simple lock screen and lock layout editor, the terminal looks, scrolling workspaces on every compositor and the infinite desktop.
 
 ## Licence
 

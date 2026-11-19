@@ -326,6 +326,8 @@ Bioma pieces:
 
 ## Notification history
 
+![The notification history with sample notifications](images/notification-history.webp)
+
 `notifications.history` keeps every notification the shell receives, also
 after you dismiss or clear it, so you can look it up later (the History
 button on the notification card, Settings → General → Notification history,
@@ -376,6 +378,8 @@ Processes, apps and sensors come from anod (`sysmon.*`), sampled once a second
 and only while a bubble view is open.
 
 ## Corner revolver
+
+![The corner revolver open, and the cat](images/pet-revolver.webp)
 
 `revolver` (Settings → Modules → Corner Revolver; off by default): rest the
 pointer in `corner` (`"bottomLeft"`) for `dwellMs` (90) and a quarter of a

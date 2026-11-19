@@ -34,6 +34,8 @@ Notes:
 The workspace's windows all float on a canvas that you pan around. The idea comes
 from Anserin.
 
+![Panning an infinite desktop: the map in the corner shows the windows and the part on screen](images/infinite-desktop.webp)
+
 | | Hyprland | niri, sway, mango |
 |---|---|---|
 | On / off for the focused workspace | tap Super+Ctrl (press Super first), or Super+Ctrl+I | Super+Ctrl+I |
