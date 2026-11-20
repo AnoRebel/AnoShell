@@ -720,6 +720,31 @@ ColumnLayout {
         subtitle: "Used by keybinds (ano run …) and every shell action that opens one"
         configKeys: ["apps"]
 
+        // Super+R in the bundled Hyprland config (ano run launcher).
+        ConfigRow {
+            label: "Launcher"
+            configKey: "apps.launcher"
+            sublabel: "What Super+R opens (ano run launcher)"
+            ChoiceRow {
+                model: [{ value: "anoshell", label: "AnoShell's", icon: "search" }, { value: "custom", label: "Custom", icon: "terminal" }]
+                current: Config.options?.apps?.launcher ?? "anoshell"
+                onChose: value => Config.setNestedValue("apps.launcher", value)
+            }
+        }
+        ConfigRow {
+            label: "Launcher command"
+            configKey: "apps.launcherCommand"
+            visible: (Config.options?.apps?.launcher ?? "anoshell") === "custom"
+            sublabel: (Config.options?.apps?.launcherCommand ?? "").trim() === "" ? "e.g. ~/.config/rofi/scripts/launcher.sh (empty: AnoShell's launcher opens)" : "Run directly (~ and $HOME expand; no shell)"
+            StyledTextInput {
+                boxed: true
+                text: Config.options?.apps?.launcherCommand ?? ""
+                onEditingFinished: Config.setNestedValue("apps.launcherCommand", text.trim())
+                Layout.preferredWidth: 260
+                font.family: Appearance?.font.family.mono ?? "monospace"
+            }
+        }
+
         Repeater {
             model: [
                 { key: "terminal", label: "Terminal", icon: "terminal" },

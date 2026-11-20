@@ -847,7 +847,8 @@ hl.bind(MAIN_MOD .. " + Z", hl.dsp.exec_cmd("ano run browser"))
 hl.bind(MAIN_MOD .. " + P", hl.dsp.exec_cmd("celluloid"))
 hl.bind(MAIN_MOD .. " + SPACE", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(MAIN_MOD .. " + D", hl.dsp.exec_cmd("vicinae toggle"))
-hl.bind(MAIN_MOD .. " + R", hl.dsp.exec_cmd("$HOME/.config/rofi/scripts/launcher.sh"))
+-- The launcher: AnoShell's own, or your command (Settings → Modules → Default Applications → Launcher).
+hl.bind(MAIN_MOD .. " + R", hl.dsp.exec_cmd("ano run launcher"))
 hl.bind(MAIN_MOD .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(MAIN_MOD .. " + S", hl.dsp.layout("togglesplit"))
 

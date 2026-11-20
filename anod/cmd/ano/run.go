@@ -73,13 +73,50 @@ func resolveApp(key, configured string, catalog map[string][]appEntry, look func
 	return nil, fmt.Errorf("no %s installed", key)
 }
 
+// launcherArgv is the launcher Super+R opens (apps.launcher): AnoShell's own
+// search, or apps.launcherCommand (~ and $VARS expanded, split on spaces, run
+// without a shell). An empty custom command falls back to AnoShell's.
+func launcherArgv(m map[string]any) []string {
+	cmd := strings.TrimSpace(config.String(m, "apps.launcherCommand", ""))
+	if config.String(m, "apps.launcher", "anoshell") != "custom" || cmd == "" {
+		return []string{"qs", "-c", "ano", "ipc", "call", "search", "toggle"}
+	}
+	home, _ := os.UserHomeDir()
+	f := strings.Fields(cmd)
+	for i, a := range f {
+		if a == "~" || strings.HasPrefix(a, "~/") {
+			a = home + a[1:]
+		}
+		f[i] = os.ExpandEnv(a)
+	}
+	return f
+}
+
 func runCmd(args []string) int {
 	print := len(args) > 0 && args[0] == "--print"
 	if print {
 		args = args[1:]
 	}
+	if len(args) > 0 && args[0] == "launcher" {
+		m, err := config.Effective()
+		if err != nil {
+			m = map[string]any{}
+		}
+		argv := launcherArgv(m)
+		if print {
+			fmt.Println(strings.Join(argv, " "))
+			return 0
+		}
+		c := exec.Command(argv[0], argv[1:]...)
+		c.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+		if err := c.Start(); err != nil {
+			fmt.Fprintln(os.Stderr, "ano: launcher:", err)
+			return 1
+		}
+		return 0
+	}
 	if len(args) == 0 || runKinds[args[0]] == "" {
-		fmt.Fprintln(os.Stderr, "usage: ano run [--print] terminal|browser|files [args…]")
+		fmt.Fprintln(os.Stderr, "usage: ano run [--print] terminal|browser|files|launcher [args…]")
 		return 2
 	}
 	key := runKinds[args[0]]

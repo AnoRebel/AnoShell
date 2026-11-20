@@ -125,6 +125,8 @@
   "appearance.transparency.enable": "bool",
   "apps.browser": "string",
   "apps.fileManager": "string",
+  "apps.launcher": "string",
+  "apps.launcherCommand": "string",
   "apps.terminal": "string",
   "atelier.catalogs": "var",
   "audio.easyEffects.enable": "bool",

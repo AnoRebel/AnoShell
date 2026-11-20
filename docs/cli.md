@@ -52,6 +52,7 @@ bundled `config.json` (see [Configuration](configuration.md)).
 
 | Command | What it does |
 |---|---|
+| `ano run launcher` | opens the launcher Super+R is bound to in the bundled Hyprland config: AnoShell's own (`apps.launcher` `anoshell`, the default) or your command (`custom`: `apps.launcherCommand`, e.g. `~/.config/rofi/scripts/launcher.sh`; `~` and `$VARS` expand, run without a shell). Settings → Modules → Default Applications → Launcher. `--print` shows it |
 | `ano run terminal\|browser\|files [args…]` | opens your default app (`apps.terminal`, `apps.browser`, `apps.fileManager`). If that program isn't installed, the first installed one of the usual ones is used (terminals: kitty, ghostty, alacritty, …). The bundled keybinds use it, so changing an app in Settings → Modules → Default Applications needs no bind change. `--print` shows the command instead of running it |
 
 ## Welcome

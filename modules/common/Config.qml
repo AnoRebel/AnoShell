@@ -1543,6 +1543,9 @@ Singleton {
                 property string terminal: "kitty"
                 property string fileManager: "nemo"
                 property string browser: "zen-browser"
+                // Super+R (ano run launcher): "anoshell" (its launcher) | "custom" (launcherCommand).
+                property string launcher: "anoshell"
+                property string launcherCommand: ""   // e.g. ~/.config/rofi/scripts/launcher.sh (~ and $HOME expand)
             }
 
             // Dropdown terminal (services/DropTerminal.qml): apps.terminal
