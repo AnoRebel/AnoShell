@@ -33,11 +33,10 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         StyledText {
+            readonly property int count: (CalendarSync.ready ? CalendarSync.events.length : 0) + (CalendarEvents.list?.length ?? 0)
             text: CalendarSync.fetching
                 ? "syncing…"
-                : (CalendarSync.ready
-                    ? `${CalendarSync.events.length} event${CalendarSync.events.length === 1 ? "" : "s"}`
-                    : "no feeds")
+                : (CalendarSync.ready || count > 0 ? `${count} event${count === 1 ? "" : "s"}` : "no feeds")
             font.pixelSize: Appearance.font.pixelSize.smallest
             opacity: 0.5
         }
@@ -64,7 +63,8 @@ ColumnLayout {
     CalendarView {
         id: grid
         Layout.fillWidth: true
-        Layout.preferredHeight: 250
+        // Its own height: a six-week month (Nov 2026) ran into the list under a fixed 250.
+        Layout.preferredHeight: grid.implicitHeight
         showEventDots: true
         onDateClicked: clickedDate => {
             root.filterDate = clickedDate
@@ -103,9 +103,21 @@ ColumnLayout {
         clip: true
         spacing: 4
 
-        readonly property var sourceEvents: root.showingUpcoming
-            ? CalendarSync.getUpcomingEvents(Config.options?.calendar?.upcomingDays ?? 7)
-            : CalendarSync.getEventsForDate(root.filterDate)
+        // Synced feeds and your own events (CalendarEvents; the grid already dots both), by start.
+        readonly property var sourceEvents: {
+            const days = Config.options?.calendar?.upcomingDays ?? 7
+            const feed = root.showingUpcoming ? CalendarSync.getUpcomingEvents(days) : CalendarSync.getEventsForDate(root.filterDate)
+            void CalendarEvents.list
+            const own = (root.showingUpcoming ? CalendarEvents.getUpcomingEvents(days) : CalendarEvents.getEventsForDate(root.filterDate))
+                .map(e => {
+                    // An occurrence's time (recurring ones on the shown day).
+                    const t = new Date(e.occurrence ?? e.dateTime)
+                    if (!e.occurrence) { const d = new Date(root.filterDate); t.setFullYear(d.getFullYear(), d.getMonth(), d.getDate()) }
+                    return { title: e.title, description: e.description, startDate: t.toISOString(), allDay: false,
+                             sourceColor: CalendarEvents.eventColor.toString() }
+                })
+            return feed.concat(own).sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        }
 
         model: sourceEvents
 
@@ -207,7 +219,7 @@ ColumnLayout {
         StyledText {
             text: root.showingUpcoming
                 ? (CalendarSync.events.length === 0 && root.failedFeeds.length === 0
-                    && !CalendarSync.sources.some(src => src.enabled)
+                    && !CalendarSync.sources.some(src => src.enabled) && !(CalendarEvents.list?.length > 0)
                     ? "No calendar feeds configured. Add one in Settings → Services → Calendar sync."
                     : `No upcoming events in the next ${Config.options?.calendar?.upcomingDays ?? 7} days`)
                 : "No events on this day"

@@ -90,7 +90,8 @@ Scope {
         const e = root._entry(appId)
         const wins = CompositorService.windows.filter(w => w.appId === appId)
         const out = [{ header: e?.name || appId }, { icon: "add", text: "New window", run: () => root._launchNew(appId) }]
-        for (const act of Array.from(e?.actions ?? []))
+        // The app's own actions, less one that is just "New window" again.
+        for (const act of Array.from(e?.actions ?? []).filter(a => !/^new[ -]?window$/i.test(String(a.name ?? "").trim())))
             out.push({ icon: "bolt", text: act.name, run: () => DefaultApps.launch(Array.from(act.command), e.workingDirectory, e.id) })
         if (wins.length) out.push({ separator: true })
         for (const w of wins.slice(0, 8))
@@ -442,7 +443,7 @@ Scope {
                                     StyledToolTip {
                                         text: modelData.appId
                                         // A running app's preview names its windows instead.
-                                        visible: iconMA.containsMouse && !dockItem.hasPreview
+                                        visible: iconMA.containsMouse && !dockItem.hasPreview && !dockMenu.visible
                                     }
                                 }
 
@@ -521,7 +522,8 @@ Scope {
                                     active: dockItem.hasPreview && (iconMA.containsMouse || open || previewRetract.running)
                                     sourceComponent: BarModulePopout {
                                         id: preview
-                                        shown: iconMA.containsMouse && !iconMA.pressed && !previewDwell.running
+                                        // Not over the icon menu (it lists the windows itself).
+                                        shown: iconMA.containsMouse && !iconMA.pressed && !previewDwell.running && !dockMenu.visible
                                         popupWidth: strip.implicitWidth + 24
                                         popupHeight: strip.implicitHeight + 24
                                         WindowStrip {

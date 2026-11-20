@@ -92,7 +92,7 @@ bundled Hyprland and niri configs float it.
     to a corner or an edge, their side handle for their width
     (`notifications.popupWidth`), or the volume OSD up or down.
 
-  [Watch a module dragged in the bar preview (WebM)](images/bar-preview.webm)
+  [Watch the bar dragged to another edge in the preview (WebM)](images/bar-preview.webm)
 - Each page's **Reset** clears only the keys that page owns from your delta.
   **Reset every setting** on the About page clears the whole delta. Neither
   writes defaults into your file.
@@ -190,6 +190,8 @@ its menu: New window, the app's own actions (such as "New private window"),
 its open windows, Move to workspace… (where the compositor can: Hyprland, niri,
 sway, mango, Umbriel), Pin/Unpin, and Close or Close all. Esc or a click
 elsewhere closes it; the dock stays up meanwhile.
+
+![The dock's icon menu: a pinned browser's own actions, and a running terminal's windows](images/dock-menu.webp)
 
 Drop files or links on an icon to open them in that app. It takes them the way
 its desktop entry says (`%F`/`%U`: all at once, `%f`/`%u`: one launch each;
