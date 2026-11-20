@@ -430,6 +430,18 @@ screen.
 - `chase` (on): every few minutes at most it walks to the pointer when the
   pointer is near its floor; Hyprland only (the others don't report the
   pointer).
+- `layer` (`above`): where it's drawn.
+  - `above`: over windows.
+  - `below`: on the desktop, behind every window (it then walks only on the
+    bottom).
+  - `auto`: over windows, but behind them while a window is maximised over it
+    (Hyprland and sway; a lone tiled window counts) or one is being moved or
+    resized (Hyprland, niri), back a second after.
+
+  In every mode it goes behind while a shell panel covers it (connected mode,
+  where the frame draws the panels), so it is never over one. Switching remaps
+  its window for a frame; where it is and what it does carry on (not while you
+  hold it: then after the release).
 
 `qs -c ano ipc call pet act <behaviour>` makes it do one (`idle`, `walk`,
 `sit`, `groom`, `stretch`, `look`, `call`, `sleep`, `happy`, and its kind's

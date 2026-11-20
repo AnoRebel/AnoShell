@@ -187,6 +187,9 @@ function fall(s, dt, list, w, half, top) {
             if (n.x >= f.x1 && n.x <= f.x2 && s.y <= f.y + 0.5 && n.y >= f.y && (!land || f.y < land.y)) land = f
         if (land) { n.y = land.y; return { s: n, landed: land } }
     }
+    // The ground catches it even from below (the area shrank mid-fall, or it was let go under it): it never falls out.
+    const ground = list.find(f => f.id === "ground")
+    if (ground && n.y >= ground.y) { n.y = ground.y; return { s: n, landed: ground } }
     return { s: n, landed: null }
 }
 // A throw's velocity from recent pointer samples [{x, y, t ms}], capped.
@@ -196,4 +199,31 @@ function throwVelocity(samples, now) {
     const a = recent[0], b = recent[recent.length - 1], dt = Math.max(16, b.t - a.t) / 1000
     const cap = v => Math.max(-2600, Math.min(2600, v))
     return { vx: cap((b.x - a.x) / dt), vy: cap((b.y - a.y) / dt) }
+}
+
+// ── Stacking (pet.layer) ──
+// The layer modes; anything else is "above".
+const LAYERS = ["above", "below", "auto"]
+function layerOf(v) { return LAYERS.includes(v) ? v : "above" }
+// True when a shell panel body (PanelRegistry descriptors, screen px) on that screen overlaps r = { x, y, w, h }.
+function panelOver(panels, screenName, r) {
+    for (const p of panels ?? []) {
+        if (!p || p.screenName !== screenName || !(p.w > 0 && p.h > 0) || (p.progress ?? 1) < 0.02) continue
+        if (p.x < r.x + r.w && p.x + p.w > r.x && p.y < r.y + r.h && p.y + p.h > r.y) return true
+    }
+    return false
+}
+// True when a window covers nearly all the usable area (maximised, or one tiled alone) over the pet's x.
+// Windows in layout px; (ox, oy, w, h) the area.
+function maximisedOver(windows, ox, oy, w, h, x) {
+    for (const win of windows ?? []) {
+        if (!win || win.fullscreen || !(win.width > 0)) continue
+        if (win.width >= w * 0.9 && win.height >= h * 0.85 && x >= win.x - ox && x <= win.x - ox + win.width) return true
+    }
+    return false
+}
+// Where it's drawn: "top" or "bottom". why = { panel, maximised, moving } (only "auto" heeds the last two).
+function layerFor(mode, why) {
+    if (mode === "below" || why.panel) return "bottom"
+    return mode === "auto" && (why.maximised || why.moving) ? "bottom" : "top"
 }

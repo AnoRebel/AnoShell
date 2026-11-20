@@ -396,6 +396,7 @@
   "pet.colors.duck": "string",
   "pet.enable": "bool",
   "pet.kind": "string",
+  "pet.layer": "string",
   "pet.screen": "string",
   "pet.size": "int",
   "pet.sound": "bool",

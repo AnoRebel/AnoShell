@@ -75,6 +75,19 @@ ColumnLayout {
         checked: root.opts.sound ?? false
         onCheckedChanged: Config.setNestedValue("pet.sound", checked)
     }
+    ConfigRow {
+        label: "Where it's drawn"
+        configKey: "pet.layer"
+        sublabel: (root.opts.layer ?? "above") === "below" ? "Behind every window, on the desktop (it doesn't climb windows then)"
+            : (root.opts.layer ?? "above") === "auto" ? "Over windows; behind them while a panel covers it, a window is maximised over it or one is being moved"
+            : "Over windows; never over the shell's panels"
+        ChoiceRow {
+            model: [{ value: "above", label: "Above", icon: "flip_to_front" }, { value: "below", label: "Below", icon: "flip_to_back" },
+                    { value: "auto", label: "Auto", icon: "auto_mode" }]
+            current: root.opts.layer ?? "above"
+            onChose: value => Config.setNestedValue("pet.layer", value)
+        }
+    }
     ConfigSwitch {
         label: "Now and then, walk to the pointer"
         configKey: "pet.chase"

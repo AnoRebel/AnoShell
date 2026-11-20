@@ -1,7 +1,7 @@
 // Check for modules/pet/pet.js (the desktop pet's behaviours, poses, floors and fall). Run: node scripts/dev/test-pet.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../modules/pet/pet.js'), 'utf8').replace('.pragma library', '')
-const P = new Function(src + ';return {KINDS, PRESETS, presetOf, pick, behaviours, ownBehaviours, pose, mix, floors, floorUnder, clampTo, fall, throwVelocity, SLEEP_AFTER, onHead, bodyBox};')()
+const P = new Function(src + ';return {KINDS, PRESETS, presetOf, pick, behaviours, ownBehaviours, pose, mix, floors, floorUnder, clampTo, fall, throwVelocity, SLEEP_AFTER, onHead, bodyBox, layerOf, panelOver, maximisedOver, layerFor};')()
 const a = (c, m) => { if (!c) throw new Error(m) }
 
 // Presets: three per kind, with fallbacks.
@@ -49,4 +49,20 @@ a(Math.round(v.vx) === 1000 && Math.round(v.vy) === -667, `throw velocity ${v.vx
 // Petting the head vs carrying by the body, either way it faces.
 a(P.onHead('cat', 100, 50, 128, 1) && !P.onHead('cat', 30, 100, 128, 1) && P.onHead('cat', 28, 50, 128, -1), 'head hit both ways')
 a(P.bodyBox(100, -1).x === 0 && P.bodyBox(100, 1).x === 12, 'body box mirrors')
+// Below the ground (the area shrank mid-fall): the ground catches it.
+{ const g = [{ id: 'ground', x1: 0, x2: 800, y: 600 }]; const r = P.fall({ x: 100, y: 5000, vx: 0, vy: 300 }, 0.016, g, 800, 40, 100)
+  a(r.landed && r.landed.id === 'ground' && r.s.y === 600, 'caught from below') }
+// Stacking: panels on its screen that overlap it, maximised windows over its x, and the modes.
+a(P.layerOf('below') === 'below' && P.layerOf('sideways') === 'above' && P.layerOf(undefined) === 'above', 'layer modes')
+const r = { x: 100, y: 500, w: 128, h: 128 }
+a(P.panelOver([{ screenName: 'A', x: 200, y: 0, w: 300, h: 900, progress: 1 }], 'A', r), 'sidebar over the pet')
+a(!P.panelOver([{ screenName: 'B', x: 200, y: 0, w: 300, h: 900 }], 'A', r), 'other screen')
+a(!P.panelOver([{ screenName: 'A', x: 228, y: 0, w: 300, h: 900 }], 'A', r), 'beside, not over')
+a(!P.panelOver([{ screenName: 'A', x: 200, y: 0, w: 300, h: 900, progress: 0.01 }], 'A', r), 'a closed panel')
+a(P.maximisedOver([{ x: 10, y: 40, width: 1900, height: 1000 }], 0, 30, 1920, 1050, 500), 'maximised')
+a(!P.maximisedOver([{ x: 10, y: 40, width: 900, height: 1000 }], 0, 30, 1920, 1050, 500) &&
+  !P.maximisedOver([{ x: 10, y: 40, width: 1900, height: 1000, fullscreen: true }], 0, 30, 1920, 1050, 500), 'half width / fullscreen')
+a(P.layerFor('above', { panel: false, maximised: true, moving: true }) === 'top', 'above ignores windows')
+a(P.layerFor('above', { panel: true }) === 'bottom', 'never over a panel')
+a(P.layerFor('below', {}) === 'bottom' && P.layerFor('auto', { moving: true }) === 'bottom' && P.layerFor('auto', {}) === 'top', 'below / auto')
 console.log('pet: ok')

@@ -42,7 +42,7 @@ Scope {
         function editor(): void { root.editorOpen = !root.editorOpen }
         // Where it is and what it does (area px; the area's origin in layout px where known).
         function state(): string {
-            return JSON.stringify({ kind: root.kind, behaviour: actor.behaviour, mode: actor.mode, x: Math.round(actor.x0),
+            return JSON.stringify({ kind: root.kind, layer: root.layerMode, drawn: root.drawLayer, why: { panel: root._panelOver, maximised: root._maximised, moving: root._moving, windows: root._screenWindows.length, focus: root.focusGeo }, behaviour: actor.behaviour, mode: actor.mode, x: Math.round(actor.x0),
                 y: Math.round(actor.y0), floor: actor.floorId, facing: actor.facing, hidden: root.hidden, ticking: actor.live, floors: root.floors.map(f => [f.id, Math.round(f.x1), Math.round(f.x2), Math.round(f.y)]), screen: root.screenName,
                 area: [root.areaW, root.areaH], origin: root.reserved ? [root.originX, root.originY] : null })
         }
@@ -55,22 +55,89 @@ Scope {
     // Usable area: its size from the probe; its top-left in layout coordinates where the backend can say.
     readonly property real areaW: probe.width
     readonly property real areaH: probe.height
-    readonly property bool windowFloors: (CompositorService.supports.windowGeometry ?? false) && !root.hidden
+    // Behind windows ("below") it stands only on the ground.
+    readonly property bool windowFloors: (CompositorService.supports.windowGeometry ?? false) && !root.hidden && root.layerMode !== "below"
+    // auto watches windows too (maximised, moving), where the compositor reports them.
+    // (A window being moved only needs the focused one's geometry, which every window list has.)
+    readonly property bool _wantWindows: !root.hidden && (root.windowFloors || root.layerMode === "auto")
     readonly property var reserved: CompositorService.reservedOf(root.screenName)
     readonly property real originX: (root.screen?.x ?? 0) + (root.reserved?.[0] ?? 0)
     readonly property real originY: (root.screen?.y ?? 0) + (root.reserved?.[1] ?? 0)
     // The compositor tracks windows only while someone holds a lease.
     property bool _leased: false
     function _lease() {
-        if (root.windowFloors === root._leased) return
-        root._leased = root.windowFloors
+        if (root._wantWindows === root._leased) return
+        root._leased = root._wantWindows
         root._leased ? CompositorService.acquireWindows("pet") : CompositorService.releaseWindows("pet")
     }
-    onWindowFloorsChanged: root._lease()
-    Component.onCompleted: { root._startScreen = CompositorService.focusedMonitorName; root._lease() }
+    on_WantWindowsChanged: root._lease()
+    Component.onCompleted: { root._startScreen = CompositorService.focusedMonitorName; root._lease(); root.drawLayer = root._wantLayer }
     Component.onDestruction: if (root._leased) CompositorService.releaseWindows("pet")
     readonly property var floors: Pet.floors(root.windowFloors && root.reserved ? CompositorService.windowsOnOutput(root.screenName) : [],
         root.originX, root.originY, root.areaW, root.areaH, root.size)
+
+    // ── Stacking (pet.layer; pet.js layerFor) ──
+    // Top (over windows) or Bottom (on the desktop, behind them). Never over a
+    // shell panel in any mode: in connected mode the frame draws panel bodies on
+    // the Top layer too, and two Top surfaces stack by map order, so the pet goes
+    // to Bottom while a registered panel overlaps it. Back 1 s after nothing holds.
+    readonly property string layerMode: Pet.layerOf(root.opts.layer)
+    readonly property real _offL: root.reserved?.[0] ?? PanelRegistry.inset(root.screenName, "left")
+    readonly property real _offT: root.reserved?.[1] ?? PanelRegistry.inset(root.screenName, "top")
+    readonly property bool _panelOver: Pet.panelOver(PanelRegistry.panels, root.screenName,
+        { x: root._offL + actor.x0 - root.size * 0.6, y: root._offT + actor.y0 - root.size, w: root.size * 1.2, h: root.size })
+    readonly property var _screenWindows: root._leased ? CompositorService.windowsOnOutput(root.screenName) : []
+    readonly property bool _maximised: root.layerMode === "auto" && root.reserved !== null
+        && Pet.maximisedOver(root._screenWindows, root.originX, root.originY, root.areaW, root.areaH, actor.x0)
+    // A window being moved or resized: the focused one's geometry changing.
+    property bool _moving: false
+    property string _focusGeo: ""
+    readonly property string focusGeo: {
+        if (root.layerMode !== "auto") return ""
+        const w = root._screenWindows.find(w => w.focused)
+        return w ? `${w.id}|${w.x},${w.y},${w.width},${w.height}` : ""
+    }
+    onFocusGeoChanged: {
+        const was = root._focusGeo; root._focusGeo = root.focusGeo
+        if (was && root.focusGeo && was.split("|")[0] === root.focusGeo.split("|")[0]) { root._moving = true; movingEnd.restart() }
+    }
+    Timer { id: movingEnd; interval: 700; onTriggered: root._moving = false }
+    // Hyprland sends no event while a window is dragged: ask it (a socket request,
+    // no process) three times a second, only in auto with the pet shown.
+    // ponytail: sway and mango report no moves at all, so there only the window list's own updates count.
+    property var _lastGeo: null
+    Timer {
+        interval: 300
+        repeat: true
+        running: root.layerMode === "auto" && !root.hidden && CompositorService.compositor === "hyprland"
+        onTriggered: CompositorService.focusedWindowGeometry(g => {
+            const was = root._lastGeo; root._lastGeo = g
+            if (g && was && g.id === was.id && (g.x !== was.x || g.y !== was.y || g.width !== was.width || g.height !== was.height)) {
+                root._moving = true; movingEnd.restart()
+            }
+        })
+    }
+    readonly property string _wantLayer: Pet.layerFor(root.layerMode, { panel: root._panelOver, maximised: root._maximised, moving: root._moving })
+    property string drawLayer: "top"
+    on_WantLayerChanged: {
+        if (root._wantLayer === "bottom") { backOnTop.stop(); root._toLayer("bottom") }
+        else backOnTop.restart()
+    }
+    Timer { id: backOnTop; interval: 1000; onTriggered: root._toLayer(root._wantLayer) }
+    // A layer surface keeps the layer it was made on (changing it live went one way
+    // only): its windows are unmapped for a frame and come back on the new one. The
+    // pet's place and pose live in the actor, so nothing jumps. Not mid-carry (the
+    // grab would go): it waits for the release.
+    property bool _remap: false
+    function _toLayer(l) {
+        if (l === root.drawLayer) return
+        if (mouse.pressed) { layerRetry.restart(); return }
+        root._remap = true
+        root.drawLayer = l
+        Qt.callLater(() => root._remap = false)
+    }
+    Timer { id: layerRetry; interval: 200; onTriggered: root._toLayer(root._wantLayer) }
+    readonly property int wlLayer: root.drawLayer === "bottom" ? WlrLayer.Bottom : WlrLayer.Top
 
     PetActor {
         id: actor
@@ -118,9 +185,9 @@ Scope {
     PanelWindow {
         id: strip
         screen: root.screen
-        visible: !root.hidden && root.areaH > 0
+        visible: !root.hidden && root.areaH > 0 && !root._remap
         color: "transparent"
-        WlrLayershell.layer: WlrLayer.Top
+        WlrLayershell.layer: root.wlLayer
         WlrLayershell.namespace: "quickshell:pet"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         exclusionMode: ExclusionMode.Normal
@@ -212,9 +279,9 @@ Scope {
     PanelWindow {
         id: air
         screen: root.screen
-        visible: !root.hidden && root.inAir
+        visible: !root.hidden && root.inAir && !root._remap
         color: "transparent"
-        WlrLayershell.layer: WlrLayer.Top
+        WlrLayershell.layer: root.wlLayer
         WlrLayershell.namespace: "quickshell:pet-air"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         exclusionMode: ExclusionMode.Normal

@@ -1727,6 +1727,7 @@ Singleton {
                 }
                 property bool sound: false   // its call, at the effects volume; silent with Do not disturb
                 property bool chase: true    // now and then walk to the pointer (where the compositor reports it)
+                property string layer: "above" // above (over windows) | below (on the desktop, behind them) | auto (behind while a panel, a maximised window or a window being moved is there)
             }
 
             // Screen corners (hot corners)
