@@ -164,26 +164,24 @@ Scope {
                         radius: root.radius
                         color: Appearance.colors.colLayer0
                     }
-                    // The hub.
-                    Rectangle {
-                        width: 56; height: 56; radius: 28
-                        x: (win.left ? 0 : win.width) - 28; y: (win.top ? 0 : win.height) - 28
-                        color: Appearance.colors.colLayer2
-                        border.width: 2; border.color: Appearance.colors.colOutlineVariant
-                    }
                 }
                 ConnectedSurfaceLease {
                     key: "revolver:" + perScreen.screenName
                     kind: "panel"; edge: win.left ? "left" : "right"; priority: 6
                     screenName: perScreen.screenName
                     active: body.visible
+                    // A disc centred on the screen corner (a quarter of it on screen), as the
+                    // unconnected body draws it, joined to the frame by a fillet. As an ordinary
+                    // edge panel the frame drew an s×s square from the edge, rounded: its centre
+                    // sat s/2 in from the corner, with an edge connector bulging below it.
                     readonly property real s: root.radius * body.scale
-                    x: win.left ? 0 : (perScreen.modelData?.width ?? 0) - s
-                    y: win.top ? 0 : (perScreen.modelData?.height ?? 0) - s
-                    w: s; h: s
+                    detached: true
+                    neckK: 16
+                    x: (win.left ? 0 : (perScreen.modelData?.width ?? 0)) - s
+                    y: (win.top ? 0 : (perScreen.modelData?.height ?? 0)) - s
+                    w: 2 * s; h: 2 * s
                     surfaceRadius: s
                     progress: body.scale
-                    omitStartConnector: win.top; omitEndConnector: !win.top
                 }
 
                 // ── The chambers ──
