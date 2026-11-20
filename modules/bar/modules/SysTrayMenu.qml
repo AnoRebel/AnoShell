@@ -26,6 +26,17 @@ PopupWindow {
 
     color: "transparent"
     property real padding: 8
+    // A click elsewhere dismisses it (the grab hides the window). Before, it stayed
+    // open until an entry was chosen.
+    grabFocus: true
+    onVisibleChanged: if (!visible) root._closed()
+    // Esc: back out of a submenu, then close; only where the compositor gives the
+    // popup the keyboard (a popup of the bar gets none on niri: checked).
+    Item {
+        focus: true
+        Component.onCompleted: forceActiveFocus()
+        Keys.onEscapePressed: event => { event.accepted = true; if (stackView.depth > 1) stackView.pop(); else root.close() }
+    }
 
     // The icon's window. Inside the tray overflow popout it is a popup, whose
     // item coordinates are not screen space, so the menu can't be placed in
@@ -62,8 +73,8 @@ PopupWindow {
         root.menuOpened(root);
     }
 
-    function close() {
-        root.visible = false;
+    function close() { root.visible = false }
+    function _closed() {
         while (stackView.depth > 1)
             stackView.pop();
         root.menuClosed();
@@ -94,8 +105,10 @@ PopupWindow {
             Behavior on reveal { MotionSpring { token: "liquid" } }
             Component.onCompleted: reveal = 1
             readonly property real _grow: Math.max(0, Math.min(reveal, 1.04))
-            height: root._vertical ? undefined : (parent.height - root.padding * 2) * _grow
-            width: root._vertical ? (parent.width - root.padding * 2) * _grow : undefined
+            // Its own (animated) size, not the window's: the window fits the tallest page,
+            // so a shorter submenu left the card that tall and empty below.
+            height: root._vertical ? undefined : implicitHeight * _grow
+            width: root._vertical ? implicitWidth * _grow : undefined
 
             // Connected mode: the frame paints the menu fused into the bar.
             readonly property bool connected: root._fused
@@ -206,6 +219,13 @@ PopupWindow {
             }
         }
 
+        Rectangle {
+            Layout.fillWidth: true; implicitHeight: 1
+            color: Appearance?.m3colors.m3outlineVariant ?? "#44444488"
+            Layout.topMargin: 4; Layout.bottomMargin: 4; Layout.leftMargin: 10; Layout.rightMargin: 10
+            visible: submenu.isSubMenu
+        }
+
         // Pin/Unpin button (only at root menu level)
         RippleButton {
             id: pinEntry
@@ -228,7 +248,7 @@ PopupWindow {
         Rectangle {
             Layout.fillWidth: true; implicitHeight: 1
             color: Appearance?.m3colors.m3outlineVariant ?? "#44444488"
-            Layout.topMargin: 4; Layout.bottomMargin: 4
+            Layout.topMargin: 4; Layout.bottomMargin: 4; Layout.leftMargin: 10; Layout.rightMargin: 10
             visible: pinEntry.visible
         }
 
@@ -268,6 +288,9 @@ PopupWindow {
                 }
             }
         }
+        // The stack sizes a page to itself (the taller menu under it): the spare
+        // height goes here, not between the rows (a submenu's rows spread apart).
+        Item { Layout.fillHeight: true }
     }
 
     Component {

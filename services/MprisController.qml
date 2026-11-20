@@ -110,9 +110,10 @@ Singleton {
         this.activeTrack = {
             uniqueId: this.activePlayer?.uniqueId ?? 0,
             artUrl: this.activePlayer?.trackArtUrl ?? "",
-            title: this.activePlayer?.trackTitle || "Unknown Title",
-            artist: this.activePlayer?.trackArtist || "Unknown Artist",
-            album: this.activePlayer?.trackAlbum || "Unknown Album",
+            // No player: say so (views showed "Unknown Title/Artist/Album" and live-looking controls).
+            title: !this.activePlayer ? "Nothing playing" : (this.activePlayer.trackTitle || "Unknown title"),
+            artist: !this.activePlayer ? "" : (this.activePlayer.trackArtist || "Unknown artist"),
+            album: !this.activePlayer ? "" : (this.activePlayer.trackAlbum || ""),
         }
         this.trackChanged(__reverse)
         this.__reverse = false

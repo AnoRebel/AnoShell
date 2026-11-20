@@ -249,6 +249,16 @@ Item {
                 // background, shadow and border (they read as a halo/outline).
                 readonly property bool connectedMode: PanelRegistry.enabled
 
+                // Its shadow, beside the body: inside it the body's clip cut the
+                // shadow to a square box whose corners showed past the card.
+                Rectangle {
+                    id: shadowRect
+                    visible: !area.connectedMode && body.width > 1 && body.height > 1
+                    x: body.x - 4; y: body.y - 4
+                    width: body.width + 8; height: body.height + 8
+                    radius: bg.radius + 4
+                    color: "#44000000"
+                }
                 // The growing body, pinned to the anchor edge. A small overshoot
                 // is allowed into the popup margin; clipping hides the rest.
                 Item {
@@ -260,14 +270,6 @@ Item {
                     y: root.edge === "bottom" ? area.height - height : 0
                     clip: true
 
-                    Rectangle {
-                        id: shadowRect
-                        visible: !area.connectedMode
-                        anchors.fill: parent; anchors.margins: -4
-                        radius: bg.radius + 4
-                        color: "#44000000"
-                        z: -1
-                    }
                     SurfaceMaterial {
                         id: bg
                         surface: "popout"

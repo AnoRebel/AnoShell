@@ -41,8 +41,14 @@ PopupWindow {
         border.width: Appearance.borders.width
         border.color: Appearance.borders.color
 
-        // grabFocus gives it the keyboard: Esc closes it (window-wide, whatever has focus).
-        Shortcut { sequence: "Escape"; enabled: root.visible; onActivated: root.visible = false }
+        // A click elsewhere closes it (grabFocus). Esc only where the compositor gives
+        // the popup the keyboard: a popup of the bar (no keyboard interactivity) gets
+        // none on niri (checked) and likely elsewhere.
+        Item {
+            focus: true
+            Component.onCompleted: forceActiveFocus()
+            Keys.onEscapePressed: event => { event.accepted = true; root.visible = false }
+        }
         ColumnLayout {
             id: col
             anchors { fill: parent; margins: 6 }

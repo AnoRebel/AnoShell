@@ -25,14 +25,18 @@ RippleButton {
     signal dismiss()
     signal openSubmenu(handle: QsMenuHandle)
 
-    enabled: !menuEntry.isSeparator
-    opacity: 1
+    // A disabled entry (a heading such as nm-applet's "Wi-Fi Networks") is dimmed and can't be clicked.
+    enabled: !menuEntry.isSeparator && menuEntry.enabled
+    opacity: menuEntry.isSeparator || menuEntry.enabled ? 1 : 0.45
 
     horizontalPadding: 12
     implicitWidth: contentItem.implicitWidth + horizontalPadding * 2
     implicitHeight: menuEntry.isSeparator ? 1 : 36
     Layout.topMargin: menuEntry.isSeparator ? 4 : 0
     Layout.bottomMargin: menuEntry.isSeparator ? 4 : 0
+    // A separator lines up with the entries' text, not the menu's edges.
+    Layout.leftMargin: menuEntry.isSeparator ? 10 : 0
+    Layout.rightMargin: menuEntry.isSeparator ? 10 : 0
     Layout.fillWidth: true
 
     Component.onCompleted: {

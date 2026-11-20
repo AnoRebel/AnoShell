@@ -42,14 +42,15 @@ Item {
                         id: gauge
                         required property string modelData
                         readonly property bool cpu: modelData === "CPU"
-                        Layout.fillWidth: true; spacing: 4
+                        // Equal columns (fillWidth alone shares by content width: uneven rings).
+                        Layout.fillWidth: true; Layout.preferredWidth: 1; spacing: 4
                         CircularProgress { implicitSize: 48; lineWidth: 3; value: gauge.cpu ? ResourceUsage.cpuUsage : ResourceUsage.memoryUsedPercentage; colPrimary: gauge.cpu ? (Appearance?.colors.colPrimary ?? "#65558F") : Appearance.colors.colInfo; Layout.alignment: Qt.AlignHCenter }
                         StyledText { text: gauge.cpu ? `${Math.round(ResourceUsage.cpuUsage * 100)}%` : ResourceUsage.kbToGbString(ResourceUsage.memoryUsed); font.pixelSize: Appearance.font.pixelSize.small; font.weight: Font.Bold; font.family: Appearance?.font.family.numbers ?? "monospace"; Layout.alignment: Qt.AlignHCenter }
                         StyledText { text: gauge.modelData; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; Layout.alignment: Qt.AlignHCenter }
                     }
                 }
                 Loader {
-                    Layout.fillWidth: true; active: ResourceUsage.swapTotal > 1024; visible: active
+                    Layout.fillWidth: true; Layout.preferredWidth: 1; active: ResourceUsage.swapTotal > 1024; visible: active
                     sourceComponent: ColumnLayout {
                         spacing: 4
                         CircularProgress { implicitSize: 48; lineWidth: 3; value: ResourceUsage.swapUsedPercentage; colPrimary: Appearance.colors.colTertiary; Layout.alignment: Qt.AlignHCenter }

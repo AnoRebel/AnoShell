@@ -57,7 +57,7 @@ Item {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
                     MaterialSymbol { text: "devices"; iconSize: 16; color: Appearance.colors.colSuccess }
-                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; Layout.fillWidth: true }
+                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight }
                     StyledText { text: "Connected"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.4; color: Appearance.colors.colSuccess }
                 }
             }
@@ -69,7 +69,7 @@ Item {
                     required property var modelData
                     Layout.fillWidth: true; spacing: 8
                     MaterialSymbol { text: "devices"; iconSize: 16; opacity: 0.3 }
-                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.5; Layout.fillWidth: true }
+                    StyledText { text: modelData.name ?? "Unknown"; font.pixelSize: Appearance.font.pixelSize.smallie; opacity: 0.5; Layout.fillWidth: true; Layout.minimumWidth: 0; elide: Text.ElideRight }
                     StyledText { text: "Paired"; font.pixelSize: Appearance.font.pixelSize.smallest; opacity: 0.3 }
                 }
             }
