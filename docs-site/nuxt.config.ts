@@ -63,6 +63,8 @@ export default defineNuxtConfig({
     prerender: { crawlLinks: false, ignore: ["/"] },
     // The pages' screenshots and clips live in docs/images (so GitHub shows
     // them too); a page's `images/x.webp` resolves to /images/x.webp here.
+    // The installer scripts, served by server/routes/{install.sh,i,uninstall.sh,u}.
+    serverAssets: [{ baseName: "installer", dir: fileURLToPath(new URL("../anod/installer", import.meta.url)) }],
     publicAssets: [
       { dir: fileURLToPath(new URL("../docs/images", import.meta.url)), baseURL: "/images", maxAge: 60 * 60 * 24 * 7 },
     ],

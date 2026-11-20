@@ -75,7 +75,12 @@ var actions = []action{
 	{"Install", "clone the shell if missing, build, run doctor", []string{"setup", "install"}, true},
 	{"Back up", "archive your config, themes, pieces and data (ano backup create)", []string{"backup", "create"}, false},
 	{"Doctor", "check dependencies, config, sockets and crashes", []string{"doctor"}, false},
+	{"Uninstall…", "remove AnoShell and undo its changes to your files (asks first)", []string{"setup", "uninstall"}, false},
 }
+
+// handoff: menu entries that need the terminal themselves (the uninstall wizard
+// asks questions and may run sudo): the menu closes and they run after it.
+var handoff = map[string]bool{"Uninstall…": true}
 
 type delegate struct{ st *styles }
 
@@ -151,6 +156,7 @@ type tui struct {
 	started   time.Time
 	elapsed   time.Duration
 	cancelled bool
+	after     string // a handoff entry chosen: run it once the menu has closed
 }
 
 func newTUI() *tui {
@@ -330,6 +336,10 @@ func (m *tui) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.scr {
 			case scrMenu:
 				m.cur = m.menu.SelectedItem().(action)
+				if handoff[m.cur.title] {
+					m.after = m.cur.title
+					return m, tea.Quit
+				}
 				args := m.cur.args
 				if m.cur.changes {
 					args = append(append([]string{}, args...), "--dry-run")
@@ -412,9 +422,13 @@ func isTerminal() bool {
 }
 
 func setupTUI() int {
-	if _, err := tea.NewProgram(newTUI()).Run(); err != nil {
+	m := newTUI()
+	if _, err := tea.NewProgram(m).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "ano setup:", err)
 		return 1
+	}
+	if m.after == "Uninstall…" {
+		return setupWizard("uninstall", "", "")
 	}
 	return 0
 }

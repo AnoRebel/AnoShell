@@ -84,6 +84,9 @@ bundled `config.json` (see [Configuration](configuration.md)).
 | `ano setup install [--repo URL] [--branch B]` | clones the shell into `~/.config/quickshell/ano` if it isn't there (default branch `main`), builds anod and `ano`, then runs `ano doctor` |
 | `ano setup update [--force]` | fast-forwards the checkout from its remote, then refreshes. It refuses when you have uncommitted changes or local commits that diverged |
 | `ano setup refresh` | rebuilds anod and `ano`, migrates your config (backup first), then restarts a running anod (keeping `--supervise`) or reloads a running shell |
+| `ano setup uninstall [--purge] [--yes] [--dry-run]` | removes AnoShell and undoes its changes to your files ([Uninstalling](installation.md#uninstalling)); with no flags on a terminal, a wizard asks first. Also on the setup menu |
+| `ano setup wizard install\|uninstall [--channel stable\|dev] [--version vX.Y.Z]` | the install or uninstall questions, then the script with your answers (what `curl … /i \| bash` opens on a terminal) |
+| `ano setup script install\|uninstall [flags]` | runs the installer script built into `ano` as is (`--help` lists its flags) |
 
 `install`, `update` and `refresh` also take:
 

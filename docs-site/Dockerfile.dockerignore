@@ -5,6 +5,7 @@
 **/.data
 .git
 anod
+!anod/installer
 assets
 external
 layouts

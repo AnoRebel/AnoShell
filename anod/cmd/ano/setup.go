@@ -34,6 +34,11 @@ const setupUsage = `usage: ano setup [<command> [flags]]   (no command on a term
                                       --force stashes local changes, keeps local commits on a
                                       backup branch and resets to the remote's latest
   refresh                             rebuild, migrate the user config (backup), restart anod / reload the shell
+  uninstall [flags]                   remove AnoShell and undo its changes to your files (uninstall.sh;
+                                      on a terminal with no flags: a wizard); --purge also removes settings
+  wizard install|uninstall [--channel stable|dev] [--version vX.Y.Z]
+                                      the install / uninstall questions, then the script with the answers
+  script install|uninstall [flags]    run the embedded installer script as is (see its --help)
 
   install, update and refresh take --dry-run (print the steps only),
   --no-restart (leave anod and the shell running as they are) and --prebuilt
@@ -48,6 +53,35 @@ func setupCmd(args []string) int {
 		}
 		fmt.Fprint(os.Stderr, setupUsage)
 		return 2
+	}
+	// The installer scripts (anod/installer, embedded) work on packaged installs
+	// too: the uninstaller undoes AnoShell's changes and leaves /usr to the package.
+	switch args[0] {
+	case "uninstall":
+		if len(args) == 1 && isTerminal() {
+			return setupWizard("uninstall", "", "")
+		}
+		return runInstallerScript("uninstall", args[1:])
+	case "script":
+		if len(args) < 2 || (args[1] != "install" && args[1] != "uninstall") {
+			fmt.Fprint(os.Stderr, setupUsage)
+			return 2
+		}
+		return runInstallerScript(args[1], args[2:])
+	case "wizard":
+		wf := flag.NewFlagSet("setup wizard", flag.ExitOnError)
+		ch := wf.String("channel", "stable", "stable or dev (install)")
+		ver := wf.String("version", "", "a release tag such as v0.1.0 (install)")
+		if len(args) < 2 || (args[1] != "install" && args[1] != "uninstall") {
+			fmt.Fprint(os.Stderr, setupUsage)
+			return 2
+		}
+		wf.Parse(args[2:])
+		if *ch != "stable" && *ch != "dev" {
+			fmt.Fprintln(os.Stderr, "ano setup wizard: --channel is stable or dev")
+			return 2
+		}
+		return setupWizard(args[1], *ch, *ver)
 	}
 	if config.Packaged() && args[0] != "status" && args[0] != "help" && args[0] != "-h" && args[0] != "--help" {
 		fmt.Fprintf(os.Stderr, "ano setup: the shell at %s came from a package; update it with your package manager\n", config.ShellDir())

@@ -22,6 +22,7 @@ RUN bun install --frozen-lockfile --ignore-scripts
 # Named paths, not docs-site/ whole: the legacy builder ignores
 # Dockerfile.dockerignore and would copy a local node_modules over the install.
 COPY docs/ /src/docs/
+COPY anod/installer/ /src/anod/installer/
 COPY docs-site/nuxt.config.ts docs-site/content.config.ts docs-site/tsconfig.json ./
 COPY docs-site/app/ app/
 COPY docs-site/lib/ lib/

@@ -1,8 +1,57 @@
 # Installation
 
-AnoShell is a Quickshell config, so installing it means putting the repository
-where Quickshell looks for configs, then (optionally) installing anod and the
-`ano` CLI.
+## One line
+
+```sh
+curl -fsSL https://anoshell.anorebel.net/i | bash        # stable (main)
+curl -fsSL https://anoshell-dev.anorebel.net/i | bash    # development (dev)
+```
+
+`/i` is short for `/install.sh` (both work). On a terminal it opens a small
+wizard (the `ano` from the release, checksum-verified) that asks what to do,
+then runs the installer:
+
+1. **Dependencies:** the required programs you're missing, from your package
+   manager (pacman, apt, dnf or zypper), after you confirm, with `sudo`.
+   Anything your distribution's own repositories don't have is listed with
+   where to get it; no third-party repository (COPR, PPA, OBS) is added for you.
+2. **The shell:** a git checkout at `~/.config/quickshell/ano` (`main`, `dev`,
+   or a release tag with `--version v0.1.0`). An existing checkout is
+   fast-forwarded, or left alone if it has your changes.
+3. **anod and `ano`** in `~/.local/bin` (built with Go when it's installed,
+   otherwise the release binaries) and the AnoShell Settings launcher.
+4. **Compositors:** for each one installed (Hyprland, niri, sway, mango,
+   labwc, Umbriel), whether to use AnoShell's bundled config. It is linked from
+   the checkout; your own config is moved aside to `<file>.ano-backup-<time>`
+   and the uninstaller puts it back. The default is no: then add `ano start`
+   to your compositor's startup (step 3 below).
+5. `ano doctor`.
+
+Without a terminal (or with any flag) it asks nothing and installs no packages
+unless you say so:
+
+```sh
+curl -fsSL https://anoshell.anorebel.net/i | bash -s -- --yes --compositor niri
+```
+
+| Flag | |
+|---|---|
+| `--channel stable\|dev` | which branch (default: the site's) |
+| `--version vX.Y.Z` | a tagged release instead |
+| `--dir PATH` | where the checkout goes |
+| `--yes` | install missing dependencies without asking |
+| `--no-deps` | skip the dependency step |
+| `--compositor NAME` | use the bundled config for NAME (repeatable) |
+| `--no-compositor` | don't ask about compositor configs |
+| `--no-wizard` | plain prompts instead of the wizard |
+| `--dry-run` | print the steps, change nothing |
+
+The scripts are in the repository too (`anod/installer/install.sh`,
+`uninstall.sh`), and `ano setup wizard install` / `ano setup script install …`
+run the copies built into `ano`. What the installer changes outside the checkout
+is listed in `~/.local/state/anoshell/install-manifest` for the uninstaller.
+
+The rest of this page is the same by hand.
 
 ## 1. Clone the shell
 
@@ -100,6 +149,40 @@ ano doctor
 
 It checks required and optional dependencies, your config, the sockets, the
 last crash and competing wallpaper rotators, and exits 1 on any failure.
+
+## Uninstalling
+
+```sh
+curl -fsSL https://anoshell.anorebel.net/u | bash    # or: ano setup uninstall
+```
+
+It asks first (on a terminal, as a small wizard), then:
+
+- stops anod and the shell;
+- undoes AnoShell's changes to your own files: the include lines and moved
+  binds in your Hyprland/niri config (`ano keybinds migrate --revert`), its
+  marked blocks in kitty, Ghostty, foot, Alacritty and your shell's rc file, its
+  block in `gtk.css` (a `gtk.css` that was a link becomes the link again), its
+  Qt colour scheme lines, and the share-picker line in `xdph.conf`;
+- resets the cursor and icon theme settings that point at AnoShell's generated
+  themes, then removes those themes;
+- deletes the files only AnoShell writes (`ano-managed.*` compositor includes;
+  a sway include you added by hand keeps its file until you remove the line;
+  the hyprtoolkit, Kvantum and QtQuick Controls files it generated);
+- puts back the compositor configs the installer replaced;
+- removes the checkout (asking first if it has local changes or commits), anod,
+  `ano`, the Settings launcher and the caches.
+
+Your settings and history stay (`~/.config/anoshell`, `~/.local/state/anoshell`,
+`~/.local/share/anoshell`), so installing again picks them up; `--purge` removes
+them too, asking for each. Never touched: your `*.ano-backup*` and `*.bak-*`
+copies (listed at the end; they are yours to keep or delete), `~/.face`,
+downloaded wallpapers, and other apps' data. It also lists compositor files that
+still start AnoShell. Flags: `--purge`, `--yes` (needed without a terminal),
+`--dir`, `--dry-run`.
+
+A package install (AUR) is removed with the package manager; the uninstaller
+still undoes the changes to your files and leaves `/usr` alone.
 
 ## Updating
 

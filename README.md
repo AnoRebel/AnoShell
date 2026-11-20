@@ -66,7 +66,11 @@ Shell source lives at `~/.config/quickshell/ano/`. Generated state and user-writ
 ## Quick Start
 
 ```bash
-# Get the shell where Quickshell finds it, then the daemon and CLI
+# One line: dependencies, the shell, anod + ano, optionally a compositor config
+curl -fsSL https://anoshell.anorebel.net/i | bash        # dev channel: anoshell-dev.anorebel.net/i
+# Uninstall (keeps your settings unless --purge): curl -fsSL https://anoshell.anorebel.net/u | bash
+
+# Or by hand: the shell where Quickshell finds it, then the daemon and CLI
 git clone https://github.com/AnoRebel/AnoShell.git ~/.config/quickshell/ano
 ~/.config/quickshell/ano/anod/install.sh     # anod + ano into ~/.local/bin
 
