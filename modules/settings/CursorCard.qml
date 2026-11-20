@@ -97,6 +97,14 @@ SettingsCard {
         onValueChanged: { cursorCard.pendingSize = Math.round(value); cursorSizeDebounce.restart() }
         valueText: `${Math.round(value)} px`
     }
+    ConfigSwitch {
+        label: "Move the pointer with focus"
+        configKey: "cursor.warp"
+        visible: CompositorService.compositor === "hyprland"
+        sublabel: "Off: focusing a window by keyboard or switching workspaces leaves the pointer where it is (cursor:no_warps; applies at once, kept in anod's managed file)"
+        checked: Config.options?.cursor?.warp ?? true
+        onCheckedChanged: if (checked !== (Config.options?.cursor?.warp ?? true)) Config.setNestedValue("cursor.warp", checked)
+    }
     RippleButton {
         visible: (Config.options?.cursor?.theme ?? "") !== ""
         buttonText: "Leave the cursor to my compositor config"

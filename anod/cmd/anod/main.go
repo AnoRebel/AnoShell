@@ -800,6 +800,13 @@ func main() {
 				}
 				return &display.TerminalLook{Translucent: config.String(m, "terminal.background", "translucent") != "solid", Blur: config.Bool(m, "terminal.blur", true)}
 			},
+			Effects: func() *display.Effects {
+				m, err := config.Effective()
+				if err != nil {
+					return nil
+				}
+				return &display.Effects{Warp: config.Bool(m, "cursor.warp", true), Xray: config.Bool(m, "niri.xray", true)}
+			},
 			Scrolling: func() *display.Scrolling {
 				m, err := config.Effective()
 				if err != nil {
@@ -896,6 +903,8 @@ func main() {
 		})
 		// The terminal look changed (scripts/terminal/apply-terminal.sh ran): its window rules.
 		srv.Handle("terminal.refresh", func(json.RawMessage) (any, error) { return true, disp.Refresh() })
+		// cursor.warp / niri.xray changed.
+		srv.Handle("effects.refresh", func(json.RawMessage) (any, error) { return true, disp.RefreshEffects() })
 		disp.SeedScrolling()
 		scrollRefresh = disp.RefreshScrolling
 		srv.Handle("display.confirm", func(json.RawMessage) (any, error) { return true, disp.Confirm() })

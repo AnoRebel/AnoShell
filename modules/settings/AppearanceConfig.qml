@@ -18,7 +18,7 @@ ColumnLayout {
     SettingsPageHeader {
         title: "Appearance"
         subtitle: "Look, theme and colours, bezel, animations, wallpaper rotation"
-        configRoots: ["appearance", "background", "animations", "settings.softenWallpaper", "terminal"]
+        configRoots: ["appearance", "background", "animations", "settings.softenWallpaper", "terminal", "niri"]
     }
 
     // Track the originally-selected theme so hover-preview can revert
@@ -595,6 +595,22 @@ ColumnLayout {
         }
     }
 
+    // ═══ niri blur (anod's managed file) ═══
+    SettingsCard {
+        visible: CompositorService.compositor === "niri"
+        icon: "blur_on"
+        title: "niri blur"
+        subtitle: "How translucent windows, popups and the shell's surfaces blur on niri"
+        configKeys: ["niri"]
+        ConfigSwitch {
+            label: "Xray"
+            configKey: "niri.xray"
+            sublabel: "On: they show only the blurred wallpaper (cheapest). Off: they blur what is really behind them, other windows and desktop pieces, at some GPU cost. Through anod's managed file (include ano-managed.kdl); niri reloads it at once"
+            checked: Config.options?.niri?.xray ?? true
+            onCheckedChanged: if (checked !== (Config.options?.niri?.xray ?? true)) Config.setNestedValue("niri.xray", checked)
+        }
+    }
+
     // ═══ Terminal look ═══
     SettingsCard {
         id: termCard
@@ -666,6 +682,28 @@ ColumnLayout {
             value: termCard.tc.padding ?? 12
             onValueChanged: Config.setNestedValue("terminal.padding", Math.round(value))
             valueText: `${Math.round(value)} px`
+        }
+        FontPickerRow {
+            label: "Font"
+            configKey: "terminal.font.family"
+            visible: termCard.on
+            mono: true; allowEmpty: true
+            placeholder: "The terminal's own"
+            sublabel: "Fixed-width fonts only; empty keeps each terminal's own (the shell's UI font is separate)"
+            value: termCard.tc.font?.family ?? ""
+            onChosen: family => Config.setNestedValue("terminal.font.family", family)
+        }
+        ConfigSlider {
+            label: "Font size"
+            configKey: "terminal.font.size"
+            visible: termCard.on
+            from: 5; to: 32; stepSize: 0.5
+            value: (termCard.tc.font?.size ?? 0) || 5
+            onValueChanged: {
+                const v = value < 6 ? 0 : Math.round(value * 2) / 2
+                if (v !== (termCard.tc.font?.size ?? 0)) Config.setNestedValue("terminal.font.size", v)
+            }
+            valueText: value < 6 ? "Own" : `${Math.round(value * 2) / 2} pt`
         }
         ConfigRow {
             label: "Cursor"

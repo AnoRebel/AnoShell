@@ -48,6 +48,21 @@ grep -q "prompt.zsh" "$HOME/.zshrc" || fail "zsh line (login shell)"
 grep -q "anoshell-prompt" "$HOME/.bashrc" && fail "bash line though not enabled"
 grep -q '^ANO_P1_BG=#aabbcc$' "$G/prompt.env" || fail "prompt colours"
 
+# Font: each terminal's own spelling; alacritty's file stays valid TOML.
+echo '{"terminal":{"enable":true,"prompt":"segments","font":{"family":"JetBrains Mono","size":12}}}' > "$C/anoshell/config.json"
+run
+grep -qx 'font_family JetBrains Mono' "$G/look-kitty.conf" && grep -qx 'font_size 12' "$G/look-kitty.conf" || fail "kitty font"
+grep -qx 'font-family = "JetBrains Mono"' "$G/look-ghostty" && grep -qx 'font-size = 12' "$G/look-ghostty" || fail "ghostty font"
+awk '/^\[main\]$/{m=1;next} /^\[/{m=0} m' "$G/look-foot.ini" | grep -qx 'font=JetBrains Mono:size=12' || fail "foot font in [main]"
+python3 -c "import tomllib,sys;d=tomllib.load(open(sys.argv[1],'rb'));assert d['font']['size']==12 and d['font']['normal']['family']=='JetBrains Mono'" "$G/look-alacritty.toml" || fail "alacritty font"
+# Size only: foot keeps its default family; an unsafe name is refused; none: no font lines.
+echo '{"terminal":{"enable":true,"prompt":"segments","font":{"family":"x:size=99\nfoo","size":14}}}' > "$C/anoshell/config.json"
+run
+grep -qx 'font=monospace:size=14' "$G/look-foot.ini" && ! grep -q 'font_family' "$G/look-kitty.conf" || fail "unsafe family refused, size kept"
+echo '{"terminal":{"enable":true,"background":"translucent","opacity":0.8,"padding":10,"cursor":"underline","prompt":"segments"}}' > "$C/anoshell/config.json"
+run
+grep -q '^font' "$G/look-kitty.conf" "$G/look-foot.ini" "$G/look-alacritty.toml" "$G/look-ghostty" && fail "font lines without a font set"
+
 # Again: nothing more is added.
 cp "$C/kitty/kitty.conf" "$T/k1"; cp "$C/alacritty/alacritty.toml" "$T/a1"; run
 cmp -s "$T/k1" "$C/kitty/kitty.conf" && cmp -s "$T/a1" "$C/alacritty/alacritty.toml" || fail "second run changed the configs"

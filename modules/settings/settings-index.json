@@ -2887,6 +2887,24 @@
  },
  {
   "page": 7,
+  "card": "niri blur",
+  "label": "niri blur",
+  "sublabel": "How translucent windows, popups and the shell's surfaces blur on niri",
+  "keys": [
+   "niri"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Xray",
+  "sublabel": "On: they show only the blurred wallpaper (cheapest). Off: they blur what is really behind them, other windows and desktop pieces, at some GPU cost. Through anod's managed file (include ano-managed.kdl); niri reloads it at once",
+  "keys": [
+   "niri.xray"
+  ]
+ },
+ {
+  "page": 7,
   "card": "Terminal look",
   "label": "Terminal look",
   "sublabel": "Background, blur, padding and cursor for kitty, foot, Ghostty and Alacritty, and a prompt in the palette's colours",
@@ -2937,6 +2955,24 @@
   "sublabel": "",
   "keys": [
    "terminal.padding"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Font",
+  "sublabel": "Fixed-width fonts only; empty keeps each terminal's own (the shell's UI font is separate)",
+  "keys": [
+   "terminal.font.family"
+  ]
+ },
+ {
+  "page": 7,
+  "card": "",
+  "label": "Font size",
+  "sublabel": "",
+  "keys": [
+   "terminal.font.size"
   ]
  },
  {
@@ -4334,6 +4370,15 @@
   "sublabel": "Pointer theme and size · live, and for apps started later",
   "keys": [
    "cursor"
+  ]
+ },
+ {
+  "page": 10,
+  "card": "",
+  "label": "Move the pointer with focus",
+  "sublabel": "Off: focusing a window by keyboard or switching workspaces leaves the pointer where it is (cursor:no_warps; applies at once, kept in anod's managed file)",
+  "keys": [
+   "cursor.warp"
   ]
  },
  {

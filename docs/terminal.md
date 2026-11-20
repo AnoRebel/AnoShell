@@ -15,6 +15,8 @@ default when it's installed or has a config):
 | `blur` | blur behind translucent terminals | see below |
 | `padding` | 0–32 px (12) | |
 | `cursor` | `block`, `beam` (default) or `underline` | programs and shell integration can still change it |
+| `font.family` | a fixed-width family (Settings lists only those); empty: each terminal's own (default) | apart from the shell's UI font |
+| `font.size` | 6–32 pt; 0 ("Own"): each terminal's own (default) | foot alone needs a family with a size: `monospace` |
 
 Each terminal gets one generated file in
 `~/.local/state/anoshell/generated/terminal/look-*` and **one marked block** in

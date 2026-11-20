@@ -280,6 +280,7 @@ type Service struct {
 	Terminal func() *TerminalLook
 	// Scrolling returns scrolling.* (cleaned), nil when nothing is set.
 	Scrolling   func() *Scrolling
+	Effects     func() *Effects                         // cursor.warp, niri.xray
 	GtkSettings []string                                // gtk-3.0/4.0 settings.ini (only existing keys are updated)
 	Exec        func(name string, args ...string) error // runs hyprctl/gsettings (tests swap it)
 
@@ -487,6 +488,9 @@ func (s *Service) writeManaged(all []Output) error {
 		if s.Scrolling != nil {
 			b.WriteString(hyprScrolling(s.Scrolling()))
 		}
+		if s.Effects != nil {
+			b.WriteString(hyprEffects(s.Effects()))
+		}
 		for _, o := range all {
 			b.WriteString(hyprMonitor(o) + "\n")
 		}
@@ -504,6 +508,9 @@ func (s *Service) writeManaged(all []Output) error {
 		}
 		if s.Scrolling != nil {
 			b.WriteString(niriScrolling(s.Scrolling()))
+		}
+		if s.Effects != nil {
+			b.WriteString(niriEffects(s.Effects()))
 		}
 		for _, o := range all {
 			b.WriteString(niriOutput(o))

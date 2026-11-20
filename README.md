@@ -36,7 +36,7 @@ backend is picked from the session at start.
   portal), a layout editor, and replaceable lock screens (built-in, Simple,
   Minimal, Bioma Gate, your own) ([lock screens](docs/lockscreens.md)).
 - **Terminal looks** for kitty, foot, Ghostty and Alacritty (translucency, blur,
-  padding, cursor) and prompt styles for zsh, bash and fish in the palette's
+  padding, cursor, font) and prompt styles for zsh, bash and fish in the palette's
   colours, with Starship when installed ([terminal](docs/terminal.md)).
 - **Scrolling workspaces and an infinite desktop:** pick which workspaces scroll
   (Hyprland's own layout, niri, mango's scroller) and per-app column widths, or
@@ -509,7 +509,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `nightLight` | wlsunset-backed warm-shift (Hyprland, niri, sway) | `enable` (on now), `schedule` (off/sun/times), `start`, `end`, `fade` (min), `dayTemp`, `nightTemp`, `latitude`, `longitude`, `gamma`, `outputs` |
 | `lock` | Who locks (`locker`: `shell` everywhere with the session lock protocol, or `external` running `externalCommand`), the lock screen package, the intro and arranged layouts ([lock screens](docs/lockscreens.md)) | `locker`, `externalCommand`, `screen`, `intro` (none/waves/padlock/portal), `layouts.<id>` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
-| `terminal` | Terminal looks (one marked include per terminal) and prompt styles ([terminal](docs/terminal.md)) | `enable`, `apps.<kitty\|foot\|ghostty\|alacritty>`, `background`, `opacity`, `blur`, `padding`, `cursor`, `prompt` (own/segments/minimal), `shells` |
+| `terminal` | Terminal looks (one marked include per terminal) and prompt styles ([terminal](docs/terminal.md)) | `enable`, `apps.<kitty\|foot\|ghostty\|alacritty>`, `background`, `opacity`, `blur`, `padding`, `cursor`, `font.family`, `font.size`, `prompt` (own/segments/minimal), `shells` |
 | `scrolling` | Scrolling workspaces through anod's managed compositor file ([workspaces](docs/workspaces.md)) | `workspaces` (`[{id, direction}]`), `columnWidth` (0 = default), `apps` (`[{app, width}]`) |
 | `lock.osk` | On-screen keyboard for password entry | — |
 | `lock.statusRow` | Battery + WiFi + clock chips on the lock screen | — |
@@ -746,7 +746,8 @@ What each feature needs from the system (`ano doctor` checks the binaries):
 | Terminal colours (`appearance.theme.terminals`, docs/wallpaper.md) | the terminal (kitty, Ghostty, foot); `jq`; `pkill` (procps-ng) to recolour running kitty/Ghostty windows | that terminal keeps its own colours; without `pkill` only new windows change |
 | Downloads (bar/pill module `downloads`) | anod running (inotify on the download folder from `user-dirs.dirs`, else `~/Downloads`); `xdg-utils` (`xdg-open`) to open | not shown |
 | Keyboard layout catalogue (Settings → Keybinds) | `xkeyboard-config` (`/usr/share/X11/xkb/rules/evdev.xml`), anod running | no catalogue to pick from |
-| Terminal looks (`terminal.enable`) | `jq`; kitty, foot, Ghostty or Alacritty; blur: Hyprland, or niri 26.04+, with anod's managed file in its config | nothing applied / no blur |
+| Terminal looks (`terminal.enable`) | `jq`; kitty, foot, Ghostty or Alacritty; blur: Hyprland, or niri 26.04+, with anod's managed file in its config; font list: `fc-list` (fontconfig) | nothing applied / no blur / no font list |
+| Pointer warp switch, niri xray (`cursor.warp`, `niri.xray`) | anod's managed file included in the Hyprland / niri config | the switch has no effect |
 | Prompt styles (`terminal.prompt`) | `jq`; `git` for the branch; a Nerd Font for Segments; optional `starship` | no branch / boxes for the separators / the shell's own prompt code |
 | Scrolling workspaces (`scrolling`) | Hyprland (built-in scrolling layout), niri or mango; anod running; anod's managed file in your compositor config (mango: the bundled config sources it) | unavailable on sway, labwc, Umbriel / nothing applied |
 | Infinite desktop (Super+Ctrl tap on Hyprland, Super+Ctrl+I) | Hyprland, niri, sway or mango (their own IPC; sway: `swaymsg`); edge push: Hyprland | unavailable on labwc, Umbriel |
@@ -815,6 +816,7 @@ Set `morphingPanel: true` on any bar in `bars[]` to use polygon-based ShapeCanva
 ## Credits
 Built from: **@rebels** (base), **@hyprview** (layouts), **@inir** (Niri/dock/alt-switcher/translator), **@ilyamiro** (FocusTime/display manager/Network Orbit/widget designs), **@caelestia** (animations/HUD), **@noctalia-shell** (spectrum/settings), **@end-4** (AI chat/anti-flashbang/systray menus), **@end-4 hefty-hype** (polygon morphing system), **wallpaperpicker** (wallpaper card deck, spectrum ribbon, Wallhaven source)
 **Bioma** (GPL-3.0: palette cursors and icon themes, the Bioma Gate lock screen, the sound effects in `assets/sounds` and their player, the files launcher plugin, the dock's icon menu and file drops (ideas), the desktop "organisms" in `pieces/bioma-*` with their support code in `pieces/_bioma`, downloads, ideas throughout), **novelmangareader** (GPL-3.0: the reader), **dhrruvsharma** (GPL-3.0: the clock faces piece, the kaomoji list; the idea of choosing LRCLIB lyrics by track length), **iNiR** theme presets (GPL-3.0: 37 colour themes).
+**[minflair](https://github.com/t4lentles5/minflair)** (GPL-3.0; ideas only, reimplemented): the terminal font, the Hyprland pointer-warp switch and niri xray as a setting.
 **[Anserin](https://github.com/lukpednoi/Anserin)** (AGPL-3.0; ideas only, everything reimplemented and no code copied): Wi-Fi location, the desktop pets, the corner revolver, the system monitor views and Bubble Monitor, the wavy clock and gauge pieces, the animated weather scene, the Simple lock screen and lock layout editor, the terminal looks, scrolling workspaces on every compositor and the infinite desktop.
 
 ## Licence

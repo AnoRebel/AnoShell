@@ -21,7 +21,11 @@ ConfigRow {
     id: root
 
     property string value: ""
+    property bool mono: false        // fixed-width families only (FontService.monoFamilies)
+    property bool allowEmpty: false  // clearing the field chooses "" (e.g. "the app's own font")
+    property string placeholder: ""
     signal chosen(string family)
+    Component.onCompleted: if (root.mono) FontService.wantMono()
 
     readonly property bool installed: value.length === 0 || FontService.isInstalled(value)
 
@@ -33,16 +37,13 @@ ConfigRow {
             id: combo
             Layout.preferredWidth: 220
             editable: true
-            model: FontService.families
-            // Show the configured value even before/after the model loads.
-            editText: root.value
-
-            // Keep the field in sync when the config value changes externally.
+            model: root.mono ? FontService.monoFamilies : FontService.families
+            // The field shows the configured value, not combo.editText: an editable
+            // ComboBox sets its edit text to the first family when the list loads,
+            // and leaving the field then saved that family over the real one.
             Connections {
                 target: root
-                function onValueChanged() {
-                    if (combo.editText !== root.value) combo.editText = root.value;
-                }
+                function onValueChanged() { if (field.text !== root.value) field.text = root.value }
             }
 
             // Commit on selection from the list…
@@ -50,9 +51,11 @@ ConfigRow {
                 const fam = String(model[idx]);
                 if (fam !== root.value) root.chosen(fam);
             }
-            // …or on typing + Enter / focus-out.
-            onAccepted: {
-                if (editText.length > 0 && editText !== root.value) root.chosen(editText);
+            // …or on typing + Enter / focus-out (only what was typed).
+            function commit() {
+                const t = field.text.trim();
+                if ((t.length > 0 || root.allowEmpty) && t !== root.value) root.chosen(t);
+                else field.text = root.value;
             }
 
             // Render each family in its own typeface for a live preview.
@@ -65,16 +68,29 @@ ConfigRow {
                     elide: Text.ElideRight
                 }
                 highlighted: combo.highlightedIndex === index
+                background: Rectangle {
+                    color: parent.highlighted || parent.hovered ? (Appearance?.colors.colLayer2Hover ?? "#3A3740") : "transparent"
+                    radius: Appearance?.rounding.small ?? 8
+                }
+            }
+            // The list in the shell's colours (the default popup is white).
+            popup.background: Rectangle {
+                radius: Appearance?.rounding.small ?? 8
+                color: Appearance?.colors.colLayer2 ?? "#2B2930"
+                border.width: 1
+                border.color: Appearance?.colors.colOutlineVariant ?? "#44444488"
             }
 
             contentItem: TextField {
-                text: combo.editText
-                onTextEdited: combo.editText = text
+                id: field
+                text: root.value
+                placeholderText: root.placeholder
+                background: null
                 font.family: root.installed ? root.value : (Appearance?.font.family.main ?? "sans-serif")
                 font.pixelSize: Appearance?.font.pixelSize.small ?? 14
                 color: Appearance?.colors.colOnLayer1 ?? "#E6E1E5"
                 verticalAlignment: Text.AlignVCenter
-                onEditingFinished: combo.accepted()
+                onEditingFinished: combo.commit()
             }
 
             background: Rectangle {

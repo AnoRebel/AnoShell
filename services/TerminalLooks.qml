@@ -20,15 +20,31 @@ Singleton {
     // Everything the script reads, so any change re-runs it.
     readonly property string key: !root.t ? "" : JSON.stringify([root.t.enable, root.t.apps?.kitty, root.t.apps?.foot,
         root.t.apps?.ghostty, root.t.apps?.alacritty, root.t.background, root.t.opacity, root.t.blur, root.t.padding,
-        root.t.cursor, root.t.prompt, root.t.shells])
+        root.t.cursor, root.t.prompt, root.t.shells, root.t.font?.family, root.t.font?.size])
     property string _applied: ""
     property string lastLog: ""
+
+    // Pointer warping (Hyprland) and niri's xray live in anod's managed file too:
+    // a change asks anod to rewrite it (Hyprland also sets it live).
+    readonly property string effectsKey: JSON.stringify([Config.options?.cursor?.warp ?? true, Config.options?.niri?.xray ?? true])
+    property string _effects: ""
+    // A second later, like the script: anod reads the config file, which is written just after the change.
+    onEffectsKeyChanged: if (Config.ready && root._effects !== "") effectsSoon.restart()
+    Timer {
+        id: effectsSoon
+        interval: 1000
+        onTriggered: {
+            if (root._effects === root.effectsKey) return
+            root._effects = root.effectsKey
+            Anod.call("effects.refresh", {}, () => {})
+        }
+    }
     // Ready at start: what's on disk is already applied.
     Connections {
         target: Config
-        function onReadyChanged() { if (Config.ready) root._applied = root.key }
+        function onReadyChanged() { if (Config.ready) { root._applied = root.key; root._effects = root.effectsKey } }
     }
-    Component.onCompleted: if (Config.ready) root._applied = root.key
+    Component.onCompleted: if (Config.ready) { root._applied = root.key; root._effects = root.effectsKey }
     onKeyChanged: if (Config.ready && root._applied !== "") soon.restart()
     Timer {
         id: soon

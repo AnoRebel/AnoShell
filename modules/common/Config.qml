@@ -1121,6 +1121,13 @@ Singleton {
                 property string theme: ""
                 property int size: 24
                 property bool adopted: false // the AnoShell cursor went on at first start
+                // Hyprland: the pointer moves to what keyboard focus picks (off: cursor:no_warps).
+                property bool warp: true
+            }
+            // niri (anod's managed file): xray on shows only the wallpaper behind
+            // translucent surfaces; off blurs what is really there (costs more GPU).
+            property JsonObject niri: JsonObject {
+                property bool xray: true
             }
             // Where you are (services/Location.qml), for the weather, night light's
             // sunset-to-sunrise schedule and the Bioma pieces' sun and moon. mode "auto":
@@ -1688,6 +1695,11 @@ Singleton {
                 property bool blur: true
                 property int padding: 12                   // 0–32 px
                 property string cursor: "beam"             // block | beam | underline
+                // Terminal font, apart from the UI font: "" / 0 leave each terminal's own.
+                property JsonObject font: JsonObject {
+                    property string family: ""
+                    property real size: 0                  // 6–32 pt; 0: the terminal's own
+                }
                 // own (your prompt, untouched) | segments | minimal; one marked line in each rc file of `shells`.
                 property string prompt: "own"
                 property var shells: []                    // zsh/bash/fish; empty: your login shell

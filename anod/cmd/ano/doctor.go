@@ -69,6 +69,7 @@ var features = []feature{
 	{"corner revolver: Lock (loginctl, systemd-logind)", "revolver.enable", []string{"loginctl"}},
 	{"desktop pet sounds", "pet.sound", []string{"pw-play"}},
 	{"terminal looks (a supported terminal: kitty, foot, Ghostty or Alacritty)", "terminal.enable", []string{"jq", "kitty|foot|ghostty|alacritty"}},
+	{"terminal font list (fixed-width families)", "terminal.enable", []string{"fc-list"}},
 	{"prompt styles (git branch in Segments; Starship draws them when installed)", "terminal.prompt=segments|terminal.prompt=minimal", []string{"jq", "git"}},
 	// Scrolling rules go through anod's managed file (+ hyprctl eval / niri's reload / mango's socket); the infinite
 	// desktop moves windows over the same IPC (sway: swaymsg). labwc and Umbriel can't: Settings says so.

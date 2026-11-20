@@ -81,6 +81,21 @@ kept). Hyprland and GTK apps switch live; niri reads it from the managed
 file; XWayland and some Electron apps draw their own cursor and pick it up
 when they next start.
 
+**Move the pointer with focus** (Hyprland only, `cursor.warp`, on by default as
+in Hyprland): off sets `cursor:no_warps`, so focusing a window from the
+keyboard or switching workspaces leaves the pointer where it is. It applies at
+once and is kept in the managed file. (Idea from minflair.)
+
+### niri xray
+
+**Settings → Appearance → niri blur** (`niri.xray`, on by default, niri only).
+On, translucent windows, popups and the shell's surfaces show only the blurred
+wallpaper, which is the cheapest; off, they blur what is really behind them
+(other windows, desktop pieces) at some GPU cost. anod writes the override
+into `ano-managed.kdl` and niri reloads it at once. niri applies rules in file
+order, so the `include` has to come **after** your own blur rules (the end of
+`config.kdl`), or yours win. (Idea from minflair.)
+
 ## Icons
 
 The **Icons** card sets the desktop icon theme (GTK through gsettings, Qt

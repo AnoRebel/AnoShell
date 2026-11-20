@@ -20,6 +20,10 @@ Singleton {
 
     property var families: []
     property bool ready: false
+    // Fixed-width families (mono and dual width), for the terminal font; listed
+    // on first ask (wantMono), not at start.
+    property var monoFamilies: []
+    function wantMono() { if (!root.monoFamilies.length && !monoProc.running) monoProc.running = true }
 
     function isInstalled(name) {
         if (!name) return false;
@@ -32,6 +36,22 @@ Singleton {
     }
 
     Component.onCompleted: root.refresh()
+
+    Process {
+        id: monoProc
+        command: ["fc-list", "-f", "%{family[0]}\t%{spacing}\n", ":scalable=true"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const set = new Set()
+                for (const line of this.text.split("\n")) {
+                    const [fam, sp] = line.split("\t")
+                    // Icon and emoji fonts report fixed width too: not for text.
+                    if (fam && Number(sp) >= 90 && !/symbol|material|emoji|icon/i.test(fam)) set.add(fam.trim())
+                }
+                root.monoFamilies = Array.from(set).sort((a, b) => a.localeCompare(b))
+            }
+        }
+    }
 
     Process {
         id: fcListProc
