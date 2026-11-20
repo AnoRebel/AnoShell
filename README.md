@@ -510,6 +510,7 @@ All of the following are **disabled by default**. Enable from Settings → Servi
 | `vpn` | Generic VPN status + connect/disconnect for tailscale/netbird/warp/wireguard/custom | `providers[]`, `notifyOnChange` |
 | `calendar` | KHal/CalDAV pull into the calendar panel | `upcomingDays`, `externalSync.{enable, refreshMinutes, sources[]}` |
 | `lyrics` | Synced lyric overlay in MediaControls + AnoSpot | `enable`, `backend`, `dir` |
+| `apps` | Default apps for binds (`ano run …`) and shell actions ([configuration](docs/configuration.md#default-applications)) | `terminal`, `browser`, `fileManager`, `launcher` (`anoshell`/`custom`), `launcherCommand` |
 | `nightLight` | wlsunset-backed warm-shift (Hyprland, niri, sway) | `enable` (on now), `schedule` (off/sun/times), `start`, `end`, `fade` (min), `dayTemp`, `nightTemp`, `latitude`, `longitude`, `gamma`, `outputs` |
 | `lock` | Who locks (`locker`: `shell` everywhere with the session lock protocol, or `external` running `externalCommand`), the lock screen package, the intro and arranged layouts ([lock screens](docs/lockscreens.md)) | `locker`, `externalCommand`, `screen`, `intro` (none/waves/padlock/portal), `layouts.<id>` |
 | `lock.notifications` | Mirror notifications onto the lock screen | `maxItems` |
@@ -625,6 +626,7 @@ Source files: `~/.config/hypr/Ano/hyprland/keybinds.conf` (defaults, tracked) an
 | `Ctrl+Super+B` | Anti-flashbang shader |
 | `Ctrl+Super+P` | Cycle panel family |
 | `Ctrl+Super+R` | Restart QuickShell |
+| `Super+R` | Launcher: AnoShell's, or your own command (Settings → Modules → Default Applications → Launcher; `ano run launcher`) |
 
 ### Pyprland
 | Key | Action |
@@ -900,6 +902,8 @@ ano/
 │   ├── anoSpot/                    # LocalSend send/discover scripts
 │   └── focustime/export.py          # one-time import of the old FocusTime database into anod
 │
+├── anod/                           # Go daemon (anod) and CLI (ano); install.sh builds both
+│   └── installer/                  # install.sh / uninstall.sh: served as <docs site>/i and /u, embedded in ano setup
 ├── plugins/                        # C++ extension point placeholder
 ├── external/                       # Bundled compositor configs (Hyprland, niri, sway, mango, labwc, Umbriel)
 └── translations/                   # Future content

@@ -295,6 +295,25 @@ change.
 - The bar's network icon carries a small shield while the VPN is up, filled
   while traffic goes out an exit node; its popup names the exit node.
 
+## Default applications
+
+Settings → Modules → **Default Applications** (`apps`): the terminal, browser
+and file manager the bundled keybinds and the shell open through `ano run
+terminal|browser|files` (`apps.terminal`, `apps.browser`, `apps.fileManager`;
+any command line, or a pick from the installed ones; a missing one falls back
+to the first installed of the usual ones), and the **Launcher** Super+R opens
+in the bundled Hyprland config (`ano run launcher`):
+
+- **AnoShell's** (`apps.launcher` `anoshell`, the default): its own launcher.
+- **Custom** (`custom`): `apps.launcherCommand`, for example
+  `~/.config/rofi/scripts/launcher.sh`. `~` and `$VARIABLES` expand; the command
+  is split on spaces and run directly, not through a shell. Empty, AnoShell's
+  opens.
+
+To use it from your own compositor config, bind a key to `ano run launcher`
+(the full path, `~/.local/bin/ano`, if that compositor's startup `PATH` lacks
+it). `ano run --print launcher` shows what it would run.
+
 ## Overview and switchers
 
 The overview (Super+Tab, `qs -c ano ipc call anoview toggle`) lays windows out

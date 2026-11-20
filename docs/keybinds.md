@@ -51,6 +51,7 @@ era replaced by the shell, and one meaning per chord on every compositor.
 | Super+Ctrl+C | Clock: alarms, world clocks, timer, stopwatch |
 | Super+Comma, Super+Slash | Settings, cheatsheet |
 | Super+Return, Super+E, Super+Z, Super+D | terminal, files, browser (your default apps), vicinae |
+| Super+R (Hyprland) | launcher: AnoShell's, or your own command ([Default applications](configuration.md#default-applications)) |
 | Super+Q, Super+Shift+Q | close |
 | Super+F / Super+Alt+F | maximize / fullscreen |
 | Super+G or Super+W | tabs (a Hyprland group, a tabbed niri column) |
