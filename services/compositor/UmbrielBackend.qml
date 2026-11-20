@@ -23,8 +23,8 @@ GenericBackend {
     name: "umbriel"
     supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
-        outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
-        keyboardLayouts: true, moveToWorkspace: true
+        outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
+        keyboardLayouts: true, moveToWorkspace: true, infiniteDesktop: true
     })
 
     property var _workspaces: []
@@ -99,6 +99,69 @@ GenericBackend {
     }
     function focusWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-focus", [id]) : false }
     function closeWindowById(id) { return UmbrielModel.validId(id) ? root._msg("window-close", [id]) : false }
+    // Outer gaps until umbriel exits: its layout.gap is inner and outer at once, so
+    // the struts (which may go negative) make up the difference: outer = gap + strut.
+    function setOuterGaps(px) {
+        const n = Math.max(0, Math.round(px))
+        if (!Number.isFinite(n)) return false
+        Quickshell.execDetached(["sh", "-c", 'g=$(umbriel config get layout.gap) || exit 1; case $g in *[!0-9]*|"") exit 1;; esac; '
+            + 'for s in top bottom left right; do umbriel config set "layout.struts.$s" "$(($1 - g))"; done', "sh", String(n)])
+        return true
+    }
+
+    // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────────
+    // A fresh read each time (the window events may lag a move). Floating windows
+    // go anywhere, off screen too (umbriel doesn't clamp); umbriel can't size a
+    // window by id, so floated windows keep their size.
+    property var _canvasCbs: []
+    property var _canvasProc: Process {
+        command: ["sh", "-c", 'umbriel windows --json && echo "@@" && umbriel outputs --json']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = this.text.split("\n@@\n")
+                let st = null
+                try { st = UmbrielModel.canvas(JSON.parse(parts[0]), JSON.parse(parts[1])) } catch (e) { st = null }
+                const cbs = root._canvasCbs; root._canvasCbs = []
+                for (const cb of cbs) cb(st)
+            }
+        }
+        onExited: code => { if (code !== 0) { const cbs = root._canvasCbs; root._canvasCbs = []; for (const cb of cbs) cb(null) } }
+    }
+    function canvasState(cb) {
+        root._canvasCbs = root._canvasCbs.concat([cb])
+        if (!root._canvasProc.running) root._canvasProc.running = true
+        return true
+    }
+    // Moves run one batch at a time; a newer place for a window replaces a queued one.
+    property var _moves: ({})   // id → [x, y, float first (1/0)]
+    property var _moveProc: Process { onExited: root._flushMoves() }
+    function _flushMoves() {
+        if (root._moveProc.running) return
+        const ids = Object.keys(root._moves)
+        if (!ids.length) return
+        const args = []
+        for (const id of ids) args.push(id, String(root._moves[id][0]), String(root._moves[id][1]), String(root._moves[id][2] ?? 0))
+        root._moves = ({})
+        // In order per window: float it (when asked), then move it; every value is an argument.
+        root._moveProc.command = ["sh", "-c", 'while [ $# -ge 4 ]; do [ "$4" = 1 ] && umbriel msg window-toggle-floating "$1"; '
+            + 'umbriel msg window-move-to top_left "$2" "$3" --window "$1"; shift 4; done', "sh"].concat(args)
+        root._moveProc.running = true
+    }
+    function placeWindows(list) {
+        const m = Object.assign({}, root._moves)
+        for (const p of list) if (UmbrielModel.validId(String(p.id))) m[p.id] = [Math.round(p.x), Math.round(p.y), (p.float || m[p.id]?.[2]) ? 1 : 0]
+        root._moves = m
+        root._flushMoves()
+        return true
+    }
+    function _isFloating(id) { return !!(root._windows.find(w => String(w.id) === String(id))?.floating) }
+    function floatWindows(rects) {
+        return root.placeWindows(rects.map(r => ({ id: r.id, x: r.x, y: r.y, float: !root._isFloating(r.id) })))
+    }
+    function tileWindows(ids) {
+        for (const id of ids) if (UmbrielModel.validId(String(id)) && root._isFloating(id)) root._msg("window-toggle-floating", [id])
+        return true
+    }
     // umbriel moves only the focused window: focus it, then move it (in order,
     // one shell; the id and number are arguments, not script text).
     function moveWindowToWorkspaceById(id, number) {

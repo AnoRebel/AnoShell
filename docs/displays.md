@@ -30,6 +30,7 @@ rewritten:
 |---|---|
 | Hyprland | `~/.config/hypr/ano-managed.lua` |
 | niri | `~/.config/niri/ano-managed.kdl` |
+| sway | `~/.config/sway/ano-managed.conf` (monitors only; add `include ~/.config/sway/ano-managed.conf` at the end of your config yourself) |
 
 Your config includes that file through one line, which
 `ano keybinds migrate` adds (with a backup; `--revert` removes it again):

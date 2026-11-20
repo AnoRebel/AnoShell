@@ -76,3 +76,20 @@ function msg(action, args, opts) {
 
 // A window id as umbriel prints it (hex), else false.
 function validId(id) { return typeof id === "string" && /^[0-9a-f]{8,64}$/.test(id) }
+
+// The infinite desktop's view of the focused output (`umbriel windows/outputs --json`):
+// its active workspace, usable area and the other outputs, layout px.
+function canvas(wins, outputs) {
+    const outs = (outputs || []).filter(o => o && o.enabled !== false && o.position)
+    const mon = outs.find(o => o.focused) || null
+    if (!mon) return null
+    const rect = o => ({ x: o.position.x, y: o.position.y, width: o.logical_size?.width || 0, height: o.logical_size?.height || 0 })
+    const ua = mon.usable_area
+    // usable_area is already in layout px (a second output's starts at its own x).
+    const view = ua ? { x: ua.x, y: ua.y, width: ua.width, height: ua.height } : rect(mon)
+    const ws = mon.active_workspace || ""
+    const list = (wins || []).filter(w => w && w.workspace === ws && !w.fullscreen && !w.minimized && !w.scratchpad)
+        .map(w => ({ id: String(w.id), x: w.x || 0, y: w.y || 0, width: w.w || 0, height: w.h || 0,
+                     floating: !!w.floating, focused: !!w.active, appId: w.app_id || "" }))
+    return { workspace: ws, output: mon.name, view: view, others: outs.filter(o => o !== mon).map(rect), windows: list }
+}

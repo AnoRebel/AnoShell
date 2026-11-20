@@ -16,8 +16,9 @@ import Quickshell.Services.Pipewire
  *   portal's node).
  * - Cameras opened directly (most apps): anod watches /dev/video*
  *   ("camera_users"; anod/internal/camera).
- * - Hyprland: its screencast events (screencopy clients, the portal), counted
- *   once a capture has stayed open castDelay, so a screenshot doesn't flash it.
+ * - Hyprland and niri (26.04+): their screencast events (screencopy clients, the
+ *   portal), counted once a capture has stayed open castDelay, so a screenshot
+ *   doesn't flash it.
  *
  * uses: [{ kind: "microphone" | "camera" | "screen", app, detail }]
  */
@@ -130,7 +131,8 @@ Singleton {
         // Window captures are left out: the shell's own live thumbnails (pill
         // and bar previews, AnoView, the switcher) are window captures, and an
         // app sharing a window goes through the portal, which PipeWire shows.
-        function onScreencast(open, owner, name) { if (owner !== "window") root._castEvent(open, owner, name) }
+        // Hyprland's window captures are the shell's own window previews; niri reports only real casts.
+        function onScreencast(open, owner, name) { if (owner !== "window" || CompositorService.compositor !== "hyprland") root._castEvent(open, owner, name) }
     }
 
     IpcHandler {

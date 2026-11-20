@@ -26,11 +26,27 @@ systemd/D-Bus activation environment, where a later session can inherit it).
 Sway, mango, labwc and Umbriel have workspaces, the focused output,
 fullscreen detection, the window list (overview, Alt+Tab, dock previews),
 window focus/close and the dropdown terminal, and the shell runs on each of
-them: tested headless (sway, labwc, mango) or nested (Umbriel), panels,
-Settings and overview included. They don't have everything Hyprland and
-niri have: no runtime blur rules, cursor zoom, screen shader or output
-configuration, and Settings → Keybinds and Displays only edit Hyprland and
-niri. Their reply parsing is tested against recorded replies
+them: tested headless (sway, labwc, mango, Umbriel), panels, Settings and
+overview included. They don't have everything Hyprland and niri have: no
+runtime blur rules, cursor zoom or screen shader, and Settings → Keybinds only
+edits Hyprland and niri. What each adds (checked against their current docs,
+2026-11-20):
+
+| | niri | sway | mango | Umbriel |
+|---|---|---|---|---|
+| Display settings (overlay, Settings → Displays) | `niri msg output` | `output …`; kept in `~/.config/sway/ano-managed.conf` (add `include ano-managed.conf` at the end of your sway config) | — | — |
+| Screen-sharing indicator | `CastsChanged` events | — | — | — |
+| Pointer position (pet chasing) | — | — | `get cursorpos` | — |
+| Outer gaps (connected mode) | — | `gaps outer` | `setoption gap_outer_*` | struts: outer = `layout.gap` + strut |
+| Move to workspace (dock menu) | yes | yes | `tagsilent` | focus, then move |
+| Infinite desktop | yes | yes | yes (no edge push: mango reports no moves) | yes; floated windows keep their size (umbriel sizes only the focused one, by fraction) |
+
+Not wired, and why: mango blur is one global switch (no per-app rule for
+terminal blur) and its layout list isn't readable for "previous layout";
+Umbriel's scrolling is per active workspace only and its screen effects need
+presets defined in its config; labwc has no IPC (window focus and close go
+through the toplevel); window capture off Hyprland needs Quickshell support
+for ext-image-capture first. Their reply parsing is tested against recorded replies
 (`scripts/dev/test-sway-model.js`, `scripts/dev/test-mango-model.js`,
 `scripts/dev/test-umbriel-model.js`).
 

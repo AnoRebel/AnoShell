@@ -1,7 +1,9 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import qs.services
+import "OutputsModel.js" as OutputsModel
 
 /**
  * niri backend (see BackendContract.md). Thin adapter over NiriService, the
@@ -17,7 +19,7 @@ QtObject {
     readonly property bool experimental: false
     readonly property var supports: ({
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: true, layerBlurRules: false,
-        outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
+        outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true, windowBlur: true, scrollingLayout: true, infiniteDesktop: true, moveToWorkspace: true
     })
 
@@ -104,18 +106,37 @@ QtObject {
             }
         })
     }
-    // Runtime output config on niri comes with the Displays page (task 10.2).
-    readonly property var outputs: []
-    function applyOutputs(configs) { return false }
+    // The display overlay's outputs (Hyprland's shape) and, without anod, its apply:
+    // `niri msg output` lasts until niri reloads its config (anod's display.apply
+    // also writes the managed file).
+    readonly property var outputs: OutputsModel.niri(NiriService.outputs, root.focusedOutput)
+    function applyOutputs(configs) {
+        const runs = OutputsModel.niriApply(configs)
+        if (!runs.length) return false
+        // One after another (a mode before the position it makes room for).
+        root._applyQueue = root._applyQueue.concat(runs)
+        if (!root._applyProc.running) root._applyNext()
+        return true
+    }
+    property var _applyQueue: []
+    function _applyNext() {
+        if (!root._applyQueue.length) return
+        root._applyProc.command = root._applyQueue[0]
+        root._applyQueue = root._applyQueue.slice(1)
+        root._applyProc.running = true
+    }
+    property var _applyProc: Process { onExited: root._applyNext() }
 
     // ── Infinite desktop (services/InfiniteDesktop.qml) ─────────────────────
     // Floating positions are set relative to the output's working area, which
     // niri doesn't report: learnt from where a placed window lands (_off).
     // niri keeps a sliver (10–75 px) of every floating window on screen.
     signal windowOpened(var id, string workspace)
+    signal screencast(bool open, string owner, string name)
     property var _niriOpen: Connections {
         target: NiriService
         function onWindowOpened(w) { root.windowOpened(w.id, String(w.workspace_id ?? "")) }
+        function onScreencast(open, owner, name) { root.screencast(open, owner, name) }
     }
     property var _off: ({})     // output → { x, y }
     property var _asked: ({})   // window id → { x, y, from } last requested (layout coordinates), where it was then

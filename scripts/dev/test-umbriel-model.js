@@ -3,7 +3,7 @@
 // plus a virtual HEADLESS-9). Run: node scripts/dev/test-umbriel-model.js
 const fs = require('fs'), path = require('path')
 const src = fs.readFileSync(path.join(__dirname, '../../services/compositor/UmbrielModel.js'), 'utf8').replace('.pragma library', '')
-const M = new Function(src + ';return {parse, workspaces, focusedOutput, fullscreen, covered, windows, layouts, msg, validId};')()
+const M = new Function(src + ';return {parse, workspaces, focusedOutput, fullscreen, covered, windows, layouts, msg, validId, canvas};')()
 const lines = fs.readFileSync(path.join(__dirname, 'fixtures/umbriel/subscribe.jsonl'), 'utf8').split('\n').filter(Boolean)
 const ev = name => lines.map(M.parse).find(o => o && o.event === name).data
 const a = (c, m) => { if (!c) throw new Error(m) }
@@ -40,4 +40,17 @@ a(M.msg('workspace-switch', ['--output']) === null && M.msg('window-close', ['']
 a(M.msg('workspace-switch', [1], { output: '' }) === null, 'empty option refused')
 a(M.validId('8c55e19565c76651868602e1a0041f7e') && !M.validId('--all') && !M.validId(3), 'window ids')
 a(M.parse('{"data":[') === null && M.parse('{"x":1}') === null, 'partial or eventless line → null')
+// Canvas: `umbriel windows --json` / `outputs --json` from the 0.1.0 headless rig
+// (one floating foot window moved to -260,50; a second output HEADLESS-9).
+{
+    const wins = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/umbriel/windows.json'), 'utf8'))
+    const outs = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/umbriel/outputs.json'), 'utf8'))
+    const c = M.canvas(wins, outs)
+    a(c && c.output === 'HEADLESS-1' && c.workspace === 'HEADLESS-1:1', 'canvas: focused output and workspace')
+    a(c.view.width === 1280 && c.view.height === 720 && c.others.length === 1 && c.others[0].width === 800, 'canvas: view and others')
+    a(c.windows.length === 1 && c.windows[0].x === -260 && c.windows[0].floating && c.windows[0].appId === 'foot', 'canvas: windows')
+    a(M.canvas(wins, []) === null, 'canvas: no outputs')
+    const second = M.canvas(wins, outs.map(o => Object.assign({}, o, { focused: o.name === 'HEADLESS-9' })))
+    a(second.view.x === 1280 && second.windows.length === 0 && second.others[0].x === 0, 'canvas: usable area is global')
+}
 console.log('umbriel model ok')

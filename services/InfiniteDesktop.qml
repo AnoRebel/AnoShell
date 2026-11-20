@@ -280,7 +280,8 @@ Singleton {
         id: edgeWatch
         interval: 100
         repeat: true
-        running: root.active && (CompositorService.supports.cursorPos ?? false) && !root.panMode
+        // Needs the focused window's live place too: mango's list misses moves, so not there.
+        running: root.active && (CompositorService.supports.cursorPos ?? false) && !root.panMode && CompositorService.compositor !== "mango"
         onTriggered: CompositorService.cursorPos(c => {
             if (!c) return
             CompositorService.focusedWindowGeometry(g => {

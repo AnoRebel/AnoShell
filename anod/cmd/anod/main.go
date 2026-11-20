@@ -778,6 +778,7 @@ func main() {
 			Deadline:    15 * time.Second,
 			HyprFile:    filepath.Join(cfg, "hypr", "ano-managed.lua"),
 			NiriFile:    filepath.Join(cfg, "niri", "ano-managed.kdl"),
+			SwayFile:    filepath.Join(cfg, "sway", "ano-managed.conf"),
 			Profiles:    filepath.Join(cfg, "anoshell", "display-profiles.json"),
 			Notify:      srv.Broadcast,
 			Logf:        log.Printf,
@@ -1237,6 +1238,8 @@ func displayBackend() display.Backend {
 		return display.Hyprland{}
 	case os.Getenv("NIRI_SOCKET") != "":
 		return display.Niri{}
+	case os.Getenv("SWAYSOCK") != "":
+		return display.Sway{}
 	}
 	return nil
 }

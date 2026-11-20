@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.I3
 import "SwayModel.js" as SwayModel
+import "OutputsModel.js" as OutputsModel
 
 /**
  * Sway backend (written against sway 1.12; tested headless, see BackendContract.md).
@@ -21,7 +22,7 @@ GenericBackend {
     name: "sway"
     supports: ({
         workspaces: true, perOutputWorkspaces: false, windowCapture: false, blurProtocol: false, layerBlurRules: false,
-        outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
+        outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: true, exit: true,
         keyboardLayouts: true, windowGeometry: true, infiniteDesktop: true, moveToWorkspace: true
     })
     focusedOutput: I3.focusedMonitor?.name ?? (Quickshell.screens[0]?.name ?? "")
@@ -133,6 +134,13 @@ GenericBackend {
 
     // ── Actions ──────────────────────────────────────────────────────────
     function _run(cmd) { I3.dispatch(cmd); return true }
+    // The display overlay's outputs (Hyprland's shape, from each monitor's GET_OUTPUTS
+    // object) and, without anod, its apply (until sway reloads its config).
+    readonly property var outputs: { void I3.monitors.values.length; return OutputsModel.sway(I3.monitors.values.map(m => m.lastIpcObject)) }
+    function applyOutputs(configs) {
+        const cmd = OutputsModel.swayApply(configs)
+        return cmd ? root._run(cmd) : false
+    }
     // Sway numbers workspaces globally; `outputName` doesn't change the number.
     // Through the workspace's ext-workspace handle (a named workspace has no
     // number sway would know); `workspace number N` when there is none.

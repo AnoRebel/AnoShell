@@ -67,6 +67,13 @@ Scope {
     readonly property int _floatingGapsOut: Config.options?.appearance?.connectedCorners?.floatingGapsOut ?? 5
     readonly property int _targetGapsOut: (root.enabled && _manageGaps) ? 0 : _floatingGapsOut
     on_TargetGapsOutChanged: CompositorService.setOuterGaps(_targetGapsOut)
+    // The backend is set after start (null until then): a call before it went nowhere.
+    Connections {
+        target: CompositorService
+        function onBackendChanged() {
+            if (root._manageGaps && CompositorService.backend) CompositorService.setOuterGaps(root._targetGapsOut)
+        }
+    }
 
     // ── Frame blur ────────────────────────────────────────────────────────────
     // The frame is a FULL-SCREEN surface that is transparent everywhere except the

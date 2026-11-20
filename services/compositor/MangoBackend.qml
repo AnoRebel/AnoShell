@@ -21,8 +21,9 @@ GenericBackend {
 
     name: "mango"
     supports: ({
+        cursorPos: true,
         workspaces: true, perOutputWorkspaces: true, windowCapture: false, blurProtocol: false, layerBlurRules: false,
-        outerGaps: false, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
+        outerGaps: true, cursorZoom: false, screenShader: false, dpms: true, outputConfig: false, exit: true,
         keyboardLayouts: true, scrollingLayout: true, infiniteDesktop: true, moveToWorkspace: true
     })
 
@@ -146,6 +147,19 @@ GenericBackend {
         const w = MangoModel.windows(root._clients, root._monitors).find(w => w.focused)
         cb(w ? { x: w.x, y: w.y, width: w.width, height: w.height } : null)
         return true
+    }
+    // The pointer: `get cursorpos` → {"x", "y", "monitor"} (layout px).
+    function cursorPos(cb) {
+        root._queue = root._queue.concat([{ line: "get cursorpos\n", cb: o => cb(Number.isFinite(o?.x) && Number.isFinite(o?.y) ? { x: o.x, y: o.y } : null) }])
+        root._next()
+        return true
+    }
+    // Outer gaps until mango reloads its config (setoption; its names, not dwl's gappoh/gappov).
+    function setOuterGaps(px) {
+        const n = Math.max(0, Math.round(px))
+        if (!Number.isFinite(n)) return false
+        root._dispatch("setoption", ["gap_outer_horizontal", n])
+        return root._dispatch("setoption", ["gap_outer_vertical", n])
     }
     function focusWindowById(id) { return root._dispatch("focusid", [], id) }
     function closeWindowById(id) { return root._dispatch("killclient", [], id) }
